@@ -36,13 +36,26 @@ class HistoryManager
 
   final List<HistoryState> _states = <HistoryState>[];
   int _lastCompressedIndex = -1;
+  HistoryState? _savedState;
 
   HistoryManager({required final int maxEntries}) : _maxEntries = maxEntries;
+
+  void markSaved()
+  {
+    _savedState = getCurrentState();
+  }
+
+  bool get isAtSavedState
+  {
+    final HistoryState? current = getCurrentState();
+    return current != null && identical(current, _savedState);
+  }
 
   void clear()
   {
     _curPos = -1;
     _lastCompressedIndex = -1;
+    _savedState = null;
     _states.clear();
     hasUndo.value = false;
     hasRedo.value = false;

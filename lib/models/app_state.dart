@@ -323,6 +323,7 @@ class AppState
     timeline.init(appState: this);
     GetIt.I.get<HistoryManager>().clear();
     GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);
+    GetIt.I.get<HistoryManager>().markSaved();
     projectName.value = null;
     hasChanges.value = false;
     hasProjectNotifier.value = true;
@@ -585,6 +586,7 @@ class AppState
       final HistoryState? currentState = GetIt.I.get<HistoryManager>().getCurrentState();
       final HistoryStateTypeGroup typeGroup = currentState != null ? currentState.type.group : HistoryStateTypeGroup.full;
       _restoreState(historyState: GetIt.I.get<HistoryManager>().undo(), typeGroup: typeGroup, restoreLayerIndices: currentState?.restoreLayerIndices);
+      hasChanges.value = !GetIt.I.get<HistoryManager>().isAtSavedState;
     }
   }
 
@@ -596,6 +598,7 @@ class AppState
       final HistoryState? switchState = GetIt.I.get<HistoryManager>().redo();
       final HistoryStateTypeGroup typeGroup = switchState != null ? switchState.type.group : HistoryStateTypeGroup.full;
       _restoreState(historyState: switchState, typeGroup: typeGroup, restoreLayerIndices: switchState?.restoreLayerIndices);
+      hasChanges.value = !GetIt.I.get<HistoryManager>().isAtSavedState;
       showMessage(text: "Redo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
     }
   }
@@ -611,6 +614,7 @@ class AppState
       hasProjectNotifier.value = true;
       GetIt.I.get<HistoryManager>().clear();
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: setHasChanges);
+      GetIt.I.get<HistoryManager>().markSaved();
       _setCanvasDimensions(width: loadFileSet.historyState!.canvasSize.x , height: loadFileSet.historyState!.canvasSize.y, addToHistoryStack: false);
       symmetryState.reset();
       GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
@@ -706,6 +710,7 @@ class AppState
   void fileSaved({required final String saveName, required final String path, final bool addKPixExtension = false})
   {
     projectName.value = saveName;
+    GetIt.I.get<HistoryManager>().markSaved();
     hasChanges.value = false;
 
     String displayPath = kIsWeb ? "$path/$saveName" : path;
@@ -840,8 +845,7 @@ class AppState
 
           if (canvSize.x != _canvasSize.x || canvSize.y != _canvasSize.y)
           {
-            _canvasSize.x = canvSize.x;
-            _canvasSize.y = canvSize.y;
+            _setCanvasDimensions(width: canvSize.x, height: canvSize.y, addToHistoryStack: false);
           }
 
           //the timeout is a backstop only: a layer that never settles would

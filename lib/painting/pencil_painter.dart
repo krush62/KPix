@@ -49,6 +49,7 @@ class PencilPainter extends IToolPainter
   CoordinateSetI? _lastDrawingPosition;
   bool _isLineDrawing = false;
   bool _hasNewCursorPos = false;
+  bool _cursorContentDirty = false;
   bool _lastShadingEnabled = false;
   ShaderDirection _lastShadingDirection = ShaderDirection.left;
   bool _lastShadingCurrentRamp = false;
@@ -216,6 +217,7 @@ class PencilPainter extends IToolPainter
             {
                dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
                _drawingPixels.clear();
+               _cursorContentDirty = true;
             }
             _paintPositions.clear();
             _allPaintPositions.clear();
@@ -237,6 +239,7 @@ class PencilPainter extends IToolPainter
             {
               dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
               _drawingPixels.clear();
+              _cursorContentDirty = true;
             }
             _lastDrawingPosition = CoordinateSetI.from(other: linePoints.last);
           }
@@ -250,7 +253,8 @@ class PencilPainter extends IToolPainter
       }
 
       //CURSOR CONTENT
-      if (_hasNewCursorPos)
+      final bool strokeHasSettled = rasterLayer is! DrawingLayerState || (rasterLayer.rasterQueue.isEmpty && !rasterLayer.isRasterizing);
+      if ((_hasNewCursorPos || (_cursorContentDirty && strokeHasSettled)) && drawParams.cursorPosNorm != null)
       {
         CoordinateColorMap cursorPixels = CoordinateColorMap();
         if (_hotkeyManager.shiftIsPressed && _lastDrawingPosition != null && _paintPositions.isEmpty && _allPaintPositions.isEmpty)
@@ -287,6 +291,7 @@ class PencilPainter extends IToolPainter
           hasAsyncUpdate = true;
         });
         _hasNewCursorPos = false;
+        _cursorContentDirty = false;
       }
       else if (drawParams.cursorPos == null)
       {
@@ -309,6 +314,7 @@ class PencilPainter extends IToolPainter
       }
     }
     hasHistoryData = true;
+    _cursorContentDirty = true;
     resetContentRaster(currentLayer: currentLayer);
   }
 

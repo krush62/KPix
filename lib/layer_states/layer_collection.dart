@@ -424,12 +424,14 @@ class LayerCollection with ChangeNotifier {
     if (_layers.length > 1)
     {
       final int? deleteLayerIndex = getLayerPosition(state: deleteLayer);
-      if (deleteLayerIndex == 0)
-      {
-        _selectedLayerIndexNotifier.value = 1;
-      }
+      final int? selectedBefore = selectedLayerIndex;
       _layers.remove(deleteLayer);
-      _selectedLayerIndexNotifier.value = 0;
+      int newSelectedIndex = 0;
+      if (deleteLayerIndex != null && selectedBefore != null)
+      {
+        newSelectedIndex = selectedBefore > deleteLayerIndex ? selectedBefore - 1 : selectedBefore;
+      }
+      _selectedLayerIndexNotifier.value = newSelectedIndex.clamp(0, _layers.length - 1);
       _rebuildDependencies();
       GetIt.I.get<AppState>().disposeUnusedLayers(candidates: <LayerState>[deleteLayer]);
 

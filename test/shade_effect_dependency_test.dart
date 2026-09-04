@@ -15,9 +15,11 @@
  */
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -45,7 +47,7 @@ void main()
   group("a layer whose effects sample downward", () {
     testWidgets("a shaded outer stroke registers a dependency on the layer below", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references[3];
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references[3];
         final DrawingLayerState below = layerAt(appState: appState, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
@@ -66,7 +68,7 @@ void main()
 
     testWidgets("a shaded drop shadow registers the same dependency", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references[3];
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references[3];
         final DrawingLayerState below = layerAt(appState: appState, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
@@ -84,7 +86,7 @@ void main()
 
     testWidgets("a glowing outer stroke registers the same dependency", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references[3];
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references[3];
         final DrawingLayerState below = layerAt(appState: appState, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
@@ -102,8 +104,8 @@ void main()
 
     testWidgets("changing the layer below marks the effect layer for a redraw", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference first = appState.colorRamps.first.references[3];
-        final ColorReference second = appState.colorRamps.first.references.last;
+        final ColorReference first = GetIt.I.get<PaletteState>().colorRamps.first.references[3];
+        final ColorReference second = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
         final DrawingLayerState below = layerAt(appState: appState, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: first));
 
@@ -125,7 +127,7 @@ void main()
   group("layers whose effects do not sample downward", () {
     testWidgets("a solid outer stroke registers no dependency", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references[3];
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references[3];
         final DrawingLayerState below = layerAt(appState: appState, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
@@ -142,7 +144,7 @@ void main()
 
     testWidgets("turning an effect off removes the dependency again", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references[3];
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references[3];
         final DrawingLayerState below = layerAt(appState: appState, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 

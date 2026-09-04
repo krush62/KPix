@@ -15,10 +15,12 @@
  */
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -56,7 +58,7 @@ void main()
   group("deleting a layer", () {
     testWidgets("does not strand the floating content on an unrelated layer", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState keeper = layerAt(appState: appState, index: 0);
         final DrawingLayerState doomed = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         await _paint(appState: appState, layer: doomed, coord: pixel, color: color);
@@ -77,7 +79,7 @@ void main()
 
     testWidgets("keeps content that was handed to a layer that survives", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState keeper = layerAt(appState: appState, index: 0);
         final DrawingLayerState doomed = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         await _paint(appState: appState, layer: keeper, coord: pixel, color: color);
@@ -140,7 +142,7 @@ void main()
 
     testWidgets("does not move a floating selection onto a different layer", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         appState.addNewLayer(layerType: DrawingLayerState);
         appState.addNewLayer(layerType: DrawingLayerState);
         await settle(appState: appState);
@@ -168,7 +170,7 @@ void main()
   group("switching to a layer that cannot take the content", () {
     testWidgets("does not leave a copy floating over a locked layer", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState locked = layerAt(appState: appState, index: 0);
         final DrawingLayerState owner = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);
@@ -189,7 +191,7 @@ void main()
 
     testWidgets("does not write through the lock on deselect", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState locked = layerAt(appState: appState, index: 0);
         final DrawingLayerState owner = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);
@@ -210,7 +212,7 @@ void main()
 
     testWidgets("does not leave a copy floating over a shading layer", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState owner = layerAt(appState: appState, index: 0);
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);
         final LayerState? shading = appState.addNewLayer(layerType: ShadingLayerState);
@@ -232,7 +234,7 @@ void main()
 
     testWidgets("switching back to a drawing layer floats its content again", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState locked = layerAt(appState: appState, index: 0);
         final DrawingLayerState owner = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);

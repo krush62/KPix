@@ -21,6 +21,7 @@ import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -36,7 +37,7 @@ Future<(DrawingLayerState, DrawingLayerState)> _twoLayersWithFloatingPixel({
   required final CoordinateSetI pixel,
 }) async
 {
-  final ColorReference color = appState.colorRamps.first.references.first;
+  final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
   final DrawingLayerState lower = layerAt(appState: appState, index: 0);
   final DrawingLayerState upper = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
   upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
@@ -72,7 +73,7 @@ void main()
 
   testWidgets("a selection hands its content over to the newly selected layer", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final (DrawingLayerState upper, DrawingLayerState lower) = await _twoLayersWithFloatingPixel(appState: appState, pixel: pixel);
 
       expect(appState.selectionState.selection.getColorReference(coord: pixel), color);
@@ -154,7 +155,7 @@ void main()
 
   testWidgets("starting playback commits the floating selection", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final Timeline timeline = appState.timeline;
 
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
@@ -207,8 +208,8 @@ void main()
 
   testWidgets("redo restores paint that went into the selection", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference original = appState.colorRamps.first.references.first;
-      final ColorReference painted = appState.colorRamps.first.references.last;
+      final ColorReference original = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
+      final ColorReference painted = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
       expect(painted, isNot(original), reason: "setup: the two colours have to be distinguishable");
 
       await _twoLayersWithFloatingPixel(appState: appState, pixel: pixel);
@@ -231,7 +232,7 @@ void main()
 
   testWidgets("undoing a deselect brings back the painted content, not the original", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference painted = appState.colorRamps.first.references.last;
+      final ColorReference painted = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
       final (DrawingLayerState upper, DrawingLayerState _) = await _twoLayersWithFloatingPixel(appState: appState, pixel: pixel);
 
       _paintIntoSelection(appState: appState, coord: pixel, color: painted);
@@ -268,7 +269,7 @@ void main()
 
   testWidgets("a state whose selection moved gets its own snapshot", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference painted = appState.colorRamps.first.references.last;
+      final ColorReference painted = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
       await _twoLayersWithFloatingPixel(appState: appState, pixel: pixel);
 
       final HistoryState? before = GetIt.I.get<HistoryManager>().getCurrentState();
@@ -283,7 +284,7 @@ void main()
 
   test("every write to the selection moves its revision", () async {
     final AppState appState = await bootProject(canvasSize: canvasSize);
-    final ColorReference color = appState.colorRamps.first.references.first;
+    final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
     final SelectionList selection = appState.selectionState.selection;
 
     int previous = selection.revision;

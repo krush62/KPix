@@ -35,6 +35,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_ramp_row_widget.dart';
 
@@ -61,14 +62,15 @@ class PaletteWidget extends StatefulWidget
 
 class _PaletteWidgetState extends State<PaletteWidget>
 {
-  final AppState _appState = GetIt.I.get<AppState>();
   late KPixOverlay _paletteManager;
   late KPixOverlay _kPal;
+  late PaletteState _paletteState;
 
   @override
   void initState()
   {
     super.initState();
+    _paletteState = GetIt.I.get<PaletteState>();
     _paletteManager = getPaletteManagerDialog(
         onDismiss: _paletteManagerClosed,);
   }
@@ -87,13 +89,13 @@ class _PaletteWidgetState extends State<PaletteWidget>
   void _colorRampUpdate({required final KPalRampData ramp, required final KPalRampData originalData, final bool addToHistoryStack = true})
   {
     _kPal.hide();
-    _appState.updateRamp(ramp: ramp, originalData: originalData, addToHistoryStack: addToHistoryStack);
+    _paletteState.updateRamp(ramp: ramp, originalData: originalData, addToHistoryStack: addToHistoryStack);
   }
 
   void _colorRampDelete({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
     _kPal.hide();
-    _appState.deleteRamp(ramp: ramp, addToHistoryStack: addToHistoryStack);
+    _paletteState.deleteRamp(ramp: ramp, addToHistoryStack: addToHistoryStack);
   }
 
   void _createKPal({required final KPalRampData ramp, final bool addToHistoryStack = true})
@@ -102,7 +104,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
       onAccept: _colorRampUpdate,
       onDelete: _colorRampDelete,
       colorRamp: ramp,
-      usedPixels: _appState.getPixelCountForRamp(ramp: ramp),
+      usedPixels: _paletteState.getPixelCountForRamp(ramp: ramp),
     );
     _kPal.show(context: context);
   }
@@ -119,7 +121,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
         );
       },
       onAcceptWithDetails: (final DragTargetDetails<KPalRampData> details) {
-        _appState.changeColorOrder(ramp: details.data, newPosition: index);
+        _paletteState.changeColorOrder(ramp: details.data, newPosition: index);
       },
     );
   }
@@ -127,10 +129,9 @@ class _PaletteWidgetState extends State<PaletteWidget>
 
   @override
   Widget build(final BuildContext context) {
-    final AppState appState = GetIt.I.get<AppState>();
     return Expanded(
       child: ValueListenableBuilder<List<KPalRampData>>(
-        valueListenable: appState.colorRampNotifier,
+        valueListenable: _paletteState.colorRampNotifier,
         builder: (final BuildContext context, final List<KPalRampData> rampDataSet, final Widget? child)
         {
           int dropTargetIndex = 0;
@@ -141,7 +142,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
             widgetList.add(
                 ColorRampRowWidget(
                   rampData: rampData,
-                  colorSelectedFn: appState.colorSelected,
+                  colorSelectedFn: _paletteState.colorSelected,
                   showKPalFn: _createKPal,
                 ),
             );
@@ -195,7 +196,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                     padding: const EdgeInsets.all(_PaletteWidgetOptions.padding),
                     child: IconButton.outlined(
                       onPressed: () {
-                        appState.addNewRamp().then
+                        _paletteState.addNewRamp().then
                           ((final KPalRampData? ramp) {
                             if (ramp != null)
                             {

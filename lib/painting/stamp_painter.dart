@@ -91,7 +91,7 @@ class StampPainter extends IToolPainter
         _lastShadingEnabled != shaderOptions.isEnabled.value ||
         _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
         _lastShadingDirection != shaderOptions.shaderDirection.value ||
-        _lastColorSelection != appState.selectedColor;
+        _lastColorSelection != paletteState.selectedColor;
 
       final StampManagerEntryData? currentStamp = _manager.selectedStamp.value;
       if (shouldUpdate && currentStamp != null)
@@ -139,7 +139,7 @@ class StampPainter extends IToolPainter
         CoordinateColorMap cursorPixels = CoordinateColorMap();
         if (rasterLayer is DrawingLayerState)
         {
-          cursorPixels = getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, stampData: mirrorStamp, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
+          cursorPixels = getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, stampData: mirrorStamp, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: paletteState.selectedColor!);
         }
         else if (rasterLayer is ShadingLayerState)
         {
@@ -180,7 +180,7 @@ class StampPainter extends IToolPainter
     _lastShadingEnabled = shaderOptions.isEnabled.value;
     _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
     _lastShadingDirection = shaderOptions.shaderDirection.value;
-    _lastColorSelection = appState.selectedColor;
+    _lastColorSelection = paletteState.selectedColor;
 
     if (drawParams.cursorPos == null)
     {
@@ -191,7 +191,7 @@ class StampPainter extends IToolPainter
 
   void _dump({required final CoordinateSetI canvasSize, required final DrawingLayerState drawingLayer, required final HashMap<CoordinateSetI, int> stampData})
   {
-    final CoordinateColorMap drawingPixels = getStampPixelsToDraw(canvasSize: canvasSize, currentLayer: drawingLayer, stampData: stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
+    final CoordinateColorMap drawingPixels = getStampPixelsToDraw(canvasSize: canvasSize, currentLayer: drawingLayer, stampData: stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: paletteState.selectedColor!);
     if (!appState.selectionState.selection.isEmpty)
     {
       appState.selectionState.selection.addDirectlyAll(list: drawingPixels);

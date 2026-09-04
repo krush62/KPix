@@ -47,6 +47,7 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/view_state.dart';
@@ -106,6 +107,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   final AppState _appState = GetIt.I.get<AppState>();
   final ViewState _viewState = GetIt.I.get<ViewState>();
   final ToolState _toolState = GetIt.I.get<ToolState>();
+  final PaletteState _paletteState = GetIt.I.get<PaletteState>();
   final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier<CoordinateSetD?>(null);
   final ValueNotifier<bool> _isDragging = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _stylusLongMoveStarted = ValueNotifier<bool>(false);
@@ -227,7 +229,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _shaderOptions.isEnabled.removeListener(_updateFromChange);
     _shaderOptions.onlyCurrentRampEnabled.removeListener(_updateFromChange);
     _shaderOptions.shaderDirection.removeListener(_updateFromChange);
-    _appState.selectedColorNotifier.removeListener(_updateFromChange);
+    _paletteState.selectedColorNotifier.removeListener(_updateFromChange);
     _appState.timeline.isPlaying.removeListener(_setDefaultCursor);
 
     _viewState.zoomFactorNotifier.removeListener(_updateFromChange);
@@ -283,7 +285,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _shaderOptions.isEnabled.addListener(_updateFromChange);
     _shaderOptions.onlyCurrentRampEnabled.addListener(_updateFromChange);
     _shaderOptions.shaderDirection.addListener(_updateFromChange);
-    _appState.selectedColorNotifier.addListener(_updateFromChange);
+    _paletteState.selectedColorNotifier.addListener(_updateFromChange);
     _appState.timeline.isPlaying.addListener(_setDefaultCursor);
     _viewState.zoomFactorNotifier.addListener(_updateFromChange);
     _canvasOffset.addListener(_updateFromChange);
@@ -594,7 +596,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick]! as ColorPickPainter;
         if (colorPickPainter.selectedColor != null)
         {
-          _appState.colorSelected(color: colorPickPainter.selectedColor);
+          _paletteState.colorSelected(color: colorPickPainter.selectedColor);
         }
         _toolState.setToolSelection(tool: _previousTool);
       }
@@ -784,7 +786,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick]! as ColorPickPainter;
         if (colorPickPainter.selectedColor != null)
         {
-          _appState.colorSelected(color: colorPickPainter.selectedColor);
+          _paletteState.colorSelected(color: colorPickPainter.selectedColor);
         }
       }
     }
@@ -889,11 +891,11 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       {
         if (ev.scrollDelta.dy < 0.0)
         {
-          _appState.decrementColorSelection();
+          _paletteState.decrementColorSelection();
         }
         else
         {
-          _appState.incrementColorSelection();
+          _paletteState.incrementColorSelection();
         }
       }
     }
@@ -955,9 +957,9 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
               pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio,)
             ,);
           final ColorReference? colRef = _appState.getColorFromImageAtPosition(normPos: normPos);
-          if (colRef != null && colRef != _appState.selectedColor)
+          if (colRef != null && colRef != _paletteState.selectedColor)
           {
-            _appState.colorSelected(color: colRef);
+            _paletteState.colorSelected(color: colRef);
           }
         }
       }

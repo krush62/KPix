@@ -116,7 +116,7 @@ class FillPainter extends IToolPainter
         {
           if (rasterLayer is DrawingLayerState)
           {
-            _floodFill(fillColor: appState.selectedColor!, layer: rasterLayer, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+            _floodFill(fillColor: paletteState.selectedColor!, layer: rasterLayer, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
           }
           else if (rasterLayer is ShadingLayerState)
           {
@@ -127,7 +127,7 @@ class FillPainter extends IToolPainter
         {
           if (rasterLayer is DrawingLayerState)
           {
-            _wholeFill(fillColor: appState.selectedColor!, layer: rasterLayer, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+            _wholeFill(fillColor: paletteState.selectedColor!, layer: rasterLayer, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
           }
           else if (rasterLayer is ShadingLayerState)
           {

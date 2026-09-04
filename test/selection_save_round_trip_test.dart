@@ -25,6 +25,7 @@ import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -79,7 +80,7 @@ void main()
 
   testWidgets("a project saved with a pasted selection can be read back", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
       await settle(appState: appState);
@@ -103,7 +104,7 @@ void main()
 
   testWidgets("a selection dragged off the canvas does not leak phantom pixels", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
       await settle(appState: appState);
@@ -126,7 +127,7 @@ void main()
 
   testWidgets("a selection stranded on a shading layer does not change the file", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final DrawingLayerState drawingLayer = layerAt(appState: appState, index: 0);
       drawingLayer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
       appState.addNewLayer(layerType: ShadingLayerState);
@@ -156,8 +157,8 @@ void main()
 
   testWidgets("an ordinary project still round-trips unchanged", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference first = appState.colorRamps.first.references.first;
-      final ColorReference second = appState.colorRamps.first.references.last;
+      final ColorReference first = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
+      final ColorReference second = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
       final DrawingLayerState lower = layerAt(appState: appState, index: 0);
       lower.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: first}));
       final DrawingLayerState upper = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;

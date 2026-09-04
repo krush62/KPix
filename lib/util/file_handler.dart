@@ -54,6 +54,7 @@ import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -529,13 +530,13 @@ Future<String?> _runExport({
 
 Future<String?> saveCurrentPalette({required final String fileName, required final String directory, required final String extension,}) async
 {
-  final Uint8List data = await createPaletteKPalData(rampList: GetIt.I.get<AppState>().colorRamps);
+  final Uint8List data = await createPaletteKPalData(rampList: GetIt.I.get<PaletteState>().colorRamps);
   return await _writeDataToFile(data: data, directory: directory, fileName: fileName, extension: extension,);
 }
 
 Future<Uint8List?> _createPaletteData({required final PaletteExportType paletteType}) async
 {
-  final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
+  final List<KPalRampData> rampList = GetIt.I.get<PaletteState>().colorRamps;
   final ColorNames colorNames = GetIt.I.get<PreferenceManager>().colorNames;
 
   switch (paletteType)
@@ -585,7 +586,7 @@ Future<Uint8List?> _createImageData({required final ImageExportData exportData, 
   final CoordinateSetI canvasSize = appState.canvasSize;
   final LayerCollection layerList = appState.timeline.selectedFrame!.layerList;
   final SelectionList selection = appState.selectionState.selection;
-  final List<KPalRampData> colorRamps = appState.colorRamps;
+  final List<KPalRampData> colorRamps = GetIt.I.get<PaletteState>().colorRamps;
 
   switch (exportType)
   {

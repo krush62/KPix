@@ -72,7 +72,7 @@ class PencilPainter extends IToolPainter
             _lastShadingEnabled != shaderOptions.isEnabled.value ||
             _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
             _lastShadingDirection != shaderOptions.shaderDirection.value ||
-            _lastColorSelection != appState.selectedColor;
+            _lastColorSelection != paletteState.selectedColor;
 
         if (_hasNewCursorPos)
         {
@@ -82,7 +82,7 @@ class PencilPainter extends IToolPainter
           _lastShadingEnabled = shaderOptions.isEnabled.value;
           _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
           _lastShadingDirection = shaderOptions.shaderDirection.value;
-          _lastColorSelection = appState.selectedColor;
+          _lastColorSelection = paletteState.selectedColor;
         }
       }
       if (!_waitingForDump)
@@ -137,7 +137,7 @@ class PencilPainter extends IToolPainter
             CoordinateColorMap pixelsToDraw = CoordinateColorMap();
             if (rasterLayer is DrawingLayerState)
             {
-              pixelsToDraw = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+              pixelsToDraw = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
             }
             else if (rasterLayer is ShadingLayerState)
             {
@@ -163,7 +163,7 @@ class PencilPainter extends IToolPainter
               final Set<CoordinateSetI> additionalMirrorPoints = getMirrorPoints(coords: additionalPaintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
               if (rasterLayer is DrawingLayerState)
               {
-                additionalDrawingPixels = getPixelsToDraw(coords: additionalMirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+                additionalDrawingPixels = getPixelsToDraw(coords: additionalMirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
               }
               else if (rasterLayer is ShadingLayerState)
               {
@@ -209,7 +209,7 @@ class PencilPainter extends IToolPainter
             final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: paintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+              _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
               _dumpDrawing(currentLayer: rasterLayer);
               _waitingForDump = true;
             }
@@ -231,7 +231,7 @@ class PencilPainter extends IToolPainter
             final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: linePoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+              _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: paletteState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
               _dumpDrawing(currentLayer: rasterLayer);
               _waitingForDump = true;
             }
@@ -267,7 +267,7 @@ class PencilPainter extends IToolPainter
 
           if (rasterLayer is DrawingLayerState)
           {
-            cursorPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            cursorPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
           }
           else if (rasterLayer is ShadingLayerState)
           {
@@ -279,7 +279,7 @@ class PencilPainter extends IToolPainter
           final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _contentPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
           if (rasterLayer is DrawingLayerState)
           {
-            cursorPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            cursorPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
           }
           else if (rasterLayer is ShadingLayerState)
           {

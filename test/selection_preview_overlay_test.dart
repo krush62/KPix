@@ -18,11 +18,13 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -109,7 +111,7 @@ void main()
 
   testWidgets("the preview shows the floating selection with a reference layer above", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final DrawingLayerState artwork = layerAt(appState: appState, index: 0);
       artwork.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
 
@@ -129,7 +131,7 @@ void main()
 
   testWidgets("the preview shows the floating selection with a hidden layer above", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final DrawingLayerState artwork = layerAt(appState: appState, index: 0);
       artwork.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
 
@@ -148,7 +150,7 @@ void main()
 
   testWidgets("the preview still shows it when the indices happen to agree", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final DrawingLayerState artwork = layerAt(appState: appState, index: 0);
       artwork.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
       await settle(appState: appState);

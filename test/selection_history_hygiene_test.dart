@@ -20,6 +20,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -62,7 +63,7 @@ void main()
   group("a polygon selection", () {
     testWidgets("is recorded as its own undo step", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState layer = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: layer, coord: pixel, color: color);
 
@@ -78,7 +79,7 @@ void main()
 
     testWidgets("can be undone without losing the lifted pixels", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState layer = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: layer, coord: pixel, color: color);
 
@@ -139,7 +140,7 @@ void main()
   group("moving a real selection", () {
     testWidgets("is still recorded", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState layer = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: layer, coord: pixel, color: color);
 

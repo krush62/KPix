@@ -29,6 +29,7 @@ import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/drawing_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -262,10 +263,9 @@ class GridLayerState extends LayerState
 
   Future<CoordinateColorMap> getHashMap() async
   {
-    final AppState appState = GetIt.I.get<AppState>();
     final Set<CoordinateSetI> rasterCoords = await getRasterData();
     final CoordinateColorMap theMap = HashMap<CoordinateSetI, ColorReference>();
-    final ColorReference color = appState.selectedColor!;
+    final ColorReference color = GetIt.I.get<PaletteState>().selectedColor!;
     for (final CoordinateSetI coord in rasterCoords)
     {
        theMap[coord] = color;

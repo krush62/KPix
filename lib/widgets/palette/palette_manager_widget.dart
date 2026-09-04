@@ -23,6 +23,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/messages.dart';
@@ -115,14 +116,14 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _paletteWarningYes()
   {
-    GetIt.I.get<AppState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.remap);
+    GetIt.I.get<PaletteState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.remap);
     _closeWarning();
     widget.dismiss();
   }
 
   void _paletteWarningNo()
   {
-    GetIt.I.get<AppState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.replace);
+    GetIt.I.get<PaletteState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.replace);
     _closeWarning();
     widget.dismiss();
   }
@@ -165,7 +166,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _appendPalette()
   {
-    GetIt.I.get<AppState>().appendPalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList));
+    GetIt.I.get<PaletteState>().appendPalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList));
     _closeWarning();
     widget.dismiss();
   }

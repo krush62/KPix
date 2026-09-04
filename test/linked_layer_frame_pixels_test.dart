@@ -15,8 +15,10 @@
  */
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -32,7 +34,7 @@ void main()
 
   testWidgets("a linked layer reports different pixels for each frame it sits in", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final Timeline timeline = appState.timeline;
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
@@ -63,7 +65,7 @@ void main()
 
   testWidgets("an unlinked layer reports the same pixels with or without a frame", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
       await settle(appState: appState);
@@ -77,7 +79,7 @@ void main()
 
   testWidgets("frames the layer has left stop being reported", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final Timeline timeline = appState.timeline;
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));

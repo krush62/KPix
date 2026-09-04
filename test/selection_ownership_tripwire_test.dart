@@ -15,8 +15,10 @@
  */
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -32,7 +34,7 @@ void main()
   /// Returns (upper, lower).
   Future<(DrawingLayerState, DrawingLayerState)> setUp({required final AppState appState}) async
   {
-    final ColorReference color = appState.colorRamps.first.references.first;
+    final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
     final DrawingLayerState lower = layerAt(appState: appState, index: 0);
     final DrawingLayerState upper = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
     upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));

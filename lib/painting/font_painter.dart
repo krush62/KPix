@@ -62,7 +62,7 @@ class FontPainter extends IToolPainter
           _lastShadingEnabled != shaderOptions.isEnabled.value ||
           _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
           _lastShadingDirection != shaderOptions.shaderDirection.value ||
-          _lastColorSelection != appState.selectedColor;
+          _lastColorSelection != paletteState.selectedColor;
 
       if (shouldUpdate)
       {
@@ -107,7 +107,7 @@ class FontPainter extends IToolPainter
           final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
           if (rasterLayer is DrawingLayerState)
           {
-            cursorPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            cursorPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: paletteState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
           }
           else if (rasterLayer is ShadingLayerState)
           {
@@ -136,7 +136,7 @@ class FontPainter extends IToolPainter
             final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _textContent, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+              final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: paletteState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
               _dumpDrawing(drawParams: drawParams, drawingPixels: drawingPixels);
             }
             else if (rasterLayer is ShadingLayerState)
@@ -153,7 +153,7 @@ class FontPainter extends IToolPainter
       _lastShadingEnabled = shaderOptions.isEnabled.value;
       _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
       _lastShadingDirection = shaderOptions.shaderDirection.value;
-      _lastColorSelection = appState.selectedColor;
+      _lastColorSelection = paletteState.selectedColor;
 
     }
     else

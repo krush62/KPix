@@ -15,8 +15,10 @@
  */
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -43,8 +45,8 @@ void main()
 
   testWidgets("a pixel reads back as the colour last written to it", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference first = appState.colorRamps.first.references.first;
-      final ColorReference second = appState.colorRamps.first.references.last;
+      final ColorReference first = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
+      final ColorReference second = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
       expect(second, isNot(first), reason: "setup: the two colours have to be distinguishable");
 
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
@@ -65,7 +67,7 @@ void main()
 
   testWidgets("an erased pixel reads back as empty before the raster runs", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       _write(layer: layer, coord: pixel, color: color);
       await settle(appState: appState);
@@ -81,8 +83,8 @@ void main()
 
   testWidgets("selecting right after a stroke lifts the stroke, not what it covered", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference covered = appState.colorRamps.first.references.first;
-      final ColorReference stroke = appState.colorRamps.first.references.last;
+      final ColorReference covered = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
+      final ColorReference stroke = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
 
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       _write(layer: layer, coord: pixel, color: covered);
@@ -102,8 +104,8 @@ void main()
 
   testWidgets("filling right after a stroke sees the stroke", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference covered = appState.colorRamps.first.references.first;
-      final ColorReference stroke = appState.colorRamps.first.references.last;
+      final ColorReference covered = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
+      final ColorReference stroke = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
 
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       _write(layer: layer, coord: pixel, color: covered);

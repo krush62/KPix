@@ -21,6 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/pencil_painter.dart';
@@ -91,7 +92,7 @@ void main()
 
   testWidgets("the shading preview refreshes after a stroke lands on the same pixel", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference start = appState.colorRamps.first.references[1];
+      final ColorReference start = GetIt.I.get<PaletteState>().colorRamps.first.references[1];
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: start}));
       await settle(appState: appState);
@@ -120,7 +121,7 @@ void main()
 
   testWidgets("the preview waits for the stroke to land before refreshing", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference start = appState.colorRamps.first.references[1];
+      final ColorReference start = GetIt.I.get<PaletteState>().colorRamps.first.references[1];
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: start}));
       await settle(appState: appState);
@@ -153,7 +154,7 @@ void main()
 
   testWidgets("a preview that has nothing to react to is left alone", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference start = appState.colorRamps.first.references[1];
+      final ColorReference start = GetIt.I.get<PaletteState>().colorRamps.first.references[1];
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: start}));
       await settle(appState: appState);

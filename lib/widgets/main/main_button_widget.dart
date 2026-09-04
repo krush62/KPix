@@ -28,6 +28,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/update_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
@@ -484,7 +485,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _importLoadingDialog.show(context: context);
     try
     {
-      import(importData: importData, currentRamps: _appState.colorRamps).then((final ImportResult result)
+      import(importData: importData, currentRamps: GetIt.I.get<PaletteState>().colorRamps).then((final ImportResult result)
       {
         _appState.importFile(importResult: result);
         GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);

@@ -15,8 +15,10 @@
  */
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -42,8 +44,8 @@ void main()
 
   testWidgets("an erasure issued during a raster does not outlive a later write", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference before = appState.colorRamps.first.references.first;
-      final ColorReference after = appState.colorRamps.first.references.last;
+      final ColorReference before = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
+      final ColorReference after = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
 
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       _write(layer: layer, pixels: <CoordinateSetI, ColorReference?>{left: before});
@@ -64,7 +66,7 @@ void main()
 
   testWidgets("an erasure issued during a raster still erases", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       _write(layer: layer, pixels: <CoordinateSetI, ColorReference?>{left: color});
       await settle(appState: appState);
@@ -80,8 +82,8 @@ void main()
 
   testWidgets("flipping during a raster keeps the layer", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference leftColor = appState.colorRamps.first.references.first;
-      final ColorReference rightColor = appState.colorRamps.first.references.last;
+      final ColorReference leftColor = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
+      final ColorReference rightColor = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
       expect(rightColor, isNot(leftColor), reason: "setup: the two colours have to be distinguishable");
 
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
@@ -103,8 +105,8 @@ void main()
 
   testWidgets("flipping outside a raster keeps working", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference leftColor = appState.colorRamps.first.references.first;
-      final ColorReference rightColor = appState.colorRamps.first.references.last;
+      final ColorReference leftColor = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
+      final ColorReference rightColor = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
 
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       _write(layer: layer, pixels: <CoordinateSetI, ColorReference?>{left: leftColor, right: rightColor});
@@ -120,7 +122,7 @@ void main()
 
   testWidgets("selecting during a raster takes the pixels out of the layer", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final ColorReference color = appState.colorRamps.first.references.first;
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       _write(layer: layer, pixels: <CoordinateSetI, ColorReference?>{left: color});
       await settle(appState: appState);

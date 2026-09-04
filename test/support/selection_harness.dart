@@ -25,6 +25,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/tool_state.dart';
@@ -60,6 +61,7 @@ Future<AppState> bootProject({required final CoordinateSetI canvasSize}) async
   GetIt.I.registerSingleton<UpdateState>(UpdateState());
   GetIt.I.registerSingleton<StatusBarState>(StatusBarState());
   GetIt.I.registerSingleton<ViewState>(ViewState(devicePixelRatio: 1.0));
+  GetIt.I.registerSingleton<PaletteState>(PaletteState());
   final AppState appState = AppState();
   GetIt.I.registerSingleton<AppState>(appState);
   GetIt.I.registerSingleton<ToolState>(ToolState());

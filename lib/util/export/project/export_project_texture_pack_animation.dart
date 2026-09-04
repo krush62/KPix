@@ -18,8 +18,9 @@ part of '../../export_functions.dart';
 
 Future<Uint8List?> exportTexturePackAnimation({required final AnimationExportData exportData, required final AppState appState}) async
 {
+  final List<KPalRampData> ramps = GetIt.I.get<PaletteState>().colorRamps;
   final Map<String, Uint8List> files = <String, Uint8List>{
-    "palette.bin": await createPaletteData(ramps: appState.colorRamps),
+    "palette.bin": await createPaletteData(ramps: ramps),
   };
 
   final int startFrameIndex = exportData.loopOnly ? appState.timeline.loopStartIndex.value : 0;
@@ -31,8 +32,8 @@ Future<Uint8List?> exportTexturePackAnimation({required final AnimationExportDat
     final String frameName = "frame_${frameCounter.toString().padLeft(2, '0')}";
     final CoordinateColorMapNullable colorMap = await getMergedColors(frame: appState.timeline.frames.value[frameIndex], canvasSize: appState.canvasSize);
 
-    files["$frameName/color.bin"] = await createColorTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
-    files["$frameName/distance.bin"] = await createDistanceTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+    files["$frameName/color.bin"] = await createColorTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: ramps);
+    files["$frameName/distance.bin"] = await createDistanceTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: ramps);
     frameCounter++;
   }
 

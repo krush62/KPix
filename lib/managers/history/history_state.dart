@@ -16,6 +16,7 @@
 
 import 'dart:collection';
 
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
@@ -27,7 +28,9 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/history/history_timeline.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 
 class HistoryState
@@ -63,23 +66,24 @@ class HistoryState
     //RAMP
     List<HistoryRampData> rampList = <HistoryRampData>[];
     HistoryColorReference selectedColor;
+    final ColorReference currentColor = GetIt.I.get<PaletteState>().selectedColor!;
     if (type.group == HistoryStateTypeGroup.full || previousState == null)
     {
       rampList = <HistoryRampData>[];
-      for (final KPalRampData rampData in appState.colorRamps)
+      for (final KPalRampData rampData in GetIt.I.get<PaletteState>().colorRamps)
       {
         rampList.add(HistoryRampData(otherSettings: rampData.settings, uuid: rampData.uuid, notifierShifts: rampData.shifts));
       }
-      final int? selectedColorRampIndex = getRampIndex(uuid: appState.selectedColor!.ramp.uuid, ramps: rampList);
-      selectedColor = HistoryColorReference(colorIndex: appState.selectedColor!.colorIndex, rampIndex: selectedColorRampIndex!);
+      final int? selectedColorRampIndex = getRampIndex(uuid: currentColor.ramp.uuid, ramps: rampList);
+      selectedColor = HistoryColorReference(colorIndex: currentColor.colorIndex, rampIndex: selectedColorRampIndex!);
     }
     else
     {
       rampList = previousState.rampList;
       if (type.group == HistoryStateTypeGroup.colorSelect)
       {
-        final int? selectedColorRampIndex = getRampIndex(uuid: appState.selectedColor!.ramp.uuid, ramps: rampList);
-        selectedColor = HistoryColorReference(colorIndex: appState.selectedColor!.colorIndex, rampIndex: selectedColorRampIndex!);
+        final int? selectedColorRampIndex = getRampIndex(uuid: currentColor.ramp.uuid, ramps: rampList);
+        selectedColor = HistoryColorReference(colorIndex: currentColor.colorIndex, rampIndex: selectedColorRampIndex!);
       }
       else
       {

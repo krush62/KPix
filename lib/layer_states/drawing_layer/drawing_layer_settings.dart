@@ -25,6 +25,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -300,17 +301,14 @@ class DrawingLayerSettings extends LayerSettings {
 
   void deleteRamp({required final KPalRampData ramp})
   {
-    if (outerColorReference.value.ramp == ramp)
+    final Set<ValueNotifier<ColorReference>> colorCandidates = <ValueNotifier<ColorReference>>{outerColorReference, innerColorReference, dropShadowColorReference};
+    final ColorReference resetColor = GetIt.I.get<PaletteState>().colorRamps[0].references[0];
+    for (final ValueNotifier<ColorReference> colorRef in colorCandidates)
     {
-      outerColorReference.value = GetIt.I.get<AppState>().colorRamps[0].references[0];
-    }
-    if (innerColorReference.value.ramp == ramp)
-    {
-      innerColorReference.value = GetIt.I.get<AppState>().colorRamps[0].references[0];
-    }
-    if (dropShadowColorReference.value.ramp == ramp)
-    {
-      dropShadowColorReference.value = GetIt.I.get<AppState>().colorRamps[0].references[0];
+      if (colorRef.value.ramp == ramp)
+      {
+        colorRef.value = resetColor;
+      }
     }
   }
 

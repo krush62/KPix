@@ -39,10 +39,10 @@ import 'package:kpix/managers/history/ramp_resolver.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/time_line_state.dart';
-import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -54,11 +54,8 @@ import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
-import 'package:kpix/widgets/kpal/kpal_constraints.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:logger/logger.dart';
-import 'package:uuid/uuid.dart';
 
 
 
@@ -74,24 +71,6 @@ class AppState
     return _hasProject;
   }
 
-  final ValueNotifier<List<KPalRampData>> _colorRamps = ValueNotifier<List<KPalRampData>>(<KPalRampData>[]);
-  List<KPalRampData> get colorRamps
-  {
-    return _colorRamps.value;
-  }
-  ValueNotifier<List<KPalRampData>> get colorRampNotifier
-  {
-    return _colorRamps;
-  }
-  final ValueNotifier<ColorReference?> _selectedColor = ValueNotifier<ColorReference?>(null);
-  ColorReference? get selectedColor
-  {
-    return _selectedColor.value;
-  }
-  ValueNotifier<ColorReference?> get selectedColorNotifier
-  {
-    return _selectedColor;
-  }
 
   final Timeline timeline = Timeline.empty();
 
@@ -108,29 +87,6 @@ class AppState
     }
   }
 
-  int getPixelCountForRamp({required final KPalRampData ramp, final bool includeInvisible = true})
-  {
-    int pixelCount = 0;
-    final List<Frame> allFrames = timeline.frames.value;
-    final LinkedHashSet<LayerState> originalLayerSet = LinkedHashSet<LayerState>();
-    for (final Frame f in allFrames)
-    {
-      final LayerCollection layers = f.layerList;
-      for (int i = 0; i < layers.length; i++)
-      {
-        originalLayerSet.add(layers.getLayer(index: i));
-      }
-    }
-
-    for (final LayerState layer in originalLayerSet)
-    {
-      if (layer is DrawingLayerState && (includeInvisible || layer.visibilityState.value == LayerVisibilityState.visible))
-      {
-        pixelCount += layer.getPixelCountForRamp(ramp: ramp);
-      }
-    }
-    return pixelCount;
-  }
 
 
 
@@ -184,7 +140,7 @@ class AppState
     symmetryState.reset();
     selectionState.deselect(addToHistoryStack: false, notify: false);
     //_layerCollection.clear();
-    _setDefaultPalette();
+    GetIt.I.get<PaletteState>().setDefaultPalette();
     //addNewDrawingLayer(select: true, addToHistoryStack: false);
     timeline.init(appState: this);
     GetIt.I.get<HistoryManager>().clear();
@@ -216,85 +172,6 @@ class AppState
 
 
 
-  void deleteRamp({required final KPalRampData ramp, final bool addToHistoryStack = true})
-  {
-    if (colorRamps.length > KPalConstraints.rampCountMin)
-    {
-      final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
-      rampDataList.remove(ramp);
-      _selectedColor.value = rampDataList[0].references[0];
-      _colorRamps.value = rampDataList;
-      for (final Frame f in timeline.frames.value)
-      {
-        f.layerList.deleteRampFromLayers(ramp: ramp, backupColor: rampDataList[0].references[0]);
-      }
-      rasterLayersAll();
-      GetIt.I.get<ViewState>().repaintNotifier.repaint();
-      if (addToHistoryStack)
-      {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalDelete);
-      }
-    }
-    else
-    {
-      showMessage(text: "Need at least ${KPalConstraints.rampCountMin} color ramp(s)!");
-    }
-  }
-
-  void updateRamp({required final KPalRampData ramp, required final KPalRampData originalData, final bool addToHistoryStack = true})
-  {
-    final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
-    _colorRamps.value = rampDataList;
-
-    if (ramp.references.length != originalData.references.length)
-    {
-      final HashMap<int, int> indexMap = remapIndices(oldLength: originalData.references.length, newLength: ramp.references.length);
-      _selectedColor.value = ramp.references[indexMap[_selectedColor.value!.colorIndex]!];
-      for (final Frame f in timeline.frames.value)
-      {
-        f.layerList.remapLayers(newData: ramp, map: indexMap);
-      }
-
-    }
-    rasterLayersAll();
-    GetIt.I.get<ViewState>().repaintNotifier.repaint();
-    if (addToHistoryStack)
-    {
-      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalChange);
-    }
-  }
-
-  void _setDefaultPalette()
-  {
-    _colorRamps.value = KPalRampData.getDefaultPalette();
-    _selectedColor.value = _colorRamps.value[0].references[0];
-  }
-
-  Future<KPalRampData?> addNewRamp({final bool addToHistoryStack = true}) async
-  {
-    if (colorRamps.length < KPalConstraints.rampCountMax)
-    {
-      const Uuid uuid = Uuid();
-      final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
-      final KPalRampData newRamp = KPalRampData(
-        uuid: uuid.v1(),
-        settings: KPalRampSettings(),
-      );
-      rampDataList.add(newRamp);
-      _colorRamps.value = rampDataList;
-      _selectedColor.value = newRamp.references[0];
-      if (addToHistoryStack)
-      {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalAdd);
-      }
-      return newRamp;
-    }
-    else
-    {
-      showMessage(text: "Not more than ${KPalConstraints.rampCountMax} color ramps allowed!");
-      return null;
-    }
-  }
 
   LayerState? addNewLayer({required final Type layerType, final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
   {
@@ -319,7 +196,7 @@ class AppState
           identifier = HistoryStateTypeIdentifier.layerNewGrid;
         case const(DrawingLayerState):
           final bool setSelectionStateLayer = timeline.selectedFrame!.layerList.isEmpty;
-          layerState = timeline.selectedFrame!.layerList.addNewDrawingLayer(canvasSize: _canvasSize, select: select, content: content, ramps: colorRamps);
+          layerState = timeline.selectedFrame!.layerList.addNewDrawingLayer(canvasSize: _canvasSize, select: select, content: content, ramps: GetIt.I.get<PaletteState>().colorRamps);
           identifier = HistoryStateTypeIdentifier.layerNewDrawing;
           if (layerState != null && setSelectionStateLayer)
           {
@@ -436,83 +313,7 @@ class AppState
     }
   }
 
-  void replacePalette({required final LoadPaletteSet loadPaletteSet, required final PaletteReplaceBehavior paletteReplaceBehavior})
-  {
-    final String failMessage = "Loading palette failed (${loadPaletteSet.status})";
-    final Logger logger = GetIt.I.get<Logger>();
-    logger.i("Replacing palette");
-    try
-    {
-      if (loadPaletteSet.rampData != null && loadPaletteSet.rampData!.isNotEmpty)
-      {
-        final LinkedHashSet<LayerState> collectedLayers = LinkedHashSet<LayerState>();
-        for (final Frame f in timeline.frames.value)
-        {
-          final LayerCollection layers = f.layerList;
-          for (int i = 0; i < layers.length; i++)
-          {
-            collectedLayers.add(layers.getLayer(index: i));
-          }
-        }
 
-        final HashMap<ColorReference, ColorReference> rampMap = getRampMap(rampList1: colorRamps, rampList2: loadPaletteSet.rampData!);
-
-        for (final LayerState layer in collectedLayers)
-        {
-          if (layer is DrawingLayerState)
-          {
-            if (paletteReplaceBehavior == PaletteReplaceBehavior.replace)
-            {
-              for (final KPalRampData kPalRampData in colorRamps)
-              {
-                layer.deleteRamp(ramp: kPalRampData);
-              }
-              layer.resetLayerEffectColors(newColor: loadPaletteSet.rampData!.first.references.first);
-            }
-            else
-            {
-              layer.remapAllColors(rampMap: rampMap);
-              layer.remapLayerEffectColors(rampMap: rampMap);
-            }
-            layer.doManualRaster = true;
-          }
-        }
-        _selectedColor.value = loadPaletteSet.rampData![0].references[0];
-        _colorRamps.value = loadPaletteSet.rampData!;
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalAdd);
-      }
-      else
-      {
-        logger.w(failMessage);
-        showMessage(text: failMessage);
-      }
-    }
-    catch (e, s)
-    {
-      logger.w(failMessage, error: e, stackTrace: s);
-      showMessage(text: failMessage);
-    }
-  }
-
-  void appendPalette({required final LoadPaletteSet loadPaletteSet})
-  {
-    if (loadPaletteSet.rampData != null && loadPaletteSet.rampData!.isNotEmpty)
-    {
-      final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
-      for (final KPalRampData ramp in loadPaletteSet.rampData!)
-      {
-        rampDataList.add(ramp);
-      }
-      _colorRamps.value = rampDataList;
-      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalAdd);
-    }
-    else
-    {
-      final String failMessage = "Loading palette failed (${loadPaletteSet.status})";
-      GetIt.I.get<Logger>().w(failMessage);
-      showMessage(text: failMessage);
-    }
-  }
 
   void fileSaved({required final String saveName, required final String path, final bool addKPixExtension = false})
   {
@@ -562,15 +363,15 @@ class AppState
           }
           if (typeGroup == HistoryStateTypeGroup.full)
           {
-            _colorRamps.value = ramps;
+            GetIt.I.get<PaletteState>().colorRamps = ramps;
           }
         }
 
         final RampResolver rampResolver = RampResolver(
-          liveRamps: _colorRamps.value,
+          liveRamps: GetIt.I.get<PaletteState>().colorRamps,
           historyRamps: historyState.rampList,
         );
-        _selectedColor.value = rampResolver.byIndex(ref: historyState.selectedColor);
+        GetIt.I.get<PaletteState>().selectedColor = rampResolver.byIndex(ref: historyState.selectedColor);
 
         if (typeGroup == HistoryStateTypeGroup.full || typeGroup == HistoryStateTypeGroup.layerFull)
         {
@@ -735,64 +536,6 @@ class AppState
     }
   }
 
-  void incrementColorSelection()
-  {
-    final (int, int) indices = _getRampAndColorIndex(color: selectedColor!);
-    if (indices.$1 >= 0 && indices.$1 < colorRamps.length && indices.$2 >= 0 && indices.$2 < colorRamps[indices.$1].references.length)
-    {
-      if ((indices.$2 + 1) < colorRamps[indices.$1].references.length)
-      {
-        colorSelected(color: colorRamps[indices.$1].references[indices.$2 + 1]);
-      }
-      else if ((indices.$1 + 1) < colorRamps.length)
-      {
-        colorSelected(color: colorRamps[indices.$1 + 1].references.first);
-      }
-      else
-      {
-        colorSelected(color: colorRamps.first.references.first);
-      }
-    }
-  }
-
-  void decrementColorSelection()
-  {
-    final (int, int) indices = _getRampAndColorIndex(color: selectedColor!);
-    if (indices.$1 >= 0 && indices.$1 < colorRamps.length && indices.$2 >= 0 && indices.$2 < colorRamps[indices.$1].references.length)
-    {
-      if ((indices.$2 - 1) >= 0)
-      {
-        colorSelected(color: colorRamps[indices.$1].references[indices.$2 - 1]);
-      }
-      else if ((indices.$1 - 1) >= 0)
-      {
-        colorSelected(color: colorRamps[indices.$1 - 1].references.last);
-      }
-      else
-      {
-        colorSelected(color: colorRamps.last.references.last);
-      }
-    }
-  }
-
-  (int, int) _getRampAndColorIndex({required final ColorReference color})
-  {
-    int rampIndex = -1;
-    int colorIndex = -1;
-    for (int i = 0; i < colorRamps.length; i++)
-    {
-      for (int j = 0; j < colorRamps[i].references.length; j++)
-      {
-        if (colorRamps[i].references[j] == color)
-        {
-          rampIndex = i;
-          colorIndex = j;
-        }
-      }
-    }
-
-    return (rampIndex, colorIndex);
-  }
 
   void changeLayerOrder({required final LayerState? state, required final int newPosition, final bool addToHistoryStack = true})
   {
@@ -843,30 +586,6 @@ class AppState
   }
 
 
-  void changeColorOrder({required final KPalRampData ramp, required final int newPosition, final bool addToHistoryStack = true})
-  {
-    final int sourcePosition = _colorRamps.value.indexOf(ramp);
-    if (sourcePosition != newPosition && (sourcePosition + 1) != newPosition)
-    {
-      final List<KPalRampData> newListOfRamps = <KPalRampData>[];
-      newListOfRamps.addAll(_colorRamps.value);
-
-      newListOfRamps.removeAt(sourcePosition);
-      if (newPosition > sourcePosition)
-      {
-        newListOfRamps.insert(newPosition - 1, ramp);
-      }
-      else
-      {
-        newListOfRamps.insert(newPosition, ramp);
-      }
-      _colorRamps.value = newListOfRamps;
-    }
-    if (addToHistoryStack)
-    {
-      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalOrderChange);
-    }
-  }
 
   void changeLayerVisibility({required final LayerState? layerState})
   {
@@ -1068,7 +787,7 @@ class AppState
     final Frame? frame = timeline.selectedFrame;
     if (frame != null)
     {
-      frame.layerList.rasterLayer(rasterLayer: rasterLayer, canvasSize: canvasSize, ramps: colorRamps);
+      frame.layerList.rasterLayer(rasterLayer: rasterLayer, canvasSize: canvasSize, ramps: GetIt.I.get<PaletteState>().colorRamps);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerRaster);
@@ -1109,23 +828,6 @@ class AppState
     GetIt.I.get<ViewState>().repaintNotifier.repaint();
   }
 
-  void colorSelected({required final ColorReference? color, final bool addToHistory = true})
-  {
-    if (_selectedColor.value != color)
-    {
-      _selectedColor.value = color;
-      if (addToHistory)
-      {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.colorChange);
-      }
-
-      final ToolState toolState = GetIt.I.get<ToolState>();
-      if (!toolState.selectedTool.isDrawTool())
-      {
-        toolState.restorePreviousDrawTool();
-      }
-    }
-  }
 
 
 
@@ -1212,8 +914,9 @@ class AppState
       final DrawingLayerState drawingLayer = importResult.data!.drawingLayer;
       final ReferenceLayerState? referenceLayer = importResult.data!.referenceLayer;
       _setCanvasDimensions(width: importResult.data!.canvasSize.x, height: importResult.data!.canvasSize.y, addToHistoryStack: false);
-      _colorRamps.value = importResult.data!.rampDataList;
-      _selectedColor.value = _colorRamps.value[0].references[0];
+      final PaletteState paletteState = GetIt.I.get<PaletteState>();
+      paletteState.colorRamps = importResult.data!.rampDataList;
+      paletteState.selectedColor = paletteState.colorRamps[0].references[0];
       final List<LayerState> layerList = <LayerState>[];
       layerList.add(drawingLayer);
       if (referenceLayer != null)

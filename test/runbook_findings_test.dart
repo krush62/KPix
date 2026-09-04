@@ -20,6 +20,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -49,7 +50,7 @@ void main()
   group("duplicating carries the floating content", () {
     testWidgets("a duplicated layer holds the committed selection", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState source = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: source, coord: pixel, color: color);
 
@@ -68,7 +69,7 @@ void main()
 
     testWidgets("a copied frame holds the committed selection", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final Timeline timeline = appState.timeline;
         final DrawingLayerState source = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: source, coord: pixel, color: color);
@@ -89,7 +90,7 @@ void main()
 
     testWidgets("a linked frame shares the layer that holds the content", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final Timeline timeline = appState.timeline;
         final DrawingLayerState source = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: source, coord: pixel, color: color);
@@ -131,7 +132,7 @@ void main()
 
     testWidgets("restores the dimensions after a crop", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState layer = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: layer, coord: pixel, color: color);
         final String? before = GetIt.I.get<StatusBarState>().statusBarDimensionString.value;
@@ -158,7 +159,7 @@ void main()
   group("the unsaved marker", () {
     testWidgets("clears when undo returns to the saved state", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState layer = layerAt(appState: appState, index: 0);
 
         appState.fileSaved(saveName: "test", path: "test.kpix");
@@ -177,7 +178,7 @@ void main()
 
     testWidgets("comes back when redo leaves the saved state", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference color = appState.colorRamps.first.references.first;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState layer = layerAt(appState: appState, index: 0);
 
         appState.fileSaved(saveName: "test", path: "test.kpix");
@@ -195,8 +196,8 @@ void main()
 
     testWidgets("undoing to a different state still counts as changed", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        final ColorReference first = appState.colorRamps.first.references.first;
-        final ColorReference second = appState.colorRamps.first.references.last;
+        final ColorReference first = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
+        final ColorReference second = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
         final DrawingLayerState layer = layerAt(appState: appState, index: 0);
 
         await _paintAndRecord(appState: appState, layer: layer, coord: pixel, color: first);

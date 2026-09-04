@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
@@ -62,7 +63,6 @@ class ColorEntryWidget extends StatefulWidget
 
 class _ColorEntryWidgetState extends State<ColorEntryWidget>
 {
-  final AppState _appState = GetIt.I.get<AppState>();
 
   @override
   void initState() {
@@ -81,7 +81,7 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
       builder: (final BuildContext context, final IdColor value, final Widget? child) {
 
         return ValueListenableBuilder<ColorReference?>(
-          valueListenable: _appState.selectedColorNotifier,
+          valueListenable: GetIt.I.get<PaletteState>().selectedColorNotifier,
           builder: (final BuildContext context2, final ColorReference? selectedColor, final Widget? child2)
           {
             return Expanded(

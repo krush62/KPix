@@ -46,7 +46,6 @@ import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history_controller.dart';
@@ -63,6 +62,7 @@ import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
+import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 import 'package:kpix/widgets/tools/tool_type.dart';
 
@@ -108,7 +108,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   final DesktopPreferenceContent _desktopPrefs = GetIt.I.get<PreferenceManager>().desktopPreferenceContent;
   final ShaderOptions _shaderOptions = GetIt.I.get<ShaderOptions>();
   final GuiPreferenceContent _guiPrefs = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
-  final AppState _appState = GetIt.I.get<AppState>();
   final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ViewState _viewState = GetIt.I.get<ViewState>();
@@ -172,7 +171,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   final ValueNotifier<double> _selectionPulse = ValueNotifier<double>(1.0);
 
   late KPixPainter kPixPainter = KPixPainter(
-    appState: _appState,
     offset: _canvasOffset,
     coords: _cursorPos,
     isDragging: _isDragging,
@@ -244,10 +242,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _documentState.timeline.isPlaying.removeListener(_updateFromChange);
     _documentState.timeline.frames.removeListener(_updateFromChange);
     _documentState.timeline.selectedFrameIndexNotifier.removeListener(_updateFromChange);
-    _appState.symmetryState.horizontalActivated.removeListener(_updateFromChange);
-    _appState.symmetryState.horizontalValue.removeListener(_updateFromChange);
-    _appState.symmetryState.verticalActivated.removeListener(_updateFromChange);
-    _appState.symmetryState.verticalValue.removeListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().horizontalActivated.removeListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().horizontalValue.removeListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().verticalActivated.removeListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().verticalValue.removeListener(_updateFromChange);
 
     //the global app state holds this callback, so it has to let go of it too
     if (GetIt.I.get<HistoryController>().flushHistoryData == _flushHistoryData)
@@ -299,10 +297,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _documentState.timeline.isPlaying.addListener(_updateFromChange);
     _documentState.timeline.frames.addListener(_updateFromChange);
     _documentState.timeline.selectedFrameIndexNotifier.addListener(_updateFromChange);
-    _appState.symmetryState.horizontalActivated.addListener(_updateFromChange);
-    _appState.symmetryState.horizontalValue.addListener(_updateFromChange);
-    _appState.symmetryState.verticalActivated.addListener(_updateFromChange);
-    _appState.symmetryState.verticalValue.addListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().horizontalActivated.addListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().horizontalValue.addListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().verticalActivated.addListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().verticalValue.addListener(_updateFromChange);
 
     _selectionBarAnimationController = AnimationController(
       vsync: this,
@@ -964,7 +962,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
               value: _cursorPos.value!.y - _canvasOffset.value.dy,
               pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio,)
             ,);
-          final ColorReference? colRef = _appState.getColorFromImageAtPosition(normPos: normPos);
+          final ColorReference? colRef = _documentState.getColorFromImageAtPosition(normPos: normPos);
           if (colRef != null && colRef != _paletteState.selectedColor)
           {
             _paletteState.colorSelected(color: colRef);

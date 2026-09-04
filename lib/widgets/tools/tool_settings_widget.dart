@@ -16,7 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
@@ -56,7 +56,7 @@ class ToolSettingsWidget extends StatefulWidget
 
 class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
 {
-  final AppState appState = GetIt.I.get<AppState>();
+  final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
   final ToolOptions toolOptions = GetIt.I.get<ToolOptions>();
   late KPixOverlay _stampManagerDialog;
 

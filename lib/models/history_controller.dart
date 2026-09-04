@@ -33,12 +33,12 @@ import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/history/ramp_resolver.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -68,7 +68,7 @@ class HistoryController
       final HistoryState? currentState = GetIt.I.get<HistoryManager>().getCurrentState();
       final HistoryStateTypeGroup typeGroup = currentState != null ? currentState.type.group : HistoryStateTypeGroup.full;
       restoreState(historyState: GetIt.I.get<HistoryManager>().undo(), typeGroup: typeGroup, restoreLayerIndices: currentState?.restoreLayerIndices);
-      GetIt.I.get<AppState>().hasChanges.value = !GetIt.I.get<HistoryManager>().isAtSavedState;
+      GetIt.I.get<ProjectSession>().hasChanges.value = !GetIt.I.get<HistoryManager>().isAtSavedState;
     }
   }
 
@@ -80,7 +80,7 @@ class HistoryController
       final HistoryState? switchState = GetIt.I.get<HistoryManager>().redo();
       final HistoryStateTypeGroup typeGroup = switchState != null ? switchState.type.group : HistoryStateTypeGroup.full;
       restoreState(historyState: switchState, typeGroup: typeGroup, restoreLayerIndices: switchState?.restoreLayerIndices);
-      GetIt.I.get<AppState>().hasChanges.value = !GetIt.I.get<HistoryManager>().isAtSavedState;
+      GetIt.I.get<ProjectSession>().hasChanges.value = !GetIt.I.get<HistoryManager>().isAtSavedState;
       showMessage(text: "Redo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
     }
   }

@@ -18,10 +18,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -48,18 +48,18 @@ void main()
 
   group("a layer whose effects sample downward", () {
     testWidgets("a shaded outer stroke registers a dependency on the layer below", (final WidgetTester tester) async {
-      await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+      await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references[3];
-        final DrawingLayerState below = layerAt(appState: appState, index: 0);
+        final DrawingLayerState below = layerAt(projectSession: projectSession, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
         final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
-        await settle(appState: appState);
+        await settle();
 
         expect(above.settings.readsLayersBelow, isFalse, reason: "setup: no shading effect yet");
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.shade;
-        await settle(appState: appState);
+        await settle();
 
         expect(above.settings.readsLayersBelow, isTrue,
             reason: "a shaded outer stroke darkens whatever sits underneath it",);
@@ -69,17 +69,17 @@ void main()
     });
 
     testWidgets("a shaded drop shadow registers the same dependency", (final WidgetTester tester) async {
-      await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+      await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references[3];
-        final DrawingLayerState below = layerAt(appState: appState, index: 0);
+        final DrawingLayerState below = layerAt(projectSession: projectSession, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
         final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
-        await settle(appState: appState);
+        await settle();
 
         above.settings.dropShadowStyle.value = DropShadowStyle.shade;
-        await settle(appState: appState);
+        await settle();
 
         expect(above.settings.readsLayersBelow, isTrue);
         expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isTrue);
@@ -87,17 +87,17 @@ void main()
     });
 
     testWidgets("a glowing outer stroke registers the same dependency", (final WidgetTester tester) async {
-      await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+      await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references[3];
-        final DrawingLayerState below = layerAt(appState: appState, index: 0);
+        final DrawingLayerState below = layerAt(projectSession: projectSession, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
         final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
-        await settle(appState: appState);
+        await settle();
 
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.glow;
-        await settle(appState: appState);
+        await settle();
 
         expect(above.settings.readsLayersBelow, isTrue);
         expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isTrue);
@@ -105,16 +105,16 @@ void main()
     });
 
     testWidgets("changing the layer below marks the effect layer for a redraw", (final WidgetTester tester) async {
-      await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+      await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference first = GetIt.I.get<PaletteState>().colorRamps.first.references[3];
         final ColorReference second = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
-        final DrawingLayerState below = layerAt(appState: appState, index: 0);
+        final DrawingLayerState below = layerAt(projectSession: projectSession, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: first));
 
         final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: first}));
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.shade;
-        await settle(appState: appState);
+        await settle();
         expect(above.doManualRaster, isFalse, reason: "setup: everything is drawn and quiet");
 
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: second));
@@ -128,15 +128,15 @@ void main()
 
   group("layers whose effects do not sample downward", () {
     testWidgets("a solid outer stroke registers no dependency", (final WidgetTester tester) async {
-      await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+      await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references[3];
-        final DrawingLayerState below = layerAt(appState: appState, index: 0);
+        final DrawingLayerState below = layerAt(projectSession: projectSession, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
         final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.solid;
-        await settle(appState: appState);
+        await settle();
 
         expect(above.settings.readsLayersBelow, isFalse, reason: "a solid stroke uses a fixed colour");
         expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isFalse,
@@ -145,19 +145,19 @@ void main()
     });
 
     testWidgets("turning an effect off removes the dependency again", (final WidgetTester tester) async {
-      await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+      await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references[3];
-        final DrawingLayerState below = layerAt(appState: appState, index: 0);
+        final DrawingLayerState below = layerAt(projectSession: projectSession, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
         final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.shade;
-        await settle(appState: appState);
+        await settle();
         expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isTrue);
 
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.off;
-        await settle(appState: appState);
+        await settle();
 
         expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isFalse);
       },);

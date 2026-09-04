@@ -17,7 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -110,7 +110,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
               Expanded(
                 child: Tooltip(
                   message: transformationDescriptions[CanvasTransformation.rotate],
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.rotate);},
                     icon: const Icon(
@@ -124,7 +124,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
               Expanded(
                 child: Tooltip(
                   message: transformationDescriptions[CanvasTransformation.flipH],
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.flipH);},
                     icon: const Icon(
@@ -166,7 +166,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                     }
                     return Tooltip(
                       message: "Crop To Selection",
-                      waitDuration: AppState.toolTipDuration,
+                      waitDuration: toolTipDuration,
                       child: IconButton.outlined(
                         onPressed: cropEnabled ? _crop : null,
                         icon: const Icon(
@@ -182,7 +182,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
               Expanded(
                 child: Tooltip(
                   message: "Set Size",
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _setSize,
                     icon: const Icon(

@@ -31,9 +31,7 @@ import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
-import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/image_importer.dart';
@@ -44,7 +42,7 @@ import 'package:logger/logger.dart';
 
 
 
-class AppState
+class ProjectSession
 {
   final ValueNotifier<bool> _hasProject = ValueNotifier<bool>(false);
   bool get hasProject
@@ -59,32 +57,14 @@ class AppState
 
 
 
-  ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos})
-  {
-    if (GetIt.I.get<DocumentState>().timeline.selectedFrame != null)
-    {
-      return GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getColorFromImageAtPosition(normPos: normPos, selectionReference: GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: normPos), rawMode: GetIt.I.get<ToolOptions>().colorPickOptions.rawMode.value);
-    }
-    else
-    {
-      return null;
-    }
-  }
-
-
-
-
-
   final ValueNotifier<String?> projectName = ValueNotifier<String?>(null);
   final ValueNotifier<bool> hasChanges = ValueNotifier<bool>(false);
 
-  static const Duration toolTipDuration = Duration(seconds: 1);
 
 
-  final SymmetryState symmetryState = SymmetryState();
 
 
-  AppState()
+  ProjectSession()
   {
     GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.addListener((){
       GetIt.I.get<ViewState>().layerSettingsVisible = false;
@@ -97,12 +77,12 @@ class AppState
   {
     GetIt.I.get<Logger>().i("Creating new image: ${dimensions.x} x ${dimensions.y}.");
     GetIt.I.get<CanvasState>().setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
-    symmetryState.reset();
+    GetIt.I.get<SymmetryState>().reset();
     GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false, notify: false);
     //_layerCollection.clear();
     GetIt.I.get<PaletteState>().setDefaultPalette();
     //addNewDrawingLayer(select: true, addToHistoryStack: false);
-    GetIt.I.get<DocumentState>().timeline.init(appState: this);
+    GetIt.I.get<DocumentState>().timeline.init();
     GetIt.I.get<HistoryManager>().clear();
     GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);
     GetIt.I.get<HistoryManager>().markSaved();
@@ -115,46 +95,6 @@ class AppState
   String getTitle()
   {
     return "KPix ${projectName.value ?? ""}${hasChanges.value ? "*" : ""}";
-  }
-
-  void newFrameAdded({final bool addToHistoryStack = true})
-  {
-    if (addToHistoryStack)
-    {
-      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameAdd);
-    }
-  }
-
-  void frameDeleted({final bool addToHistoryStack = true})
-  {
-    if (addToHistoryStack)
-    {
-      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameDelete);
-    }
-  }
-
-  void frameMoved({final bool addToHistoryStack = true})
-  {
-    if (addToHistoryStack)
-    {
-      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameMove);
-    }
-  }
-
-  void frameTimingChanged({final bool addToHistoryStack = true})
-  {
-    if (addToHistoryStack)
-    {
-      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameTimeChange);
-    }
-  }
-
-  void loopMarkerChanged({final bool addToHistoryStack = true})
-  {
-    if (addToHistoryStack)
-    {
-      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange);
-    }
   }
 
   Future<void> restoreFromFile({required final LoadFileSet loadFileSet, final bool setHasChanges = false}) async
@@ -170,7 +110,7 @@ class AppState
       GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.initial, setHasChanges: setHasChanges);
       GetIt.I.get<HistoryManager>().markSaved();
       GetIt.I.get<CanvasState>().setCanvasDimensions(width: loadFileSet.historyState!.canvasSize.x , height: loadFileSet.historyState!.canvasSize.y, addToHistoryStack: false);
-      symmetryState.reset();
+      GetIt.I.get<SymmetryState>().reset();
       GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
       if (loadFileSet.status.isNotEmpty)
       {

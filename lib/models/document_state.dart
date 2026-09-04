@@ -20,6 +20,9 @@ import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
+import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 
 /// The project itself: everything that is written to a `.kpix` file and
 /// everything undo restores.
@@ -43,4 +46,16 @@ class DocumentState
   CanvasState get canvas => GetIt.I.get<CanvasState>();
 
   PaletteState get palette => GetIt.I.get<PaletteState>();
+
+  ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos})
+  {
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.getColorFromImageAtPosition(normPos: normPos, selectionReference: selectionState.selection.getColorReference(coord: normPos), rawMode: GetIt.I.get<ToolOptions>().colorPickOptions.rawMode.value);
+    }
+    else
+    {
+      return null;
+    }
+  }
 }

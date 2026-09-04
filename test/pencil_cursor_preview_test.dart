@@ -20,10 +20,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/pencil_painter.dart';
@@ -49,7 +49,7 @@ KPixPainterOptions _painterOptions()
 }
 
 DrawingParameters _params({
-  required final AppState appState,
+  required final ProjectSession projectSession,
   required final CoordinateSetI cursor,
   required final bool primaryDown,
 })
@@ -78,12 +78,12 @@ DrawingParameters _params({
 
 Future<void> _tick({
   required final PencilPainter painter,
-  required final AppState appState,
+  required final ProjectSession projectSession,
   required final CoordinateSetI cursor,
   required final bool primaryDown,
 }) async
 {
-  painter.calculate(drawParams: _params(appState: appState, cursor: cursor, primaryDown: primaryDown));
+  painter.calculate(drawParams: _params(projectSession: projectSession, cursor: cursor, primaryDown: primaryDown));
   await Future<void>.delayed(const Duration(milliseconds: 40));
 }
 
@@ -93,11 +93,11 @@ void main()
   final CoordinateSetI pixel = CoordinateSetI(x: 1, y: 1);
 
   testWidgets("the shading preview refreshes after a stroke lands on the same pixel", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference start = GetIt.I.get<PaletteState>().colorRamps.first.references[1];
-      final DrawingLayerState layer = layerAt(appState: appState, index: 0);
+      final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: start}));
-      await settle(appState: appState);
+      await settle();
 
       final ShaderOptions shaderOptions = GetIt.I.get<ShaderOptions>();
       shaderOptions.isEnabled.value = true;
@@ -106,15 +106,15 @@ void main()
 
       final PencilPainter painter = PencilPainter(painterOptions: _painterOptions());
 
-      await _tick(painter: painter, appState: appState, cursor: pixel, primaryDown: false);
+      await _tick(painter: painter, projectSession: projectSession, cursor: pixel, primaryDown: false);
       final ContentRasterSet? beforeStroke = painter.cursorRaster;
       expect(beforeStroke, isNotNull, reason: "setup: the preview was computed for the pixel under the cursor");
 
-      await _tick(painter: painter, appState: appState, cursor: pixel, primaryDown: true);
-      await _tick(painter: painter, appState: appState, cursor: pixel, primaryDown: false);
+      await _tick(painter: painter, projectSession: projectSession, cursor: pixel, primaryDown: true);
+      await _tick(painter: painter, projectSession: projectSession, cursor: pixel, primaryDown: false);
       expect(layer.getDataEntry(coord: pixel), isNot(start), reason: "setup: the stroke shaded the pixel");
 
-      await _tick(painter: painter, appState: appState, cursor: pixel, primaryDown: false);
+      await _tick(painter: painter, projectSession: projectSession, cursor: pixel, primaryDown: false);
 
       expect(painter.cursorRaster, isNot(same(beforeStroke)),
           reason: "the pixel under the cursor changed, so the preview has to be computed again",);
@@ -122,11 +122,11 @@ void main()
   });
 
   testWidgets("the preview waits for the stroke to land before refreshing", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference start = GetIt.I.get<PaletteState>().colorRamps.first.references[1];
-      final DrawingLayerState layer = layerAt(appState: appState, index: 0);
+      final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: start}));
-      await settle(appState: appState);
+      await settle();
 
       final ShaderOptions shaderOptions = GetIt.I.get<ShaderOptions>();
       shaderOptions.isEnabled.value = true;
@@ -134,20 +134,20 @@ void main()
       shaderOptions.onlyCurrentRampEnabled.value = false;
 
       final PencilPainter painter = PencilPainter(painterOptions: _painterOptions());
-      await _tick(painter: painter, appState: appState, cursor: pixel, primaryDown: false);
+      await _tick(painter: painter, projectSession: projectSession, cursor: pixel, primaryDown: false);
       final ContentRasterSet? beforeStroke = painter.cursorRaster;
 
-      await _tick(painter: painter, appState: appState, cursor: pixel, primaryDown: true);
-      await _tick(painter: painter, appState: appState, cursor: pixel, primaryDown: false);
+      await _tick(painter: painter, projectSession: projectSession, cursor: pixel, primaryDown: true);
+      await _tick(painter: painter, projectSession: projectSession, cursor: pixel, primaryDown: false);
 
       layer.isRasterizing = true;
-      await _tick(painter: painter, appState: appState, cursor: pixel, primaryDown: false);
+      await _tick(painter: painter, projectSession: projectSession, cursor: pixel, primaryDown: false);
       expect(painter.cursorRaster, same(beforeStroke),
           reason: "the stroke is still in flight; swapping the preview now shows the next shade over a stroke that has not landed",);
 
       layer.isRasterizing = false;
-      await settle(appState: appState);
-      await _tick(painter: painter, appState: appState, cursor: pixel, primaryDown: false);
+      await settle();
+      await _tick(painter: painter, projectSession: projectSession, cursor: pixel, primaryDown: false);
 
       expect(painter.cursorRaster, isNot(same(beforeStroke)),
           reason: "once the stroke has landed the preview catches up",);
@@ -155,21 +155,21 @@ void main()
   });
 
   testWidgets("a preview that has nothing to react to is left alone", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference start = GetIt.I.get<PaletteState>().colorRamps.first.references[1];
-      final DrawingLayerState layer = layerAt(appState: appState, index: 0);
+      final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: start}));
-      await settle(appState: appState);
+      await settle();
 
       final ShaderOptions shaderOptions = GetIt.I.get<ShaderOptions>();
       shaderOptions.isEnabled.value = true;
       shaderOptions.shaderDirection.value = ShaderDirection.right;
 
       final PencilPainter painter = PencilPainter(painterOptions: _painterOptions());
-      await _tick(painter: painter, appState: appState, cursor: pixel, primaryDown: false);
+      await _tick(painter: painter, projectSession: projectSession, cursor: pixel, primaryDown: false);
       final ContentRasterSet? first = painter.cursorRaster;
 
-      await _tick(painter: painter, appState: appState, cursor: pixel, primaryDown: false);
+      await _tick(painter: painter, projectSession: projectSession, cursor: pixel, primaryDown: false);
 
       expect(painter.cursorRaster, same(first),
           reason: "an idle frame with the cursor unmoved must not rebuild the preview every tick",);

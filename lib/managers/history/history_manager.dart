@@ -22,8 +22,8 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:logger/logger.dart';
 
 
@@ -126,7 +126,7 @@ class HistoryManager
         GetIt.I.get<Logger>().e("Error adding history state: $identifier.", error: e, stackTrace: s);
       }
     }
-    GetIt.I.get<AppState>().hasChanges.value = setHasChanges;
+    GetIt.I.get<ProjectSession>().hasChanges.value = setHasChanges;
   }
 
   HistoryState? undo()

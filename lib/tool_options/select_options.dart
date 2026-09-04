@@ -16,8 +16,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
@@ -94,7 +94,7 @@ class SelectOptions extends IToolOptions
                                       ButtonSegment<SelectMode>(
                                         value: sMode,
                                         label: Tooltip(
-                                          showDuration: AppState.toolTipDuration,
+                                          showDuration: toolTipDuration,
                                           message: sMode.label,
                                           child: Icon(
                                               sMode.icon,

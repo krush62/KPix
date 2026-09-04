@@ -17,9 +17,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -45,14 +45,14 @@ void main()
   final CoordinateSetI pixel = CoordinateSetI(x: 1, y: 1);
 
   testWidgets("a pixel reads back as the colour last written to it", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference first = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final ColorReference second = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
       expect(second, isNot(first), reason: "setup: the two colours have to be distinguishable");
 
-      final DrawingLayerState layer = layerAt(appState: appState, index: 0);
+      final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       _write(layer: layer, coord: pixel, color: first);
-      await settle(appState: appState);
+      await settle();
       expect(layer.getDataEntry(coord: pixel), first, reason: "setup: the first colour is rendered");
 
       //no settle: the second write is still queued while the layer data holds the first
@@ -61,56 +61,56 @@ void main()
       expect(layer.getDataEntry(coord: pixel), second,
           reason: "a queued write is newer than the rendered data and has to win: expected colour ${second.colorIndex}, layer data still holds ${first.colorIndex}",);
 
-      await settle(appState: appState);
+      await settle();
       expect(layer.getDataEntry(coord: pixel), second, reason: "and still wins once it is rendered");
     },);
   });
 
   testWidgets("an erased pixel reads back as empty before the raster runs", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-      final DrawingLayerState layer = layerAt(appState: appState, index: 0);
+      final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       _write(layer: layer, coord: pixel, color: color);
-      await settle(appState: appState);
+      await settle();
 
       //a queued null means erased, which has to be told apart from nothing queued
       _write(layer: layer, coord: pixel, color: null);
 
       expect(layer.getDataEntry(coord: pixel), isNull, reason: "the erase is queued and has to be visible");
-      await settle(appState: appState);
+      await settle();
       expect(layer.getDataEntry(coord: pixel), isNull);
     },);
   });
 
   testWidgets("selecting right after a stroke lifts the stroke, not what it covered", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference covered = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final ColorReference stroke = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
 
-      final DrawingLayerState layer = layerAt(appState: appState, index: 0);
+      final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       _write(layer: layer, coord: pixel, color: covered);
-      await settle(appState: appState);
+      await settle();
 
       //paint over it and select before the raster has caught up, the way a user
       //does when they drag a selection straight after a stroke
       _write(layer: layer, coord: pixel, color: stroke);
       GetIt.I.get<DocumentState>().selectionState.selectAll();
-      await settle(appState: appState);
+      await settle();
 
       expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), stroke,
           reason: "the selection must lift the stroke (colour ${stroke.colorIndex}), not the colour it covered (${covered.colorIndex})",);
-      expect(copiesOf(appState: appState, coord: pixel), 1);
+      expect(copiesOf(projectSession: projectSession, coord: pixel), 1);
     },);
   });
 
   testWidgets("filling right after a stroke sees the stroke", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference covered = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final ColorReference stroke = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
 
-      final DrawingLayerState layer = layerAt(appState: appState, index: 0);
+      final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       _write(layer: layer, coord: pixel, color: covered);
-      await settle(appState: appState);
+      await settle();
       _write(layer: layer, coord: pixel, color: stroke);
 
       //what the wand and the fill tool ask the layer for when deciding which

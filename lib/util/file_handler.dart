@@ -52,12 +52,12 @@ import 'package:kpix/managers/history/ramp_resolver.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/models/app_paths.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_manager_data.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/color_names.dart';
@@ -304,7 +304,7 @@ void _loadFileChosen({final FilePickerResult? result, required final Function()?
 
 void fileLoaded({required final LoadFileSet loadFileSet, required final Function()? finishCallback,})
 {
-  GetIt.I.get<AppState>().restoreFromFile(loadFileSet: loadFileSet).whenComplete(()
+  GetIt.I.get<ProjectSession>().restoreFromFile(loadFileSet: loadFileSet).whenComplete(()
   {
     finishCallback?.call();
   });
@@ -349,7 +349,7 @@ Future<void> saveFilePressed({required final String fileName, final Function()? 
 
 Future<void> _projectFileSaved({required final String fileName, required final String path, required final Function()? finishCallback,}) async
 {
-  final AppState appState = GetIt.I.get<AppState>();
+  final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
   final DocumentState documentState = GetIt.I.get<DocumentState>();
   final CanvasState canvasState = GetIt.I.get<CanvasState>();
   if (!kIsWeb)
@@ -384,7 +384,7 @@ Future<void> _projectFileSaved({required final String fileName, required final S
     notifyProjectFileChanged(path: path);
   }
 
-  appState.fileSaved(saveName: fileName, path: path, addKPixExtension: kIsWeb);
+  projectSession.fileSaved(saveName: fileName, path: path, addKPixExtension: kIsWeb);
   if (finishCallback != null) 
   {
     finishCallback();
@@ -1259,7 +1259,7 @@ Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSe
   );
 
   //built only for this thumbnail and never part of a frame, so the sweep in
-  //AppState would never see them; the picture is already an image by now
+  //ProjectSession would never see them; the picture is already an image by now
   for (final LayerState layer in layers)
   {
     layer.dispose();

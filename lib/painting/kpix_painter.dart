@@ -28,7 +28,6 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -50,6 +49,7 @@ import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/timeline/frame_blending_options.dart';
 import 'package:kpix/widgets/tools/tool_type.dart';
 
@@ -80,7 +80,6 @@ class KPixPainterOptions
 
 class KPixPainter extends CustomPainter
 {
-  final AppState _appState;
   final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final ViewState _viewState = GetIt.I.get<ViewState>();
@@ -136,9 +135,8 @@ class KPixPainter extends CustomPainter
     required final ValueNotifier<bool> stylusButton1Down,
     required final ValueNotifier<bool> stylusLongMoveHorizontal,
     required final ValueNotifier<double> selectionPulse,
-    required final AppState appState,})
-      : _appState = appState,
-        _offset = offset,
+    })
+      : _offset = offset,
         _coords = coords,
         _isDragging = isDragging,
         _stylusLongMoveStarted = stylusLongMoveStarted,
@@ -222,8 +220,8 @@ class KPixPainter extends CustomPainter
       final Paint noFilterPainter = Paint()..filterQuality = FilterQuality.none..isAntiAlias = false;
       final DrawingParameters drawParams = DrawingParameters(
         pixelRatio: _viewState.devicePixelRatio,
-        symmetryHorizontal: _appState.symmetryState.horizontalActivated.value ? _appState.symmetryState.horizontalValue.value : null,
-        symmetryVertical: _appState.symmetryState.verticalActivated.value ? _appState.symmetryState.verticalValue.value : null,
+        symmetryHorizontal: GetIt.I.get<SymmetryState>().horizontalActivated.value ? GetIt.I.get<SymmetryState>().horizontalValue.value : null,
+        symmetryVertical: GetIt.I.get<SymmetryState>().verticalActivated.value ? GetIt.I.get<SymmetryState>().verticalValue.value : null,
         stylusButtonDown: _stylusButton1Down.value,
         offset: _offset.value,
         canvas: canvas,

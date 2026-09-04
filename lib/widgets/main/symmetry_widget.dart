@@ -19,7 +19,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
@@ -123,7 +123,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
           children: <Widget>[
             Tooltip(
               message: "Symmetry Options",
-              waitDuration: AppState.toolTipDuration,
+              waitDuration: toolTipDuration,
               child: GestureDetector(
                 onTap: _toggleExpand,
                 child: MouseRegion(
@@ -194,7 +194,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         padding:  const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
                                         child: Tooltip(
                                           message: "Center Horizontal Ruler",
-                                          waitDuration: AppState.toolTipDuration,
+                                          waitDuration: toolTipDuration,
                                           child: SizedBox(
                                             width: _SymmetryWidgetOptions.buttonWidth,
                                             height: _SymmetryWidgetOptions.buttonHeight,
@@ -271,7 +271,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         padding: const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
                                         child: Tooltip(
                                           message: "Center Vertical Ruler",
-                                          waitDuration: AppState.toolTipDuration,
+                                          waitDuration: toolTipDuration,
                                           child: SizedBox(
                                             width: _SymmetryWidgetOptions.buttonWidth,
                                             height: _SymmetryWidgetOptions.buttonHeight,

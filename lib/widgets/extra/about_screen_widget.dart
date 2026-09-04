@@ -19,9 +19,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/update_state.dart';
 import 'package:kpix/util/helpers/update_helper.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -87,7 +87,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
     return Expanded(
       child: Tooltip(
         message: tooltip,
-        waitDuration: AppState.toolTipDuration,
+        waitDuration: toolTipDuration,
         child: IconButton.outlined(
           icon: Icon(icon),
           onPressed: onPressedFunc,

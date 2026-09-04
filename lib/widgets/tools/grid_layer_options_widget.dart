@@ -16,10 +16,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
@@ -101,11 +101,11 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                     segments: <ButtonSegment<bool>>[
                       ButtonSegment<bool>(
                         value: false,
-                        label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Grid", child: Text("GRID", style: Theme.of(context).textTheme.labelSmall!.apply(color: !isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                        label: Tooltip(waitDuration: toolTipDuration, message: "Grid", child: Text("GRID", style: Theme.of(context).textTheme.labelSmall!.apply(color: !isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                       ),
                       ButtonSegment<bool>(
                         value: true,
-                        label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Perspective", child: Text("PERSPECTIVE", style: Theme.of(context).textTheme.labelSmall!.apply(color: isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                        label: Tooltip(waitDuration: toolTipDuration, message: "Perspective", child: Text("PERSPECTIVE", style: Theme.of(context).textTheme.labelSmall!.apply(color: isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                       ),
                     ],
                   ),
@@ -115,7 +115,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         if (isPerspectiveGridType(gridType: g) == isPerspective)
                           ButtonSegment<GridType>(
                             value: g,
-                            label: Tooltip(waitDuration: AppState.toolTipDuration, message: g.name, child: Text(g.label, style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                            label: Tooltip(waitDuration: toolTipDuration, message: g.name, child: Text(g.label, style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                           ),
                     ],
                     selected: <GridType>{gridType},

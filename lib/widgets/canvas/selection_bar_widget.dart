@@ -17,10 +17,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -109,7 +109,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
       padding: const EdgeInsets.all(_SelectionBarWidgetOptions.padding),
       child: Tooltip(
         message: tooltip,
-        waitDuration: AppState.toolTipDuration,
+        waitDuration: toolTipDuration,
         child: IconButton.outlined(
           onPressed: isEnabled ? onPressedFunc : null,
           icon: Icon(icon, size: _SelectionBarWidgetOptions.iconHeight),
@@ -199,7 +199,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   anchorKey: _alignAnchorKey,
                   child: Tooltip(
                     message: "Align...",
-                    waitDuration: AppState.toolTipDuration,
+                    waitDuration: toolTipDuration,
                     child: OverlayPortal(
                       controller: _alignmentController,
                       overlayChildBuilder: (final BuildContext bcontext) {
@@ -237,7 +237,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                 padding: const EdgeInsets.all(_SelectionBarWidgetOptions.padding),
                 child: Tooltip(
                   message: "Delete${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDelete)}",
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.delete,
                     icon: const Icon(

@@ -16,7 +16,7 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/preferences/preference_gui.dart';
 import 'package:kpix/preferences/preference_values.dart';
 
@@ -39,7 +39,7 @@ class _StylusPreferencesState extends State<StylusPreferences>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Tooltip(
-          waitDuration: AppState.toolTipDuration,
+          waitDuration: toolTipDuration,
           message: "Polling time to check for presses of stylus buttons.",
           child: PrefSliderRow<int>(
             text: "Poll Interval",
@@ -49,7 +49,7 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: AppState.toolTipDuration,
+          waitDuration: toolTipDuration,
           message: "Time that needs to be held down for a long press.",
           child: PrefSliderRow<int>(
             text: "Long Press Delay",
@@ -59,7 +59,7 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: AppState.toolTipDuration,
+          waitDuration: toolTipDuration,
           message: "Distance that must be moved during a long press to cancel it.",
           child: PrefSliderRow<double>(
             text: "Long Press Cancel Distance",
@@ -71,7 +71,7 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: AppState.toolTipDuration,
+          waitDuration: toolTipDuration,
           message: "Distance that needs to be moved vertically to zoom in or out.",
           child: PrefSliderRow<double>(
             text: "Zoom Step Distance",
@@ -83,7 +83,7 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: AppState.toolTipDuration,
+          waitDuration: toolTipDuration,
           message: "Distance that needs to be moved horizontally to change the size of the current tool.",
           child: PrefSliderRow<double>(
             text: "Tool Size Step Distance",
@@ -95,7 +95,7 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: AppState.toolTipDuration,
+          waitDuration: toolTipDuration,
           message: "Timeout for picking a color.",
           child: PrefSliderRow<int>(
             text: "Color Pick Timeout",

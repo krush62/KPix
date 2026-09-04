@@ -33,6 +33,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
@@ -45,9 +46,9 @@ import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
@@ -71,7 +72,7 @@ class RightBarWidget extends StatefulWidget
 
 class _RightBarWidgetState extends State<RightBarWidget>
 {
-  final AppState _appState = GetIt.I.get<AppState>();
+  final ProjectSession _projectSession = GetIt.I.get<ProjectSession>();
   final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final LayerManager _layerManager = GetIt.I.get<LayerManager>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
@@ -187,7 +188,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                     borderRadius: const BorderRadius.only(topLeft: Radius.circular(LayerWidgetOptions.borderRadius), bottomLeft: Radius.circular(LayerWidgetOptions.borderRadius)),
                   ),
                   child: ValueListenableBuilder<bool>(
-                    valueListenable: _appState.hasProjectNotifier,
+                    valueListenable: _projectSession.hasProjectNotifier,
                     builder: (final BuildContext context, final bool hasProject, final Widget? child) {
                       if (hasProject)
                       {
@@ -200,7 +201,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                 anchorKey: _addLayerAnchorKey,
                                 child: Tooltip(
                                   message: "Add New Layer...",
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   child: OverlayPortal(
                                     controller: _addLayerPortalController,
                                     overlayChildBuilder: (final BuildContext bcontext) {
@@ -279,7 +280,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
             ],
           ),
           ValueListenableBuilder<bool>(
-            valueListenable: _appState.hasProjectNotifier,
+            valueListenable: _projectSession.hasProjectNotifier,
             builder: (final BuildContext context, final bool hasProject, final Widget? child) {
               if (hasProject) {
                 return ValueListenableBuilder<int>(
@@ -332,7 +333,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                       ),
                                     ),
                                     Tooltip(
-                                      waitDuration: AppState.toolTipDuration,
+                                      waitDuration: toolTipDuration,
                                       message: "Close",
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),

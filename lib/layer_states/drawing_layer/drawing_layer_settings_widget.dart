@@ -18,12 +18,12 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -137,7 +137,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
             ButtonSegment<T>(
               value: option,
               label: Tooltip(
-                waitDuration: AppState.toolTipDuration,
+                waitDuration: toolTipDuration,
                 message: option.desc,
                 child: Text(
                   option.label,
@@ -296,7 +296,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   {
     return Tooltip(
       message: tooltip,
-      waitDuration: AppState.toolTipDuration,
+      waitDuration: toolTipDuration,
       child: SizedBox(
         height: _buttonHeight,
         child: ValueListenableBuilder<T>(

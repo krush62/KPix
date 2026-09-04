@@ -19,8 +19,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/app_paths.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preferences/preference_gui.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -182,7 +182,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
                                   onTap: () {_projectDirectoryModeChanged(useCustom: false);},
                                   child: Tooltip(
                                     message: getDefaultProjectsDir(internalDir: GetIt.I.get<AppPaths>().internalDir),
-                                    waitDuration: AppState.toolTipDuration,
+                                    waitDuration: toolTipDuration,
                                     child: const Text("Default"),
                                   ),
                                 ),
@@ -206,7 +206,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
                                   {
                                     return Tooltip(
                                       message: customDir,
-                                      waitDuration: AppState.toolTipDuration,
+                                      waitDuration: toolTipDuration,
                                       child: Text(
                                         customDir,
                                         textAlign: TextAlign.center,
@@ -221,7 +221,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
                               ),
                               Tooltip(
                                 message: "Choose Directory",
-                                waitDuration: AppState.toolTipDuration,
+                                waitDuration: toolTipDuration,
                                 child: SizedBox(
                                   height: 32,
                                   width: 32,

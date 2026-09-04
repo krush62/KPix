@@ -24,10 +24,10 @@ import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -37,7 +37,7 @@ import 'package:kpix/util/typedefs.dart';
 import 'support/selection_harness.dart';
 
 /// Serialises the project the way Ctrl+S does.
-Future<Uint8List> _save({required final AppState appState}) async
+Future<Uint8List> _save({required final ProjectSession projectSession}) async
 {
   return (await createKPixData()).buffer.asUint8List();
 }
@@ -81,22 +81,22 @@ void main()
   final CoordinateSetI pixel = CoordinateSetI(x: 1, y: 1);
 
   testWidgets("a project saved with a pasted selection can be read back", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-      final DrawingLayerState layer = layerAt(appState: appState, index: 0);
+      final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
-      await settle(appState: appState);
+      await settle();
 
       //copy and paste leaves the clipboard floating over pixels that are still
       //on the layer, so the two pixel stores overlap
       GetIt.I.get<DocumentState>().selectionState.selectAll();
       GetIt.I.get<DocumentState>().selectionState.copy();
       GetIt.I.get<DocumentState>().selectionState.paste();
-      await settle(appState: appState);
+      await settle();
       expect(layer.getDataEntry(coord: pixel), isNotNull, reason: "setup: the layer still holds the pasted-over pixel");
       expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), isNotNull, reason: "setup: and so does the selection");
 
-      final LoadFileSet loaded = await _load(bytes: await _save(appState: appState));
+      final LoadFileSet loaded = await _load(bytes: await _save(projectSession: projectSession));
 
       expect(loaded.historyState, isNotNull, reason: "load failed: ${loaded.status}");
       final Map<CoordinateSetI, String> pixels = _pixelsOf(loaded: loaded);
@@ -105,18 +105,18 @@ void main()
   });
 
   testWidgets("a selection dragged off the canvas does not leak phantom pixels", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-      final DrawingLayerState layer = layerAt(appState: appState, index: 0);
+      final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
-      await settle(appState: appState);
+      await settle();
 
       GetIt.I.get<DocumentState>().selectionState.selectAll();
       GetIt.I.get<DocumentState>().selectionState.setOffset(offset: CoordinateSetI(x: -10, y: 0), withContent: true);
       GetIt.I.get<DocumentState>().selectionState.finishMovement();
-      await settle(appState: appState);
+      await settle();
 
-      final LoadFileSet loaded = await _load(bytes: await _save(appState: appState));
+      final LoadFileSet loaded = await _load(bytes: await _save(projectSession: projectSession));
 
       expect(loaded.historyState, isNotNull, reason: "load failed: ${loaded.status}");
       for (final CoordinateSetI coord in _pixelsOf(loaded: loaded).keys)
@@ -128,14 +128,14 @@ void main()
   });
 
   testWidgets("a selection stranded on a shading layer does not change the file", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-      final DrawingLayerState drawingLayer = layerAt(appState: appState, index: 0);
+      final DrawingLayerState drawingLayer = layerAt(projectSession: projectSession, index: 0);
       drawingLayer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
       GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState);
-      await settle(appState: appState);
+      await settle();
 
-      final int sizeWithoutSelection = (await _save(appState: appState)).lengthInBytes;
+      final int sizeWithoutSelection = (await _save(projectSession: projectSession)).lengthInBytes;
 
       //a selection made on a drawing layer survives a switch to a shading layer:
       //the content is handed back to the drawing layer but the buffer keeps a
@@ -143,31 +143,31 @@ void main()
       GetIt.I.get<LayerManager>().selectLayer(newLayer: drawingLayer);
       GetIt.I.get<DocumentState>().selectionState.selectAll();
       GetIt.I.get<LayerManager>().selectLayer(newLayer: GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getLayer(index: 0));
-      await settle(appState: appState);
+      await settle();
       expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), isA<ShadingLayerState>(), reason: "setup: a shading layer is selected");
       expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isNotEmpty, reason: "setup: with a selection still floating");
 
-      final int sizeWithSelection = (await _save(appState: appState)).lengthInBytes;
+      final int sizeWithSelection = (await _save(projectSession: projectSession)).lengthInBytes;
 
       expect(sizeWithSelection, sizeWithoutSelection,
           reason: "the writer never merges a selection into a shading layer, so nothing may be reserved for one",);
 
-      final LoadFileSet loaded = await _load(bytes: await _save(appState: appState));
+      final LoadFileSet loaded = await _load(bytes: await _save(projectSession: projectSession));
       expect(loaded.historyState, isNotNull, reason: "load failed: ${loaded.status}");
     },);
   });
 
   testWidgets("an ordinary project still round-trips unchanged", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference first = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final ColorReference second = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
-      final DrawingLayerState lower = layerAt(appState: appState, index: 0);
+      final DrawingLayerState lower = layerAt(projectSession: projectSession, index: 0);
       lower.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: first}));
       final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
       upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{CoordinateSetI(x: 2, y: 3): second}));
-      await settle(appState: appState);
+      await settle();
 
-      final LoadFileSet loaded = await _load(bytes: await _save(appState: appState));
+      final LoadFileSet loaded = await _load(bytes: await _save(projectSession: projectSession));
 
       expect(loaded.historyState, isNotNull, reason: "load failed: ${loaded.status}");
       final Map<CoordinateSetI, String> pixels = _pixelsOf(loaded: loaded);

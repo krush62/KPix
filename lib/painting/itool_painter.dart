@@ -30,10 +30,10 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
@@ -207,7 +207,7 @@ class ContentRasterSet
 
 abstract class IToolPainter
 {
-  final AppState appState = GetIt.I.get<AppState>();
+  final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
   final PaletteState paletteState = GetIt.I.get<PaletteState>();
   final CanvasState canvasState = GetIt.I.get<CanvasState>();
   final DocumentState documentState = GetIt.I.get<DocumentState>();
@@ -930,7 +930,7 @@ abstract class IToolPainter
     shadingLayer.removeCoords(coords: removeCoords);
     shadingLayer.addCoords(coords: changeCoords);
 
-    //appState.rasterDrawingLayersAbove();
+    //projectSession.rasterDrawingLayersAbove();
 
     hasHistoryData = true;
     resetContentRaster(currentLayer: shadingLayer);
@@ -956,7 +956,7 @@ abstract class IToolPainter
     shadingLayer.removeCoords(coords: removeCoords);
     shadingLayer.addCoords(coords: changeCoords);
 
-    //appState.rasterDrawingLayersAbove();
+    //projectSession.rasterDrawingLayersAbove();
 
     hasHistoryData = true;
     resetContentRaster(currentLayer: shadingLayer);

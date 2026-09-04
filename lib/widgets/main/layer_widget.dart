@@ -19,13 +19,13 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/view_state.dart';
@@ -254,7 +254,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                                   _hotkeyManager.getShortcutString(
                                                       action: HotkeyAction
                                                           .layersSwitchVisibility,),
-                                          waitDuration: AppState.toolTipDuration,
+                                          waitDuration: toolTipDuration,
                                           child: IconButton.outlined(
                                             padding: EdgeInsets.zero,
                                             constraints: const BoxConstraints(
@@ -317,7 +317,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                               _hotkeyManager.getShortcutString(
                                                   action: HotkeyAction
                                                       .layersSwitchLock,),
-                                          waitDuration: AppState.toolTipDuration,
+                                          waitDuration: toolTipDuration,
                                           child: IconButton.outlined(
                                             padding: EdgeInsets.zero,
                                             constraints: const BoxConstraints(
@@ -418,7 +418,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                       anchorKey: actionsAnchorKey,
                                       child: Tooltip(
                                         message: "Layer Actions...",
-                                        waitDuration: AppState.toolTipDuration,
+                                        waitDuration: toolTipDuration,
                                         child: Builder(
                                           builder: (final BuildContext context) {
                                             ValueNotifier<LayerLockState> lockStateNotifier = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
@@ -476,7 +476,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                   Expanded(
                                     child: Tooltip(
                                       message: "Settings",
-                                      waitDuration: AppState.toolTipDuration,
+                                      waitDuration: toolTipDuration,
                                       child: Builder(
                                         builder: (final BuildContext context) {
                                           ValueNotifier<LayerLockState> lockStateNotifier = ValueNotifier<LayerLockState>(LayerLockState.unlocked);

@@ -18,7 +18,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -161,7 +161,7 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
     return Expanded(
       child: Tooltip(
         message: tooltip,
-        waitDuration: AppState.toolTipDuration,
+        waitDuration: toolTipDuration,
         child: Padding(
           padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
           child: IconButton.outlined(

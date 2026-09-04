@@ -19,7 +19,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
@@ -437,7 +437,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                   ],
                 ),
                 const SizedBox(height: _padding,),
-                Tooltip(message: "Close", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(TablerIcons.check))),
+                Tooltip(message: "Close", waitDuration: toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(TablerIcons.check))),
               ],
             ),
           ),

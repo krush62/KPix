@@ -17,9 +17,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_paths.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -103,7 +103,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                     builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                       return Tooltip(
                         message: status.label,
-                        waitDuration: AppState.toolTipDuration,
+                        waitDuration: toolTipDuration,
                         child: Icon(
                           status.icon,
                           size: OverlayEntryAlertDialogOptions.iconSize / 2,

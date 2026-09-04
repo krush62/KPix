@@ -358,7 +358,7 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   message: _valueToolTipMessage,
                                   child: GestureDetector(
                                     onTap: ()
@@ -395,7 +395,7 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   message: _valueToolTipMessage,
                                   child: GestureDetector(
                                     onTap: ()
@@ -429,7 +429,7 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   message: _valueToolTipMessage,
                                   child: GestureDetector(
                                     onTap: ()
@@ -462,7 +462,7 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   message: _valueToolTipMessage,
                                   child: GestureDetector(
                                     onTap: ()
@@ -500,7 +500,7 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   message: _valueToolTipMessage,
                                   child: GestureDetector(
                                     onTap: ()
@@ -532,7 +532,7 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   message: _valueToolTipMessage,
                                   child: GestureDetector(
                                     onTap: ()
@@ -565,7 +565,7 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   message: _valueToolTipMessage,
                                   child: GestureDetector(
                                       onTap: ()
@@ -646,7 +646,7 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   message: _valueToolTipMessage,
                                   child: GestureDetector(
                                       onTap: ()

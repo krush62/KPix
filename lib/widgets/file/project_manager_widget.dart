@@ -18,11 +18,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/project_manager_data.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -159,7 +160,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   void _loadProject()
   {
-    if (GetIt.I.get<AppState>().hasChanges.value)
+    if (GetIt.I.get<ProjectSession>().hasChanges.value)
     {
       _saveBeforeLoadWarningDialog.show(context: context);
     }
@@ -402,7 +403,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                             value: ProjectViewOrder.nameAsc,
                             label: Tooltip(
                               message: "Order by file name (ascending)",
-                              waitDuration: AppState.toolTipDuration,
+                              waitDuration: toolTipDuration,
                               child: Icon(
                                   TablerIcons.sort_ascending_letters,
                               ),
@@ -412,7 +413,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                             value: ProjectViewOrder.nameDesc,
                             label: Tooltip(
                               message: "Order by file name (descending)",
-                              waitDuration: AppState.toolTipDuration,
+                              waitDuration: toolTipDuration,
                               child: Icon(
                                   TablerIcons.sort_descending_letters,
                               ),
@@ -422,7 +423,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                             value: ProjectViewOrder.lastModifiedAsc,
                             label: Tooltip(
                               message: "Order by last modification (ascending)",
-                              waitDuration: AppState.toolTipDuration,
+                              waitDuration: toolTipDuration,
                               child: Icon(
                                   TablerIcons.sort_ascending_numbers,
                               ),
@@ -432,7 +433,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                             value: ProjectViewOrder.lastModifiedDesc,
                             label: Tooltip(
                               message: "Order by last modification (descending)",
-                              waitDuration: AppState.toolTipDuration,
+                              waitDuration: toolTipDuration,
                               child: Icon(
                                   TablerIcons.sort_descending_numbers,
                               ),
@@ -473,7 +474,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
               Expanded(
                 child: Tooltip(
                   message: "Close",
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: IconButton.outlined(
@@ -488,7 +489,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
               Expanded(
                 child: Tooltip(
                   message: "Import Project",
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: IconButton.outlined(
@@ -503,7 +504,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
               Expanded(
                 child: Tooltip(
                   message: "Delete Selected Project",
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: ValueListenableBuilder<String?>(
@@ -523,7 +524,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
               Expanded(
                 child: Tooltip(
                   message: "Load Selected Project",
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: ValueListenableBuilder<String?>(

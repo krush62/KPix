@@ -23,10 +23,10 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -58,13 +58,13 @@ List<RasterableLayerState> _previewStack({required final LayerCollection collect
   return stack;
 }
 
-Future<void> _disposeStack({required final List<RasterableLayerState> stack, required final AppState appState}) async
+Future<void> _disposeStack({required final List<RasterableLayerState> stack, required final ProjectSession projectSession}) async
 {
   for (final RasterableLayerState layer in stack)
   {
     layer.dispose();
   }
-  await settle(appState: appState);
+  await settle();
 }
 
 /// Waits for the preview copies to produce their first raster.
@@ -88,12 +88,12 @@ void main()
 
   /// Lifts the pixel at [origin] into the selection and drags it to [moved],
   /// then renders the palette preview and reports whether it shows the content.
-  Future<bool> previewShowsSelection({required final AppState appState}) async
+  Future<bool> previewShowsSelection({required final ProjectSession projectSession}) async
   {
     GetIt.I.get<DocumentState>().selectionState.selectAll();
     GetIt.I.get<DocumentState>().selectionState.setOffset(offset: CoordinateSetI(x: 2, y: 0), withContent: true);
     GetIt.I.get<DocumentState>().selectionState.finishMovement();
-    await settle(appState: appState);
+    await settle();
 
     final LayerCollection collection = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList;
     final List<RasterableLayerState> stack = _previewStack(collection: collection);
@@ -107,59 +107,59 @@ void main()
     );
     final bool painted = await _isPainted(image: preview, coord: moved);
     preview.dispose();
-    await _disposeStack(stack: stack, appState: appState);
+    await _disposeStack(stack: stack, projectSession: projectSession);
     return painted;
   }
 
   testWidgets("the preview shows the floating selection with a reference layer above", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-      final DrawingLayerState artwork = layerAt(appState: appState, index: 0);
+      final DrawingLayerState artwork = layerAt(projectSession: projectSession, index: 0);
       artwork.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
 
       //a reference layer is not a raster layer, so it counts in the collection's
       //indices but not in the visible raster layers the preview stack mirrors
       GetIt.I.get<LayerManager>().addNewLayer(layerType: ReferenceLayerState);
       GetIt.I.get<LayerManager>().selectLayer(newLayer: artwork);
-      await settle(appState: appState);
+      await settle();
 
       expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.selectedLayerIndex, 1, reason: "setup: second in the collection");
       expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getVisibleRasterLayers().length, 1, reason: "setup: but first and only in the raster stack");
 
-      expect(await previewShowsSelection(appState: appState), isTrue,
+      expect(await previewShowsSelection(projectSession: projectSession), isTrue,
           reason: "the overlay has to find the selected layer by its place in the stack, not in the collection",);
     },);
   });
 
   testWidgets("the preview shows the floating selection with a hidden layer above", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-      final DrawingLayerState artwork = layerAt(appState: appState, index: 0);
+      final DrawingLayerState artwork = layerAt(projectSession: projectSession, index: 0);
       artwork.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
 
       final DrawingLayerState hidden = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState)! as DrawingLayerState;
       GetIt.I.get<LayerManager>().changeLayerVisibility(layerState: hidden);
       GetIt.I.get<LayerManager>().selectLayer(newLayer: artwork);
-      await settle(appState: appState);
+      await settle();
 
       expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.selectedLayerIndex, 1);
       expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getVisibleRasterLayers().length, 1);
 
-      expect(await previewShowsSelection(appState: appState), isTrue,
+      expect(await previewShowsSelection(projectSession: projectSession), isTrue,
           reason: "a hidden layer shifts the collection index but not the stack index",);
     },);
   });
 
   testWidgets("the preview still shows it when the indices happen to agree", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-      final DrawingLayerState artwork = layerAt(appState: appState, index: 0);
+      final DrawingLayerState artwork = layerAt(projectSession: projectSession, index: 0);
       artwork.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
-      await settle(appState: appState);
+      await settle();
 
       expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.selectedLayerIndex, 0, reason: "setup: nothing to shift the indices apart");
 
-      expect(await previewShowsSelection(appState: appState), isTrue,
+      expect(await previewShowsSelection(projectSession: projectSession), isTrue,
           reason: "the simple case worked before and has to keep working",);
     },);
   });

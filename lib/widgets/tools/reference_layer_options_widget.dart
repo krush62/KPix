@@ -19,11 +19,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -179,7 +179,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
               ),
               const SizedBox(width: ToolSettingsWidgetOptions.padding,),
               Tooltip(
-                waitDuration: AppState.toolTipDuration,
+                waitDuration: toolTipDuration,
                 message: "Reset $name",
                 child: SizedBox(
                   height: _resetButtonHeight,
@@ -248,7 +248,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                             ),
                             Expanded(
                               child: Tooltip(
-                                waitDuration: AppState.toolTipDuration,
+                                waitDuration: toolTipDuration,
                                 message: "Open Reference File",
                                 child: IconButton.outlined(
                                   onPressed: _onLoadPressed,
@@ -343,7 +343,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     children: <Widget>[
                       Expanded(
                         child: Tooltip(
-                          waitDuration: AppState.toolTipDuration,
+                          waitDuration: toolTipDuration,
                           message: "Expand horizontally and center by keeping the current aspect ratio",
                           child: SizedBox(
                             height: _resetButtonHeight,
@@ -359,7 +359,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                       const SizedBox(width: ToolSettingsWidgetOptions.padding),
                       Expanded(
                         child: Tooltip(
-                          waitDuration: AppState.toolTipDuration,
+                          waitDuration: toolTipDuration,
                           message: "Expand vertically and center by keeping the current aspect ratio",
                           child: SizedBox(
                             height: _resetButtonHeight,
@@ -374,7 +374,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                       const SizedBox(width: ToolSettingsWidgetOptions.padding),
                       Expanded(
                         child: Tooltip(
-                          waitDuration: AppState.toolTipDuration,
+                          waitDuration: toolTipDuration,
                           message: "Fits the image into the canvas (changes aspect ratio)",
                           child: SizedBox(
                             height: _resetButtonHeight,

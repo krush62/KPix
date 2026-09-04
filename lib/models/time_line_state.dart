@@ -22,8 +22,9 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/managers/history/history_manager.dart';
+import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
@@ -126,7 +127,7 @@ class Timeline
     _selectedFrameIndex.value = selectedFrameIndex;
   }
 
-  void init({required final AppState appState})
+  void init()
   {
     final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
     final List<Frame> frameList = <Frame>[];
@@ -291,7 +292,7 @@ class Timeline
       newFrames.insert(selectedFrameIndex - 1, f);
       frames.value = newFrames;
       selectFrameByIndex(index: selectedFrameIndex - 1);
-      GetIt.I.get<AppState>().frameMoved();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameMove);
     }
   }
 
@@ -306,7 +307,7 @@ class Timeline
       newFrames.insert(selectedFrameIndex + 1, f);
       frames.value = newFrames;
       selectFrameByIndex(index: selectedFrameIndex + 1);
-      GetIt.I.get<AppState>().frameMoved();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameMove);
     }
   }
 
@@ -433,7 +434,7 @@ class Timeline
       {
         loopStartIndex.value++;
       }
-      GetIt.I.get<AppState>().newFrameAdded();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameAdd);
     }
   }
 
@@ -464,7 +465,7 @@ class Timeline
 
     frames.value = newFrames;
 
-    GetIt.I.get<AppState>().frameDeleted();
+    GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameDelete);
   }
 
   void resetStartMarker()
@@ -472,7 +473,7 @@ class Timeline
     if (loopStartIndex.value != 0)
     {
       loopStartIndex.value = 0;
-      GetIt.I.get<AppState>().loopMarkerChanged();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange);
     }
   }
 
@@ -482,7 +483,7 @@ class Timeline
     if (loopEndIndex.value != lastPosition)
     {
       loopEndIndex.value = frames.value.length - 1;
-      GetIt.I.get<AppState>().loopMarkerChanged();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange);
     }
   }
 
@@ -491,7 +492,7 @@ class Timeline
     if (index >= 0 && index < frames.value.length)
     {
       loopStartIndex.value = index;
-      GetIt.I.get<AppState>().loopMarkerChanged();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange);
     }
   }
 
@@ -500,7 +501,7 @@ class Timeline
     if (index >= 0 && index < frames.value.length)
     {
       loopEndIndex.value = index;
-      GetIt.I.get<AppState>().loopMarkerChanged();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange);
     }
   }
 
@@ -510,7 +511,7 @@ class Timeline
     if (frame.fps.value != fps && fps >= constraints.minFps && fps <= constraints.maxFps)
     {
       frame.fps.value = fps;
-      GetIt.I.get<AppState>().frameTimingChanged();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameTimeChange);
     }
   }
 
@@ -530,7 +531,7 @@ class Timeline
       }
       if (hasChanges)
       {
-        GetIt.I.get<AppState>().frameTimingChanged();
+        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameTimeChange);
       }
     }
   }

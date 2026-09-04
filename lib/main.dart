@@ -32,12 +32,12 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_paths.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/update_state.dart';
@@ -209,15 +209,15 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   void _recoverCheck({final bool ignoreState = false})
   {
     _lastAppLifeCycleState = WidgetsBinding.instance.lifecycleState ?? _lastAppLifeCycleState;
-    final AppState appState = GetIt.I.get<AppState>();
-    if (appState.hasProject && appState.hasChanges.value)
+    final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
+    if (projectSession.hasProject && projectSession.hasChanges.value)
     {
       if ((ignoreState || _lastAppLifeCycleState == AppLifecycleState.resumed) && GetIt.I.get<HistoryManager>().getCurrentState() != _lastHistoryState)
       {
         _lastHistoryState = GetIt.I.get<HistoryManager>().getCurrentState();
         clearRecoverDir().then((final void value)
         {
-          final String fileName = appState.projectName.value ?? recoverFileName;
+          final String fileName = projectSession.projectName.value ?? recoverFileName;
           final String finalPath = p.join(GetIt.I.get<AppPaths>().internalDir, recoverSubDirName, "$fileName.$fileExtensionKpix");
           saveKPixFile(path: finalPath);
         },);
@@ -323,6 +323,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       GetIt.I.registerSingleton<UpdateState>(UpdateState());
       logger.i("Creating Status Bar State");
       GetIt.I.registerSingleton<StatusBarState>(StatusBarState());
+      GetIt.I.registerSingleton<SymmetryState>(SymmetryState());
       logger.i("Creating View State");
       GetIt.I.registerSingleton<ViewState>(ViewState(devicePixelRatio: devicePixelRatio));
       logger.i("Creating Palette State");
@@ -330,9 +331,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       GetIt.I.registerSingleton<CanvasState>(CanvasState());
       GetIt.I.registerSingleton<DocumentState>(DocumentState());
       logger.i("Creating App State");
-      final AppState appState = AppState();
+      final ProjectSession projectSession = ProjectSession();
 
-      GetIt.I.registerSingleton<AppState>(appState);
+      GetIt.I.registerSingleton<ProjectSession>(projectSession);
       logger.i("Creating Tool State");
       GetIt.I.registerSingleton<ToolState>(ToolState());
       GetIt.I.registerSingleton<LayerManager>(LayerManager());
@@ -398,7 +399,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         logger.i("Changing Theme Mode");
         themeSettings.themeMode = currentTheme;
       }
-      appState.hasProjectNotifier.addListener(_hasProjectChanged);
+      projectSession.hasProjectNotifier.addListener(_hasProjectChanged);
 
       if (!kIsWeb)
       {
@@ -512,7 +513,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   Future<void> _handleInitialFile() async
   {
-    final AppState appState = GetIt.I.get<AppState>();
+    final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
     final PreferenceManager preferenceManager = GetIt.I.get<PreferenceManager>();
 
     bool fromRecovery = false;
@@ -560,8 +561,8 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       );
       if (lfs.path != null && lfs.historyState != null)
       {
-        await appState.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
-        appState.hasProjectNotifier.value = true;
+        await projectSession.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
+        projectSession.hasProjectNotifier.value = true;
         _newProjectDialog.hide();
         showMessage(text: "work recovered");
       }
@@ -578,7 +579,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   void _hasProjectChanged()
   {
-    if (!GetIt.I.get<AppState>().hasProject)
+    if (!GetIt.I.get<ProjectSession>().hasProject)
     {
       _newFile();
     }
@@ -586,7 +587,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   void _closePressed()
   {
-    if (GetIt.I.get<AppState>().hasChanges.value)
+    if (GetIt.I.get<ProjectSession>().hasChanges.value)
     {
       _closeWarningDialog.show(context: context);
     }
@@ -623,7 +624,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   void _newFile()
   {
-    if (GetIt.I.get<AppState>().hasChanges.value)
+    if (GetIt.I.get<ProjectSession>().hasChanges.value)
     {
       _saveNewWarningDialog.show(context: context);
     }
@@ -651,7 +652,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   void _saveNewWarningCancel()
   {
     _saveNewWarningDialog.hide();
-    GetIt.I.get<AppState>().hasProjectNotifier.value = true;
+    GetIt.I.get<ProjectSession>().hasProjectNotifier.value = true;
   }
 
   void _saveBeforeNewFinished()
@@ -663,7 +664,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   void _newFilePressed({required final CoordinateSetI size})
   {
-    GetIt.I.get<AppState>().init(dimensions: size);
+    GetIt.I.get<ProjectSession>().init(dimensions: size);
     _newProjectDialog.hide();
   }
 
@@ -677,7 +678,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   void _openPerformed()
   {
-    GetIt.I.get<AppState>().hasProjectNotifier.value = true;
+    GetIt.I.get<ProjectSession>().hasProjectNotifier.value = true;
     GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
     _newProjectDialog.hide();
   }
@@ -758,13 +759,13 @@ class MainWidget extends StatelessWidget
                             Padding(
                               padding: const EdgeInsets.all(_MainLayoutOptions.titleBarPadding),
                               child: ValueListenableBuilder<bool>(
-                                valueListenable: GetIt.I.get<AppState>().hasChanges,
+                                valueListenable: GetIt.I.get<ProjectSession>().hasChanges,
                                   builder: (final BuildContext context, final bool __, final Widget? ___) {
                                     return ValueListenableBuilder<String?>(
-                                      valueListenable: GetIt.I.get<AppState>().projectName,
+                                      valueListenable: GetIt.I.get<ProjectSession>().projectName,
                                       builder: (final BuildContext _, final String? ____, final Widget? _____) {
                                         return Text(
-                                          GetIt.I.get<AppState>().getTitle(),
+                                          GetIt.I.get<ProjectSession>().getTitle(),
                                           style: Theme.of(context).textTheme.bodyLarge,
                                           textAlign: TextAlign.center,
                                         );
@@ -807,7 +808,7 @@ class MainWidget extends StatelessWidget
             ),
             center: ExcludeFocus(
               child: ValueListenableBuilder<bool>(
-                valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
+                valueListenable: GetIt.I.get<ProjectSession>().hasProjectNotifier,
                 builder: (final BuildContext context, final bool hasProject, final Widget? child) {
                   return hasProject ? Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -815,7 +816,7 @@ class MainWidget extends StatelessWidget
                       TimeLineWidget(timeline: GetIt.I.get<DocumentState>().timeline, expandedHeight: 320,),
                       const Expanded(child: ClipRect(child: CanvasWidget())),
                       StatusBarWidget(),
-                      SymmetryWidget(state: GetIt.I.get<AppState>().symmetryState,),
+                      SymmetryWidget(state: GetIt.I.get<SymmetryState>(),),
                     ],
                   ) : Container(color: Theme.of(context).primaryColorDark);
                 },

@@ -20,8 +20,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/app_paths.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -260,7 +260,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   {
     return Expanded(
       child: Tooltip(
-        waitDuration: AppState.toolTipDuration,
+        waitDuration: toolTipDuration,
         message: tooltip,
         child: Padding(
           padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),

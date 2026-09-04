@@ -18,7 +18,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/image_importer.dart';
@@ -251,7 +251,7 @@ class _ImportWidgetState extends State<ImportWidget>
                           Expanded(
                             child: Tooltip(
                               message: "Choose Image",
-                              waitDuration: AppState.toolTipDuration,
+                              waitDuration: toolTipDuration,
                               child: IconButton.outlined(
                                 constraints: const BoxConstraints(),
                                 padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
@@ -470,7 +470,7 @@ class _ImportWidgetState extends State<ImportWidget>
               children: <Widget>[
                 Expanded(
                   child: Tooltip(
-                    waitDuration: AppState.toolTipDuration,
+                    waitDuration: toolTipDuration,
                     message: "Close",
                     child: IconButton.outlined(
                       icon: const Icon(
@@ -485,7 +485,7 @@ class _ImportWidgetState extends State<ImportWidget>
                 const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
                 Expanded(
                   child: Tooltip(
-                    waitDuration: AppState.toolTipDuration,
+                    waitDuration: toolTipDuration,
                     message: "Import",
                     child: ValueListenableBuilder<String?>(
                       valueListenable: _fileNameNotifier,

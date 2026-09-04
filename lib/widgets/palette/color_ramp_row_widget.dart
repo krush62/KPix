@@ -33,7 +33,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -138,7 +138,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
     _widgetList.add(
       Tooltip(
         message: "Edit Color Ramp",
-        waitDuration: AppState.toolTipDuration,
+        waitDuration: toolTipDuration,
         child: Padding(
           padding: const EdgeInsets.only(left: _ColorRampRowWidgetOptions.buttonPadding / 2, right: _ColorRampRowWidgetOptions.borderWidth) ,
           child: IconButton(

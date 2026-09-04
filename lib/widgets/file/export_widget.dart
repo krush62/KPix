@@ -17,11 +17,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_paths.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -193,7 +194,7 @@ class _ExportWidgetState extends State<ExportWidget>
   final ValueNotifier<bool> _animationSectionOnly = ValueNotifier<bool>(false);
   final ValueNotifier<int> _scalingIndex = ValueNotifier<int>(0);
   final ValueNotifier<String> _fileName = ValueNotifier<String>("");
-  final AppState _appState = GetIt.I.get<AppState>();
+  final ProjectSession _projectSession = GetIt.I.get<ProjectSession>();
   final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier<FileNameStatus>(FileNameStatus.available);
@@ -221,7 +222,7 @@ class _ExportWidgetState extends State<ExportWidget>
     {
       _selectedSection.value = ExportSectionType.animation;
     }
-    _fileName.value = _appState.projectName.value == null ? "" : _appState.projectName.value!;
+    _fileName.value = _projectSession.projectName.value == null ? "" : _projectSession.projectName.value!;
     _updateFileNameStatus();
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.exportFileNameTextFocus).requestFocus();
   }
@@ -267,7 +268,7 @@ class _ExportWidgetState extends State<ExportWidget>
       value: type,
       label: Tooltip(
         message: tooltip,
-        waitDuration: AppState.toolTipDuration,
+        waitDuration: toolTipDuration,
         child: Icon(icon),
       ),
     );
@@ -578,7 +579,7 @@ class _ExportWidgetState extends State<ExportWidget>
                           flex: 2,
                           child: Tooltip(
                             message: "Change Directory",
-                            waitDuration: AppState.toolTipDuration,
+                            waitDuration: toolTipDuration,
                             child: IconButton.outlined(
                               constraints: const BoxConstraints(),
                               padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
@@ -648,7 +649,7 @@ class _ExportWidgetState extends State<ExportWidget>
                               builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                                 return Tooltip(
                                   message: status.label,
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   child: Icon(
                                     status.icon,
                                     size: OverlayEntryAlertDialogOptions.iconSize / 2,
@@ -671,7 +672,7 @@ class _ExportWidgetState extends State<ExportWidget>
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: Tooltip(
-                      waitDuration: AppState.toolTipDuration,
+                      waitDuration: toolTipDuration,
                       message: "Close",
                       child: IconButton.outlined(
                         icon: const Icon(
@@ -694,7 +695,7 @@ class _ExportWidgetState extends State<ExportWidget>
                           valueListenable: _fileNameStatus,
                           builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                             return Tooltip(
-                              waitDuration: AppState.toolTipDuration,
+                              waitDuration: toolTipDuration,
                               message: "Export File",
                               child: IconButton.outlined(
                                 icon: const Icon(

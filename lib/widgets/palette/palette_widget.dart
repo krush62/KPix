@@ -33,7 +33,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -161,7 +161,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
               children: <Widget>[
                 Tooltip(
                   message: "Palette Manager",
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.only(top: _PaletteWidgetOptions.padding, left: _PaletteWidgetOptions.padding, right: _PaletteWidgetOptions.padding),
                     child: IconButton.outlined(
@@ -191,7 +191,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                 ),
                 Tooltip(
                   message: "Add New Color Ramp",
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.all(_PaletteWidgetOptions.padding),
                     child: IconButton.outlined(

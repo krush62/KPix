@@ -20,8 +20,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -42,8 +42,8 @@ void main()
   const Size renderSize = Size(80, 80);
 
   testWidgets('the selection outline follows the pulse and stays visible at its dimmest', (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final AppState appState) async {
-      final _PainterHarness harness = _PainterHarness(appState: appState);
+    await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async {
+      final _PainterHarness harness = _PainterHarness();
 
       GetIt.I.get<DocumentState>().selectionState.selectAll();
       expect(GetIt.I.get<DocumentState>().selectionState.selectionLines, isNotEmpty);
@@ -64,9 +64,9 @@ void main()
   });
 
   testWidgets('the drag cursor does not pulse', (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final AppState appState) async {
+    await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async {
       //the dragging cursor is the one drawn with the selection colours
-      final _PainterHarness harness = _PainterHarness(appState: appState)
+      final _PainterHarness harness = _PainterHarness()
         ..cursorPos.value = CoordinateSetD(x: 40, y: 40)
         ..isDragging.value = true;
 
@@ -96,7 +96,7 @@ class _PainterHarness
   final ValueNotifier<double> selectionPulse = ValueNotifier<double>(1.0);
   late final KPixPainter painter;
 
-  _PainterHarness({required final AppState appState})
+  _PainterHarness()
   {
     //the painter builds one painter per tool, and the stamp tool reaches for the
     //stamp manager, which the project harness does not boot
@@ -106,7 +106,6 @@ class _PainterHarness
     }
     GetIt.I.get<ToolState>().setToolSelection(tool: ToolType.select, forceSetting: true);
     painter = KPixPainter(
-      appState: appState,
       offset: offset,
       coords: cursorPos,
       isDragging: isDragging,

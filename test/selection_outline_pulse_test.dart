@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
@@ -102,7 +103,7 @@ class _PainterHarness
     {
       GetIt.I.registerSingleton<StampManager>(StampManager());
     }
-    appState.setToolSelection(tool: ToolType.select, forceSetting: true);
+    GetIt.I.get<ToolState>().setToolSelection(tool: ToolType.select, forceSetting: true);
     painter = KPixPainter(
       appState: appState,
       offset: offset,

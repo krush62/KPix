@@ -48,6 +48,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
+import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
@@ -104,6 +105,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   final GuiPreferenceContent _guiPrefs = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
   final AppState _appState = GetIt.I.get<AppState>();
   final ViewState _viewState = GetIt.I.get<ViewState>();
+  final ToolState _toolState = GetIt.I.get<ToolState>();
   final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier<CoordinateSetD?>(null);
   final ValueNotifier<bool> _isDragging = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _stylusLongMoveStarted = ValueNotifier<bool>(false);
@@ -230,7 +232,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
     _viewState.zoomFactorNotifier.removeListener(_updateFromChange);
     _canvasOffset.removeListener(_updateFromChange);
-    _appState.selectedToolNotifier.removeListener(_updateFromChange);
+    _toolState.selectedToolNotifier.removeListener(_updateFromChange);
     _appState.timeline.isPlaying.removeListener(_updateFromChange);
     _appState.timeline.frames.removeListener(_updateFromChange);
     _appState.timeline.selectedFrameIndexNotifier.removeListener(_updateFromChange);
@@ -285,7 +287,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _appState.timeline.isPlaying.addListener(_setDefaultCursor);
     _viewState.zoomFactorNotifier.addListener(_updateFromChange);
     _canvasOffset.addListener(_updateFromChange);
-    _appState.selectedToolNotifier.addListener(_updateFromChange);
+    _toolState.selectedToolNotifier.addListener(_updateFromChange);
     _appState.timeline.isPlaying.addListener(_updateFromChange);
     _appState.timeline.frames.addListener(_updateFromChange);
     _appState.timeline.selectedFrameIndexNotifier.addListener(_updateFromChange);
@@ -515,8 +517,8 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       _secondaryIsDown.value = true;
       if (!_shaderOptions.isEnabled.value && !(_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer() is ShadingLayerState))
       {
-        _previousTool = _appState.selectedTool;
-        _appState.setToolSelection(tool: ToolType.pick);
+        _previousTool = _toolState.selectedTool;
+        _toolState.setToolSelection(tool: ToolType.pick);
       }
     }
 
@@ -594,7 +596,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         {
           _appState.colorSelected(color: colorPickPainter.selectedColor);
         }
-        _appState.setToolSelection(tool: _previousTool);
+        _toolState.setToolSelection(tool: _previousTool);
       }
     }
     else if (_isDragging.value && details.kind == PointerDeviceKind.mouse)
@@ -604,7 +606,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     }
     _timerRunning = false;
 
-    if (_appState.selectedTool == ToolType.select)
+    if (_toolState.selectedTool == ToolType.select)
     {
       if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.select])
       {
@@ -694,7 +696,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       {
         if (_appState.timeline.getCurrentLayer() is RasterableLayerState)
         {
-          _appState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
+          _toolState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
         }
         else if (_appState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
         {
@@ -747,7 +749,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
   void _checkSelectedToolData()
   {
-    if (_appState.selectedTool == ToolType.select)
+    if (_toolState.selectedTool == ToolType.select)
     {
       if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
       {
@@ -775,7 +777,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         }
       }
     }
-    else if (_appState.selectedTool == ToolType.pick)
+    else if (_toolState.selectedTool == ToolType.pick)
     {
       if (kPixPainter.toolPainterMap[ToolType.pick] != null && kPixPainter.toolPainterMap[ToolType.pick].runtimeType == ColorPickPainter)
       {
@@ -832,7 +834,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
           {
             if (_appState.timeline.getCurrentLayer() is RasterableLayerState)
             {
-              _appState.setToolSize(1, _appState.getCurrentToolSize());
+              _toolState.setToolSize(1, _toolState.getCurrentToolSize());
             }
             else if (_appState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
             {
@@ -847,7 +849,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
           {
             if (_appState.timeline.getCurrentLayer() is RasterableLayerState)
             {
-              _appState.setToolSize(-1, _appState.getCurrentToolSize());
+              _toolState.setToolSize(-1, _toolState.getCurrentToolSize());
             }
             else if (_appState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
             {
@@ -1012,7 +1014,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _stylusZoomStartLevel = _viewState.zoomFactor;
     if (_appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
     {
-      _stylusToolStartSize = _appState.getCurrentToolSize();
+      _stylusToolStartSize = _toolState.getCurrentToolSize();
     }
     else if (_appState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
     {
@@ -1108,7 +1110,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
           ),
         ),
         ValueListenableBuilder<ToolType>(
-          valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
+          valueListenable: GetIt.I.get<ToolState>().selectedToolNotifier,
           builder: (final BuildContext contextS, final ToolType toolType, final Widget? childS) {
             return ValueListenableBuilder<bool>(
               valueListenable: GetIt.I.get<AppState>().selectionState.selection.isEmptyNotifer,

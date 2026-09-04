@@ -27,6 +27,7 @@ import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/update_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/shader_options.dart';
@@ -61,6 +62,7 @@ Future<AppState> bootProject({required final CoordinateSetI canvasSize}) async
   GetIt.I.registerSingleton<ViewState>(ViewState(devicePixelRatio: 1.0));
   final AppState appState = AppState();
   GetIt.I.registerSingleton<AppState>(appState);
+  GetIt.I.registerSingleton<ToolState>(ToolState());
   GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: 64));
 
   appState.init(dimensions: canvasSize);

@@ -34,6 +34,7 @@ import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
+import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/update_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/shader_options.dart';
@@ -323,6 +324,8 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       final AppState appState = AppState();
 
       GetIt.I.registerSingleton<AppState>(appState);
+      logger.i("Creating Tool State");
+      GetIt.I.registerSingleton<ToolState>(ToolState());
       final Size logicalSize = MediaQuery.of(c).size;
       logger.i("Logical Size: $logicalSize");
 

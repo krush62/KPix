@@ -42,8 +42,8 @@ import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/view_state.dart';
-import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -57,8 +57,6 @@ import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
-import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
-import 'package:kpix/widgets/tools/tool_type.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
@@ -76,17 +74,6 @@ class AppState
     return _hasProject;
   }
 
-  final ValueNotifier<ToolType> _selectedTool = ValueNotifier<ToolType>(ToolType.pencil);
-  ToolType get selectedTool
-  {
-    return _selectedTool.value;
-  }
-  ValueNotifier<ToolType> get selectedToolNotifier
-  {
-    return _selectedTool;
-  }
-  ToolType _previousDrawTool = ToolType.pencil;
-  late IToolOptions _currentToolOptions;
   final ValueNotifier<List<KPalRampData>> _colorRamps = ValueNotifier<List<KPalRampData>>(<KPalRampData>[]);
   List<KPalRampData> get colorRamps
   {
@@ -165,7 +152,6 @@ class AppState
 
   AppState()
   {
-    setToolSelection(tool: ToolType.pencil, forceSetting: true);
     timeline.layerChangeNotifier.addListener((){
       GetIt.I.get<ViewState>().layerSettingsVisible = false;
       resetColorSupplier();
@@ -176,17 +162,6 @@ class AppState
   void _setHotkeys()
   {
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
-    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.pencil);}, action: HotkeyAction.selectToolPencil);
-    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.fill);}, action: HotkeyAction.selectToolFill);
-    hotkeyManager.addListener(func: () {_setSelectionToolSelection(shape: SelectShape.rectangle);}, action: HotkeyAction.selectToolSelectRectangle);
-    hotkeyManager.addListener(func: () {_setSelectionToolSelection(shape: SelectShape.ellipse);}, action: HotkeyAction.selectToolSelectCircle);
-    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.shape);}, action: HotkeyAction.selectToolShape);
-    hotkeyManager.addListener(func: () {_setSelectionToolSelection(shape: SelectShape.wand);}, action: HotkeyAction.selectToolSelectWand);
-    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.erase);}, action: HotkeyAction.selectToolEraser);
-    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.font);}, action: HotkeyAction.selectToolText);
-    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.spraycan);}, action: HotkeyAction.selectToolSprayCan);
-    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.line);}, action: HotkeyAction.selectToolLine);
-    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.stamp);}, action: HotkeyAction.selectToolStamp);
     hotkeyManager.addListener(func: () {changeLayerVisibility(layerState: timeline.getCurrentLayer());}, action: HotkeyAction.layersSwitchVisibility);
     hotkeyManager.addListener(func: () {changeLayerLockState(layerState: timeline.getCurrentLayer());}, action: HotkeyAction.layersSwitchLock);
     hotkeyManager.addListener(func: () {addNewLayer(layerType: DrawingLayerState);}, action: HotkeyAction.layersNewDrawing);
@@ -240,15 +215,6 @@ class AppState
 
 
 
-  int getCurrentToolSize()
-  {
-    return _currentToolOptions.getSize();
-  }
-
-  void setToolSize(final int steps, final int originalValue)
-  {
-    _currentToolOptions.changeSize(steps: steps, originalValue: originalValue);
-  }
 
   void deleteRamp({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
@@ -1153,53 +1119,15 @@ class AppState
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.colorChange);
       }
 
-      if (!_selectedTool.value.isDrawTool())
+      final ToolState toolState = GetIt.I.get<ToolState>();
+      if (!toolState.selectedTool.isDrawTool())
       {
-        setToolSelection(tool: _previousDrawTool);
+        toolState.restorePreviousDrawTool();
       }
     }
   }
 
 
-  //mirrors the restrictions of the tool buttons in ToolsWidget
-  //(also covers keyboard shortcuts which bypass the disabled buttons)
-  bool toolIsAllowedForCurrentLayer({required final ToolType tool})
-  {
-    final LayerState? currentLayer = timeline.getCurrentLayer();
-    if (currentLayer is ShadingLayerState && (tool == ToolType.select || tool == ToolType.pick))
-    {
-      return false;
-    }
-    return true;
-  }
-
-  void setToolSelection({required final ToolType tool, final bool forceSetting = false})
-  {
-    if (!toolIsAllowedForCurrentLayer(tool: tool))
-    {
-      return;
-    }
-    if (tool != _selectedTool.value || forceSetting)
-    {
-      if (tool.isDrawTool())
-      {
-        _previousDrawTool = tool;
-      }
-      _selectedTool.value = tool;
-      _currentToolOptions = GetIt.I.get<ToolOptions>().toolOptionMap[_selectedTool.value]!;
-    }
-  }
-
-  void _setSelectionToolSelection({required final SelectShape shape})
-  {
-    setToolSelection(tool: ToolType.select);
-    //should always be the case
-    if (_currentToolOptions is SelectOptions)
-    {
-      final SelectOptions selectOptions = _currentToolOptions as SelectOptions;
-      selectOptions.shape.value = shape;
-    }
-  }
 
   void canvasTransform({required final CanvasTransformation transformation})
   {

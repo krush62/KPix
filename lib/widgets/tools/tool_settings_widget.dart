@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
@@ -86,7 +87,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   Widget build(final BuildContext context)
   {
     return ValueListenableBuilder<ToolType>(
-      valueListenable: appState.selectedToolNotifier,
+      valueListenable: GetIt.I.get<ToolState>().selectedToolNotifier,
       builder: (final BuildContext context, final ToolType type, final Widget? child){
         Widget toolWidget;
         switch(type)

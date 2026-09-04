@@ -20,6 +20,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/widgets/tools/tool_type.dart';
 
 
@@ -52,6 +53,7 @@ class ToolsWidget extends StatefulWidget
 class _ToolsWidgetState extends State<ToolsWidget>
 {
   final AppState _appState = GetIt.I.get<AppState>();
+  final ToolState _toolState = GetIt.I.get<ToolState>();
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   late List<SegmentButtonData> toolDataRow1;
   late List<SegmentButtonData> toolDataRow2;
@@ -88,9 +90,9 @@ class _ToolsWidgetState extends State<ToolsWidget>
   void currentLayerTypeChanged()
   {
     if (_appState.timeline.getCurrentLayer() is ShadingLayerState &&
-        (_appState.selectedTool == ToolType.select || _appState.selectedTool == ToolType.pick))
+        (_toolState.selectedTool == ToolType.select || _toolState.selectedTool == ToolType.pick))
     {
-      _appState.setToolSelection(tool: ToolType.pencil);
+      _toolState.setToolSelection(tool: ToolType.pencil);
     }
   }
 
@@ -123,7 +125,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
         selected: <ToolType>{currentTool},
         emptySelectionAllowed: true,
         showSelectedIcon: false,
-        onSelectionChanged: (final Set<ToolType> tools) {if (tools.isNotEmpty && currentTool != tools.first) _appState.setToolSelection(tool: tools.first);},
+        onSelectionChanged: (final Set<ToolType> tools) {if (tools.isNotEmpty && currentTool != tools.first) _toolState.setToolSelection(tool: tools.first);},
         segments: segments,
     );
   }
@@ -140,7 +142,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
           final LayerState? currentLayer = _appState.timeline.getCurrentLayer();
           final bool isShadingLayer = currentLayer is ShadingLayerState;
           return ValueListenableBuilder<ToolType>(
-            valueListenable: _appState.selectedToolNotifier,
+            valueListenable: _toolState.selectedToolNotifier,
             builder: (final BuildContext context, final ToolType tool, final Widget? child) {
               return Column(
                 mainAxisSize: MainAxisSize.min,

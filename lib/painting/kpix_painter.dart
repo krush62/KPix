@@ -31,6 +31,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/eraser_painter.dart';
@@ -192,7 +193,7 @@ class KPixPainter extends CustomPainter
   {
     if (_appState.timeline.getCurrentLayer() != null)
     {
-      final IToolPainter? currentToolPainter = toolPainterMap[_appState.selectedTool];
+      final IToolPainter? currentToolPainter = toolPainterMap[GetIt.I.get<ToolState>().selectedTool];
       if (currentToolPainter != toolPainter)
       {
         if (toolPainter != null)

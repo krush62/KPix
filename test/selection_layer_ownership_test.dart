@@ -20,6 +20,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -60,14 +61,14 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState keeper = layerAt(appState: appState, index: 0);
-        final DrawingLayerState doomed = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState doomed = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         await _paint(appState: appState, layer: doomed, coord: pixel, color: color);
 
         appState.selectionState.selectAll();
         await settle(appState: appState);
         expect(appState.selectionState.selection.getColorReference(coord: pixel), color, reason: "setup: the pixel is floating");
 
-        appState.layerDeletedSelected(deleteLayer: doomed);
+        GetIt.I.get<LayerManager>().layerDeletedSelected(deleteLayer: doomed);
         await settle(appState: appState);
 
         expect(appState.selectionState.selection.selectedPixels, isEmpty,
@@ -81,15 +82,15 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState keeper = layerAt(appState: appState, index: 0);
-        final DrawingLayerState doomed = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState doomed = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         await _paint(appState: appState, layer: keeper, coord: pixel, color: color);
 
         //select on the keeper, so the floating content belongs to it
-        appState.selectLayer(newLayer: keeper);
+        GetIt.I.get<LayerManager>().selectLayer(newLayer: keeper);
         appState.selectionState.selectAll();
         await settle(appState: appState);
 
-        appState.layerDeletedSelected(deleteLayer: doomed);
+        GetIt.I.get<LayerManager>().layerDeletedSelected(deleteLayer: doomed);
         await settle(appState: appState);
 
         expect(keeper.getDataEntry(coord: pixel), color, reason: "the content belongs to a layer that is still there");
@@ -101,18 +102,18 @@ void main()
   group("reordering layers", () {
     testWidgets("keeps the same layer selected when one moves down past it", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        appState.addNewLayer(layerType: DrawingLayerState);
-        appState.addNewLayer(layerType: DrawingLayerState);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
         await settle(appState: appState);
 
         final List<LayerState> before = _layers(appState: appState);
         expect(before.length, 3, reason: "setup: three layers");
-        appState.selectLayer(newLayer: before[1]);
+        GetIt.I.get<LayerManager>().selectLayer(newLayer: before[1]);
         await settle(appState: appState);
         expect(appState.timeline.getCurrentLayer(), same(before[1]));
 
         //drag the top layer to the bottom, across the selected one
-        appState.changeLayerOrder(state: before[0], newPosition: 3);
+        GetIt.I.get<LayerManager>().changeLayerOrder(state: before[0], newPosition: 3);
         await settle(appState: appState);
 
         expect(_layers(appState: appState), <LayerState>[before[1], before[2], before[0]], reason: "setup: the move happened");
@@ -123,16 +124,16 @@ void main()
 
     testWidgets("keeps the same layer selected when one moves up past it", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        appState.addNewLayer(layerType: DrawingLayerState);
-        appState.addNewLayer(layerType: DrawingLayerState);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
         await settle(appState: appState);
 
         final List<LayerState> before = _layers(appState: appState);
-        appState.selectLayer(newLayer: before[1]);
+        GetIt.I.get<LayerManager>().selectLayer(newLayer: before[1]);
         await settle(appState: appState);
 
         //drag the bottom layer to the top, across the selected one
-        appState.changeLayerOrder(state: before[2], newPosition: 0);
+        GetIt.I.get<LayerManager>().changeLayerOrder(state: before[2], newPosition: 0);
         await settle(appState: appState);
 
         expect(_layers(appState: appState), <LayerState>[before[2], before[0], before[1]], reason: "setup: the move happened");
@@ -143,20 +144,20 @@ void main()
     testWidgets("does not move a floating selection onto a different layer", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-        appState.addNewLayer(layerType: DrawingLayerState);
-        appState.addNewLayer(layerType: DrawingLayerState);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
         await settle(appState: appState);
 
         final List<LayerState> before = _layers(appState: appState);
         final DrawingLayerState owner = before[1] as DrawingLayerState;
-        appState.selectLayer(newLayer: owner);
+        GetIt.I.get<LayerManager>().selectLayer(newLayer: owner);
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);
 
         appState.selectionState.selectAll();
         await settle(appState: appState);
         expect(appState.selectionState.selection.getColorReference(coord: pixel), color);
 
-        appState.changeLayerOrder(state: before[0], newPosition: 3);
+        GetIt.I.get<LayerManager>().changeLayerOrder(state: before[0], newPosition: 3);
         await settle(appState: appState);
         appState.selectionState.deselect(addToHistoryStack: false);
         await settle(appState: appState);
@@ -172,14 +173,14 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState locked = layerAt(appState: appState, index: 0);
-        final DrawingLayerState owner = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);
 
         locked.lockState.value = LayerLockState.locked;
         appState.selectionState.selectAll();
         await settle(appState: appState);
 
-        appState.selectLayer(newLayer: locked);
+        GetIt.I.get<LayerManager>().selectLayer(newLayer: locked);
         await settle(appState: appState);
 
         expect(owner.getDataEntry(coord: pixel), color, reason: "the content goes back to the layer it came from");
@@ -193,13 +194,13 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState locked = layerAt(appState: appState, index: 0);
-        final DrawingLayerState owner = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);
 
         locked.lockState.value = LayerLockState.locked;
         appState.selectionState.selectAll();
         await settle(appState: appState);
-        appState.selectLayer(newLayer: locked);
+        GetIt.I.get<LayerManager>().selectLayer(newLayer: locked);
         await settle(appState: appState);
 
         appState.selectionState.deselect(addToHistoryStack: false);
@@ -215,14 +216,14 @@ void main()
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState owner = layerAt(appState: appState, index: 0);
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);
-        final LayerState? shading = appState.addNewLayer(layerType: ShadingLayerState);
+        final LayerState? shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState);
         await settle(appState: appState);
 
-        appState.selectLayer(newLayer: owner);
+        GetIt.I.get<LayerManager>().selectLayer(newLayer: owner);
         appState.selectionState.selectAll();
         await settle(appState: appState);
 
-        appState.selectLayer(newLayer: shading!);
+        GetIt.I.get<LayerManager>().selectLayer(newLayer: shading!);
         await settle(appState: appState);
 
         expect(owner.getDataEntry(coord: pixel), color);
@@ -236,16 +237,16 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState locked = layerAt(appState: appState, index: 0);
-        final DrawingLayerState owner = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);
 
         locked.lockState.value = LayerLockState.locked;
         appState.selectionState.selectAll();
         await settle(appState: appState);
 
-        appState.selectLayer(newLayer: locked);
+        GetIt.I.get<LayerManager>().selectLayer(newLayer: locked);
         await settle(appState: appState);
-        appState.selectLayer(newLayer: owner);
+        GetIt.I.get<LayerManager>().selectLayer(newLayer: owner);
         await settle(appState: appState);
 
         expect(appState.selectionState.selection.getColorReference(coord: pixel), color,

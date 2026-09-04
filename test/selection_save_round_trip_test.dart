@@ -25,6 +25,7 @@ import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -130,7 +131,7 @@ void main()
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final DrawingLayerState drawingLayer = layerAt(appState: appState, index: 0);
       drawingLayer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
-      appState.addNewLayer(layerType: ShadingLayerState);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState);
       await settle(appState: appState);
 
       final int sizeWithoutSelection = (await _save(appState: appState)).lengthInBytes;
@@ -138,9 +139,9 @@ void main()
       //a selection made on a drawing layer survives a switch to a shading layer:
       //the content is handed back to the drawing layer but the buffer keeps a
       //copy, because a shading layer cannot hold colour references
-      appState.selectLayer(newLayer: drawingLayer);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: drawingLayer);
       appState.selectionState.selectAll();
-      appState.selectLayer(newLayer: appState.timeline.selectedFrame!.layerList.getLayer(index: 0));
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: appState.timeline.selectedFrame!.layerList.getLayer(index: 0));
       await settle(appState: appState);
       expect(appState.timeline.getCurrentLayer(), isA<ShadingLayerState>(), reason: "setup: a shading layer is selected");
       expect(appState.selectionState.selection.selectedPixels, isNotEmpty, reason: "setup: with a selection still floating");
@@ -161,7 +162,7 @@ void main()
       final ColorReference second = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
       final DrawingLayerState lower = layerAt(appState: appState, index: 0);
       lower.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: first}));
-      final DrawingLayerState upper = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+      final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
       upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{CoordinateSetI(x: 2, y: 3): second}));
       await settle(appState: appState);
 

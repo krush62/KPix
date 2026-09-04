@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -36,7 +37,7 @@ void main()
   {
     final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
     final DrawingLayerState lower = layerAt(appState: appState, index: 0);
-    final DrawingLayerState upper = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+    final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
     upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
     await settle(appState: appState);
 
@@ -59,7 +60,7 @@ void main()
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final (DrawingLayerState _, DrawingLayerState lower) = await setUp(appState: appState);
 
-      appState.selectLayer(newLayer: lower);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
       await settle(appState: appState);
 
       expect(appState.selectionState.selection.owner, same(lower),
@@ -105,7 +106,7 @@ void main()
       await settle(appState: appState);
 
       //select on the lower layer, then move the selected layer out from under it
-      appState.selectLayer(newLayer: lower);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
       appState.selectionState.selectAll();
       await settle(appState: appState);
       appState.timeline.selectedFrame!.layerList.selectLayer(newLayer: layerAt(appState: appState, index: 0));
@@ -124,9 +125,9 @@ void main()
       final (DrawingLayerState upper, DrawingLayerState lower) = await setUp(appState: appState);
 
       //the supported route hands the content over, so nothing is out of place
-      appState.selectLayer(newLayer: lower);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
       await settle(appState: appState);
-      appState.selectLayer(newLayer: upper);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: upper);
       await settle(appState: appState);
       appState.selectionState.deselect(addToHistoryStack: false);
       await settle(appState: appState);

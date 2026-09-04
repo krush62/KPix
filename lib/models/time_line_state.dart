@@ -24,6 +24,7 @@ import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/messages.dart';
@@ -186,7 +187,7 @@ class Timeline
       }
       if (layerToSelect != null)
       {
-        GetIt.I.get<AppState>().selectLayer(newLayer: layerToSelect, oldLayer: oldLayer, addToHistoryStack: addLayerSelectionToHistory && !isPlaying.value);
+        GetIt.I.get<LayerManager>().selectLayer(newLayer: layerToSelect, oldLayer: oldLayer, addToHistoryStack: addLayerSelectionToHistory && !isPlaying.value);
       }
     }
   }

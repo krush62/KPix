@@ -26,6 +26,7 @@ import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -827,17 +828,17 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
   void _changeLayerOrder(final LayerState layer, final int newPosition)
   {
-    GetIt.I.get<AppState>().changeLayerOrder(state: layer, newPosition: newPosition);
+    GetIt.I.get<LayerManager>().changeLayerOrder(state: layer, newPosition: newPosition);
   }
 
   void _copyLayerToOtherFrame(final Frame targetFrame, final LayerState sourceLayer, final int position)
   {
-    GetIt.I.get<AppState>().copyLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
+    GetIt.I.get<LayerManager>().copyLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
   }
 
   void _linkLayerToOtherFrame(final Frame targetFrame, final LayerState sourceLayer, final int position)
   {
-    GetIt.I.get<AppState>().linkLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
+    GetIt.I.get<LayerManager>().linkLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
   }
 
 

@@ -21,6 +21,7 @@ import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -39,7 +40,7 @@ Future<(DrawingLayerState, DrawingLayerState)> _twoLayersWithFloatingPixel({
 {
   final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
   final DrawingLayerState lower = layerAt(appState: appState, index: 0);
-  final DrawingLayerState upper = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+  final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
   upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
   await settle(appState: appState);
 
@@ -80,7 +81,7 @@ void main()
       expect(upper.getDataEntry(coord: pixel), isNull, reason: "a selection takes the pixels out of the layer");
       expect(copiesOf(appState: appState, coord: pixel), 1);
 
-      appState.selectLayer(newLayer: lower);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
       await settle(appState: appState);
 
       expect(upper.getDataEntry(coord: pixel), color, reason: "the old layer gets the floating content back");
@@ -93,7 +94,7 @@ void main()
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final (DrawingLayerState _, DrawingLayerState lower) = await _twoLayersWithFloatingPixel(appState: appState, pixel: pixel);
 
-      appState.selectLayer(newLayer: lower);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
       await settle(appState: appState);
 
       //an edit on top of the switch, so that undoing it restores the state the
@@ -113,7 +114,7 @@ void main()
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final (DrawingLayerState _, DrawingLayerState lower) = await _twoLayersWithFloatingPixel(appState: appState, pixel: pixel);
 
-      appState.selectLayer(newLayer: lower);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
       await settle(appState: appState);
       appState.selectionState.flipH();
       await settle(appState: appState);
@@ -131,7 +132,7 @@ void main()
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final (DrawingLayerState _, DrawingLayerState lower) = await _twoLayersWithFloatingPixel(appState: appState, pixel: pixel);
 
-      appState.selectLayer(newLayer: lower);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
       await settle(appState: appState);
 
       expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), "select layer (move selection)",
@@ -142,10 +143,10 @@ void main()
   testWidgets("a layer switch with nothing selected stays a cheap selection change", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final DrawingLayerState lower = layerAt(appState: appState, index: 0);
-      appState.addNewLayer(layerType: DrawingLayerState, select: true);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true);
       await settle(appState: appState);
 
-      appState.selectLayer(newLayer: lower);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
       await settle(appState: appState);
 
       expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), "select layer",
@@ -256,7 +257,7 @@ void main()
       await _twoLayersWithFloatingPixel(appState: appState, pixel: pixel);
 
       final HistoryState? before = GetIt.I.get<HistoryManager>().getCurrentState();
-      appState.changeLayerVisibility(layerState: layerAt(appState: appState, index: 1));
+      GetIt.I.get<LayerManager>().changeLayerVisibility(layerState: layerAt(appState: appState, index: 1));
       await settle(appState: appState);
       final HistoryState? after = GetIt.I.get<HistoryManager>().getCurrentState();
 

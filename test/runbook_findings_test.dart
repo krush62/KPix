@@ -20,6 +20,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -58,7 +59,7 @@ void main()
         await settle(appState: appState);
         expect(appState.selectionState.selection.getColorReference(coord: pixel), color, reason: "setup: the pixel is floating");
 
-        final DrawingLayerState copy = appState.layerDuplicateSelected(duplicateLayer: source)! as DrawingLayerState;
+        final DrawingLayerState copy = GetIt.I.get<LayerManager>().layerDuplicateSelected(duplicateLayer: source)! as DrawingLayerState;
         await settle(appState: appState);
 
         expect(copy.getDataEntry(coord: pixel), color,

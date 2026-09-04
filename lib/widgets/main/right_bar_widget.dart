@@ -46,6 +46,7 @@ import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
@@ -70,6 +71,7 @@ class RightBarWidget extends StatefulWidget
 class _RightBarWidgetState extends State<RightBarWidget>
 {
   final AppState _appState = GetIt.I.get<AppState>();
+  final LayerManager _layerManager = GetIt.I.get<LayerManager>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
 
   final OverlayPortalController _addLayerPortalController = OverlayPortalController();
@@ -89,31 +91,31 @@ class _RightBarWidgetState extends State<RightBarWidget>
 
   void _newDrawingLayerPressed()
   {
-    _appState.addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    _layerManager.addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
   void _newReferenceLayerPressed()
   {
-    _appState.addNewLayer(layerType: ReferenceLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    _layerManager.addNewLayer(layerType: ReferenceLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
   void _newGridLayerPressed()
   {
-    _appState.addNewLayer(layerType: GridLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    _layerManager.addNewLayer(layerType: GridLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
   void _newShadingLayerPressed()
   {
-    _appState.addNewLayer(layerType: ShadingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    _layerManager.addNewLayer(layerType: ShadingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
   void _newDitherLayerPressed()
   {
-    _appState.addNewLayer(layerType: DitherLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    _layerManager.addNewLayer(layerType: DitherLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
@@ -131,7 +133,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
           );
         },
         onAcceptWithDetails: (final DragTargetDetails<LayerState> details) {
-          _appState.changeLayerOrder(state: details.data, newPosition: i);
+          _layerManager.changeLayerOrder(state: details.data, newPosition: i);
         },
       ),);
 
@@ -156,7 +158,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
         final Frame? frame = _appState.timeline.selectedFrame;
         if (frame != null)
         {
-          _appState.changeLayerOrder(state: details.data, newPosition: frame.layerList.length);
+          _layerManager.changeLayerOrder(state: details.data, newPosition: frame.layerList.length);
         }
       },
     ),);

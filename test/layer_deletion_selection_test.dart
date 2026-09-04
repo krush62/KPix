@@ -15,9 +15,11 @@
  */
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 
 import 'support/selection_harness.dart';
@@ -34,8 +36,8 @@ List<LayerState> _layers({required final AppState appState})
 
 Future<List<LayerState>> _threeLayers({required final AppState appState}) async
 {
-  appState.addNewLayer(layerType: DrawingLayerState);
-  appState.addNewLayer(layerType: DrawingLayerState);
+  GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+  GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
   await settle(appState: appState);
   final List<LayerState> layers = _layers(appState: appState);
   expect(layers.length, 3, reason: "setup: three layers, top to bottom");
@@ -49,10 +51,10 @@ void main()
   testWidgets("deleting the selected layer selects the one that takes its place", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final List<LayerState> before = await _threeLayers(appState: appState);
-      appState.selectLayer(newLayer: before[1]);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: before[1]);
       await settle(appState: appState);
 
-      appState.layerDeletedSelected(deleteLayer: before[1]);
+      GetIt.I.get<LayerManager>().layerDeletedSelected(deleteLayer: before[1]);
       await settle(appState: appState);
 
       expect(_layers(appState: appState), <LayerState>[before[0], before[2]]);
@@ -64,10 +66,10 @@ void main()
   testWidgets("deleting the selected bottom layer selects the one above it", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final List<LayerState> before = await _threeLayers(appState: appState);
-      appState.selectLayer(newLayer: before[2]);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: before[2]);
       await settle(appState: appState);
 
-      appState.layerDeletedSelected(deleteLayer: before[2]);
+      GetIt.I.get<LayerManager>().layerDeletedSelected(deleteLayer: before[2]);
       await settle(appState: appState);
 
       expect(_layers(appState: appState), <LayerState>[before[0], before[1]]);
@@ -79,10 +81,10 @@ void main()
   testWidgets("deleting a layer above the selected one keeps the selection", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final List<LayerState> before = await _threeLayers(appState: appState);
-      appState.selectLayer(newLayer: before[2]);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: before[2]);
       await settle(appState: appState);
 
-      appState.layerDeletedSelected(deleteLayer: before[0]);
+      GetIt.I.get<LayerManager>().layerDeletedSelected(deleteLayer: before[0]);
       await settle(appState: appState);
 
       expect(_layers(appState: appState), <LayerState>[before[1], before[2]]);
@@ -94,10 +96,10 @@ void main()
   testWidgets("deleting a layer below the selected one keeps the selection", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final List<LayerState> before = await _threeLayers(appState: appState);
-      appState.selectLayer(newLayer: before[0]);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: before[0]);
       await settle(appState: appState);
 
-      appState.layerDeletedSelected(deleteLayer: before[2]);
+      GetIt.I.get<LayerManager>().layerDeletedSelected(deleteLayer: before[2]);
       await settle(appState: appState);
 
       expect(_layers(appState: appState), <LayerState>[before[0], before[1]]);
@@ -108,7 +110,7 @@ void main()
   testWidgets("the last layer cannot be deleted", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final LayerState only = layerAt(appState: appState, index: 0);
-      appState.layerDeletedSelected(deleteLayer: only);
+      GetIt.I.get<LayerManager>().layerDeletedSelected(deleteLayer: only);
       await settle(appState: appState);
 
       expect(_layers(appState: appState), <LayerState>[only]);

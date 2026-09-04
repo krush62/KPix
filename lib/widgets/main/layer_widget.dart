@@ -26,6 +26,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
@@ -45,6 +46,7 @@ class LayerWidget extends StatefulWidget {
 
 class _LayerWidgetState extends State<LayerWidget> {
   final AppState _appState = GetIt.I.get<AppState>();
+  final LayerManager _layerManager = GetIt.I.get<LayerManager>();
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
 
@@ -90,29 +92,29 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _deletePressed()
   {
-    _appState.layerDeletedSelected(deleteLayer: widget.layerState);
+    _layerManager.layerDeletedSelected(deleteLayer: widget.layerState);
     _closeActionsMenus();
   }
 
   void _mergeDownPressed()
   {
-    _appState.layerMerged(mergeLayer: widget.layerState);
+    _layerManager.layerMerged(mergeLayer: widget.layerState);
     _closeActionsMenus();
   }
 
   void _duplicatePressed()
   {
-    _appState.layerDuplicateSelected(duplicateLayer: widget.layerState);
+    _layerManager.layerDuplicateSelected(duplicateLayer: widget.layerState);
     _closeActionsMenus();
   }
 
   void _unlinkPressed()
   {
-    final LayerState? duplicatedLayer = _appState.layerDuplicateSelected(duplicateLayer: widget.layerState, addToHistoryStack: false);
+    final LayerState? duplicatedLayer = _layerManager.layerDuplicateSelected(duplicateLayer: widget.layerState, addToHistoryStack: false);
     if (duplicatedLayer != null)
     {
-      _appState.layerDeletedSelected(deleteLayer: widget.layerState, addToHistoryStack: false);
-      _appState.selectLayer(newLayer: duplicatedLayer);
+      _layerManager.layerDeletedSelected(deleteLayer: widget.layerState, addToHistoryStack: false);
+      _layerManager.selectLayer(newLayer: duplicatedLayer);
       _appState.timeline.layerChangeNotifier.reportChange();
     }
     _closeActionsMenus();
@@ -120,7 +122,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _rasterPressed()
   {
-    _appState.layerRasterPressed(rasterLayer: widget.layerState);
+    _layerManager.layerRasterPressed(rasterLayer: widget.layerState);
     _closeActionsMenus();
   }
 
@@ -149,17 +151,17 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _visibilityButtonPressed()
   {
-    _appState.changeLayerVisibility(layerState: widget.layerState);
+    _layerManager.changeLayerVisibility(layerState: widget.layerState);
   }
 
   void _lockButtonPressed()
   {
-    _appState.changeLayerLockState(layerState: widget.layerState);
+    _layerManager.changeLayerLockState(layerState: widget.layerState);
   }
 
   void _settingsButtonPressed()
   {
-    _appState.selectLayer(newLayer: widget.layerState);
+    _layerManager.selectLayer(newLayer: widget.layerState);
     GetIt.I.get<ViewState>().layerSettingsVisible = true;
   }
 
@@ -365,7 +367,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
-                              _appState.selectLayer(newLayer: widget.layerState);
+                              _layerManager.selectLayer(newLayer: widget.layerState);
                             },
                             child: Stack(
                               fit: StackFit.expand,

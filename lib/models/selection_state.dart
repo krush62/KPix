@@ -26,6 +26,7 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
@@ -79,7 +80,7 @@ class SelectionState with ChangeNotifier
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) copyMerged();}, action: HotkeyAction.selectionCopyMerged);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) cut();}, action: HotkeyAction.selectionCut);
     hotkeyManager.addListener(func: () {if (clipboard != null) paste();}, action: HotkeyAction.selectionPaste);
-    hotkeyManager.addListener(func: () {if (clipboard != null) _appState.addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: _appState.selectionState.clipboard);}, action: HotkeyAction.selectionPasteAsNewLayer);
+    hotkeyManager.addListener(func: () {if (clipboard != null) GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: _appState.selectionState.clipboard);}, action: HotkeyAction.selectionPasteAsNewLayer);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) delete();}, action: HotkeyAction.selectionDelete);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) flipH();}, action: HotkeyAction.selectionFlipH);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) flipV();}, action: HotkeyAction.selectionFlipV);

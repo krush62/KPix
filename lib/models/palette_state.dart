@@ -25,6 +25,7 @@ import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/view_state.dart';
@@ -124,7 +125,7 @@ class PaletteState
       {
         f.layerList.deleteRampFromLayers(ramp: ramp, backupColor: rampDataList[0].references[0]);
       }
-      _appState.rasterLayersAll();
+      GetIt.I.get<LayerManager>().rasterLayersAll();
       GetIt.I.get<ViewState>().repaintNotifier.repaint();
       if (addToHistoryStack)
       {
@@ -152,7 +153,7 @@ class PaletteState
       }
 
     }
-    _appState.rasterLayersAll();
+    GetIt.I.get<LayerManager>().rasterLayersAll();
     GetIt.I.get<ViewState>().repaintNotifier.repaint();
     if (addToHistoryStack)
     {

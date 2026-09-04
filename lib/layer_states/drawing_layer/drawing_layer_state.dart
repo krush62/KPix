@@ -35,6 +35,7 @@ import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -389,7 +390,7 @@ class DrawingLayerState extends RasterableLayerState
 
     if (layerStack == null)
     {
-      GetIt.I.get<AppState>().newRasterData(layer: this);
+      GetIt.I.get<LayerManager>().newRasterData(layer: this);
     }
   }
 

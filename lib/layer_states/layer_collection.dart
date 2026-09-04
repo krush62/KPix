@@ -28,6 +28,7 @@ import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -156,7 +157,7 @@ class LayerCollection with ChangeNotifier {
     final List<LayerState> removed = List<LayerState>.of(_layers);
     _layers.clear();
     _clearDependencies();
-    GetIt.I.get<AppState>().disposeUnusedLayers(candidates: removed);
+    GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: removed);
     _selectedLayerIndexNotifier.value = null;
     if (notify) {
       notifyListeners();
@@ -434,7 +435,7 @@ class LayerCollection with ChangeNotifier {
       }
       _selectedLayerIndexNotifier.value = newSelectedIndex.clamp(0, _layers.length - 1);
       _rebuildDependencies();
-      GetIt.I.get<AppState>().disposeUnusedLayers(candidates: <LayerState>[deleteLayer]);
+      GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: <LayerState>[deleteLayer]);
 
       notifyListeners();
       return true;
@@ -519,7 +520,7 @@ class LayerCollection with ChangeNotifier {
         }
       }
       _layers.remove(drawingIntoLayer);
-      GetIt.I.get<AppState>().disposeUnusedLayers(candidates: <LayerState>[drawingIntoLayer]);
+      GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: <LayerState>[drawingIntoLayer]);
       drawingMergeLayer.setDataAll(list: refs);
       selectLayer(newLayer: drawingMergeLayer);
       notifyListeners();
@@ -701,7 +702,7 @@ class LayerCollection with ChangeNotifier {
       _rebuildDependencies();
       //the rasterized layer is replaced by its flattened result; it survives only
       //if another frame still links it
-      GetIt.I.get<AppState>().disposeUnusedLayers(candidates: <LayerState>[originalLayer]);
+      GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: <LayerState>[originalLayer]);
       _triggerNewLayerRender(layer: drawingLayer);
       notifyListeners();
     }

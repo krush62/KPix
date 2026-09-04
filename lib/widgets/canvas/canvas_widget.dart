@@ -47,6 +47,7 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/tool_state.dart';
@@ -865,25 +866,27 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       //CHANGE CURRENT LAYER
       else if (_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && !_hotkeyManager.controlIsPressed)
       {
+        final LayerManager layerManager = GetIt.I.get<LayerManager>();
         if (ev.scrollDelta.dy < 0.0)
         {
-          _appState.selectLayerAbove();
+          layerManager.selectLayerAbove();
         }
         else
         {
-          _appState.selectLayerBelow();
+          layerManager.selectLayerBelow();
         }
       }
       //MOVE LAYER
       else if (_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && _hotkeyManager.controlIsPressed)
       {
+        final LayerManager layerManager = GetIt.I.get<LayerManager>();
         if (ev.scrollDelta.dy < 0.0)
         {
-          _appState.moveUpLayer(layerState: _appState.timeline.getCurrentLayer());
+          layerManager.moveUpLayer(layerState: _appState.timeline.getCurrentLayer());
         }
         else
         {
-          _appState.moveDownLayer(layerState: _appState.timeline.getCurrentLayer());
+          layerManager.moveDownLayer(layerState: _appState.timeline.getCurrentLayer());
         }
       }
       //CHANGE COLOR SELECTION

@@ -19,6 +19,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -51,7 +52,7 @@ void main()
         final DrawingLayerState below = layerAt(appState: appState, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
-        final DrawingLayerState above = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         await settle(appState: appState);
 
@@ -72,7 +73,7 @@ void main()
         final DrawingLayerState below = layerAt(appState: appState, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
-        final DrawingLayerState above = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         await settle(appState: appState);
 
@@ -90,7 +91,7 @@ void main()
         final DrawingLayerState below = layerAt(appState: appState, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
-        final DrawingLayerState above = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         await settle(appState: appState);
 
@@ -109,7 +110,7 @@ void main()
         final DrawingLayerState below = layerAt(appState: appState, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: first));
 
-        final DrawingLayerState above = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: first}));
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.shade;
         await settle(appState: appState);
@@ -131,7 +132,7 @@ void main()
         final DrawingLayerState below = layerAt(appState: appState, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
-        final DrawingLayerState above = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.solid;
         await settle(appState: appState);
@@ -148,7 +149,7 @@ void main()
         final DrawingLayerState below = layerAt(appState: appState, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
-        final DrawingLayerState above = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.shade;
         await settle(appState: appState);

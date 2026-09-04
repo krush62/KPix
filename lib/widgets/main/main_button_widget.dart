@@ -28,6 +28,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/update_state.dart';
 import 'package:kpix/models/view_state.dart';
@@ -489,7 +490,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       {
         _appState.importFile(importResult: result);
         GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
-        _appState.rasterLayersFrame();
+        GetIt.I.get<LayerManager>().rasterLayersFrame();
         _appState.timeline.layerChangeNotifier.reportChange();
       });
     }

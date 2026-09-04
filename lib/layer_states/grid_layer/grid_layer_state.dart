@@ -29,6 +29,7 @@ import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/drawing_helper.dart';
@@ -237,7 +238,7 @@ class GridLayerState extends LayerState
       if (!identical(outgoingRaster, image)) outgoingRaster,
       if (!identical(outgoingThumbnail, image)) outgoingThumbnail,
     ],);
-    GetIt.I.get<AppState>().newRasterData(layer: this);
+    GetIt.I.get<LayerManager>().newRasterData(layer: this);
     settleRaster();
   }
 

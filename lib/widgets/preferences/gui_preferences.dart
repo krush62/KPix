@@ -15,9 +15,9 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:kpix/preferences/preference_gui.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/color_names.dart';
+import 'package:kpix/widgets/preferences/preference_gui.dart';
 
 class GuiPreferences extends StatefulWidget
 {

@@ -20,6 +20,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;

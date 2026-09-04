@@ -22,6 +22,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';

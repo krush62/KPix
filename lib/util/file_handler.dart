@@ -44,6 +44,7 @@ import 'package:kpix/models/constraints/kpal_constraints.dart';
 import 'package:kpix/models/constraints/reference_layer_constraints.dart';
 import 'package:kpix/models/constraints/shading_layer_settings_constraints.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/history/history_color_reference.dart';
 import 'package:kpix/models/history/history_drawing_layer.dart';
 import 'package:kpix/models/history/history_drawing_layer_settings.dart';
@@ -63,7 +64,6 @@ import 'package:kpix/models/history/history_timeline.dart';
 import 'package:kpix/models/history/ramp_resolver.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_state.dart';
-import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -74,6 +74,7 @@ import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
+import 'package:kpix/util/helpers/platform_helper.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
@@ -87,7 +88,6 @@ part 'import/import_kpix.dart';
 part 'import/import_palette.dart';
 part 'import/import_stamp.dart';
 
-
 class LoadProjectFileSet
 {
   final String path;
@@ -99,8 +99,6 @@ class LoadProjectFileSet
     required this.thumbnail,
   });
 }
-
-
 
 enum FileNameStatus
 {
@@ -114,17 +112,6 @@ enum FileNameStatus
   final IconData icon;
 }
 
-const int fileVersion = 4;
-const String magicNumber = "4B504958";
-const String fileExtensionKpix = "kpix";
-const String fileExtensionKpal = "kpal";
-const String palettesSubDirName = "palettes";
-const String stampsSubDirName = "stamps";
-const String projectsSubDirName = "projects";
-const String recoverSubDirName = "recover";
-const String thumbnailExtension = "png";
-const List<String> imageExtensions = <String>["png", "jpg", "jpeg", "gif"];
-const String recoverFileName = "___recover___";
 const double _floatDelta = 0.01;
 
 Future<String?> saveKPixFile({
@@ -637,7 +624,6 @@ Future<String?> exportAnimation({required final AnimationExportData exportData, 
   );
 }
 
-
 FileNameStatus checkFileName({required final String fileName, required final String directory, required final String extension, final bool allowRecoverFile = true,})
 {
   final Logger logger = GetIt.I.get<Logger>();
@@ -948,73 +934,6 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourc
     logger.w("Error moving project files.", error: e, stackTrace: s);
     return ProjectDirectoryMoveResult(success: false, message: "An unexpected error occurred while moving project files!",);
   }
-}
-
-/// Collects the file system state of every project in [dir].
-///
-/// This only stats files, so it holds no `dart:ui` handles and reaches nothing
-/// in the service locator: [ProjectManager] runs it on a background isolate.
-/// It does not log for the same reason, and lets errors surface to the caller.
-Future<List<ProjectFileStat>> scanProjectDirectory({required final String dir}) async
-{
-  final List<ProjectFileStat> stats = <ProjectFileStat>[];
-  final Directory directory = Directory(dir);
-  if (!await directory.exists())
-  {
-    return stats;
-  }
-
-  await for (final FileSystemEntity entity in directory.list(followLinks: false))
-  {
-    if (entity is! File || p.extension(entity.path).toLowerCase() != ".$fileExtensionKpix")
-    {
-      continue;
-    }
-    final String kpixPath = entity.absolute.path;
-    //FileStat.stat never throws, it reports a missing file as a not found type,
-    //which is what a file deleted between listing and stating looks like here
-    final FileStat kpixStat = await FileStat.stat(kpixPath);
-    if (kpixStat.type != FileSystemEntityType.file)
-    {
-      continue;
-    }
-    final String thumbnailPath = p.setExtension(kpixPath, ".$thumbnailExtension");
-    final FileStat thumbnailStat = await FileStat.stat(thumbnailPath);
-    final bool hasThumbnail = thumbnailStat.type == FileSystemEntityType.file;
-    stats.add(
-      ProjectFileStat(
-        kpixPath: kpixPath,
-        lastModified: kpixStat.modified,
-        thumbnailPath: thumbnailPath,
-        thumbnailModified: hasThumbnail ? thumbnailStat.modified : null,
-        thumbnailSize: hasThumbnail ? thumbnailStat.size : null,
-      ),
-    );
-  }
-  return stats;
-}
-
-/// Collects the file system state of the single project at [kpixPath].
-///
-/// Returns null when the project file is gone, which is how [ProjectManager]
-/// detects a deletion.
-Future<ProjectFileStat?> statProjectFile({required final String kpixPath}) async
-{
-  final FileStat kpixStat = await FileStat.stat(kpixPath);
-  if (kpixStat.type != FileSystemEntityType.file)
-  {
-    return null;
-  }
-  final String thumbnailPath = p.setExtension(kpixPath, ".$thumbnailExtension");
-  final FileStat thumbnailStat = await FileStat.stat(thumbnailPath);
-  final bool hasThumbnail = thumbnailStat.type == FileSystemEntityType.file;
-  return ProjectFileStat(
-    kpixPath: kpixPath,
-    lastModified: kpixStat.modified,
-    thumbnailPath: thumbnailPath,
-    thumbnailModified: hasThumbnail ? thumbnailStat.modified : null,
-    thumbnailSize: hasThumbnail ? thumbnailStat.size : null,
-  );
 }
 
 /// Decodes the project thumbnail at [thumbnailPath].
@@ -1335,17 +1254,4 @@ Future<ui.Image> getImageFromLayers({
     }
   }
   return recorder.endRecording().toImage(canvasSize.x * scalingFactor, canvasSize.y * scalingFactor);
-}
-
-/// Returns true if the application is running as native desktop application.
-bool isDesktop({final bool includingWeb = false})
-{
-  if (kIsWeb && !includingWeb)
-  {
-    return false;
-  }
-  else
-  {
-    return (kIsWeb && includingWeb) || Platform.isMacOS || Platform.isLinux || Platform.isWindows;
-  }
 }

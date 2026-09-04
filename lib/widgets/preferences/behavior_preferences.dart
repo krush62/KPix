@@ -21,11 +21,11 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/app_paths.dart';
-import 'package:kpix/preferences/preference_gui.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/messages.dart';
+import 'package:kpix/widgets/preferences/preference_gui.dart';
 
 
 

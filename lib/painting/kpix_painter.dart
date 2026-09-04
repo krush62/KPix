@@ -30,6 +30,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/kpix_painter_options.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -53,28 +54,6 @@ import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/timeline/frame_blending_options.dart';
 
-class KPixPainterOptions
-{
-  final double cursorSize;
-  final double cursorBorderWidth;
-  final double selectionSolidStrokeWidth;
-  final double pixelExtension;
-  final double selectionPolygonCircleRadius;
-  final double selectionStrokeWidthLarge;
-  final double selectionStrokeWidthSmall;
-  final int backupPainterPollingRateMs;
-
-  KPixPainterOptions({
-    required this.cursorSize,
-    required this.cursorBorderWidth,
-    required this.selectionSolidStrokeWidth,
-    required this.pixelExtension,
-    required this.selectionPolygonCircleRadius,
-    required this.selectionStrokeWidthLarge,
-    required this.selectionStrokeWidthSmall,
-    required this.backupPainterPollingRateMs,
-  });
-}
 
 
 

@@ -22,6 +22,8 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kpix/managers/project_scanner.dart';
+import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';

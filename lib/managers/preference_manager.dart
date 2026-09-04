@@ -21,7 +21,7 @@ import 'package:kpix/models/constraints/drawing_layer_settings_constraints.dart'
 import 'package:kpix/models/constraints/frame_constraints.dart';
 import 'package:kpix/models/constraints/shading_layer_settings_constraints.dart';
 import 'package:kpix/models/history/history_manager.dart';
-import 'package:kpix/painting/kpix_painter.dart';
+import 'package:kpix/models/kpix_painter_options.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:shared_preferences/shared_preferences.dart';

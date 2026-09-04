@@ -16,8 +16,8 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:kpix/preferences/preference_gui.dart';
 import 'package:kpix/preferences/preference_values.dart';
+import 'package:kpix/widgets/preferences/preference_gui.dart';
 
 class TouchPreferences extends StatefulWidget
 {

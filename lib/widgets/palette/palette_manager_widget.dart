@@ -23,6 +23,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/file_handler.dart';

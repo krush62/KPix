@@ -17,7 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/helpers/platform_helper.dart';
 
 enum HotkeyAction
 {

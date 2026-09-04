@@ -15,7 +15,7 @@
  */
 
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/managers/history/ramp_resolver.dart';
+import 'package:kpix/models/history/ramp_resolver.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 
 abstract class HistoryLayer

@@ -25,17 +25,17 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
-import 'package:kpix/managers/history/history_grid_layer.dart';
-import 'package:kpix/managers/history/history_layer.dart';
-import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/constraints/grid_layer_constraints.dart';
+import 'package:kpix/models/history/history_grid_layer.dart';
+import 'package:kpix/models/history/history_layer.dart';
+import 'package:kpix/models/history/history_ramp_data.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/drawing_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
 import 'package:logger/logger.dart';
 
 class GridLayerState extends LayerState

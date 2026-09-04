@@ -24,8 +24,8 @@ import 'package:kpix/layer_states/layer_settings.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
-import 'package:kpix/managers/history/history_layer.dart';
-import 'package:kpix/managers/history/history_ramp_data.dart';
+import 'package:kpix/models/history/history_layer.dart';
+import 'package:kpix/models/history/history_ramp_data.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 

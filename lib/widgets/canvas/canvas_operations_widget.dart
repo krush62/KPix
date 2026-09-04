@@ -19,6 +19,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/canvas_transformation.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_size_constraints.dart';
@@ -33,12 +34,6 @@ abstract final class _CanvasOperationsWidgetOptions
 }
 
 /// Available canvas transformations.
-enum CanvasTransformation
-{
-  rotate,
-  flipH,
-  flipV
-}
 
 /// Descriptions for the available canvas operations.
 const Map<CanvasTransformation, String> transformationDescriptions =

@@ -21,8 +21,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_widget_options.dart';
-import 'package:kpix/managers/history/history_layer.dart';
-import 'package:kpix/managers/history/history_ramp_data.dart';
+import 'package:kpix/models/history/history_layer.dart';
+import 'package:kpix/models/history/history_ramp_data.dart';
 
 enum LayerVisibilityState
 {

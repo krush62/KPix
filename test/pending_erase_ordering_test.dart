@@ -17,13 +17,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/models/canvas_transformation.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 
 import 'support/selection_harness.dart';
 

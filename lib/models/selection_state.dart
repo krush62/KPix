@@ -21,12 +21,13 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/constraints/tool_select_constraints.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
@@ -37,7 +38,6 @@ import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 import 'package:logger/logger.dart';
 
 enum SelectionDirection

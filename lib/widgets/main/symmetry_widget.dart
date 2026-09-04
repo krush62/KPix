@@ -21,30 +21,9 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/canvas_state.dart';
-import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
-class SymmetryState
-{
-  final ValueNotifier<bool> horizontalActivated = ValueNotifier<bool>(false);
-  final ValueNotifier<double> horizontalValue = ValueNotifier<double>(1.0);
-  final ValueNotifier<bool> verticalActivated = ValueNotifier<bool>(false);
-  final ValueNotifier<double> verticalValue = ValueNotifier<double>(1.0);
-
-  void reset()
-  {
-    horizontalActivated.value = false;
-    horizontalValue.value = GetIt.I.get<CanvasState>().canvasSize.x.toDouble() / 2.0;
-    verticalActivated.value = false;
-    verticalValue.value = GetIt.I.get<CanvasState>().canvasSize.y.toDouble() / 2.0;
-  }
-
-  void newCanvasDimensions({required final CoordinateSetI newSize})
-  {
-    horizontalValue.value = horizontalValue.value.clamp(1.0, newSize.x - 1).toDouble();
-    verticalValue.value = verticalValue.value.clamp(1.0, newSize.y - 1).toDouble();
-  }
-}
 
 
 abstract final class _SymmetryWidgetOptions

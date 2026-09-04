@@ -22,6 +22,7 @@ import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
+import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/file_handler.dart';

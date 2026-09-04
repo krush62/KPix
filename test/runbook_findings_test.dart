@@ -17,10 +17,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/constraints/tool_select_constraints.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
@@ -30,7 +31,6 @@ import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 
 import 'support/selection_harness.dart';
 

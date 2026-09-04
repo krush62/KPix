@@ -14,5 +14,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export 'package:kpix/managers/history/history_shading_layer.dart'
+export 'package:kpix/models/history/history_shading_layer.dart'
     show HistoryDitherLayer;

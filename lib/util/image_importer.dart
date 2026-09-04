@@ -27,29 +27,15 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/constraints/kpal_constraints.dart';
+import 'package:kpix/models/constraints/reference_layer_constraints.dart';
+import 'package:kpix/models/io_types.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
-import 'package:kpix/widgets/kpal/kpal_constraints.dart';
-import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
 import 'package:uuid/uuid.dart';
 
-class ImportDataSet
-{
-  final ReferenceLayerState? referenceLayer;
-  final DrawingLayerState drawingLayer;
-  final CoordinateSetI canvasSize;
-  final List<KPalRampData> rampDataList;
 
-  ImportDataSet({required this.referenceLayer, required this.rampDataList, required this.drawingLayer, required this.canvasSize});
-}
-
-class ImportResult
-{
-  final ImportDataSet? data;
-  final String message;
-  ImportResult({this.data, required this.message});
-}
 
 const int _fullCircle = 360;
 const int _halfCircle = 180;

@@ -27,34 +27,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
-import 'package:kpix/managers/history/history_color_reference.dart';
-import 'package:kpix/managers/history/history_drawing_layer.dart';
-import 'package:kpix/managers/history/history_drawing_layer_settings.dart';
-import 'package:kpix/managers/history/history_frame.dart';
-import 'package:kpix/managers/history/history_grid_layer.dart';
-import 'package:kpix/managers/history/history_layer.dart';
-import 'package:kpix/managers/history/history_layer_type.dart';
-import 'package:kpix/managers/history/history_ramp_data.dart';
-import 'package:kpix/managers/history/history_reference_layer.dart';
-import 'package:kpix/managers/history/history_selection_state.dart';
-import 'package:kpix/managers/history/history_shading_layer.dart';
-import 'package:kpix/managers/history/history_shading_layer_settings.dart';
-import 'package:kpix/managers/history/history_shift_set.dart';
-import 'package:kpix/managers/history/history_state.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/managers/history/history_timeline.dart';
-import 'package:kpix/managers/history/ramp_resolver.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/constraints/grid_layer_constraints.dart';
+import 'package:kpix/models/constraints/kpal_constraints.dart';
+import 'package:kpix/models/constraints/reference_layer_constraints.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_color_reference.dart';
+import 'package:kpix/models/history/history_drawing_layer.dart';
+import 'package:kpix/models/history/history_drawing_layer_settings.dart';
+import 'package:kpix/models/history/history_frame.dart';
+import 'package:kpix/models/history/history_grid_layer.dart';
+import 'package:kpix/models/history/history_layer.dart';
+import 'package:kpix/models/history/history_layer_type.dart';
+import 'package:kpix/models/history/history_ramp_data.dart';
+import 'package:kpix/models/history/history_reference_layer.dart';
+import 'package:kpix/models/history/history_selection_state.dart';
+import 'package:kpix/models/history/history_shading_layer.dart';
+import 'package:kpix/models/history/history_shading_layer_settings.dart';
+import 'package:kpix/models/history/history_shift_set.dart';
+import 'package:kpix/models/history/history_state.dart';
+import 'package:kpix/models/history/history_state_type.dart';
+import 'package:kpix/models/history/history_timeline.dart';
+import 'package:kpix/models/history/ramp_resolver.dart';
+import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/models/project_session.dart';
@@ -68,13 +73,9 @@ import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/messages.dart';
-import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
-import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
-import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
-import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -84,13 +85,6 @@ part 'import/import_kpix.dart';
 part 'import/import_palette.dart';
 part 'import/import_stamp.dart';
 
-class LoadFileSet
-{
-  final String status;
-  final HistoryState? historyState;
-  final String? path;
-  LoadFileSet({required this.status, this.historyState, this.path});
-}
 
 class LoadProjectFileSet
 {
@@ -104,14 +98,7 @@ class LoadProjectFileSet
   });
 }
 
-enum PaletteReplaceBehavior { remap, replace }
 
-class LoadPaletteSet
-{
-  final String status;
-  final List<KPalRampData>? rampData;
-  LoadPaletteSet({required this.status, this.rampData});
-}
 
 enum FileNameStatus
 {

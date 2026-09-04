@@ -48,6 +48,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/constraints/kpal_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -57,10 +58,8 @@ import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
-part '../../util/kpal_ramp_data.dart';
 part 'kpal_color_card_widget.dart';
 part 'kpal_ramp_widget.dart';
 part 'kpal_vertical_slider_widget.dart';

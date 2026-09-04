@@ -19,10 +19,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/managers/history/history_state.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_state.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:logger/logger.dart';
 

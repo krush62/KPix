@@ -16,7 +16,7 @@
  *
  */
 
-import 'package:kpix/managers/history/history_color_reference.dart';
+import 'package:kpix/models/history/history_color_reference.dart';
 
 class HistoryPixelChange
 {

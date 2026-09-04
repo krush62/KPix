@@ -19,7 +19,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
-import 'package:kpix/managers/history/history_manager.dart';
+import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/preferences/preference_values.dart';

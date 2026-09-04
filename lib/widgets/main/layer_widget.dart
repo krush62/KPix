@@ -26,6 +26,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
@@ -45,7 +46,7 @@ class LayerWidget extends StatefulWidget {
 }
 
 class _LayerWidgetState extends State<LayerWidget> {
-  final AppState _appState = GetIt.I.get<AppState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final LayerManager _layerManager = GetIt.I.get<LayerManager>();
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
@@ -115,7 +116,7 @@ class _LayerWidgetState extends State<LayerWidget> {
     {
       _layerManager.layerDeletedSelected(deleteLayer: widget.layerState, addToHistoryStack: false);
       _layerManager.selectLayer(newLayer: duplicatedLayer);
-      _appState.timeline.layerChangeNotifier.reportChange();
+      _documentState.timeline.layerChangeNotifier.reportChange();
     }
     _closeActionsMenus();
   }
@@ -136,7 +137,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _actionsButtonPressed()
   {
-    if (_appState.timeline.isLayerLinked(layer: widget.layerState))
+    if (_documentState.timeline.isLayerLinked(layer: widget.layerState))
     {
       actionsMenuDrawingLinked.show(context: context);
       return;
@@ -212,7 +213,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                   child: Container(
                     padding: const EdgeInsets.all(LayerWidgetOptions.innerPadding),
                     decoration: BoxDecoration(
-                      color: _appState.timeline.isLayerLinked(layer: widget.layerState) ?
+                      color: _documentState.timeline.isLayerLinked(layer: widget.layerState) ?
                         getColorForLayer(hashCode: widget.layerState.hashCode, context: context, selected: true):
                         Theme.of(context).primaryColor,
                       borderRadius: const BorderRadius.all(

@@ -16,9 +16,9 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> exportGIF({required final AnimationExportData exportData, required final AppState appState}) async
+Future<Uint8List?> exportGIF({required final AnimationExportData exportData}) async
 {
-  final List<RenderedFrame>? frames = await _renderAnimationFrames(exportData: exportData, appState: appState);
+  final List<RenderedFrame>? frames = await _renderAnimationFrames(exportData: exportData);
   if (frames == null || frames.isEmpty)
   {
     return null;

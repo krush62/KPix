@@ -25,6 +25,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -207,7 +208,7 @@ class Timeline
 
   void _anchorFloatingSelection({final bool addToHistoryStack = true})
   {
-    final SelectionState selectionState = GetIt.I.get<AppState>().selectionState;
+    final SelectionState selectionState = GetIt.I.get<DocumentState>().selectionState;
     if (selectionState.selection.selectedPixels.isNotEmpty)
     {
       selectionState.deselect(addToHistoryStack: addToHistoryStack);

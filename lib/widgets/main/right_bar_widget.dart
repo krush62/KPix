@@ -46,6 +46,7 @@ import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
@@ -71,6 +72,7 @@ class RightBarWidget extends StatefulWidget
 class _RightBarWidgetState extends State<RightBarWidget>
 {
   final AppState _appState = GetIt.I.get<AppState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final LayerManager _layerManager = GetIt.I.get<LayerManager>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
 
@@ -155,7 +157,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
         );
       },
       onAcceptWithDetails: (final DragTargetDetails<LayerState> details) {
-        final Frame? frame = _appState.timeline.selectedFrame;
+        final Frame? frame = _documentState.timeline.selectedFrame;
         if (frame != null)
         {
           _layerManager.changeLayerOrder(state: details.data, newPosition: frame.layerList.length);
@@ -240,16 +242,16 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: <Widget>[
                                   ValueListenableBuilder<int>(
-                                    valueListenable: _appState.timeline.selectedFrameIndexNotifier,
+                                    valueListenable: _documentState.timeline.selectedFrameIndexNotifier,
                                     builder: (final BuildContext context1, final int frameIndex, final Widget? child1) {
-                                      final Frame? currentFrame = _appState.timeline.selectedFrame;
+                                      final Frame? currentFrame = _documentState.timeline.selectedFrame;
                                       if (currentFrame != null)
                                       {
                                         return ListenableBuilder(
-                                          listenable: _appState.timeline.layerChangeNotifier,
+                                          listenable: _documentState.timeline.layerChangeNotifier,
                                           builder: (final BuildContext context, final Widget? child)
                                           {
-                                            return Column(children: _createWidgetList(layers: _appState.timeline.frames.value[frameIndex].layerList),);
+                                            return Column(children: _createWidgetList(layers: _documentState.timeline.frames.value[frameIndex].layerList),);
                                           },
                                         );
                                       }
@@ -281,13 +283,13 @@ class _RightBarWidgetState extends State<RightBarWidget>
             builder: (final BuildContext context, final bool hasProject, final Widget? child) {
               if (hasProject) {
                 return ValueListenableBuilder<int>(
-                  valueListenable: _appState.timeline.selectedFrameIndexNotifier,
+                  valueListenable: _documentState.timeline.selectedFrameIndexNotifier,
                   builder: (final BuildContext context1, final int frameIndex, final Widget? child1) {
                     return ValueListenableBuilder<bool>(
                       valueListenable: GetIt.I.get<ViewState>().layerSettingsVisibleNotifier,
                       builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
                         Widget settingsWidget = const SizedBox.shrink();
-                        final LayerState? currentLayer = _appState.timeline.getCurrentLayer();
+                        final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
                         if (currentLayer != null && currentLayer is RasterableLayerState)
                         {
                           currentLayer.layerSettings.editStarted = true;
@@ -342,8 +344,8 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                               currentLayer.layerSettings.editStarted = false;
                                               if (currentLayer.layerSettings.hasChanges)
                                               {
-                                                final Frame? frame = _appState.timeline.selectedFrame;
-                                                GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: frame?.layerList.getSelectedLayer());
+                                                final Frame? frame = _documentState.timeline.selectedFrame;
+                                                GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: frame?.layerList.getSelectedLayer());
                                                 currentLayer.layerSettings.hasChanges = false;
                                               }
                                             }

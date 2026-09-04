@@ -52,7 +52,7 @@ class KPalRamp extends StatefulWidget
 class _KPalRampState extends State<KPalRamp>
 {
   final ValueNotifier<List<KPalColorCardWidget>> _colorCards = ValueNotifier<List<KPalColorCardWidget>>(<KPalColorCardWidget>[]);
-  final AppState _appState = GetIt.I.get<AppState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ValueNotifier<ui.Image?> _previewImage = ValueNotifier<ui.Image?>(null);
   bool _hasRenderChanges = false;
@@ -69,7 +69,7 @@ class _KPalRampState extends State<KPalRamp>
   {
     super.initState();
     _createColorCards();
-    _drawingLayers = _copyLayers(originalLayers: _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers());
+    _drawingLayers = _copyLayers(originalLayers: _documentState.timeline.selectedFrame!.layerList.getVisibleRasterLayers());
     _hasRenderChanges = true;
     _renderTimer = Timer.periodic(const Duration(milliseconds: _KPalRampWidgetOptions.renderIntervalMs), (final Timer t) {_renderCheck(t: t);});
     for (final ValueNotifier<IdColor> shiftNotifier in widget.rampData.shiftedColors)
@@ -181,7 +181,7 @@ class _KPalRampState extends State<KPalRamp>
     final bool hasRasterizingLayers = _drawingLayers.where((final RasterableLayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.isRasterizing)).isNotEmpty;
     if (_hasRenderChanges && !hasRasterizingLayers)
     {
-      getImageFromLayers(canvasSize: _canvasState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection, layerStack: _drawingLayers).then((final ui.Image img) {
+      getImageFromLayers(canvasSize: _canvasState.canvasSize, layerCollection: _documentState.timeline.selectedFrame!.layerList, selection: _documentState.selectionState.selection, layerStack: _drawingLayers).then((final ui.Image img) {
         if (_isDisposed)
         {
           img.dispose();
@@ -224,7 +224,7 @@ class _KPalRampState extends State<KPalRamp>
       {
         //the copies being replaced own timers and images of their own
         _disposeLayers(layers: _drawingLayers);
-        _drawingLayers = _copyLayers(originalLayers: _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers());
+        _drawingLayers = _copyLayers(originalLayers: _documentState.timeline.selectedFrame!.layerList.getVisibleRasterLayers());
         final HashMap<int, int> indexMap = remapIndices(oldLength: widget.originalRampData.shiftedColors.length, newLength: widget.rampData.shiftedColors.length);
         for (final LayerState layerState in _drawingLayers)
         {

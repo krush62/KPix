@@ -32,6 +32,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -209,6 +210,7 @@ abstract class IToolPainter
   final AppState appState = GetIt.I.get<AppState>();
   final PaletteState paletteState = GetIt.I.get<PaletteState>();
   final CanvasState canvasState = GetIt.I.get<CanvasState>();
+  final DocumentState documentState = GetIt.I.get<DocumentState>();
   final ShaderOptions shaderOptions = GetIt.I.get<ShaderOptions>();
   final GuiPreferenceContent guiPrefs = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
   final KPixPainterOptions painterOptions;
@@ -258,7 +260,7 @@ abstract class IToolPainter
   set hasHistoryData(final bool value)
   {
     _hasHistoryData = value;
-    historyLayer = value ? appState.timeline.getCurrentLayer() : null;
+    historyLayer = value ? documentState.timeline.getCurrentLayer() : null;
   }
 
 
@@ -347,7 +349,7 @@ abstract class IToolPainter
 
   Future<ContentRasterSet?> rasterizePixels({required final CoordinateColorMap drawingPixels, required final LayerState currentLayer}) async
   {
-    final Frame? frame = appState.timeline.selectedFrame;
+    final Frame? frame = documentState.timeline.selectedFrame;
     if (drawingPixels.isNotEmpty && frame != null && frame.layerList.contains(layer: currentLayer))
     {
       final CoordinateSetI min = CoordinateSetI.getMin(coordList: drawingPixels.keys.toList());
@@ -759,7 +761,7 @@ abstract class IToolPainter
   CoordinateColorMap getPixelsToDrawForShading({required final CoordinateSetI canvasSize, required final ShadingLayerState currentLayer, required final Set<CoordinateSetI> coords, required final ShaderOptions shaderOptions,})
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
-    final Frame? frame = appState.timeline.selectedFrame;
+    final Frame? frame = documentState.timeline.selectedFrame;
     if (currentLayer.lockState.value == LayerLockState.unlocked && frame != null && frame.layerList.contains(layer: currentLayer))
     {
       final int? currentLayerPos = frame.layerList.getLayerPosition(state: currentLayer);
@@ -859,7 +861,7 @@ abstract class IToolPainter
   })
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
-    final Frame? frame = appState.timeline.selectedFrame;
+    final Frame? frame = documentState.timeline.selectedFrame;
     if (frame != null && frame.layerList.contains(layer: currentLayer))
     {
       final int? currentLayerPos = frame.layerList.getLayerPosition(state: currentLayer);

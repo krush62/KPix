@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -131,7 +132,7 @@ void main()
       //erasure was deferred the pixel briefly sat on the layer and in the
       //selection at once, and a history snapshot taken in that window kept both
       layer.isRasterizing = true;
-      appState.selectionState.selectAll();
+      GetIt.I.get<DocumentState>().selectionState.selectAll();
       expect(copiesOf(appState: appState, coord: left), 1,
           reason: "the pixel may not be on the layer and in the selection at the same time",);
 

@@ -24,6 +24,7 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -53,7 +54,7 @@ class CanvasState
     _appState.symmetryState.newCanvasDimensions(newSize: _canvasSize);
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.canvasSizeChange);
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.canvasSizeChange);
     }
   }
 
@@ -63,23 +64,26 @@ class CanvasState
 
   void canvasTransform({required final CanvasTransformation transformation})
   {
-    _appState.selectionState.deselect(addToHistoryStack: false, notify: false);
-    for (final Frame f in _appState.timeline.frames.value)
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+    final HistoryManager historyManager = GetIt.I.get<HistoryManager>();
+
+    documentState.selectionState.deselect(addToHistoryStack: false, notify: false);
+    for (final Frame f in documentState.timeline.frames.value)
     {
       f.layerList.transformLayers(transformation: transformation, oldSize: canvasSize);
     }
     if (transformation == CanvasTransformation.rotate)
     {
       setCanvasDimensions(width: _canvasSize.y, height: _canvasSize.x);
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.canvasRotate);
+      historyManager.addState(identifier: HistoryStateTypeIdentifier.canvasRotate);
     }
     else if (transformation == CanvasTransformation.flipH)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.canvasFlipH);
+      historyManager.addState(identifier: HistoryStateTypeIdentifier.canvasFlipH);
     }
     else if (transformation == CanvasTransformation.flipV)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.canvasFlipV);
+      historyManager.addState(identifier: HistoryStateTypeIdentifier.canvasFlipV);
     }
 
   }
@@ -88,7 +92,7 @@ class CanvasState
   {
     CoordinateSetI? topLeft;
     CoordinateSetI? bottomRight;
-    (topLeft, bottomRight) = _appState.selectionState.selection.getBoundingBox(canvasSize: _canvasSize);
+    (topLeft, bottomRight) = GetIt.I.get<DocumentState>().selectionState.selection.getBoundingBox(canvasSize: _canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final CoordinateSetI newSize = CoordinateSetI(x: bottomRight.x - topLeft.x + 1, y: bottomRight.y - topLeft.y + 1);
@@ -103,9 +107,9 @@ class CanvasState
 
   void changeCanvasSize({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
-    _appState.selectionState.deselect(addToHistoryStack: false, notify: false);
+    GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false, notify: false);
     final LinkedHashSet<RasterableLayerState> layerSet = LinkedHashSet<RasterableLayerState>();
-    for (final Frame f in _appState.timeline.frames.value)
+    for (final Frame f in GetIt.I.get<DocumentState>().timeline.frames.value)
     {
       final LayerCollection layers = f.layerList;
       for (int i = 0; i < layers.length; i++)
@@ -122,7 +126,7 @@ class CanvasState
       l.resizeLayer(newSize: newSize, offset: offset);
     }
     setCanvasDimensions(width: newSize.x, height: newSize.y);
-    for (final Frame frame in _appState.timeline.frames.value)
+    for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
     {
       final LayerCollection layers = frame.layerList;
       for (int i = 0; i < layers.length; i++)

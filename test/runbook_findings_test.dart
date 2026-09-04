@@ -21,6 +21,8 @@ import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
@@ -40,7 +42,7 @@ Future<void> _paintAndRecord({
 }) async
 {
   layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{coord: color}));
-  GetIt.I.get<HistoryManager>().addState(appState: appState, identifier: HistoryStateTypeIdentifier.toolPen, originLayer: layer);
+  GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.toolPen, originLayer: layer);
   await settle(appState: appState);
 }
 
@@ -56,9 +58,9 @@ void main()
         final DrawingLayerState source = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: source, coord: pixel, color: color);
 
-        appState.selectionState.selectAll();
+        GetIt.I.get<DocumentState>().selectionState.selectAll();
         await settle(appState: appState);
-        expect(appState.selectionState.selection.getColorReference(coord: pixel), color, reason: "setup: the pixel is floating");
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), color, reason: "setup: the pixel is floating");
 
         final DrawingLayerState copy = GetIt.I.get<LayerManager>().layerDuplicateSelected(duplicateLayer: source)! as DrawingLayerState;
         await settle(appState: appState);
@@ -72,11 +74,11 @@ void main()
     testWidgets("a copied frame holds the committed selection", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-        final Timeline timeline = appState.timeline;
+        final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
         final DrawingLayerState source = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: source, coord: pixel, color: color);
 
-        appState.selectionState.selectAll();
+        GetIt.I.get<DocumentState>().selectionState.selectAll();
         await settle(appState: appState);
 
         timeline.copyFrameRight();
@@ -93,11 +95,11 @@ void main()
     testWidgets("a linked frame shares the layer that holds the content", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-        final Timeline timeline = appState.timeline;
+        final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
         final DrawingLayerState source = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: source, coord: pixel, color: color);
 
-        appState.selectionState.selectAll();
+        GetIt.I.get<DocumentState>().selectionState.selectAll();
         await settle(appState: appState);
 
         timeline.linkFrameRight();
@@ -106,7 +108,7 @@ void main()
         expect(timeline.frames.value[1].layerList.getLayer(index: 0), same(source), reason: "setup: a link");
         expect(source.getDataEntry(coord: pixel), color,
             reason: "the content is committed before the frame is added, so both frames show it",);
-        expect(appState.selectionState.selection.selectedPixels, isEmpty);
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isEmpty);
       },);
     });
   });
@@ -123,7 +125,7 @@ void main()
         expect(GetIt.I.get<CanvasState>().canvasSize.x, 8);
         expect(GetIt.I.get<StatusBarState>().statusBarDimensionString.value, isNot(before));
 
-        appState.undoPressed();
+        GetIt.I.get<HistoryController>().undoPressed();
         await settle(appState: appState);
 
         expect(GetIt.I.get<CanvasState>().canvasSize.x, 4, reason: "the canvas itself is back");
@@ -139,7 +141,7 @@ void main()
         await _paintAndRecord(appState: appState, layer: layer, coord: pixel, color: color);
         final String? before = GetIt.I.get<StatusBarState>().statusBarDimensionString.value;
 
-        appState.selectionState.newSelectionFromShape(
+        GetIt.I.get<DocumentState>().selectionState.newSelectionFromShape(
           start: CoordinateSetI(x: 1, y: 1),
           end: CoordinateSetI(x: 2, y: 2),
           selectShape: SelectShape.rectangle,
@@ -149,7 +151,7 @@ void main()
         await settle(appState: appState);
         expect(GetIt.I.get<CanvasState>().canvasSize.x, 2, reason: "setup: cropped to the selection");
 
-        appState.undoPressed();
+        GetIt.I.get<HistoryController>().undoPressed();
         await settle(appState: appState);
 
         expect(GetIt.I.get<CanvasState>().canvasSize.x, 4);
@@ -170,7 +172,7 @@ void main()
         await _paintAndRecord(appState: appState, layer: layer, coord: pixel, color: color);
         expect(appState.hasChanges.value, isTrue, reason: "setup: drawing is a change");
 
-        appState.undoPressed();
+        GetIt.I.get<HistoryController>().undoPressed();
         await settle(appState: appState);
 
         expect(appState.hasChanges.value, isFalse,
@@ -185,11 +187,11 @@ void main()
 
         appState.fileSaved(saveName: "test", path: "test.kpix");
         await _paintAndRecord(appState: appState, layer: layer, coord: pixel, color: color);
-        appState.undoPressed();
+        GetIt.I.get<HistoryController>().undoPressed();
         await settle(appState: appState);
         expect(appState.hasChanges.value, isFalse);
 
-        appState.redoPressed();
+        GetIt.I.get<HistoryController>().redoPressed();
         await settle(appState: appState);
 
         expect(appState.hasChanges.value, isTrue, reason: "the stroke is back, so the project differs from the file again");
@@ -207,7 +209,7 @@ void main()
 
         await _paintAndRecord(appState: appState, layer: layer, coord: CoordinateSetI(x: 2, y: 2), color: second);
         await _paintAndRecord(appState: appState, layer: layer, coord: CoordinateSetI(x: 3, y: 3), color: second);
-        appState.undoPressed();
+        GetIt.I.get<HistoryController>().undoPressed();
         await settle(appState: appState);
 
         expect(appState.hasChanges.value, isTrue,

@@ -24,6 +24,7 @@ import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -311,12 +312,12 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                 padding: EdgeInsets.zero,
                 iconSize: _iconSize,
                 onPressed: canApply(style) ? () {
-                  final Frame? frame = GetIt.I.get<AppState>().timeline.selectedFrame;
+                  final Frame? frame = GetIt.I.get<DocumentState>().timeline.selectedFrame;
                   if (frame != null)
                   {
                     raster(frame);
                     notifier.value = offValue;
-                    GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, originLayer: widget.layer);
+                    GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsRaster, originLayer: widget.layer);
                   }
                 } : null,
                 icon: const Icon(Icons.brush),

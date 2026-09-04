@@ -26,9 +26,9 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -452,13 +452,13 @@ class LayerCollection with ChangeNotifier {
     String? message;
     if (mergeLayer is DrawingLayerState)
     {
-      final AppState appState = GetIt.I.get<AppState>();
+      final DocumentState documentState = GetIt.I.get<DocumentState>();
       final int mergeLayerIndex = _layers.indexOf(mergeLayer);
       if (mergeLayerIndex == _layers.length - 1)
       {
         message = "No layer below!";
       }
-      else if (appState.timeline.isLayerLinked(layer: mergeLayer))
+      else if (documentState.timeline.isLayerLinked(layer: mergeLayer))
       {
         message = "Cannot merge a linked layer!";
       }
@@ -482,7 +482,7 @@ class LayerCollection with ChangeNotifier {
       {
         message = "Can only merge with drawing layers!";
       }
-      else if (appState.timeline.isLayerLinked(layer: _layers[mergeLayerIndex + 1],))
+      else if (documentState.timeline.isLayerLinked(layer: _layers[mergeLayerIndex + 1],))
       {
         message = "Cannot merge with a linked layer!";
       }
@@ -712,10 +712,10 @@ class LayerCollection with ChangeNotifier {
   int getFrameIndex()
   {
     int index = -1;
-    final AppState appState = GetIt.I.get<AppState>();
-    for (int i = 0; i < appState.timeline.frames.value.length; i++)
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+    for (int i = 0; i < documentState.timeline.frames.value.length; i++)
     {
-      if (appState.timeline.frames.value[i].layerList == this)
+      if (documentState.timeline.frames.value[i].layerList == this)
       {
         index = i;
         break;
@@ -774,14 +774,14 @@ class LayerCollection with ChangeNotifier {
 
     if (!anyLayerStillPending)
     {
-      final AppState appState = GetIt.I.get<AppState>();
+      final DocumentState documentState = GetIt.I.get<DocumentState>();
       final CanvasState canvasState = GetIt.I.get<CanvasState>();
-      final Frame? frame = appState.timeline.findFrameForCollection(collection: this,);
+      final Frame? frame = documentState.timeline.findFrameForCollection(collection: this,);
       final int generation = ++_rasterImageGeneration;
       getImageFromLayers(
           layerCollection: this,
           canvasSize: canvasState.canvasSize,
-          selection: appState.selectionState.selection,
+          selection: documentState.selectionState.selection,
           frame: frame,
       ).then((final ui.Image img) {
         //only accept the result if no newer composite was requested in the meantime
@@ -1039,8 +1039,8 @@ class LayerCollection with ChangeNotifier {
   {
     layer.doManualRaster = true;
     invalidateDependents(layer: layer);
-    final AppState appState = GetIt.I.get<AppState>();
-    final List<Frame> framesWithThisLayer = appState.timeline
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+    final List<Frame> framesWithThisLayer = documentState.timeline
         .findFramesForLayer(layer: layer);
 
     for (final Frame frame in framesWithThisLayer)

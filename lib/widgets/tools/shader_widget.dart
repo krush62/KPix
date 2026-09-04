@@ -22,6 +22,7 @@ import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/painting/shader_options.dart';
 
 abstract final class _ShaderWidgetOptions {
@@ -64,13 +65,13 @@ class _ShaderWidgetState extends State<ShaderWidget>
     return Padding (
       padding: const EdgeInsets.only(left: _ShaderWidgetOptions.outsidePadding, right: _ShaderWidgetOptions.outsidePadding, bottom: _ShaderWidgetOptions.outsidePadding),
       child: ListenableBuilder(
-        listenable: GetIt.I.get<AppState>().timeline.layerChangeNotifier,
+        listenable: GetIt.I.get<DocumentState>().timeline.layerChangeNotifier,
         builder: (final BuildContext context0, final Widget? child0) {
           return ValueListenableBuilder<bool>(
             valueListenable: _shaderOptions.isEnabled,
             builder: (final BuildContext context, final bool isEnabledVal, final Widget? child){
 
-              final LayerState? currentLayer = GetIt.I.get<AppState>().timeline.getCurrentLayer();
+              final LayerState? currentLayer = GetIt.I.get<DocumentState>().timeline.getCurrentLayer();
               final bool isShadingLayer = currentLayer != null && currentLayer is ShadingLayerState;
               final bool isForbiddenLayerType = currentLayer != null && (currentLayer is ReferenceLayerState || currentLayer is GridLayerState);
               final bool shouldBeEnabled;

@@ -20,6 +20,8 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -40,7 +42,7 @@ Future<void> _paintAndRecord({
 }) async
 {
   layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{coord: color}));
-  GetIt.I.get<HistoryManager>().addState(appState: appState, identifier: HistoryStateTypeIdentifier.toolPen, originLayer: layer);
+  GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.toolPen, originLayer: layer);
   await settle(appState: appState);
 }
 
@@ -68,7 +70,7 @@ void main()
         await _paintAndRecord(appState: appState, layer: layer, coord: pixel, color: color);
 
         final String descriptionBefore = GetIt.I.get<HistoryManager>().getCurrentDescription();
-        appState.selectionState.newSelectionFromPolygon(points: _squarePolygon());
+        GetIt.I.get<DocumentState>().selectionState.newSelectionFromPolygon(points: _squarePolygon());
         await settle(appState: appState);
 
         expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), "new selection",
@@ -83,15 +85,15 @@ void main()
         final DrawingLayerState layer = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: layer, coord: pixel, color: color);
 
-        appState.selectionState.newSelectionFromPolygon(points: _squarePolygon());
+        GetIt.I.get<DocumentState>().selectionState.newSelectionFromPolygon(points: _squarePolygon());
         await settle(appState: appState);
-        expect(appState.selectionState.selection.getColorReference(coord: pixel), color, reason: "setup: the pixel is floating");
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), color, reason: "setup: the pixel is floating");
         expect(layer.getDataEntry(coord: pixel), isNull);
 
-        appState.undoPressed();
+        GetIt.I.get<HistoryController>().undoPressed();
         await settle(appState: appState);
 
-        expect(appState.selectionState.selection.selectedPixels, isEmpty, reason: "the selection is undone");
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isEmpty, reason: "the selection is undone");
         //restoring rebuilds the layer it touched, so the live one has to be looked up again
         expect(layerAt(appState: appState, index: 0).getDataEntry(coord: pixel), color, reason: "and the pixel is back where it came from");
         expect(copiesOf(appState: appState, coord: pixel), 1);
@@ -106,8 +108,8 @@ void main()
         final bool couldUndoBefore = GetIt.I.get<HistoryManager>().hasUndo.value;
 
         //what the arrow keys reach when no selection exists
-        appState.selectionState.setOffset(offset: CoordinateSetI(x: 0, y: -1), withContent: true);
-        appState.selectionState.finishMovement();
+        GetIt.I.get<DocumentState>().selectionState.setOffset(offset: CoordinateSetI(x: 0, y: -1), withContent: true);
+        GetIt.I.get<DocumentState>().selectionState.finishMovement();
         await settle(appState: appState);
 
         expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), descriptionBefore);
@@ -119,8 +121,8 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
         appState.hasChanges.value = false;
 
-        appState.selectionState.setOffset(offset: CoordinateSetI(x: 1, y: 0), withContent: true);
-        appState.selectionState.finishMovement();
+        GetIt.I.get<DocumentState>().selectionState.setOffset(offset: CoordinateSetI(x: 1, y: 0), withContent: true);
+        GetIt.I.get<DocumentState>().selectionState.finishMovement();
         await settle(appState: appState);
 
         expect(appState.hasChanges.value, isFalse,
@@ -130,8 +132,8 @@ void main()
 
     testWidgets("an untouched selection reports itself as empty", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        expect(appState.selectionState.selection.selectedPixels, isEmpty);
-        expect(appState.selectionState.selection.isEmpty, isTrue,
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isEmpty);
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isTrue,
             reason: "the notifier drives every selection button, so it has to start out agreeing with the content",);
       },);
     });
@@ -144,15 +146,15 @@ void main()
         final DrawingLayerState layer = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: layer, coord: pixel, color: color);
 
-        appState.selectionState.selectAll();
+        GetIt.I.get<DocumentState>().selectionState.selectAll();
         await settle(appState: appState);
 
-        appState.selectionState.setOffset(offset: CoordinateSetI(x: 1, y: 0), withContent: true);
-        appState.selectionState.finishMovement();
+        GetIt.I.get<DocumentState>().selectionState.setOffset(offset: CoordinateSetI(x: 1, y: 0), withContent: true);
+        GetIt.I.get<DocumentState>().selectionState.finishMovement();
         await settle(appState: appState);
 
         expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), "move selection");
-        expect(appState.selectionState.selection.getColorReference(coord: CoordinateSetI(x: 2, y: 1)), color,
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: CoordinateSetI(x: 2, y: 1)), color,
             reason: "the content moved with the selection",);
       },);
     });

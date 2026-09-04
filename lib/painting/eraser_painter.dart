@@ -22,7 +22,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
@@ -60,7 +60,7 @@ class EraserPainter extends IToolPainter
           for (final CoordinateSetI delCoord in pixelsToDelete)
           {
             final Set<CoordinateSetI> content = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: delCoord);
-            final SelectionState selection = GetIt.I.get<AppState>().selectionState;
+            final SelectionState selection = GetIt.I.get<DocumentState>().selectionState;
 
             final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: content, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
 

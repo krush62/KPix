@@ -16,10 +16,10 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> exportTexturePack({required final AppState appState}) async
+Future<Uint8List?> exportTexturePack() async
 {
   final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
-  final CoordinateColorMapNullable colorMap = await getMergedColors(frame: appState.timeline.selectedFrame!, canvasSize: canvasSize);
+  final CoordinateColorMapNullable colorMap = await getMergedColors(frame: GetIt.I.get<DocumentState>().timeline.selectedFrame!, canvasSize: canvasSize);
   final List<KPalRampData> ramps = GetIt.I.get<PaletteState>().colorRamps;
   final Map<String, Uint8List> files = <String, Uint8List>{
     "color.bin": await createColorTexture(colorMap: colorMap, canvasSize: canvasSize, ramps: ramps),

@@ -34,6 +34,8 @@ import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
@@ -217,7 +219,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         {
           final String fileName = appState.projectName.value ?? recoverFileName;
           final String finalPath = p.join(GetIt.I.get<AppPaths>().internalDir, recoverSubDirName, "$fileName.$fileExtensionKpix");
-          saveKPixFile(appState: appState, path: finalPath);
+          saveKPixFile(path: finalPath);
         },);
       }
     }
@@ -326,6 +328,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       logger.i("Creating Palette State");
       GetIt.I.registerSingleton<PaletteState>(PaletteState());
       GetIt.I.registerSingleton<CanvasState>(CanvasState());
+      GetIt.I.registerSingleton<DocumentState>(DocumentState());
       logger.i("Creating App State");
       final AppState appState = AppState();
 
@@ -333,6 +336,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       logger.i("Creating Tool State");
       GetIt.I.registerSingleton<ToolState>(ToolState());
       GetIt.I.registerSingleton<LayerManager>(LayerManager());
+      GetIt.I.registerSingleton<HistoryController>(HistoryController());
       final Size logicalSize = MediaQuery.of(c).size;
       logger.i("Logical Size: $logicalSize");
 
@@ -789,7 +793,7 @@ class MainWidget extends StatelessWidget
         Expanded(
           child: KPixSplitter(
             left: ValueListenableBuilder<bool>(
-              valueListenable: GetIt.I.get<AppState>().timeline.isPlaying,
+              valueListenable: GetIt.I.get<DocumentState>().timeline.isPlaying,
               builder: (final BuildContext context1, final bool isPlaying, final Widget? child1) {
                 return Stack(
                   children: <Widget>[
@@ -808,7 +812,7 @@ class MainWidget extends StatelessWidget
                   return hasProject ? Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      TimeLineWidget(timeline: GetIt.I.get<AppState>().timeline, expandedHeight: 320,),
+                      TimeLineWidget(timeline: GetIt.I.get<DocumentState>().timeline, expandedHeight: 320,),
                       const Expanded(child: ClipRect(child: CanvasWidget())),
                       StatusBarWidget(),
                       SymmetryWidget(state: GetIt.I.get<AppState>().symmetryState,),
@@ -819,7 +823,7 @@ class MainWidget extends StatelessWidget
             ),
             right: ExcludeFocus(
               child: ValueListenableBuilder<bool>(
-                valueListenable: GetIt.I.get<AppState>().timeline.isPlaying,
+                valueListenable: GetIt.I.get<DocumentState>().timeline.isPlaying,
                 builder: (final BuildContext context1, final bool isPlaying, final Widget? child1) {
                   return Stack(
                     children: <Widget>[

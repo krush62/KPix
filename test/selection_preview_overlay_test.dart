@@ -24,6 +24,7 @@ import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -89,19 +90,19 @@ void main()
   /// then renders the palette preview and reports whether it shows the content.
   Future<bool> previewShowsSelection({required final AppState appState}) async
   {
-    appState.selectionState.selectAll();
-    appState.selectionState.setOffset(offset: CoordinateSetI(x: 2, y: 0), withContent: true);
-    appState.selectionState.finishMovement();
+    GetIt.I.get<DocumentState>().selectionState.selectAll();
+    GetIt.I.get<DocumentState>().selectionState.setOffset(offset: CoordinateSetI(x: 2, y: 0), withContent: true);
+    GetIt.I.get<DocumentState>().selectionState.finishMovement();
     await settle(appState: appState);
 
-    final LayerCollection collection = appState.timeline.selectedFrame!.layerList;
+    final LayerCollection collection = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList;
     final List<RasterableLayerState> stack = _previewStack(collection: collection);
     await _settleStack(stack: stack);
 
     final ui.Image preview = await getImageFromLayers(
       canvasSize: canvasSize,
       layerCollection: collection,
-      selection: appState.selectionState.selection,
+      selection: GetIt.I.get<DocumentState>().selectionState.selection,
       layerStack: stack,
     );
     final bool painted = await _isPainted(image: preview, coord: moved);
@@ -122,8 +123,8 @@ void main()
       GetIt.I.get<LayerManager>().selectLayer(newLayer: artwork);
       await settle(appState: appState);
 
-      expect(appState.timeline.selectedFrame!.layerList.selectedLayerIndex, 1, reason: "setup: second in the collection");
-      expect(appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().length, 1, reason: "setup: but first and only in the raster stack");
+      expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.selectedLayerIndex, 1, reason: "setup: second in the collection");
+      expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getVisibleRasterLayers().length, 1, reason: "setup: but first and only in the raster stack");
 
       expect(await previewShowsSelection(appState: appState), isTrue,
           reason: "the overlay has to find the selected layer by its place in the stack, not in the collection",);
@@ -141,8 +142,8 @@ void main()
       GetIt.I.get<LayerManager>().selectLayer(newLayer: artwork);
       await settle(appState: appState);
 
-      expect(appState.timeline.selectedFrame!.layerList.selectedLayerIndex, 1);
-      expect(appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().length, 1);
+      expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.selectedLayerIndex, 1);
+      expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getVisibleRasterLayers().length, 1);
 
       expect(await previewShowsSelection(appState: appState), isTrue,
           reason: "a hidden layer shifts the collection index but not the stack index",);
@@ -156,7 +157,7 @@ void main()
       artwork.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
       await settle(appState: appState);
 
-      expect(appState.timeline.selectedFrame!.layerList.selectedLayerIndex, 0, reason: "setup: nothing to shift the indices apart");
+      expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.selectedLayerIndex, 0, reason: "setup: nothing to shift the indices apart");
 
       expect(await previewShowsSelection(appState: appState), isTrue,
           reason: "the simple case worked before and has to keep working",);

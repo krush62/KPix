@@ -21,6 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -54,7 +55,7 @@ void main()
   testWidgets("a floating selection is only rendered into the frame it sits in", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-      final Timeline timeline = appState.timeline;
+      final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
       await settle(appState: appState);
@@ -71,13 +72,13 @@ void main()
       expect(timeline.selectedFrame, same(frameOne), reason: "setup: the first frame is selected");
 
       //lift the pixel into the selection and drag it somewhere else
-      appState.selectionState.selectAll();
-      appState.selectionState.setOffset(offset: CoordinateSetI(x: 2, y: 0), withContent: true);
-      appState.selectionState.finishMovement();
+      GetIt.I.get<DocumentState>().selectionState.selectAll();
+      GetIt.I.get<DocumentState>().selectionState.setOffset(offset: CoordinateSetI(x: 2, y: 0), withContent: true);
+      GetIt.I.get<DocumentState>().selectionState.finishMovement();
       layer.doManualRaster = true;
       await settle(appState: appState);
 
-      expect(appState.selectionState.selection.getColorReference(coord: moved), color, reason: "setup: the content moved");
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: moved), color, reason: "setup: the content moved");
       expect(layer.getDataEntry(coord: origin), isNull, reason: "setup: and left the layer");
 
       final ui.Image rasterOne = await _rasterFor(layer: layer, frame: frameOne);
@@ -99,13 +100,13 @@ void main()
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
       await settle(appState: appState);
 
-      appState.selectionState.selectAll();
-      appState.selectionState.setOffset(offset: CoordinateSetI(x: 2, y: 0), withContent: true);
-      appState.selectionState.finishMovement();
+      GetIt.I.get<DocumentState>().selectionState.selectAll();
+      GetIt.I.get<DocumentState>().selectionState.setOffset(offset: CoordinateSetI(x: 2, y: 0), withContent: true);
+      GetIt.I.get<DocumentState>().selectionState.finishMovement();
       layer.doManualRaster = true;
       await settle(appState: appState);
 
-      final ui.Image raster = await _rasterFor(layer: layer, frame: appState.timeline.frames.value[0]);
+      final ui.Image raster = await _rasterFor(layer: layer, frame: GetIt.I.get<DocumentState>().timeline.frames.value[0]);
       expect(await _isPainted(image: raster, coord: moved), isTrue,
           reason: "the ordinary single-frame case has to keep compositing the selection",);
       expect(await _isPainted(image: raster, coord: origin), isFalse);
@@ -115,7 +116,7 @@ void main()
   testWidgets("the other frame shows the content again once it is committed", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-      final Timeline timeline = appState.timeline;
+      final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
       await settle(appState: appState);
@@ -124,13 +125,13 @@ void main()
       timeline.selectFrameByIndex(index: 0);
       await settle(appState: appState);
 
-      appState.selectionState.selectAll();
-      appState.selectionState.setOffset(offset: CoordinateSetI(x: 2, y: 0), withContent: true);
-      appState.selectionState.finishMovement();
+      GetIt.I.get<DocumentState>().selectionState.selectAll();
+      GetIt.I.get<DocumentState>().selectionState.setOffset(offset: CoordinateSetI(x: 2, y: 0), withContent: true);
+      GetIt.I.get<DocumentState>().selectionState.finishMovement();
       await settle(appState: appState);
 
       //anchoring writes the pixels into the shared layer, so both frames show them
-      appState.selectionState.deselect(addToHistoryStack: false);
+      GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
       layer.doManualRaster = true;
       await settle(appState: appState);
 

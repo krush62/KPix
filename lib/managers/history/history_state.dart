@@ -26,9 +26,9 @@ import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_selection_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/history/history_timeline.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -48,7 +48,12 @@ class HistoryState
 
   HistoryState({required this.timeline, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.type, this.selectionRevision = -1, final Set<int>? restoreLayerIndices}) : restoreLayerIndices = restoreLayerIndices ?? const <int>{};
 
-  factory HistoryState.fromAppState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final LayerState? originLayer, final LayerState? secondOriginLayer, final HistoryState? previousState})
+  /// Snapshots the document as it stands.
+  ///
+  /// Reads the live [DocumentState] out of the service locator rather than
+  /// taking it as an argument, so that pushing a history entry does not oblige
+  /// every caller to hold the document.
+  factory HistoryState.fromDocument({required final HistoryStateTypeIdentifier identifier, final LayerState? originLayer, final LayerState? secondOriginLayer, final HistoryState? previousState})
   {
     final Set<int> restoreLayerIndices = <int>{};
     final Set<LayerState> originLayers = <LayerState>{
@@ -103,7 +108,7 @@ class HistoryState
     else
     {
       historyFrameList = <HistoryFrame>[];
-      final List<Frame> originalFrameList = appState.timeline.frames.value;
+      final List<Frame> originalFrameList = GetIt.I.get<DocumentState>().timeline.frames.value;
 
       //COLLECT ORIGINAL LAYERS
       final LinkedHashSet<LayerState> originalLayerSet = LinkedHashSet<LayerState>();
@@ -171,10 +176,10 @@ class HistoryState
       }
     }
 
-    final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex, allLayers: historyLayerSet);
+    final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: GetIt.I.get<DocumentState>().timeline.loopStartIndex.value, loopEnd: GetIt.I.get<DocumentState>().timeline.loopEndIndex.value, selectedFrameIndex: GetIt.I.get<DocumentState>().timeline.selectedFrameIndex, allLayers: historyLayerSet);
 
     final CoordinateSetI canvasSize = CoordinateSetI.from(other: GetIt.I.get<CanvasState>().canvasSize);
-    final int selectionRevision = appState.selectionState.selection.revision;
+    final int selectionRevision = GetIt.I.get<DocumentState>().selectionState.selection.revision;
     final HistorySelectionState selectionState;
     if (previousState != null &&
         type.group != HistoryStateTypeGroup.full &&
@@ -184,7 +189,7 @@ class HistoryState
     }
     else
     {
-      selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList, previous: previousState?.selectionState);
+      selectionState = HistorySelectionState.fromSelectionState(sState: GetIt.I.get<DocumentState>().selectionState, ramps: rampList, previous: previousState?.selectionState);
     }
 
     return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, selectionRevision: selectionRevision, restoreLayerIndices: restoreLayerIndices);

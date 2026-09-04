@@ -21,6 +21,8 @@ import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -44,7 +46,7 @@ Future<(DrawingLayerState, DrawingLayerState)> _twoLayersWithFloatingPixel({
   upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
   await settle(appState: appState);
 
-  appState.selectionState.selectAll();
+  GetIt.I.get<DocumentState>().selectionState.selectAll();
   await settle(appState: appState);
   return (upper, lower);
 }
@@ -59,11 +61,10 @@ void _paintIntoSelection({
   required final ColorReference color,
 })
 {
-  appState.selectionState.selection.addDirectlyAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{coord: color}));
+  GetIt.I.get<DocumentState>().selectionState.selection.addDirectlyAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{coord: color}));
   GetIt.I.get<HistoryManager>().addState(
-    appState: appState,
     identifier: HistoryStateTypeIdentifier.toolPen,
-    originLayer: appState.timeline.getCurrentLayer(),
+    originLayer: GetIt.I.get<DocumentState>().timeline.getCurrentLayer(),
   );
 }
 
@@ -77,7 +78,7 @@ void main()
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final (DrawingLayerState upper, DrawingLayerState lower) = await _twoLayersWithFloatingPixel(appState: appState, pixel: pixel);
 
-      expect(appState.selectionState.selection.getColorReference(coord: pixel), color);
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), color);
       expect(upper.getDataEntry(coord: pixel), isNull, reason: "a selection takes the pixels out of the layer");
       expect(copiesOf(appState: appState, coord: pixel), 1);
 
@@ -85,7 +86,7 @@ void main()
       await settle(appState: appState);
 
       expect(upper.getDataEntry(coord: pixel), color, reason: "the old layer gets the floating content back");
-      expect(appState.selectionState.selection.getColorReference(coord: pixel), isNull, reason: "the selection now floats the new layer's content");
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), isNull, reason: "the selection now floats the new layer's content");
       expect(copiesOf(appState: appState, coord: pixel), 1);
     },);
   });
@@ -99,10 +100,10 @@ void main()
 
       //an edit on top of the switch, so that undoing it restores the state the
       //switch left behind - which is where the stale snapshot used to surface
-      appState.selectionState.flipH();
+      GetIt.I.get<DocumentState>().selectionState.flipH();
       await settle(appState: appState);
 
-      appState.undoPressed();
+      GetIt.I.get<HistoryController>().undoPressed();
       await settle(appState: appState);
 
       expect(copiesOf(appState: appState, coord: pixel), 1,
@@ -116,12 +117,12 @@ void main()
 
       GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
       await settle(appState: appState);
-      appState.selectionState.flipH();
+      GetIt.I.get<DocumentState>().selectionState.flipH();
       await settle(appState: appState);
 
-      appState.undoPressed();
+      GetIt.I.get<HistoryController>().undoPressed();
       await settle(appState: appState);
-      appState.redoPressed();
+      GetIt.I.get<HistoryController>().redoPressed();
       await settle(appState: appState);
 
       expect(copiesOf(appState: appState, coord: pixel), 1);
@@ -157,7 +158,7 @@ void main()
   testWidgets("starting playback commits the floating selection", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-      final Timeline timeline = appState.timeline;
+      final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
 
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
@@ -165,12 +166,12 @@ void main()
       timeline.selectFrameByIndex(index: 0);
       await settle(appState: appState);
 
-      appState.selectionState.selectAll();
+      GetIt.I.get<DocumentState>().selectionState.selectAll();
       await settle(appState: appState);
-      expect(appState.selectionState.selection.selectedPixels, isNotEmpty);
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isNotEmpty);
 
       timeline.togglePlaying();
-      expect(appState.selectionState.selection.selectedPixels, isEmpty,
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isEmpty,
           reason: "playback reselects a layer per frame and would drag the content along",);
       expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), "deselect",
           reason: "committing the content is an edit and has to be undoable",);
@@ -186,7 +187,7 @@ void main()
 
   testWidgets("advancing frames while playing neither records history nor dirties the project", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final Timeline timeline = appState.timeline;
+      final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
       timeline.addNewFrameRight();
       timeline.selectFrameByIndex(index: 0);
       await settle(appState: appState);
@@ -214,19 +215,19 @@ void main()
       expect(painted, isNot(original), reason: "setup: the two colours have to be distinguishable");
 
       await _twoLayersWithFloatingPixel(appState: appState, pixel: pixel);
-      expect(appState.selectionState.selection.getColorReference(coord: pixel), original);
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), original);
 
       _paintIntoSelection(appState: appState, coord: pixel, color: painted);
       await settle(appState: appState);
-      expect(appState.selectionState.selection.getColorReference(coord: pixel), painted);
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), painted);
 
-      appState.undoPressed();
+      GetIt.I.get<HistoryController>().undoPressed();
       await settle(appState: appState);
-      expect(appState.selectionState.selection.getColorReference(coord: pixel), original, reason: "undo takes the stroke back off");
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), original, reason: "undo takes the stroke back off");
 
-      appState.redoPressed();
+      GetIt.I.get<HistoryController>().redoPressed();
       await settle(appState: appState);
-      expect(appState.selectionState.selection.getColorReference(coord: pixel), painted,
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), painted,
           reason: "the stroke only ever lived in the selection, so a state sharing an older snapshot loses it",);
     },);
   });
@@ -239,14 +240,14 @@ void main()
       _paintIntoSelection(appState: appState, coord: pixel, color: painted);
       await settle(appState: appState);
 
-      appState.selectionState.deselect(addToHistoryStack: true);
+      GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: true);
       await settle(appState: appState);
       expect(upper.getDataEntry(coord: pixel), painted, reason: "deselecting commits the stroke to the layer");
 
-      appState.undoPressed();
+      GetIt.I.get<HistoryController>().undoPressed();
       await settle(appState: appState);
 
-      expect(appState.selectionState.selection.getColorReference(coord: pixel), painted,
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), painted,
           reason: "undoing the deselect has to float the stroke again, not the colour it replaced",);
       expect(copiesOf(appState: appState, coord: pixel), 1);
     },);
@@ -284,9 +285,9 @@ void main()
   });
 
   test("every write to the selection moves its revision", () async {
-    final AppState appState = await bootProject(canvasSize: canvasSize);
+    await bootProject(canvasSize: canvasSize);
     final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-    final SelectionList selection = appState.selectionState.selection;
+    final SelectionList selection = GetIt.I.get<DocumentState>().selectionState.selection;
 
     int previous = selection.revision;
     void expectMoved(final String what)
@@ -319,7 +320,7 @@ void main()
     expectMoved("transferAll");
     selection.clear();
     expectMoved("clear");
-    selection.changeLayer(oldLayer: null, newLayer: appState.timeline.getCurrentLayer()!);
+    selection.changeLayer(oldLayer: null, newLayer: GetIt.I.get<DocumentState>().timeline.getCurrentLayer()!);
     expectMoved("changeLayer");
   });
 }

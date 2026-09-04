@@ -70,11 +70,11 @@ class SelectionPainter extends IToolPainter
         if (_isStartOnCanvas)
         {
           _shouldMove = (drawingLayer.lockState.value != LayerLockState.locked && drawingLayer.visibilityState.value != LayerVisibilityState.hidden) &&
-              (movementStarted || ((options.mode.value == SelectMode.replace || options.mode.value == SelectMode.add) && appState.selectionState.selection.contains(coord: _normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
+              (movementStarted || ((options.mode.value == SelectMode.replace || options.mode.value == SelectMode.add) && documentState.selectionState.selection.contains(coord: _normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
           if (_shouldMove)
           {
             movementStarted = true;
-            appState.selectionState.setOffset(
+            documentState.selectionState.setOffset(
               offset: CoordinateSetI(
                 x: drawParams.cursorPosNorm!.x - _normStartPos.x,
                 y: drawParams.cursorPosNorm!.y - _normStartPos.y,
@@ -146,7 +146,7 @@ class SelectionPainter extends IToolPainter
           if (movementStarted)
           {
             movementStarted = false;
-            appState.selectionState.finishMovement();
+            documentState.selectionState.finishMovement();
           }
           if (polygonDown)
           {

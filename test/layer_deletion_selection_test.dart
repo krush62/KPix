@@ -19,6 +19,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 
@@ -27,9 +28,9 @@ import 'support/selection_harness.dart';
 List<LayerState> _layers({required final AppState appState})
 {
   final List<LayerState> layers = <LayerState>[];
-  for (int i = 0; i < appState.timeline.selectedFrame!.layerList.length; i++)
+  for (int i = 0; i < GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.length; i++)
   {
-    layers.add(appState.timeline.selectedFrame!.layerList.getLayer(index: i));
+    layers.add(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getLayer(index: i));
   }
   return layers;
 }
@@ -58,7 +59,7 @@ void main()
       await settle(appState: appState);
 
       expect(_layers(appState: appState), <LayerState>[before[0], before[2]]);
-      expect(appState.timeline.getCurrentLayer(), same(before[2]),
+      expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), same(before[2]),
           reason: "the layer that moved up into the gap is the natural next selection",);
     },);
   });
@@ -73,7 +74,7 @@ void main()
       await settle(appState: appState);
 
       expect(_layers(appState: appState), <LayerState>[before[0], before[1]]);
-      expect(appState.timeline.getCurrentLayer(), same(before[1]),
+      expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), same(before[1]),
           reason: "there is nothing below, so the selection moves up instead",);
     },);
   });
@@ -88,7 +89,7 @@ void main()
       await settle(appState: appState);
 
       expect(_layers(appState: appState), <LayerState>[before[1], before[2]]);
-      expect(appState.timeline.getCurrentLayer(), same(before[2]),
+      expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), same(before[2]),
           reason: "deleting an unrelated layer must not move the selection",);
     },);
   });
@@ -103,7 +104,7 @@ void main()
       await settle(appState: appState);
 
       expect(_layers(appState: appState), <LayerState>[before[0], before[1]]);
-      expect(appState.timeline.getCurrentLayer(), same(before[0]));
+      expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), same(before[0]));
     },);
   });
 
@@ -114,7 +115,7 @@ void main()
       await settle(appState: appState);
 
       expect(_layers(appState: appState), <LayerState>[only]);
-      expect(appState.timeline.getCurrentLayer(), same(only));
+      expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), same(only));
     },);
   });
 }

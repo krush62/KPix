@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -44,14 +45,14 @@ void main()
     await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final AppState appState) async {
       final _PainterHarness harness = _PainterHarness(appState: appState);
 
-      appState.selectionState.selectAll();
-      expect(appState.selectionState.selectionLines, isNotEmpty);
+      GetIt.I.get<DocumentState>().selectionState.selectAll();
+      expect(GetIt.I.get<DocumentState>().selectionState.selectionLines, isNotEmpty);
 
       final Uint8List fullOutline = await harness.render(size: renderSize, pulse: 1.0);
       final Uint8List dimmedOutline = await harness.render(size: renderSize, pulse: 0.5);
 
-      appState.selectionState.deselect(addToHistoryStack: false);
-      expect(appState.selectionState.selection.isEmpty, isTrue);
+      GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isTrue);
       final Uint8List withoutSelection = await harness.render(size: renderSize, pulse: 1.0);
 
       expect(fullOutline, isNot(equals(dimmedOutline)), reason: 'the outline has to react to the pulse');

@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -93,10 +94,10 @@ void main()
       //paint over it and select before the raster has caught up, the way a user
       //does when they drag a selection straight after a stroke
       _write(layer: layer, coord: pixel, color: stroke);
-      appState.selectionState.selectAll();
+      GetIt.I.get<DocumentState>().selectionState.selectAll();
       await settle(appState: appState);
 
-      expect(appState.selectionState.selection.getColorReference(coord: pixel), stroke,
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), stroke,
           reason: "the selection must lift the stroke (colour ${stroke.colorIndex}), not the colour it covered (${covered.colorIndex})",);
       expect(copiesOf(appState: appState, coord: pixel), 1);
     },);

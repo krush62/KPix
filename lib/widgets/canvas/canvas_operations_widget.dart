@@ -19,6 +19,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_size_constraints.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -61,7 +62,7 @@ class CanvasOperationsWidget extends StatefulWidget
 
 class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 {
-  final AppState _appState = GetIt.I.get<AppState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   late KPixOverlay _canvasSizeOverlay;
 
@@ -149,13 +150,13 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
               const SizedBox(width: _CanvasOperationsWidgetOptions.padding),
               Expanded(
                 child: ListenableBuilder(
-                  listenable: _appState.selectionState,
+                  listenable: _documentState.selectionState,
                   builder: (final BuildContext context, final Widget? child) {
                     bool cropEnabled = false;
 
-                    if (!_appState.selectionState.selection.isEmpty)
+                    if (!_documentState.selectionState.selection.isEmpty)
                     {
-                      final (CoordinateSetI?, CoordinateSetI?) selectionSize = _appState.selectionState.selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
+                      final (CoordinateSetI?, CoordinateSetI?) selectionSize = _documentState.selectionState.selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
                       final CoordinateSetI? topLeft = selectionSize.$1;
                       final CoordinateSetI? bottomRight = selectionSize.$2;
                       if (topLeft != null && bottomRight != null && (bottomRight.x - topLeft.x + 1) >= CanvasSizeConstraints.sizeMin && (bottomRight.y - topLeft.y + 1) >= CanvasSizeConstraints.sizeMin)

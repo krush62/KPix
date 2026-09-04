@@ -23,8 +23,8 @@ import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/tool_state.dart';
@@ -43,9 +43,6 @@ import 'package:uuid/uuid.dart';
 /// This is document state: it is written to the file, and undo restores it.
 class PaletteState
 {
-  //resolved on demand, the palette outlives no boot order this way
-  AppState get _appState => GetIt.I.get<AppState>();
-
   final ValueNotifier<List<KPalRampData>> _colorRamps = ValueNotifier<List<KPalRampData>>(<KPalRampData>[]);
   List<KPalRampData> get colorRamps
   {
@@ -92,7 +89,7 @@ class PaletteState
   int getPixelCountForRamp({required final KPalRampData ramp, final bool includeInvisible = true})
   {
     int pixelCount = 0;
-    final List<Frame> allFrames = _appState.timeline.frames.value;
+    final List<Frame> allFrames = GetIt.I.get<DocumentState>().timeline.frames.value;
     final LinkedHashSet<LayerState> originalLayerSet = LinkedHashSet<LayerState>();
     for (final Frame f in allFrames)
     {
@@ -121,7 +118,7 @@ class PaletteState
       rampDataList.remove(ramp);
       _selectedColor.value = rampDataList[0].references[0];
       _colorRamps.value = rampDataList;
-      for (final Frame f in _appState.timeline.frames.value)
+      for (final Frame f in GetIt.I.get<DocumentState>().timeline.frames.value)
       {
         f.layerList.deleteRampFromLayers(ramp: ramp, backupColor: rampDataList[0].references[0]);
       }
@@ -129,7 +126,7 @@ class PaletteState
       GetIt.I.get<ViewState>().repaintNotifier.repaint();
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.kPalDelete);
+        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalDelete);
       }
     }
     else
@@ -147,7 +144,7 @@ class PaletteState
     {
       final HashMap<int, int> indexMap = remapIndices(oldLength: originalData.references.length, newLength: ramp.references.length);
       _selectedColor.value = ramp.references[indexMap[_selectedColor.value!.colorIndex]!];
-      for (final Frame f in _appState.timeline.frames.value)
+      for (final Frame f in GetIt.I.get<DocumentState>().timeline.frames.value)
       {
         f.layerList.remapLayers(newData: ramp, map: indexMap);
       }
@@ -157,7 +154,7 @@ class PaletteState
     GetIt.I.get<ViewState>().repaintNotifier.repaint();
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.kPalChange);
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalChange);
     }
   }
 
@@ -176,7 +173,7 @@ class PaletteState
       _selectedColor.value = newRamp.references[0];
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.kPalAdd);
+        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalAdd);
       }
       return newRamp;
     }
@@ -208,7 +205,7 @@ class PaletteState
     }
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.kPalOrderChange);
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalOrderChange);
     }
   }
 
@@ -222,7 +219,7 @@ class PaletteState
       if (loadPaletteSet.rampData != null && loadPaletteSet.rampData!.isNotEmpty)
       {
         final LinkedHashSet<LayerState> collectedLayers = LinkedHashSet<LayerState>();
-        for (final Frame f in _appState.timeline.frames.value)
+        for (final Frame f in GetIt.I.get<DocumentState>().timeline.frames.value)
         {
           final LayerCollection layers = f.layerList;
           for (int i = 0; i < layers.length; i++)
@@ -255,7 +252,7 @@ class PaletteState
         }
         _selectedColor.value = loadPaletteSet.rampData![0].references[0];
         _colorRamps.value = loadPaletteSet.rampData!;
-        GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.kPalAdd);
+        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalAdd);
       }
       else
       {
@@ -280,7 +277,7 @@ class PaletteState
         rampDataList.add(ramp);
       }
       _colorRamps.value = rampDataList;
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.kPalAdd);
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalAdd);
     }
     else
     {
@@ -297,7 +294,7 @@ class PaletteState
       _selectedColor.value = color;
       if (addToHistory)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.colorChange);
+        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.colorChange);
       }
 
       final ToolState toolState = GetIt.I.get<ToolState>();

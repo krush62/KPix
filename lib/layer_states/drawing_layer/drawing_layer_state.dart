@@ -33,9 +33,9 @@ import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -128,8 +128,8 @@ class DrawingLayerState extends RasterableLayerState
   void _settingsChanged()
   {
     forceFullRender();
-    final AppState appState = GetIt.I.get<AppState>();
-    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+    final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
 
     for (final Frame frame in frames)
     {
@@ -204,9 +204,10 @@ class DrawingLayerState extends RasterableLayerState
       //set the flag again and are serviced on the next timer tick
       doManualRaster = false;
 
-      final AppState appState = GetIt.I.get<AppState>();
 
-      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      final DocumentState documentState = GetIt.I.get<DocumentState>();
+
+      final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
       for (final Frame frame in frames) {
         frame.layerList.lockLayerAndDependenciesForRendering(layer: this);
       }
@@ -266,9 +267,10 @@ class DrawingLayerState extends RasterableLayerState
     isRasterizing = false;
     doManualRaster = true;
 
-    final AppState appState = GetIt.I.get<AppState>();
 
-    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+
+    final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
     for (final Frame frame in frames) {
       frame.layerList.invalidateDependents(layer: this);
     }
@@ -305,9 +307,10 @@ class DrawingLayerState extends RasterableLayerState
     isRasterizing = false;
     forceFullRender();
 
-    final AppState appState = GetIt.I.get<AppState>();
 
-    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+
+    final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
     for (final Frame frame in frames)
     {
       frame.layerList.invalidateDependents(layer: this);
@@ -346,9 +349,10 @@ class DrawingLayerState extends RasterableLayerState
     isRasterizing = false;
     forceFullRender();
 
-    final AppState appState = GetIt.I.get<AppState>();
 
-    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+
+    final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
     for (final Frame frame in frames)
     {
       frame.layerList.invalidateDependents(layer: this);
@@ -402,17 +406,17 @@ class DrawingLayerState extends RasterableLayerState
   CoordinateColorMap _getContentWithSelection({required final bool frameIsSelected})
   {
     final CoordinateColorMap allColorPixels = CoordinateColorMap();
-    final AppState appState = GetIt.I.get<AppState>();
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
     final CanvasState canvasState = GetIt.I.get<CanvasState>();
     final bool hasSelection = frameIsSelected &&
         layerStack == null &&
-        appState.timeline.getCurrentLayer() == this &&
-        appState.selectionState.selection.hasValues();
+        documentState.timeline.getCurrentLayer() == this &&
+        documentState.selectionState.selection.hasValues();
     allColorPixels.addAll(_data);
     if (hasSelection)
     {
       final CoordinateColorMap nonNullMap = CoordinateColorMap.fromEntries(
-        appState.selectionState.selection.selectedPixels.entries.where((final MapEntry<CoordinateSetI, ColorReference?> entry) => entry.value != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < canvasState.canvasSize.x && entry.key.y < canvasState.canvasSize.y).map(
+        documentState.selectionState.selection.selectedPixels.entries.where((final MapEntry<CoordinateSetI, ColorReference?> entry) => entry.value != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < canvasState.canvasSize.x && entry.key.y < canvasState.canvasSize.y).map(
               (final MapEntry<CoordinateSetI, ColorReference?> entry) => MapEntry<CoordinateSetI, ColorReference>(entry.key, entry.value!),
         ),
       );
@@ -424,7 +428,7 @@ class DrawingLayerState extends RasterableLayerState
 
   Future<DualRasterResult> _createRaster() async
   {
-    final AppState appState = GetIt.I.get<AppState>();
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
     final CanvasState canvasState = GetIt.I.get<CanvasState>();
     final Map<Frame, RasterImagePair> rasterImages = <Frame, RasterImagePair>{};
     for (final CoordinateColorNullable entry in rasterQueue.entries)
@@ -456,16 +460,16 @@ class DrawingLayerState extends RasterableLayerState
     }
     else
     {
-      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
       pruneFramePixels(frames: frames);
-      final Frame? selectedFrame = appState.timeline.selectedFrame;
+      final Frame? selectedFrame = documentState.timeline.selectedFrame;
       if (selectedFrame != null && frames.length > 1 && frames.remove(selectedFrame))
       {
         frames.add(selectedFrame);
       }
       for (final Frame frame in frames)
       {
-        final ui.Image rasterImage = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, frame: frame, frameIsSelected: frame == appState.timeline.selectedFrame, layers: frame.layerList.getAllLayers(), fullRenderForced: fullRenderForced, renderRegions: renderRegions);
+        final ui.Image rasterImage = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, frame: frame, frameIsSelected: frame == documentState.timeline.selectedFrame, layers: frame.layerList.getAllLayers(), fullRenderForced: fullRenderForced, renderRegions: renderRegions);
         rasterImages[frame] = RasterImagePair(thumbnail: rasterImage, raster: rasterImage);
       }
       return DualRasterResult(rasterImages: rasterImages);
@@ -651,9 +655,9 @@ class DrawingLayerState extends RasterableLayerState
 
   void rasterInline({required final List<LayerState> layers, required final bool frameIsSelected})
   {
-    final AppState appState = GetIt.I.get<AppState>();
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
     final CanvasState canvasState = GetIt.I.get<CanvasState>();
-    final SelectionList? selectionList = selectedInCurrentFrameNotifier.value && frameIsSelected ? appState.selectionState.selection : null;
+    final SelectionList? selectionList = selectedInCurrentFrameNotifier.value && frameIsSelected ? documentState.selectionState.selection : null;
     final CoordinateColorMap innerPixels = settings.getInnerStrokePixels(data: _data, layerState: this, canvasSize: canvasState.canvasSize, layers: layers, selectionList: selectionList);
     setDataAll(list: innerPixels);
   }

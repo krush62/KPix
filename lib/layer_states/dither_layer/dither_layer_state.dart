@@ -31,8 +31,8 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_dither_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -227,7 +227,7 @@ class DitherLayerState extends ShadingLayerState
   @override
   Future<DualRasterResult> createRasters() async
   {
-    final AppState appState = GetIt.I.get<AppState>();
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
     final CanvasState canvasState = GetIt.I.get<CanvasState>();
     final Map<Frame, RasterImagePair> rasterImages = <Frame, RasterImagePair>{};
 
@@ -254,7 +254,7 @@ class DitherLayerState extends ShadingLayerState
     }
     else
     {
-      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
       for (final Frame frame in frames)
       {
         final List<RasterableLayerState> rasterLayers = frame.layerList.getVisibleRasterLayers().toList(growable: false);

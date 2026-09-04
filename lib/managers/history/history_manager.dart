@@ -23,6 +23,7 @@ import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:logger/logger.dart';
 
 
@@ -92,16 +93,15 @@ class HistoryManager
     }
   }
 
-  void addState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final bool setHasChanges = true, final LayerState? originLayer, final LayerState? secondOriginLayer})
+  void addState({required final HistoryStateTypeIdentifier identifier, final bool setHasChanges = true, final LayerState? originLayer, final LayerState? secondOriginLayer})
   {
-    if (!appState.timeline.isPlaying.value)
+    if (!GetIt.I.get<DocumentState>().timeline.isPlaying.value)
     {
       GetIt.I.get<Logger>().i("Adding history state: $identifier.");
       try
       {
         _removeFutureEntries();
-        _states.add(HistoryState.fromAppState(
-          appState: appState,
+        _states.add(HistoryState.fromDocument(
           identifier: identifier,
           originLayer: originLayer,
           secondOriginLayer: secondOriginLayer,
@@ -126,7 +126,7 @@ class HistoryManager
         GetIt.I.get<Logger>().e("Error adding history state: $identifier.", error: e, stackTrace: s);
       }
     }
-    appState.hasChanges.value = setHasChanges;
+    GetIt.I.get<AppState>().hasChanges.value = setHasChanges;
   }
 
   HistoryState? undo()

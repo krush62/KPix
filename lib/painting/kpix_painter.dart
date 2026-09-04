@@ -30,6 +30,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/tool_state.dart';
@@ -81,6 +82,7 @@ class KPixPainter extends CustomPainter
 {
   final AppState _appState;
   final CanvasState _canvasState = GetIt.I.get<CanvasState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final ViewState _viewState = GetIt.I.get<ViewState>();
   final ValueNotifier<Offset> _offset;
   final ValueNotifier<CoordinateSetD?> _coords;
@@ -123,8 +125,7 @@ class KPixPainter extends CustomPainter
   final CoordinateSetD _referenceImgLastReferenceOffset = CoordinateSetD.zero();
 
   KPixPainter({
-    required final AppState appState,
-    required final ValueNotifier<Offset> offset,
+      required final ValueNotifier<Offset> offset,
     required final ValueNotifier<CoordinateSetD?> coords,
     required final ValueNotifier<bool> primaryDown,
     required final ValueNotifier<bool> secondaryDown,
@@ -134,7 +135,8 @@ class KPixPainter extends CustomPainter
     required final ValueNotifier<bool> stylusLongMoveVertical,
     required final ValueNotifier<bool> stylusButton1Down,
     required final ValueNotifier<bool> stylusLongMoveHorizontal,
-    required final ValueNotifier<double> selectionPulse,})
+    required final ValueNotifier<double> selectionPulse,
+    required final AppState appState,})
       : _appState = appState,
         _offset = offset,
         _coords = coords,
@@ -193,7 +195,7 @@ class KPixPainter extends CustomPainter
   @override
   void paint(final Canvas canvas, final Size size)
   {
-    if (_appState.timeline.getCurrentLayer() != null)
+    if (_documentState.timeline.getCurrentLayer() != null)
     {
       final IToolPainter? currentToolPainter = toolPainterMap[GetIt.I.get<ToolState>().selectedTool];
       if (currentToolPainter != toolPainter)
@@ -234,8 +236,8 @@ class KPixPainter extends CustomPainter
         primaryDown: _primaryDown.value,
         secondaryDown: _secondaryDown.value,
         primaryPressStart: _primaryPressStart.value,
-        currentLayer: _appState.timeline.getCurrentLayer()!,
-        isPlaying: _appState.timeline.isPlaying.value,
+        currentLayer: _documentState.timeline.getCurrentLayer()!,
+        isPlaying: _documentState.timeline.isPlaying.value,
       );
 
       if (drawParams.currentReferenceLayer != null && !drawParams.isPlaying)
@@ -364,9 +366,9 @@ class KPixPainter extends CustomPainter
     final Color blackPulseColor = Colors.black.withAlpha(pulseAlpha);
     final Color whitePulseColor = Colors.white.withAlpha(pulseAlpha);
 
-    if (!_appState.selectionState.selection.isEmpty)
+    if (!_documentState.selectionState.selection.isEmpty)
     {
-      for (final SelectionLine line in _appState.selectionState.selectionLines) {
+      for (final SelectionLine line in _documentState.selectionState.selectionLines) {
         if (line.selectDir == SelectionDirection.left) {
           drawParams.paint.color = blackPulseColor;
           drawParams.canvas.drawLine(
@@ -661,7 +663,7 @@ class KPixPainter extends CustomPainter
 
   bool _shouldCapture()
   {
-    final Frame? frame = _appState.timeline.selectedFrame;
+    final Frame? frame = _documentState.timeline.selectedFrame;
     if (frame != null)
     {
       final Iterable<RasterableLayerState> rasterLayers = frame.layerList.getVisibleRasterLayers();
@@ -725,7 +727,7 @@ class KPixPainter extends CustomPainter
   {
     if (_shouldCapture())
     {
-      getImageFromLayers(canvasSize: _canvasState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection, frame: _appState.timeline.selectedFrame).then((final ui.Image img) {
+      getImageFromLayers(canvasSize: _canvasState.canvasSize, layerCollection: _documentState.timeline.selectedFrame!.layerList, selection: _documentState.selectionState.selection, frame: _documentState.timeline.selectedFrame).then((final ui.Image img) {
         if (_isDisposed)
         {
           img.dispose();
@@ -737,7 +739,7 @@ class KPixPainter extends CustomPainter
         {
           _retireImage(image: previous);
         }
-        final Frame? frame = _appState.timeline.selectedFrame;
+        final Frame? frame = _documentState.timeline.selectedFrame;
         if (frame != null)
         {
           final Iterable<RasterableLayerState> rasterLayers = frame.layerList.getVisibleRasterLayers();
@@ -802,7 +804,7 @@ class KPixPainter extends CustomPainter
 
   void _drawLayers({required final DrawingParameters drawParams})
   {
-    final Frame? frame = _appState.timeline.selectedFrame;
+    final Frame? frame = _documentState.timeline.selectedFrame;
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
 
     if (frame != null)
@@ -987,7 +989,7 @@ class KPixPainter extends CustomPainter
           }
         }
 
-        if (_frameBlendingOptions.enabled.value && _frameBlendingOptions.framesAfter.value + _frameBlendingOptions.framesBefore.value > 0 && _appState.timeline.frames.value.length > 1)
+        if (_frameBlendingOptions.enabled.value && _frameBlendingOptions.framesAfter.value + _frameBlendingOptions.framesBefore.value > 0 && _documentState.timeline.frames.value.length > 1)
         {
           _drawFrameBlending(drawParams: drawParams, pxlSzDbl: pxlSzDbl);
         }
@@ -997,8 +999,8 @@ class KPixPainter extends CustomPainter
 
   void _drawFrameBlending({required final DrawingParameters drawParams, required final double pxlSzDbl})
   {
-    final int currentFrameIndex = _appState.timeline.selectedFrameIndex;
-    final List<Frame> frameList = _appState.timeline.frames.value;
+    final int currentFrameIndex = _documentState.timeline.selectedFrameIndex;
+    final List<Frame> frameList = _documentState.timeline.frames.value;
     final List<Frame> framesToBlend = <Frame>[];
     final Color beforeTintColor = _frameBlendingOptions.tinting.value ? Colors.red : Colors.white;
     final Color afterTintColor = _frameBlendingOptions.tinting.value ? Colors.green : Colors.white;
@@ -1040,7 +1042,7 @@ class KPixPainter extends CustomPainter
           }
         }
 
-        if (frameToProcess == null || frameToProcess == _appState.timeline.selectedFrame || framesToBlend.contains(frameToProcess))
+        if (frameToProcess == null || frameToProcess == _documentState.timeline.selectedFrame || framesToBlend.contains(frameToProcess))
         {
           break;
         }

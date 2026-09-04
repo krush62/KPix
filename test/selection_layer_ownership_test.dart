@@ -20,6 +20,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -44,9 +45,9 @@ Future<void> _paint({
 List<LayerState> _layers({required final AppState appState})
 {
   final List<LayerState> layers = <LayerState>[];
-  for (int i = 0; i < appState.timeline.selectedFrame!.layerList.length; i++)
+  for (int i = 0; i < GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.length; i++)
   {
-    layers.add(appState.timeline.selectedFrame!.layerList.getLayer(index: i));
+    layers.add(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getLayer(index: i));
   }
   return layers;
 }
@@ -64,14 +65,14 @@ void main()
         final DrawingLayerState doomed = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
         await _paint(appState: appState, layer: doomed, coord: pixel, color: color);
 
-        appState.selectionState.selectAll();
+        GetIt.I.get<DocumentState>().selectionState.selectAll();
         await settle(appState: appState);
-        expect(appState.selectionState.selection.getColorReference(coord: pixel), color, reason: "setup: the pixel is floating");
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), color, reason: "setup: the pixel is floating");
 
         GetIt.I.get<LayerManager>().layerDeletedSelected(deleteLayer: doomed);
         await settle(appState: appState);
 
-        expect(appState.selectionState.selection.selectedPixels, isEmpty,
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isEmpty,
             reason: "the layer the content belongs to is gone, so nothing may still be floating",);
         expect(keeper.getDataEntry(coord: pixel), isNull,
             reason: "the deleted layer's pixels must not reappear on the layer that happens to be selected next",);
@@ -87,7 +88,7 @@ void main()
 
         //select on the keeper, so the floating content belongs to it
         GetIt.I.get<LayerManager>().selectLayer(newLayer: keeper);
-        appState.selectionState.selectAll();
+        GetIt.I.get<DocumentState>().selectionState.selectAll();
         await settle(appState: appState);
 
         GetIt.I.get<LayerManager>().layerDeletedSelected(deleteLayer: doomed);
@@ -110,14 +111,14 @@ void main()
         expect(before.length, 3, reason: "setup: three layers");
         GetIt.I.get<LayerManager>().selectLayer(newLayer: before[1]);
         await settle(appState: appState);
-        expect(appState.timeline.getCurrentLayer(), same(before[1]));
+        expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), same(before[1]));
 
         //drag the top layer to the bottom, across the selected one
         GetIt.I.get<LayerManager>().changeLayerOrder(state: before[0], newPosition: 3);
         await settle(appState: appState);
 
         expect(_layers(appState: appState), <LayerState>[before[1], before[2], before[0]], reason: "setup: the move happened");
-        expect(appState.timeline.getCurrentLayer(), same(before[1]),
+        expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), same(before[1]),
             reason: "moving another layer must not quietly select a different one",);
       },);
     });
@@ -137,7 +138,7 @@ void main()
         await settle(appState: appState);
 
         expect(_layers(appState: appState), <LayerState>[before[2], before[0], before[1]], reason: "setup: the move happened");
-        expect(appState.timeline.getCurrentLayer(), same(before[1]));
+        expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), same(before[1]));
       },);
     });
 
@@ -153,13 +154,13 @@ void main()
         GetIt.I.get<LayerManager>().selectLayer(newLayer: owner);
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);
 
-        appState.selectionState.selectAll();
+        GetIt.I.get<DocumentState>().selectionState.selectAll();
         await settle(appState: appState);
-        expect(appState.selectionState.selection.getColorReference(coord: pixel), color);
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), color);
 
         GetIt.I.get<LayerManager>().changeLayerOrder(state: before[0], newPosition: 3);
         await settle(appState: appState);
-        appState.selectionState.deselect(addToHistoryStack: false);
+        GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
         await settle(appState: appState);
 
         expect(owner.getDataEntry(coord: pixel), color, reason: "the content has to land back on the layer it came from");
@@ -177,14 +178,14 @@ void main()
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);
 
         locked.lockState.value = LayerLockState.locked;
-        appState.selectionState.selectAll();
+        GetIt.I.get<DocumentState>().selectionState.selectAll();
         await settle(appState: appState);
 
         GetIt.I.get<LayerManager>().selectLayer(newLayer: locked);
         await settle(appState: appState);
 
         expect(owner.getDataEntry(coord: pixel), color, reason: "the content goes back to the layer it came from");
-        expect(appState.selectionState.selection.getColorReference(coord: pixel), isNull,
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), isNull,
             reason: "a locked layer hands over nothing, so nothing may still be floating over it",);
         expect(copiesOf(appState: appState, coord: pixel), 1, reason: "the pixel would otherwise be drawn twice");
       },);
@@ -198,12 +199,12 @@ void main()
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);
 
         locked.lockState.value = LayerLockState.locked;
-        appState.selectionState.selectAll();
+        GetIt.I.get<DocumentState>().selectionState.selectAll();
         await settle(appState: appState);
         GetIt.I.get<LayerManager>().selectLayer(newLayer: locked);
         await settle(appState: appState);
 
-        appState.selectionState.deselect(addToHistoryStack: false);
+        GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
         await settle(appState: appState);
 
         expect(locked.getDataEntry(coord: pixel), isNull, reason: "deselecting must not stamp anything into a locked layer");
@@ -220,14 +221,14 @@ void main()
         await settle(appState: appState);
 
         GetIt.I.get<LayerManager>().selectLayer(newLayer: owner);
-        appState.selectionState.selectAll();
+        GetIt.I.get<DocumentState>().selectionState.selectAll();
         await settle(appState: appState);
 
         GetIt.I.get<LayerManager>().selectLayer(newLayer: shading!);
         await settle(appState: appState);
 
         expect(owner.getDataEntry(coord: pixel), color);
-        expect(appState.selectionState.selection.getColorReference(coord: pixel), isNull,
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), isNull,
             reason: "a shading layer holds no colour references, so nothing may be handed to it",);
         expect(copiesOf(appState: appState, coord: pixel), 1);
       },);
@@ -241,7 +242,7 @@ void main()
         await _paint(appState: appState, layer: owner, coord: pixel, color: color);
 
         locked.lockState.value = LayerLockState.locked;
-        appState.selectionState.selectAll();
+        GetIt.I.get<DocumentState>().selectionState.selectAll();
         await settle(appState: appState);
 
         GetIt.I.get<LayerManager>().selectLayer(newLayer: locked);
@@ -249,7 +250,7 @@ void main()
         GetIt.I.get<LayerManager>().selectLayer(newLayer: owner);
         await settle(appState: appState);
 
-        expect(appState.selectionState.selection.getColorReference(coord: pixel), color,
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), color,
             reason: "coming back to the owning layer has to lift its pixels again",);
         expect(owner.getDataEntry(coord: pixel), isNull);
         expect(copiesOf(appState: appState, coord: pixel), 1);

@@ -19,7 +19,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
@@ -92,7 +92,7 @@ class ToolState
   //(also covers keyboard shortcuts which bypass the disabled buttons)
   bool toolIsAllowedForCurrentLayer({required final ToolType tool})
   {
-    final LayerState? currentLayer = GetIt.I.get<AppState>().timeline.getCurrentLayer();
+    final LayerState? currentLayer = GetIt.I.get<DocumentState>().timeline.getCurrentLayer();
     if (currentLayer is ShadingLayerState && (tool == ToolType.select || tool == ToolType.pick))
     {
       return false;

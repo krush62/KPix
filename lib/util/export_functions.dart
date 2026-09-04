@@ -41,9 +41,9 @@ import 'package:kpix/managers/history/history_selection_state.dart';
 import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -116,18 +116,17 @@ enum _AnimationFormat
 /// report as a failed export.
 Future<List<RenderedFrame>?> _renderAnimationFrames({
   required final AnimationExportData exportData,
-  required final AppState appState,
 }) async
 {
-  final int startFrame = exportData.loopOnly ? appState.timeline.loopStartIndex.value : 0;
-  final int endFrame = exportData.loopOnly ? appState.timeline.loopEndIndex.value : appState.timeline.frames.value.length - 1;
+  final int startFrame = exportData.loopOnly ? GetIt.I.get<DocumentState>().timeline.loopStartIndex.value : 0;
+  final int endFrame = exportData.loopOnly ? GetIt.I.get<DocumentState>().timeline.loopEndIndex.value : GetIt.I.get<DocumentState>().timeline.frames.value.length - 1;
 
   final List<RenderedFrame> renderedFrames = <RenderedFrame>[];
   for (int i = startFrame; i <= endFrame; i++)
   {
-    final Frame frame = appState.timeline.frames.value[i];
+    final Frame frame = GetIt.I.get<DocumentState>().timeline.frames.value[i];
     final ui.Image uiImage = await getImageFromLayers(
-      selection: appState.selectionState.selection,
+      selection: GetIt.I.get<DocumentState>().selectionState.selection,
       canvasSize: GetIt.I.get<CanvasState>().canvasSize,
       layerCollection: frame.layerList,
       scalingFactor: exportData.scaling,

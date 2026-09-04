@@ -55,6 +55,7 @@ import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -140,12 +141,11 @@ const double _floatDelta = 0.01;
 
 Future<String?> saveKPixFile({
   required final String path,
-  required final AppState appState,
 }) async
 {
   try
   {
-    final ByteData byteData = await createKPixData(appState: appState);
+    final ByteData byteData = await createKPixData();
     if (!kIsWeb)
     {
       await File(path).writeAsBytes(byteData.buffer.asUint8List());
@@ -315,7 +315,7 @@ Future<void> saveFilePressed({required final String fileName, final Function()? 
   if (!kIsWeb)
   {
     final String finalPath = p.join(GetIt.I.get<AppPaths>().projectsDir, "$fileName.$fileExtensionKpix");
-    saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final String? path)
+    saveKPixFile(path: finalPath).then((final String? path)
     {
       if (path != null) 
       {
@@ -329,7 +329,7 @@ Future<void> saveFilePressed({required final String fileName, final Function()? 
   }
   else
   {
-    saveKPixFile(path: fileName, appState: GetIt.I.get<AppState>()).then((final String? path)
+    saveKPixFile(path: fileName).then((final String? path)
     {
       if (path != null) 
       {
@@ -350,6 +350,7 @@ Future<void> saveFilePressed({required final String fileName, final Function()? 
 Future<void> _projectFileSaved({required final String fileName, required final String path, required final Function()? finishCallback,}) async
 {
   final AppState appState = GetIt.I.get<AppState>();
+  final DocumentState documentState = GetIt.I.get<DocumentState>();
   final CanvasState canvasState = GetIt.I.get<CanvasState>();
   if (!kIsWeb)
   {
@@ -358,8 +359,8 @@ Future<void> _projectFileSaved({required final String fileName, required final S
     {
       try
       {
-        final Frame frame = appState.timeline.selectedFrame!;
-        final ui.Image img = await getImageFromLayers(canvasSize: canvasState.canvasSize, layerCollection: frame.layerList, selection: appState.selectionState.selection,frame: frame,);
+        final Frame frame = documentState.timeline.selectedFrame!;
+        final ui.Image img = await getImageFromLayers(canvasSize: canvasState.canvasSize, layerCollection: frame.layerList, selection: documentState.selectionState.selection,frame: frame,);
         try
         {
           final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
@@ -584,11 +585,11 @@ Future<String?> getDirectory({required final String startDir}) async
 
 Future<Uint8List?> _createImageData({required final ImageExportData exportData, required final ImageExportType exportType,}) async
 {
-  final AppState appState = GetIt.I.get<AppState>();
+  final DocumentState documentState = GetIt.I.get<DocumentState>();
   final CanvasState canvasState = GetIt.I.get<CanvasState>();
   final CoordinateSetI canvasSize = canvasState.canvasSize;
-  final LayerCollection layerList = appState.timeline.selectedFrame!.layerList;
-  final SelectionList selection = appState.selectionState.selection;
+  final LayerCollection layerList = documentState.timeline.selectedFrame!.layerList;
+  final SelectionList selection = documentState.selectionState.selection;
   final List<KPalRampData> colorRamps = GetIt.I.get<PaletteState>().colorRamps;
 
   switch (exportType)
@@ -604,9 +605,9 @@ Future<Uint8List?> _createImageData({required final ImageExportData exportData, 
     case ImageExportType.pixelorama:
       return await getPixeloramaData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
     case ImageExportType.kpix:
-      return (await createKPixData(appState: appState)).buffer.asUint8List();
+      return (await createKPixData()).buffer.asUint8List();
     case ImageExportType.texturePack:
-      return await exportTexturePack(appState: appState);
+      return await exportTexturePack();
   }
 }
 
@@ -623,18 +624,17 @@ Future<String?> exportImage({required final ImageExportData exportData, required
 
 Future<Uint8List?> _createAnimationData({required final AnimationExportData exportData, required final AnimationExportType exportType,}) async
 {
-  final AppState appState = GetIt.I.get<AppState>();
 
   switch (exportType)
   {
     case AnimationExportType.apng:
-      return await exportAPNG(exportData: exportData, appState: appState);
+      return await exportAPNG(exportData: exportData);
     case AnimationExportType.gif:
-      return await exportGIF(exportData: exportData, appState: appState);
+      return await exportGIF(exportData: exportData);
     case AnimationExportType.zippedPng:
-      return await exportZippedPng(exportData: exportData, appState: appState);
+      return await exportZippedPng(exportData: exportData);
     case AnimationExportType.texturePack:
-      return await exportTexturePackAnimation(exportData: exportData, appState: appState,);
+      return await exportTexturePackAnimation(exportData: exportData);
   }
 }
 

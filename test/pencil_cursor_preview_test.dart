@@ -22,6 +22,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
@@ -68,7 +69,7 @@ DrawingParameters _params({
     secondaryDown: false,
     primaryPressStart: Offset.zero,
     pixelRatio: 1.0,
-    currentLayer: appState.timeline.getCurrentLayer()!,
+    currentLayer: GetIt.I.get<DocumentState>().timeline.getCurrentLayer()!,
     symmetryHorizontal: null,
     symmetryVertical: null,
     isPlaying: false,

@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -35,7 +36,7 @@ void main()
   testWidgets("a linked layer reports different pixels for each frame it sits in", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-      final Timeline timeline = appState.timeline;
+      final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
       await settle(appState: appState);
@@ -48,9 +49,9 @@ void main()
       final Frame frameTwo = timeline.frames.value[1];
       expect(frameTwo.layerList.getLayer(index: 0), same(layer), reason: "setup: one layer, two frames");
 
-      appState.selectionState.selectAll();
-      appState.selectionState.setOffset(offset: CoordinateSetI(x: 2, y: 0), withContent: true);
-      appState.selectionState.finishMovement();
+      GetIt.I.get<DocumentState>().selectionState.selectAll();
+      GetIt.I.get<DocumentState>().selectionState.setOffset(offset: CoordinateSetI(x: 2, y: 0), withContent: true);
+      GetIt.I.get<DocumentState>().selectionState.finishMovement();
       layer.doManualRaster = true;
       await settle(appState: appState);
 
@@ -70,7 +71,7 @@ void main()
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
       await settle(appState: appState);
 
-      final Frame frame = appState.timeline.frames.value[0];
+      final Frame frame = GetIt.I.get<DocumentState>().timeline.frames.value[0];
       expect(layer.pixelsForFrame(frame: frame)[origin], color);
       expect(layer.pixelsForFrame(frame: null)[origin], color,
           reason: "callers without a frame keep getting the selected frame's pixels",);
@@ -80,7 +81,7 @@ void main()
   testWidgets("frames the layer has left stop being reported", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-      final Timeline timeline = appState.timeline;
+      final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
       final DrawingLayerState layer = layerAt(appState: appState, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
       await settle(appState: appState);

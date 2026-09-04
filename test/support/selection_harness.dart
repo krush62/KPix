@@ -26,6 +26,8 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
@@ -65,10 +67,12 @@ Future<AppState> bootProject({required final CoordinateSetI canvasSize}) async
   GetIt.I.registerSingleton<ViewState>(ViewState(devicePixelRatio: 1.0));
   GetIt.I.registerSingleton<PaletteState>(PaletteState());
   GetIt.I.registerSingleton<CanvasState>(CanvasState());
+  GetIt.I.registerSingleton<DocumentState>(DocumentState());
   final AppState appState = AppState();
   GetIt.I.registerSingleton<AppState>(appState);
   GetIt.I.registerSingleton<ToolState>(ToolState());
   GetIt.I.registerSingleton<LayerManager>(LayerManager());
+  GetIt.I.registerSingleton<HistoryController>(HistoryController());
   GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: 64));
 
   appState.init(dimensions: canvasSize);
@@ -106,7 +110,7 @@ Future<void> settle({required final AppState appState, final int maxTicks = 60})
   {
     await Future<void>.delayed(const Duration(milliseconds: 25));
     bool pending = false;
-    for (final Frame frame in appState.timeline.frames.value)
+    for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
     {
       for (int i = 0; i < frame.layerList.length; i++)
       {
@@ -127,7 +131,7 @@ Future<void> settle({required final AppState appState, final int maxTicks = 60})
 /// The drawing layer at [index] of the currently selected frame.
 DrawingLayerState layerAt({required final AppState appState, required final int index})
 {
-  return appState.timeline.selectedFrame!.layerList.getLayer(index: index) as DrawingLayerState;
+  return GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getLayer(index: index) as DrawingLayerState;
 }
 
 /// How many of the project's pixel stores hold a colour at [coord].
@@ -138,7 +142,7 @@ DrawingLayerState layerAt({required final AppState appState, required final int 
 int copiesOf({required final AppState appState, required final CoordinateSetI coord})
 {
   int count = 0;
-  for (final Frame frame in appState.timeline.frames.value)
+  for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
   {
     for (int i = 0; i < frame.layerList.length; i++)
     {
@@ -149,7 +153,7 @@ int copiesOf({required final AppState appState, required final CoordinateSetI co
       }
     }
   }
-  if (appState.selectionState.selection.getColorReference(coord: coord) != null)
+  if (GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: coord) != null)
   {
     count++;
   }

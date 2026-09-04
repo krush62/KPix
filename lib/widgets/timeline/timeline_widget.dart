@@ -26,6 +26,7 @@ import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
@@ -1277,7 +1278,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
                           Expanded(
                             child: ListenableBuilder(
-                              listenable: GetIt.I.get<AppState>().timeline.layerChangeNotifier,
+                              listenable: GetIt.I.get<DocumentState>().timeline.layerChangeNotifier,
                               builder: (final BuildContext context, final Widget? child) {
                                 return LayoutBuilder(
                                   builder: (final BuildContext context4, final BoxConstraints constraints) {

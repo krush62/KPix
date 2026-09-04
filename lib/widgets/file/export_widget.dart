@@ -21,6 +21,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -193,6 +194,7 @@ class _ExportWidgetState extends State<ExportWidget>
   final ValueNotifier<int> _scalingIndex = ValueNotifier<int>(0);
   final ValueNotifier<String> _fileName = ValueNotifier<String>("");
   final AppState _appState = GetIt.I.get<AppState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier<FileNameStatus>(FileNameStatus.available);
   final ValueNotifier<ExportSectionType> _selectedSection = ValueNotifier<ExportSectionType>(ExportSectionType.image);
@@ -215,7 +217,7 @@ class _ExportWidgetState extends State<ExportWidget>
   void initState()
   {
     super.initState();
-    if (_appState.timeline.loopStartIndex.value != _appState.timeline.loopEndIndex.value)
+    if (_documentState.timeline.loopStartIndex.value != _documentState.timeline.loopEndIndex.value)
     {
       _selectedSection.value = ExportSectionType.animation;
     }
@@ -292,7 +294,7 @@ class _ExportWidgetState extends State<ExportWidget>
                 return SegmentedButton<ExportSectionType>(
                   segments:  <ButtonSegment<ExportSectionType>>[
                     _createExportSection(type: ExportSectionType.image, tooltip: "Image", icon: TablerIcons.photo),
-                    _createExportSection(type: ExportSectionType.animation, tooltip: "Animation", icon: TablerIcons.movie, isEnabled: _appState.timeline.frames.value.length > 1),
+                    _createExportSection(type: ExportSectionType.animation, tooltip: "Animation", icon: TablerIcons.movie, isEnabled: _documentState.timeline.frames.value.length > 1),
                     _createExportSection(type: ExportSectionType.palette, tooltip: "Palette", icon: Icons.palette),
                     _createExportSection(type: ExportSectionType.kpix, tooltip: "KPix project", icon: TablerIcons.file_export),
                   ],
@@ -351,7 +353,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                 child: ValueListenableBuilder<ImageExportType>(
                                   valueListenable: _fileExportType,
                                   builder: (final BuildContext context, final ImageExportType exportTypeEnum, final Widget? child) {
-                                    final bool isValidTexturePack = _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().isNotEmpty;
+                                    final bool isValidTexturePack = _documentState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().isNotEmpty;
                                     return SegmentedButton<ImageExportType>(
                                       selected: <ImageExportType>{exportTypeEnum},
                                       showSelectedIcon: false,
@@ -372,11 +374,11 @@ class _ExportWidgetState extends State<ExportWidget>
                                       valueListenable: _animationExportType,
                                       builder: (final BuildContext context, final AnimationExportType exportTypeEnum, final Widget? child) {
                                         bool isValidTexturePack = true;
-                                        final int startFrameIndex = sectionOnly ? _appState.timeline.loopStartIndex.value : 0;
-                                        final int endFrameIndex = sectionOnly ? _appState.timeline.loopEndIndex.value : _appState.timeline.frames.value.length - 1;
+                                        final int startFrameIndex = sectionOnly ? _documentState.timeline.loopStartIndex.value : 0;
+                                        final int endFrameIndex = sectionOnly ? _documentState.timeline.loopEndIndex.value : _documentState.timeline.frames.value.length - 1;
                                         for (int i = startFrameIndex; i <= endFrameIndex; i++)
                                         {
-                                          if (_appState.timeline.frames.value[i].layerList.getVisibleRasterLayers().isEmpty)
+                                          if (_documentState.timeline.frames.value[i].layerList.getVisibleRasterLayers().isEmpty)
                                           {
                                             isValidTexturePack = false;
                                             break;
@@ -418,13 +420,13 @@ class _ExportWidgetState extends State<ExportWidget>
                                     return ValueListenableBuilder<KPixExportType>(
                                       valueListenable: _kpixExportType,
                                       builder: (final BuildContext context, final KPixExportType exportTypeEnum, final Widget? child) {
-                                        bool isValidTexturePackAnimation = _appState.timeline.frames.value.length > 1;
-                                        final bool isValidTexturePack = _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().isNotEmpty;
-                                        final int startFrameIndex = sectionOnly ? _appState.timeline.loopStartIndex.value : 0;
-                                        final int endFrameIndex = sectionOnly ? _appState.timeline.loopEndIndex.value : _appState.timeline.frames.value.length - 1;
+                                        bool isValidTexturePackAnimation = _documentState.timeline.frames.value.length > 1;
+                                        final bool isValidTexturePack = _documentState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().isNotEmpty;
+                                        final int startFrameIndex = sectionOnly ? _documentState.timeline.loopStartIndex.value : 0;
+                                        final int endFrameIndex = sectionOnly ? _documentState.timeline.loopEndIndex.value : _documentState.timeline.frames.value.length - 1;
                                         for (int i = startFrameIndex; i <= endFrameIndex; i++)
                                         {
-                                          if (_appState.timeline.frames.value[i].layerList.getVisibleRasterLayers().isEmpty)
+                                          if (_documentState.timeline.frames.value[i].layerList.getVisibleRasterLayers().isEmpty)
                                           {
                                             isValidTexturePackAnimation = false;
                                             break;
@@ -530,8 +532,8 @@ class _ExportWidgetState extends State<ExportWidget>
                                 child: ValueListenableBuilder<bool>(
                                   valueListenable: _animationSectionOnly,
                                   builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
-                                    final bool moreThanOneFrame = _appState.timeline.loopStartIndex.value != _appState.timeline.loopEndIndex.value;
-                                    final bool sectionIsNotWhole = _appState.timeline.loopStartIndex.value > 0 || _appState.timeline.loopEndIndex.value < _appState.timeline.frames.value.length - 1;
+                                    final bool moreThanOneFrame = _documentState.timeline.loopStartIndex.value != _documentState.timeline.loopEndIndex.value;
+                                    final bool sectionIsNotWhole = _documentState.timeline.loopStartIndex.value > 0 || _documentState.timeline.loopEndIndex.value < _documentState.timeline.frames.value.length - 1;
                                     return Switch(
                                       value: animationSectionOnly,
                                       onChanged: (moreThanOneFrame && sectionIsNotWhole) ? (final bool newValue) {_animationSectionOnly.value = newValue;} : null,
@@ -544,8 +546,8 @@ class _ExportWidgetState extends State<ExportWidget>
                                 child: ValueListenableBuilder<bool>(
                                   valueListenable: _animationSectionOnly,
                                   builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
-                                    final int animationLengthMs = _appState.timeline.calculateTotalFrameTime(sectionOnly: animationSectionOnly);
-                                    final int frameCount = animationSectionOnly ? _appState.timeline.loopEndIndex.value - _appState.timeline.loopStartIndex.value + 1 : _appState.timeline.frames.value.length;
+                                    final int animationLengthMs = _documentState.timeline.calculateTotalFrameTime(sectionOnly: animationSectionOnly);
+                                    final int frameCount = animationSectionOnly ? _documentState.timeline.loopEndIndex.value - _documentState.timeline.loopStartIndex.value + 1 : _documentState.timeline.frames.value.length;
                                     final String animationLength = "$frameCount frames (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
                                     return Text(animationLength, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium);
                                   },

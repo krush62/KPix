@@ -21,8 +21,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -47,7 +47,7 @@ class CanvasSizeWidget extends StatefulWidget
 class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
-  final AppState _appState = GetIt.I.get<AppState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ValueNotifier<int> _width = ValueNotifier<int>(0);
   final ValueNotifier<int> _height = ValueNotifier<int>(0);
@@ -71,8 +71,8 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
     _width.value = _canvasState.canvasSize.x;
     _height.value = _canvasState.canvasSize.y;
     _setSize();
-    final Frame frame = _appState.timeline.selectedFrame!;
-    getImageFromLayers(canvasSize: _canvasState.canvasSize, layerCollection: frame.layerList, selection: _appState.selectionState.selection, frame: frame).then((final ui.Image img){_image.value = img;});
+    final Frame frame = _documentState.timeline.selectedFrame!;
+    getImageFromLayers(canvasSize: _canvasState.canvasSize, layerCollection: frame.layerList, selection: _documentState.selectionState.selection, frame: frame).then((final ui.Image img){_image.value = img;});
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeWidthTextFocus).addListener(_widthFocusChanged);
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeHeightTextFocus).addListener(_heightFocusChanged);
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeOffsetXTextFocus).addListener(_offsetXFocusChanged);

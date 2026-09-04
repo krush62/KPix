@@ -25,6 +25,7 @@ import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/export_functions.dart';
@@ -38,7 +39,7 @@ import 'support/selection_harness.dart';
 /// Serialises the project the way Ctrl+S does.
 Future<Uint8List> _save({required final AppState appState}) async
 {
-  return (await createKPixData(appState: appState)).buffer.asUint8List();
+  return (await createKPixData()).buffer.asUint8List();
 }
 
 /// Reads a project back the way opening a file does.
@@ -88,12 +89,12 @@ void main()
 
       //copy and paste leaves the clipboard floating over pixels that are still
       //on the layer, so the two pixel stores overlap
-      appState.selectionState.selectAll();
-      appState.selectionState.copy();
-      appState.selectionState.paste();
+      GetIt.I.get<DocumentState>().selectionState.selectAll();
+      GetIt.I.get<DocumentState>().selectionState.copy();
+      GetIt.I.get<DocumentState>().selectionState.paste();
       await settle(appState: appState);
       expect(layer.getDataEntry(coord: pixel), isNotNull, reason: "setup: the layer still holds the pasted-over pixel");
-      expect(appState.selectionState.selection.getColorReference(coord: pixel), isNotNull, reason: "setup: and so does the selection");
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), isNotNull, reason: "setup: and so does the selection");
 
       final LoadFileSet loaded = await _load(bytes: await _save(appState: appState));
 
@@ -110,9 +111,9 @@ void main()
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
       await settle(appState: appState);
 
-      appState.selectionState.selectAll();
-      appState.selectionState.setOffset(offset: CoordinateSetI(x: -10, y: 0), withContent: true);
-      appState.selectionState.finishMovement();
+      GetIt.I.get<DocumentState>().selectionState.selectAll();
+      GetIt.I.get<DocumentState>().selectionState.setOffset(offset: CoordinateSetI(x: -10, y: 0), withContent: true);
+      GetIt.I.get<DocumentState>().selectionState.finishMovement();
       await settle(appState: appState);
 
       final LoadFileSet loaded = await _load(bytes: await _save(appState: appState));
@@ -140,11 +141,11 @@ void main()
       //the content is handed back to the drawing layer but the buffer keeps a
       //copy, because a shading layer cannot hold colour references
       GetIt.I.get<LayerManager>().selectLayer(newLayer: drawingLayer);
-      appState.selectionState.selectAll();
-      GetIt.I.get<LayerManager>().selectLayer(newLayer: appState.timeline.selectedFrame!.layerList.getLayer(index: 0));
+      GetIt.I.get<DocumentState>().selectionState.selectAll();
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getLayer(index: 0));
       await settle(appState: appState);
-      expect(appState.timeline.getCurrentLayer(), isA<ShadingLayerState>(), reason: "setup: a shading layer is selected");
-      expect(appState.selectionState.selection.selectedPixels, isNotEmpty, reason: "setup: with a selection still floating");
+      expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), isA<ShadingLayerState>(), reason: "setup: a shading layer is selected");
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isNotEmpty, reason: "setup: with a selection still floating");
 
       final int sizeWithSelection = (await _save(appState: appState)).lengthInBytes;
 

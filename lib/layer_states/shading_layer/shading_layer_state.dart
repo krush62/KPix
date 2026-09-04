@@ -34,8 +34,8 @@ import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -146,9 +146,10 @@ class ShadingLayerState extends RasterableLayerState
     }
     forceFullRender();
 
-    final AppState appState = GetIt.I.get<AppState>();
 
-    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+
+    final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
 
     for (final Frame frame in frames) {
       frame.layerList.invalidateDependents(layer: this);
@@ -205,10 +206,12 @@ class ShadingLayerState extends RasterableLayerState
       doManualRaster = true;
 
 
-      final AppState appState = GetIt.I.get<AppState>();
 
 
-      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      final DocumentState documentState = GetIt.I.get<DocumentState>();
+
+
+      final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
       for (final Frame frame in frames) {
         frame.layerList.invalidateDependents(layer: this);
       }
@@ -227,10 +230,12 @@ class ShadingLayerState extends RasterableLayerState
       doManualRaster = true;
 
 
-      final AppState appState = GetIt.I.get<AppState>();
 
 
-      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      final DocumentState documentState = GetIt.I.get<DocumentState>();
+
+
+      final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
       for (final Frame frame in frames) {
         frame.layerList.invalidateDependents(layer: this);
       }
@@ -240,7 +245,7 @@ class ShadingLayerState extends RasterableLayerState
   @protected
   Future<DualRasterResult> createRasters() async
   {
-    final AppState appState = GetIt.I.get<AppState>();
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
     final CanvasState canvasState = GetIt.I.get<CanvasState>();
     final Map<Frame, RasterImagePair> rasterImages = <Frame, RasterImagePair>{};
 
@@ -274,7 +279,7 @@ class ShadingLayerState extends RasterableLayerState
     }
     else
     {
-      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
       pruneFramePixels(frames: frames);
       for (final Frame frame in frames)
       {
@@ -638,9 +643,10 @@ class ShadingLayerState extends RasterableLayerState
     _isUpdateScheduled = true;
     isRasterizing = true;
 
-    final AppState appState = GetIt.I.get<AppState>();
 
-    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+
+    final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
 
     for (final Frame frame in frames) {
       frame.layerList.lockLayerAndDependenciesForRendering(layer: this);

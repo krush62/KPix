@@ -19,6 +19,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -62,7 +63,7 @@ void main()
 
         expect(above.settings.readsLayersBelow, isTrue,
             reason: "a shaded outer stroke darkens whatever sits underneath it",);
-        expect(appState.timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isTrue,
+        expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isTrue,
             reason: "so the layer below has to be able to invalidate it",);
       },);
     });
@@ -81,7 +82,7 @@ void main()
         await settle(appState: appState);
 
         expect(above.settings.readsLayersBelow, isTrue);
-        expect(appState.timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isTrue);
+        expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isTrue);
       },);
     });
 
@@ -99,7 +100,7 @@ void main()
         await settle(appState: appState);
 
         expect(above.settings.readsLayersBelow, isTrue);
-        expect(appState.timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isTrue);
+        expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isTrue);
       },);
     });
 
@@ -117,7 +118,7 @@ void main()
         expect(above.doManualRaster, isFalse, reason: "setup: everything is drawn and quiet");
 
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: second));
-        appState.timeline.selectedFrame!.layerList.invalidateDependents(layer: below);
+        GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.invalidateDependents(layer: below);
 
         expect(above.doManualRaster, isTrue,
             reason: "the shaded stroke samples the layer below, so a colour change there has to redraw it",);
@@ -138,7 +139,7 @@ void main()
         await settle(appState: appState);
 
         expect(above.settings.readsLayersBelow, isFalse, reason: "a solid stroke uses a fixed colour");
-        expect(appState.timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isFalse,
+        expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isFalse,
             reason: "registering it would redraw the layer for no reason",);
       },);
     });
@@ -153,12 +154,12 @@ void main()
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.shade;
         await settle(appState: appState);
-        expect(appState.timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isTrue);
+        expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isTrue);
 
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.off;
         await settle(appState: appState);
 
-        expect(appState.timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isFalse);
+        expect(GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.dependsOn(dependent: above, dependency: below), isFalse);
       },);
     });
   });

@@ -23,9 +23,9 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -316,9 +316,9 @@ class DrawingLayerSettings extends LayerSettings {
 
   CoordinateColorMap getSettingsPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final List<LayerState> layerList, required final bool frameIsSelected})
   {
-    final AppState appState = GetIt.I.get<AppState>();
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
     final CanvasState canvasState = GetIt.I.get<CanvasState>();
-    final SelectionList? selectionList = layerState.selectedInCurrentFrameNotifier.value && frameIsSelected ? appState.selectionState.selection : null;
+    final SelectionList? selectionList = layerState.selectedInCurrentFrameNotifier.value && frameIsSelected ? documentState.selectionState.selection : null;
     final CoordinateColorMap shadowPixels = getDropShadowPixels(layerState: layerState, layers: layerList, data: data, canvasSize: canvasState.canvasSize);
     final CoordinateColorMap outerPixels = getOuterStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: canvasState.canvasSize);
     final CoordinateColorMap innerPixels = getInnerStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: canvasState.canvasSize, selectionList: selectionList);

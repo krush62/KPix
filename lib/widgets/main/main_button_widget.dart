@@ -28,6 +28,8 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/update_state.dart';
@@ -65,6 +67,7 @@ class MainButtonWidget extends StatefulWidget
 class _MainButtonWidgetState extends State<MainButtonWidget>
 {
   final AppState _appState = GetIt.I.get<AppState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final HistoryManager _historyManager = GetIt.I.get<HistoryManager>();
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   late KPixOverlay _loadMenu;
@@ -384,12 +387,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _undoPressed()
   {
-    _appState.undoPressed();
+    GetIt.I.get<HistoryController>().undoPressed();
   }
 
   void _redoPressed()
   {
-    _appState.redoPressed();
+    GetIt.I.get<HistoryController>().redoPressed();
   }
 
   void _savePreferencesPressed()
@@ -491,7 +494,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         _appState.importFile(importResult: result);
         GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
         GetIt.I.get<LayerManager>().rasterLayersFrame();
-        _appState.timeline.layerChangeNotifier.reportChange();
+        _documentState.timeline.layerChangeNotifier.reportChange();
       });
     }
     catch (e, s)

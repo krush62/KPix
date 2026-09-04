@@ -25,6 +25,7 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -80,7 +81,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
           if (oldImage != null) {
             GetIt.I.get<ReferenceImageManager>().removeImage(refImage: oldImage);
           }
-          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerChangeReferenceImage, originLayer: GetIt.I.get<AppState>().timeline.getCurrentLayer());
+          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerChangeReferenceImage, originLayer: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());
         }
         else
         {

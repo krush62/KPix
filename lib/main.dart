@@ -31,7 +31,9 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
+import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/update_state.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -208,7 +210,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         clearRecoverDir().then((final void value)
         {
           final String fileName = appState.projectName.value ?? recoverFileName;
-          final String finalPath = p.join(appState.internalDir, recoverSubDirName, "$fileName.$fileExtensionKpix");
+          final String finalPath = p.join(GetIt.I.get<AppPaths>().internalDir, recoverSubDirName, "$fileName.$fileExtensionKpix");
           saveKPixFile(appState: appState, path: finalPath);
         },);
       }
@@ -307,8 +309,12 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       final BuildContext c = context;
       final double devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
       logger.i("Pixel Ratio: $devicePixelRatio");
+      logger.i("Creating App Paths");
+      GetIt.I.registerSingleton<AppPaths>(AppPaths(exportDir: exportDirString, internalDir: internalDirString, projectsDir: projectDirResult.resolvedDir));
+      logger.i("Creating Update State");
+      GetIt.I.registerSingleton<UpdateState>(UpdateState());
       logger.i("Creating App State");
-      final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString, projectsDir: projectDirResult.resolvedDir, devicePixelRatio: devicePixelRatio);
+      final AppState appState = AppState(devicePixelRatio: devicePixelRatio);
 
       GetIt.I.registerSingleton<AppState>(appState);
       final Size logicalSize = MediaQuery.of(c).size;
@@ -453,7 +459,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         if (updateInfo.version > currentVersion)
         {
           logger.i("Newer version available at ${updateInfo.url}.");
-          GetIt.I.get<AppState>().updatePackage = updateInfo;
+          GetIt.I.get<UpdateState>().updatePackage = updateInfo;
           hasUpdate = true;
         }
       }
@@ -463,16 +469,15 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
       }
     }
-    GetIt.I.get<AppState>().hasUpdateNotifier.value = hasUpdate;
+    GetIt.I.get<UpdateState>().hasUpdateNotifier.value = hasUpdate;
   }
 
 
 
   Future<void> _checkAllFilesAccessOnStartup({required final BuildContext context}) async
   {
-    final AppState appState = GetIt.I.get<AppState>();
-    final String defaultProjectsDir = getDefaultProjectsDir(internalDir: appState.internalDir);
-    if (!p.equals(appState.projectsDir, defaultProjectsDir) && !await hasAllFilesAccess())
+    final String defaultProjectsDir = getDefaultProjectsDir(internalDir: GetIt.I.get<AppPaths>().internalDir);
+    if (!p.equals(GetIt.I.get<AppPaths>().projectsDir, defaultProjectsDir) && !await hasAllFilesAccess())
     {
       GetIt.I.get<Logger>().w("Using a custom project directory without all files access.");
       final KPixOverlay permissionDialog = getAllFilesAccessDialog(
@@ -507,7 +512,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
       await importProject(path: initialFilePath);
       final String fileName = extractFilenameFromPath(path: initialFilePath);
-      final String expectedFileName = initialFilePath = p.join(appState.projectsDir, fileName);
+      final String expectedFileName = initialFilePath = p.join(GetIt.I.get<AppPaths>().projectsDir, fileName);
       final File expectedFile = File(expectedFileName);
 
       if (await expectedFile.exists())

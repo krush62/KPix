@@ -19,6 +19,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preferences/preference_gui.dart';
 import 'package:kpix/preferences/preference_values.dart';
@@ -60,8 +61,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
 
   void _selectCustomProjectDirectory()
   {
-    final AppState appState = GetIt.I.get<AppState>();
-    final String startDir = widget.prefs.customProjectDirectory.value.isNotEmpty ? widget.prefs.customProjectDirectory.value : appState.projectsDir;
+    final String startDir = widget.prefs.customProjectDirectory.value.isNotEmpty ? widget.prefs.customProjectDirectory.value : GetIt.I.get<AppPaths>().projectsDir;
     getDirectory(startDir: startDir).then((final String? chosenDir)
     {
       if (chosenDir != null)
@@ -181,7 +181,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
                                 child: GestureDetector(
                                   onTap: () {_projectDirectoryModeChanged(useCustom: false);},
                                   child: Tooltip(
-                                    message: getDefaultProjectsDir(internalDir: GetIt.I.get<AppState>().internalDir),
+                                    message: getDefaultProjectsDir(internalDir: GetIt.I.get<AppPaths>().internalDir),
                                     waitDuration: AppState.toolTipDuration,
                                     child: const Text("Default"),
                                   ),

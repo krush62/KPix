@@ -57,7 +57,7 @@ Future<StampMap> _loadInstalledStamps() async
 Future<List<StampManagerEntryData>> _loadUserStamps() async
 {
   final List<StampManagerEntryData> stampData = <StampManagerEntryData>[];
-  final Directory dir = Directory(p.join(GetIt.I.get<AppState>().internalDir, stampsSubDirName));
+  final Directory dir = Directory(p.join(GetIt.I.get<AppPaths>().internalDir, stampsSubDirName));
   final List<String> filesWithExtension = <String>[];
   if (await dir.exists())
   {

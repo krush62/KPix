@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -39,14 +40,13 @@ class SavePaletteWidget extends StatefulWidget
 
 class _SavePaletteWidgetState extends State<SavePaletteWidget>
 {
-  final AppState _appState = GetIt.I.get<AppState>();
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier<FileNameStatus>(FileNameStatus.forbidden);
   final ValueNotifier<String> _fileName = ValueNotifier<String>("");
 
   void _updateFileNameStatus()
   {
-    _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: p.join(_appState.internalDir, palettesSubDirName), extension: fileExtensionKpal);
+    _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: p.join(GetIt.I.get<AppPaths>().internalDir, palettesSubDirName), extension: fileExtensionKpal);
   }
 
   @override
@@ -146,7 +146,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                         ),
                         onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
                             () {
-                          widget.accept(saveData: PaletteExportData(extension: fileExtensionKpal, directory: p.join(_appState.internalDir, palettesSubDirName), fileName: _fileName.value, name: "KPAL"), paletteType: PaletteExportType.kpal);
+                          widget.accept(saveData: PaletteExportData(extension: fileExtensionKpal, directory: p.join(GetIt.I.get<AppPaths>().internalDir, palettesSubDirName), fileName: _fileName.value, name: "KPAL"), paletteType: PaletteExportType.kpal);
                         } : null,
                       );
                     },

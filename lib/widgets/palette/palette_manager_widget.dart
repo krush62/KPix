@@ -20,6 +20,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -215,13 +216,12 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _importFileChosen({required final String? path})
   {
-    final AppState appState = GetIt.I.get<AppState>();
     if (path != null && path.isNotEmpty)
     {
       if (path.endsWith(fileExtensionKpal))
       {
         final String fileName = extractFilenameFromPath(path: path);
-        final String targetPath = p.join(appState.internalDir, palettesSubDirName, fileName);
+        final String targetPath = p.join(GetIt.I.get<AppPaths>().internalDir, palettesSubDirName, fileName);
         if (!File(targetPath).existsSync())
         {
           File(path).copy(targetPath).then((final File newFile) {

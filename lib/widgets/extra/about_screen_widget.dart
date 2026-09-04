@@ -22,6 +22,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/update_state.dart';
 import 'package:kpix/util/helpers/update_helper.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -134,10 +135,10 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                       Text("KPix ${_pInfo.version}", style: Theme.of(context).textTheme.headlineLarge),
                       const Expanded(child: SizedBox(width: OverlayEntryAlertDialogOptions.padding)),
                       ValueListenableBuilder<bool>(
-                        valueListenable: GetIt.I.get<AppState>().hasUpdateNotifier,
+                        valueListenable: GetIt.I.get<UpdateState>().hasUpdateNotifier,
                         builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
                         {
-                          final UpdateInfoPackage? updateInfo = GetIt.I.get<AppState>().updatePackage;
+                          final UpdateInfoPackage? updateInfo = GetIt.I.get<UpdateState>().updatePackage;
                           if (hasUpdate && updateInfo != null)
                           {
                             return RichText(
@@ -150,7 +151,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                                     text: "Download from GitHub.",
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                        if (GetIt.I.get<AppState>().updatePackage != null)
+                                        if (GetIt.I.get<UpdateState>().updatePackage != null)
                                         {
                                           launchURL(url: updateInfo.url);
                                         }

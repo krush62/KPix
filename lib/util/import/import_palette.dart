@@ -48,7 +48,7 @@ Future<List<PaletteManagerEntryData>> loadPalettesFromAssets() async
 Future<List<PaletteManagerEntryData>> loadPalettesFromInternal() async
 {
   final List<PaletteManagerEntryData> paletteData = <PaletteManagerEntryData>[];
-  final Directory dir = Directory(p.join(GetIt.I.get<AppState>().internalDir, palettesSubDirName));
+  final Directory dir = Directory(p.join(GetIt.I.get<AppPaths>().internalDir, palettesSubDirName));
   final List<String> filesWithExtension = <String>[];
   if (await dir.exists())
   {

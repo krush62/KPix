@@ -51,6 +51,7 @@ import 'package:kpix/managers/history/history_timeline.dart';
 import 'package:kpix/managers/history/ramp_resolver.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
+import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/project_manager_data.dart';
@@ -164,14 +165,15 @@ Future<String?> saveKPixFile({
 Future<String?> getPathForKPixFile() async
 {
   FilePickerResult? result;
+  final String exportDir = GetIt.I.get<AppPaths>().exportDir;
   if (isDesktop(includingWeb: true))
   {
-    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpix], initialDirectory: GetIt.I.get<AppState>().exportDir,);
+    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpix], initialDirectory: exportDir,);
   } 
   else //mobile
   {
     result = await FilePicker.pickFiles(
-      initialDirectory: GetIt.I.get<AppState>().exportDir,
+      initialDirectory: exportDir,
     );
   }
   if (result != null && result.files.isNotEmpty) 
@@ -192,14 +194,15 @@ Future<String?> getPathForKPixFile() async
 Future<String?> getPathForKPalFile() async
 {
   FilePickerResult? result;
+  final String exportDir = GetIt.I.get<AppPaths>().exportDir;
   if (isDesktop(includingWeb: true))
   {
-    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpal], initialDirectory: GetIt.I.get<AppState>().exportDir,);
+    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpal], initialDirectory: exportDir,);
   } 
   else //mobile
   {
     result = await FilePicker.pickFiles(
-      initialDirectory: GetIt.I.get<AppState>().exportDir,
+      initialDirectory: exportDir,
     );
   }
   if (result != null && result.files.isNotEmpty) 
@@ -222,17 +225,17 @@ Future<(String?, Uint8List?)> getPathAndDataForImage() async
   FilePickerResult? result;
   if (isDesktop())
   {
-    result = await FilePicker.pickFiles(type: FileType.image, allowedExtensions: imageExtensions, initialDirectory: GetIt.I.get<AppState>().exportDir,);
+    result = await FilePicker.pickFiles(type: FileType.image, allowedExtensions: imageExtensions, initialDirectory: GetIt.I.get<AppPaths>().exportDir,);
   } 
   else if (kIsWeb)
   {
     //web has no file system to read from afterwards, so the bytes have to come
     //back with the pick itself
-    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: imageExtensions, withData: true, initialDirectory: GetIt.I.get<AppState>().exportDir,);
+    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: imageExtensions, withData: true, initialDirectory: GetIt.I.get<AppPaths>().exportDir,);
   } 
   else //mobile
   {
-    result = await FilePicker.pickFiles(initialDirectory: GetIt.I.get<AppState>().exportDir,);
+    result = await FilePicker.pickFiles(initialDirectory: GetIt.I.get<AppPaths>().exportDir,);
   }
   if (result != null && result.files.isNotEmpty) 
   {
@@ -251,11 +254,12 @@ Future<(String?, Uint8List?)> getPathAndDataForImage() async
 
 void loadFilePressed({final Function()? finishCallback, final Function()? loadStartCallback})
 {
+  final String exportDir = GetIt.I.get<AppPaths>().exportDir;
   if (isDesktop(includingWeb: true))
   {
     //withData is only forced on web, where there is no path to read from later;
     //native keeps loading from disk so a large project is not held twice
-    FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpix], withData: kIsWeb, initialDirectory: GetIt.I.get<AppState>().exportDir,).then
+    FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpix], withData: kIsWeb, initialDirectory: exportDir,).then
       ((final FilePickerResult? result)
         {
           _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
@@ -264,7 +268,7 @@ void loadFilePressed({final Function()? finishCallback, final Function()? loadSt
   } 
   else //mobile
   {
-    FilePicker.pickFiles(withData: kIsWeb, initialDirectory: GetIt.I.get<AppState>().exportDir,).then
+    FilePicker.pickFiles(withData: kIsWeb, initialDirectory: exportDir,).then
       ((final FilePickerResult? result)
         {
           _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
@@ -306,10 +310,9 @@ void fileLoaded({required final LoadFileSet loadFileSet, required final Function
 
 Future<void> saveFilePressed({required final String fileName, final Function()? finishCallback, final bool forceSaveAs = false,}) async
 {
-  final AppState appState = GetIt.I.get<AppState>();
   if (!kIsWeb)
   {
-    final String finalPath = p.join(appState.projectsDir, "$fileName.$fileExtensionKpix");
+    final String finalPath = p.join(GetIt.I.get<AppPaths>().projectsDir, "$fileName.$fileExtensionKpix");
     saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final String? path)
     {
       if (path != null) 
@@ -1077,11 +1080,12 @@ void setUint64({required final ByteData bytes, required final int offset, requir
 
 Future<void> createInternalDirectories() async
 {
+  final String internalDir = GetIt.I.get<AppPaths>().internalDir;
   final List<Directory> internalDirectories = <Directory>[
-    Directory(p.join(GetIt.I.get<AppState>().internalDir, palettesSubDirName)),
-    Directory(p.join(GetIt.I.get<AppState>().internalDir, projectsSubDirName)),
-    Directory(p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName)),
-    Directory(p.join(GetIt.I.get<AppState>().internalDir, stampsSubDirName)),
+    Directory(p.join(internalDir, palettesSubDirName)),
+    Directory(p.join(internalDir, projectsSubDirName)),
+    Directory(p.join(internalDir, recoverSubDirName)),
+    Directory(p.join(internalDir, stampsSubDirName)),
   ];
 
   for (final Directory dir in internalDirectories)
@@ -1102,7 +1106,7 @@ Future<void> clearRecoverDir() async
     try
     {
       final Directory recoverDir = Directory(
-        p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName),
+        p.join(GetIt.I.get<AppPaths>().internalDir, recoverSubDirName),
       );
       final List<FileSystemEntity> files = await recoverDir.list().toList();
       for (final FileSystemEntity file in files)
@@ -1123,7 +1127,7 @@ Future<String?> getRecoveryFile() async
   try
   {
     final Directory recoverDir = Directory(
-      p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName),
+      p.join(GetIt.I.get<AppPaths>().internalDir, recoverSubDirName),
     );
     final List<FileSystemEntity> files = await recoverDir.list().toList();
     if (files.length == 1) {
@@ -1156,11 +1160,10 @@ Future<bool> importProject({required final String? path, final bool showMessages
           shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
       frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
         );
-        final AppState appState = GetIt.I.get<AppState>();
         if (loadFileSet.historyState != null && loadFileSet.path != null)
         {
           final String fileName = extractFilenameFromPath(path: loadFileSet.path);
-          final String projectPath = p.join(appState.projectsDir, fileName);
+          final String projectPath = p.join(GetIt.I.get<AppPaths>().projectsDir, fileName);
           if (!File(projectPath).existsSync())
           {
             final ui.Image? img = await getImageFromLoadFileSet(loadFileSet: loadFileSet);

@@ -26,7 +26,9 @@ import 'package:kpix/main.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/update_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
@@ -405,10 +407,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       return;
     }
     final BehaviorPreferenceContent behaviorPrefs = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
-    final String defaultDir = getDefaultProjectsDir(internalDir: _appState.internalDir);
+    final String defaultDir = getDefaultProjectsDir(internalDir: GetIt.I.get<AppPaths>().internalDir);
     final bool useCustom = behaviorPrefs.useCustomProjectDirectory.value && behaviorPrefs.customProjectDirectory.value.isNotEmpty;
     final String targetDir = useCustom ? behaviorPrefs.customProjectDirectory.value : defaultDir;
-    final String currentDir = _appState.projectsDir;
+    final String currentDir = GetIt.I.get<AppPaths>().projectsDir;
     if (p.equals(targetDir, currentDir))
     {
       return;
@@ -420,7 +422,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     movingDialog.hide();
     if (moveResult.success)
     {
-      _appState.projectsDir = targetDir;
+      GetIt.I.get<AppPaths>().projectsDir = targetDir;
       showMessage(text: "Changed project directory to $targetDir (moved ${moveResult.projectCount} project file(s)).");
       await _handleAllFilesAccessPermission(switchedToCustomDir: useCustom);
     }
@@ -575,7 +577,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                         onPressed: _questionPressed,
                       ),
                       ValueListenableBuilder<bool>(
-                        valueListenable: _appState.hasUpdateNotifier,
+                        valueListenable: GetIt.I.get<UpdateState>().hasUpdateNotifier,
                         builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
                         {
                           if (hasUpdate)

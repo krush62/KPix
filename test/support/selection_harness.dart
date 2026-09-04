@@ -23,8 +23,10 @@ import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/update_state.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -51,7 +53,9 @@ Future<AppState> bootProject({required final CoordinateSetI canvasSize}) async
   GetIt.I.registerSingleton<FrameBlendingOptions>(FrameBlendingOptions());
   GetIt.I.registerSingleton<ShaderOptions>(ShaderOptions());
 
-  final AppState appState = AppState(exportDir: ".", internalDir: ".", projectsDir: ".", devicePixelRatio: 1.0);
+  GetIt.I.registerSingleton<AppPaths>(AppPaths(exportDir: ".", internalDir: ".", projectsDir: "."));
+  GetIt.I.registerSingleton<UpdateState>(UpdateState());
+  final AppState appState = AppState(devicePixelRatio: 1.0);
   GetIt.I.registerSingleton<AppState>(appState);
   GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: 64));
 

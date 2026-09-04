@@ -48,7 +48,6 @@ import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/helpers/update_helper.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/util/messages.dart';
@@ -189,60 +188,6 @@ class AppState
   late SelectionState selectionState = SelectionState(repaintNotifier: repaintNotifier);
   final StatusBarState statusBarState = StatusBarState();
 
-  final ValueNotifier<String> _exportDir;
-  String get exportDir
-  {
-    return _exportDir.value;
-  }
-  ValueNotifier<String> get exportDirNotifier
-  {
-    return _exportDir;
-  }
-  set exportDir(final String dir)
-  {
-    _exportDir.value = dir;
-  }
-
-  final ValueNotifier<String> _internalDir;
-  String get internalDir
-  {
-    return _internalDir.value;
-  }
-  ValueNotifier<String> get internalDirNotifier
-  {
-    return _internalDir;
-  }
-  set internalDir(final String dir)
-  {
-    _internalDir.value = dir;
-  }
-
-  final ValueNotifier<String> _projectsDir;
-  String get projectsDir
-  {
-    return _projectsDir.value;
-  }
-  ValueNotifier<String> get projectsDirNotifier
-  {
-    return _projectsDir;
-  }
-  set projectsDir(final String dir)
-  {
-    _projectsDir.value = dir;
-  }
-
-  final ValueNotifier<bool> _hasUpdate;
-  bool get hasUpdate
-  {
-    return _hasUpdate.value;
-  }
-  ValueNotifier<bool> get hasUpdateNotifier
-  {
-    return _hasUpdate;
-  }
-
-  UpdateInfoPackage? updatePackage;
-
   final ValueNotifier<String?> projectName = ValueNotifier<String?>(null);
   final ValueNotifier<bool> hasChanges = ValueNotifier<bool>(false);
 
@@ -253,7 +198,7 @@ class AppState
   final SymmetryState symmetryState = SymmetryState();
 
 
-  AppState({required final String exportDir, required final String internalDir, required final String projectsDir, required this.devicePixelRatio}) : _exportDir = ValueNotifier<String>(exportDir), _internalDir = ValueNotifier<String>(internalDir), _projectsDir = ValueNotifier<String>(projectsDir), _hasUpdate = ValueNotifier<bool>(false)
+  AppState({required this.devicePixelRatio})
   {
     setToolSelection(tool: ToolType.pencil, forceSetting: true);
     statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);

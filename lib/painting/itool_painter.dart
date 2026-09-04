@@ -37,8 +37,10 @@ import 'package:kpix/models/kpix_painter_options.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/models/status_bar_data.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
+import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/tool_options/line_options.dart';
@@ -95,12 +97,10 @@ class DrawingParameters
         currentGridLayer = currentLayer.runtimeType == GridLayerState ? (currentLayer as GridLayerState) : null;
 }
 
-
 class BorderCoordinateSetI
 {
   final CoordinateSetI coord;
   final List<List<CoordinateSetI>> borders;
-
 
   factory BorderCoordinateSetI({required final bool left, required final bool right, required final bool top, required final bool bottom, required final CoordinateSetI coord})
   {
@@ -182,29 +182,6 @@ class BorderCoordinateSetI
 
 }
 
-class StatusBarData
-{
-  CoordinateSetI? cursorPos;
-  CoordinateSetI? dimension;
-  CoordinateSetI? diagonal;
-  CoordinateSetI? aspectRatio;
-  CoordinateSetI? angle;
-}
-
-class ContentRasterSet
-{
-  final ui.Image image;
-  final CoordinateSetI offset;
-  final CoordinateSetI size;
-
-  const ContentRasterSet({
-    required this.image,
-    required this.offset,
-    required this.size,
-  });
-}
-
-
 abstract class IToolPainter
 {
   final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
@@ -263,7 +240,6 @@ abstract class IToolPainter
     historyLayer = value ? documentState.timeline.getCurrentLayer() : null;
   }
 
-
   void calculate({required final DrawingParameters drawParams}){}
   void drawExtras({required final DrawingParameters drawParams}){}
   void drawCursorOutline({required final DrawingParameters drawParams});
@@ -276,8 +252,6 @@ abstract class IToolPainter
     statusBarData.aspectRatio = null;
     statusBarData.angle = null;
   }
-
-
 
   Set<CoordinateSetI> getRoundSquareContentPoints({required final PencilShape shape, required final int size, required final CoordinateSetI position})
   {
@@ -555,7 +529,6 @@ abstract class IToolPainter
         }
       } while(true);
 
-
       if (size == 1)
       {
         linePoints = lPoints;
@@ -573,7 +546,6 @@ abstract class IToolPainter
 
     return linePoints;
   }
-
 
   static List<CoordinateSetI> getBoundaryPath({required final Set<CoordinateSetI> coords})
   {
@@ -961,7 +933,6 @@ abstract class IToolPainter
     hasHistoryData = true;
     resetContentRaster(currentLayer: shadingLayer);
   }
-
 
   Set<CoordinateSetI> getMirrorPoints({required final Set<CoordinateSetI> coords, required final CoordinateSetI canvasSize, required final double? symmetryX, required final double? symmetryY})
   {

@@ -20,13 +20,13 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/tool_type.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 
 import 'support/selection_harness.dart';
 

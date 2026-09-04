@@ -25,6 +25,7 @@ import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/kpix_painter_options.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
+import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/pencil_painter.dart';
 import 'package:kpix/painting/shader_options.dart';

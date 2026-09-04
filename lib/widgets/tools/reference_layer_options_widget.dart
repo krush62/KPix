@@ -32,7 +32,6 @@ import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class ReferenceLayerOptionsWidget extends StatefulWidget
 {

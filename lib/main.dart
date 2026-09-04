@@ -29,10 +29,13 @@ import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
+import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/file_callbacks.dart';
 import 'package:kpix/models/file_constants.dart';
+import 'package:kpix/models/frame_blending_options.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state.dart';
 import 'package:kpix/models/history_controller.dart';
@@ -61,8 +64,6 @@ import 'package:kpix/widgets/main/right_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
-import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
-import 'package:kpix/widgets/timeline/frame_blending_options.dart';
 import 'package:kpix/widgets/timeline/timeline_widget.dart';
 import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -138,8 +139,6 @@ void main(final List<String> args)
 class KPixApp extends StatefulWidget
 {
   //This is ugly, I know
-  static Function({Function()? callback})? saveCallbackFunc;
-  static Function({Function()? callback})? openCallbackFunc;
   const KPixApp({super.key});
 
   @override
@@ -580,9 +579,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   void _closeWarningYes()
   {
-    if (KPixApp.saveCallbackFunc != null)
+    if (saveFileCallback != null)
     {
-      KPixApp.saveCallbackFunc?.call(callback: _saveBeforeClosedFinished);
+      saveFileCallback?.call(callback: _saveBeforeClosedFinished);
     }
   }
 
@@ -617,9 +616,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   void _saveNewWarningYes()
   {
-    if (KPixApp.saveCallbackFunc != null)
+    if (saveFileCallback != null)
     {
-      KPixApp.saveCallbackFunc?.call(callback: _saveBeforeNewFinished);
+      saveFileCallback?.call(callback: _saveBeforeNewFinished);
     }
 
   }
@@ -650,9 +649,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   void _openPressed()
   {
-    if (KPixApp.openCallbackFunc != null)
+    if (openFileCallback != null)
     {
-      KPixApp.openCallbackFunc?.call(callback: _openPerformed);
+      openFileCallback?.call(callback: _openPerformed);
     }
   }
 

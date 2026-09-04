@@ -23,7 +23,6 @@ import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 bool isPerspectiveGridType({required final GridType gridType})
 {

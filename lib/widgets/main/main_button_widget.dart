@@ -24,11 +24,11 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/kpix_theme.dart';
-import 'package:kpix/main.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/export_types.dart';
+import 'package:kpix/models/file_callbacks.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/io_types.dart';
@@ -168,8 +168,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _hotkeyManager.addListener(func: _redoPressed, action: HotkeyAction.generalRedo);
     _hotkeyManager.addListener(func: _exportFile, action: HotkeyAction.generalExport);
 
-    KPixApp.saveCallbackFunc = _saveFile;
-    KPixApp.openCallbackFunc = _loadFile;
+    saveFileCallback = _saveFile;
+    openFileCallback = _loadFile;
 
   }
 

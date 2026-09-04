@@ -29,3 +29,15 @@ final LinkedHashSet<Alignment> allAlignments = LinkedHashSet<Alignment>.from(<Al
 /// Used by every widget that shows one, which is why it is a plain constant
 /// rather than a member of any state object.
 const Duration toolTipDuration = Duration(seconds: 1);
+
+/// Layout of the tool settings column.
+///
+/// Every tool's options widget lays itself out against these, which is why they
+/// are not a member of the widget that hosts them.
+abstract final class ToolSettingsWidgetOptions
+{
+  static const int columnWidthRatio = 2;
+  static const double padding = 8.0;
+  static const double smallButtonSize = 36.0;
+  static const double smallIconSize = 20.0;
+}

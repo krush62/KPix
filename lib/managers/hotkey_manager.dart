@@ -320,15 +320,7 @@ class HotkeyManager
 
   void triggerShortcut({required final HotkeyAction action})
   {
-    final Iterable<SingleActivator> foundActivators = _shortCutMap.keys.where((final SingleActivator e) => _shortCutMap[e] == action);
-    for (final SingleActivator act in foundActivators)
-    {
-      final VoidCallback? f = _callbackMap.value[act];
-      if (f != null)
-      {
-        f();
-      }
-    }
+    _notifierMap[action]?.actionPressed();
   }
 
   void _createShortcuts()

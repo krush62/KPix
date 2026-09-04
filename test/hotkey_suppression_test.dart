@@ -240,4 +240,42 @@ void main()
       await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
     });
   });
+
+  group("programmatic triggers", ()
+  {
+    testWidgets("an action is triggered while an overlay suppresses the hotkeys", (final WidgetTester tester) async {
+      final HotkeyManager manager = HotkeyManager();
+      await _pumpHost(tester, manager);
+
+      int calls = 0;
+      void listener() {calls++;}
+      manager.addListener(func: listener, action: HotkeyAction.panZoomOptimalZoom);
+      addTearDown(() {manager.removeListener(func: listener, action: HotkeyAction.panZoomOptimalZoom);});
+
+      //fitting the canvas is requested while the loading dialog is still up
+      final KPixOverlay loadingDialog = _visibleOverlay();
+      manager.deactivateCallbacks(source: loadingDialog);
+      manager.triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
+      expect(calls, 1);
+
+      loadingDialog.isVisible = false;
+      manager.activateCallbacks(source: loadingDialog);
+      manager.triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
+      expect(calls, 2);
+    });
+
+    testWidgets("an action with several key bindings is triggered only once", (final WidgetTester tester) async {
+      final HotkeyManager manager = HotkeyManager();
+      await _pumpHost(tester, manager);
+
+      int calls = 0;
+      void listener() {calls++;}
+      //deselect is bound to both [Escape] and [Ctrl]+[D]
+      manager.addListener(func: listener, action: HotkeyAction.selectionDeselect);
+      addTearDown(() {manager.removeListener(func: listener, action: HotkeyAction.selectionDeselect);});
+
+      manager.triggerShortcut(action: HotkeyAction.selectionDeselect);
+      expect(calls, 1);
+    });
+  });
 }

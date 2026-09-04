@@ -327,6 +327,7 @@ class AppState
     projectName.value = null;
     hasChanges.value = false;
     hasProjectNotifier.value = true;
+    GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
   }
 
   String getTitle()

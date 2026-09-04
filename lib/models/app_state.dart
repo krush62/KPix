@@ -17,7 +17,6 @@
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -52,6 +51,7 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/update_helper.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
@@ -60,7 +60,6 @@ import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 import 'package:kpix/widgets/tools/tool_type.dart';
 import 'package:logger/logger.dart';
-import 'package:toastification/toastification.dart';
 import 'package:uuid/uuid.dart';
 
 
@@ -1429,47 +1428,6 @@ class AppState
       }
     }
     rasterLayersAll();
-  }
-
-
-  void showMessage({required final String text})
-  {
-    toastification.showCustom(
-      alignment: Alignment.bottomCenter,
-      autoCloseDuration: const Duration(seconds: 3),
-      builder: (final BuildContext context, final ToastificationItem holder) {
-        const double padding = 8.0;
-        return Container(
-          margin: EdgeInsets.zero,
-          padding: const EdgeInsets.only(left: padding, right: padding, top: padding, bottom: padding * 2),
-          decoration: BoxDecoration(
-            color: Theme.of(context).primaryColorDark,
-            border: Border(
-              left: BorderSide(color: Theme.of(context).primaryColor, width: 2.0,),
-              right: BorderSide(color: Theme.of(context).primaryColor, width: 2.0,),
-              top: BorderSide(color: Theme.of(context).primaryColor, width: 2.0,),
-            ),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(10.0)),
-          ),
-          child: Text(
-            text,
-            softWrap: true,
-            style: Theme.of(context).textTheme.titleMedium,),
-        );
-      },
-      animationBuilder: (final BuildContext context, final Animation<double> animation, final Alignment alignment, final Widget? child) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, 1),
-            end: const Offset(0, 0.25), //this is hacky
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.fastOutSlowIn,
-          ),),
-          child: child,
-        );
-      },
-    );
   }
 
   void importFile({required final ImportResult importResult})

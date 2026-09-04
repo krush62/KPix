@@ -32,6 +32,7 @@ import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 import 'package:logger/logger.dart';
@@ -541,11 +542,11 @@ class SelectionState with ChangeNotifier
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        _appState.showMessage(text: "Cannot delete from hidden layer!");
+        showMessage(text: "Cannot delete from hidden layer!");
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        _appState.showMessage(text: "Cannot delete from locked layer!");
+        showMessage(text: "Cannot delete from locked layer!");
       }
       else
       {
@@ -574,11 +575,11 @@ class SelectionState with ChangeNotifier
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        _appState.showMessage(text: "Cannot cut from hidden layer!");
+        showMessage(text: "Cannot cut from hidden layer!");
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        _appState.showMessage(text: "Cannot cut from locked layer!");
+        showMessage(text: "Cannot cut from locked layer!");
       }
       else if (copy(notify: false, keepSelection: true))
       {
@@ -619,7 +620,7 @@ class SelectionState with ChangeNotifier
     }
     else
     {
-      _appState.showMessage(text: "Nothing to copy!");
+      showMessage(text: "Nothing to copy!");
     }
     return hasCopied;
   }
@@ -680,7 +681,7 @@ class SelectionState with ChangeNotifier
       }
       else
       {
-        _appState.showMessage(text: "Nothing to copy!");
+        showMessage(text: "Nothing to copy!");
       }
     }
   }
@@ -692,11 +693,11 @@ class SelectionState with ChangeNotifier
     {
       if (layer.lockState.value == LayerLockState.locked)
       {
-        _appState.showMessage(text: "Cannot paste to a locked layer!");
+        showMessage(text: "Cannot paste to a locked layer!");
       }
       else if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        _appState.showMessage(text: "Cannot paste to a hidden layer!");
+        showMessage(text: "Cannot paste to a hidden layer!");
       }
       else
       {
@@ -724,11 +725,11 @@ class SelectionState with ChangeNotifier
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        _appState.showMessage(text: "Cannot transform on a hidden layer!");
+        showMessage(text: "Cannot transform on a hidden layer!");
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        _appState.showMessage(text: "Cannot transform on a locked layer!");
+        showMessage(text: "Cannot transform on a locked layer!");
       }
       else
       {
@@ -755,11 +756,11 @@ class SelectionState with ChangeNotifier
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        _appState.showMessage(text: "Cannot transform on a hidden layer!");
+        showMessage(text: "Cannot transform on a hidden layer!");
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        _appState.showMessage(text: "Cannot transform on a locked layer!");
+        showMessage(text: "Cannot transform on a locked layer!");
       }
       else
       {
@@ -786,11 +787,11 @@ class SelectionState with ChangeNotifier
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        _appState.showMessage(text: "Cannot transform on a hidden layer!");
+        showMessage(text: "Cannot transform on a hidden layer!");
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        _appState.showMessage(text: "Cannot transform on a locked layer!");
+        showMessage(text: "Cannot transform on a locked layer!");
       }
       else
       {

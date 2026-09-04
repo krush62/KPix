@@ -31,6 +31,7 @@ import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/image_importer.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
@@ -179,7 +180,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     if (fileName != null && fileName.isNotEmpty)
     {
-      _appState.showMessage(text: "Exported to: $fileName");
+      showMessage(text: "Exported to: $fileName");
       if (!kIsWeb && Platform.isAndroid)
       {
         const MethodChannel channel = MethodChannel('media_scanner');
@@ -188,7 +189,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
     else
     {
-      _appState.showMessage(text: "Error exporting file");
+      showMessage(text: "Error exporting file");
     }
     _closeAllMenus();
   }
@@ -355,11 +356,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     {
       if (path != null)
       {
-        _appState.showMessage(text: "Exported palette to: $path.");
+        showMessage(text: "Exported palette to: $path.");
       }
       else
       {
-        _appState.showMessage(text: "Error exporting palette file.");
+        showMessage(text: "Error exporting palette file.");
       }
       _closeAllMenus();
     },);
@@ -420,7 +421,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     if (moveResult.success)
     {
       _appState.projectsDir = targetDir;
-      _appState.showMessage(text: "Changed project directory to $targetDir (moved ${moveResult.projectCount} project file(s)).");
+      showMessage(text: "Changed project directory to $targetDir (moved ${moveResult.projectCount} project file(s)).");
       await _handleAllFilesAccessPermission(switchedToCustomDir: useCustom);
     }
     else
@@ -491,7 +492,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     catch (e, s)
     {
       const String failMsg = "Error importing image.";
-      _appState.showMessage(text: failMsg);
+      showMessage(text: failMsg);
       GetIt.I.get<Logger>().w(failMsg, error: e, stackTrace: s);
     }
     _closeAllMenus();

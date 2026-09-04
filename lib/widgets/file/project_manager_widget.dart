@@ -24,6 +24,7 @@ import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
@@ -207,7 +208,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     if (success)
     {
       //the imported file is picked up by the cache on its own
-      GetIt.I.get<AppState>().showMessage(text: "Project imported successfully!");
+      showMessage(text: "Project imported successfully!");
     }
   }
 

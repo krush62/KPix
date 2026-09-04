@@ -39,6 +39,7 @@ import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/update_helper.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/canvas/canvas_widget.dart';
 import 'package:kpix/widgets/controls/kpix_splitter.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
@@ -398,7 +399,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
           final PreferenceManager preferenceManager = GetIt.I.get<PreferenceManager>();
           preferenceManager.behaviorPreferenceContent.useCustomProjectDirectory.value = false;
           preferenceManager.behaviorPreferenceContent.customProjectDirectory.value = "";
-          appState.showMessage(text: "Custom Project directory invalid. Switching to default directory.");
+          showMessage(text: "Custom Project directory invalid. Switching to default directory.");
         }
 
 
@@ -537,7 +538,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         await appState.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
         appState.hasProjectNotifier.value = true;
         _newProjectDialog.hide();
-        appState.showMessage(text: "work recovered");
+        showMessage(text: "work recovered");
       }
       else
       {

@@ -24,6 +24,7 @@ import 'package:kpix/preferences/preference_gui.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
+import 'package:kpix/util/messages.dart';
 
 
 
@@ -72,7 +73,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
         }
         else
         {
-          appState.showMessage(text: "Insufficient permissions for the selected directory!");
+          showMessage(text: "Insufficient permissions for the selected directory!");
         }
       }
     });

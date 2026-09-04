@@ -25,6 +25,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/util/messages.dart';
 
 class FrameConstraints
 {
@@ -340,7 +341,7 @@ class Timeline
     final AppState appState = GetIt.I.get<AppState>();
     if (frames.value.length >= maxFrames)
     {
-      appState.showMessage(text: "Cannot add more frames.");
+      showMessage(text: "Cannot add more frames.");
       return;
     }
     else

@@ -32,6 +32,7 @@ import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
@@ -134,7 +135,7 @@ class LayerCollection with ChangeNotifier {
     }
     if (!couldAddAllLayers)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add all layers.");
+      showMessage(text: "Could not add all layers.");
     }
     updateIndividualLayerSelection();
   }
@@ -180,12 +181,12 @@ class LayerCollection with ChangeNotifier {
   {
     if (_layers.length >= maxLayers)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      showMessage(text: "Could not add more layers.");
       return null;
     }
     else if (position < 0 || position > _layers.length)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Invalid layer insert index.");
+      showMessage(text: "Invalid layer insert index.");
       return null;
     }
     else
@@ -203,15 +204,15 @@ class LayerCollection with ChangeNotifier {
   {
     if (_layers.length >= maxLayers)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      showMessage(text: "Could not add more layers.");
     }
     else if (position < 0 || position > _layers.length)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Invalid layer insert index.");
+      showMessage(text: "Invalid layer insert index.");
     }
     else if (_layers.contains(layer))
     {
-      GetIt.I.get<AppState>().showMessage(text: "Layer already exists on that frame.",);
+      showMessage(text: "Layer already exists on that frame.",);
     }
     else
     {
@@ -315,7 +316,7 @@ class LayerCollection with ChangeNotifier {
   {
     if (_layers.length >= maxLayers)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      showMessage(text: "Could not add more layers.");
       return false;
     }
     else
@@ -529,7 +530,7 @@ class LayerCollection with ChangeNotifier {
   {
     if (_layers.length >= maxLayers)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      showMessage(text: "Could not add more layers.");
       return null;
     }
     else

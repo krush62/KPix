@@ -24,6 +24,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -87,11 +88,11 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
       if (fileName == null)
       {
-        GetIt.I.get<AppState>().showMessage(text: "Error saving palette!");
+        showMessage(text: "Error saving palette!");
       }
       else
       {
-        GetIt.I.get<AppState>().showMessage(text: "Palette saved successfully at $fileName.");
+        showMessage(text: "Palette saved successfully at $fileName.");
         _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
           _paletteEntries.value = pList;
         });
@@ -229,29 +230,28 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
         }
         else
         {
-          appState.showMessage(text: "A palette with the same name already exists!");
+          showMessage(text: "A palette with the same name already exists!");
         }
       }
       else
       {
-        appState.showMessage(text: "Please select a KPal file!");
+        showMessage(text: "Please select a KPal file!");
       }
     }
   }
 
   void _importFinished({required final File newFile})
   {
-    final AppState appState = GetIt.I.get<AppState>();
     if (newFile.existsSync())
     {
       _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
         _paletteEntries.value = pList;
       });
-      appState.showMessage(text: "Import successful!");
+      showMessage(text: "Import successful!");
     }
     else
     {
-      appState.showMessage(text: "Import failed!");
+      showMessage(text: "Import failed!");
     }
   }
 

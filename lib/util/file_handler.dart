@@ -63,6 +63,7 @@ import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
@@ -1175,7 +1176,7 @@ Future<bool> importProject({required final String? path, final bool showMessages
             {
               if (showMessages)
               {
-                appState.showMessage(text: "Could not open file!");
+                showMessage(text: "Could not open file!");
               }
             }
           }
@@ -1183,18 +1184,18 @@ Future<bool> importProject({required final String? path, final bool showMessages
           {
             if (showMessages)
             {
-              appState.showMessage(text: "Project with the same name already exists!",);
+              showMessage(text: "Project with the same name already exists!",);
             }
           }
         }
         else
         {
-          if (showMessages) appState.showMessage(text: "Could not open file!");
+          if (showMessages) showMessage(text: "Could not open file!");
         }
       }
       else
       {
-        GetIt.I.get<AppState>().showMessage(text: "Please select a KPix file!");
+        showMessage(text: "Please select a KPix file!");
       }
     }
   }

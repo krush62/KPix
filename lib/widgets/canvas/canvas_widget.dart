@@ -31,6 +31,7 @@
  */
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -65,6 +66,8 @@ abstract final class _CanvasOptions
   static const int idleTimerRate = 15;
   static const int opacityDuration = 150;
   static const int optimalZoomSettleTime = 1500;
+  static const int selectionPulseDuration = 1500;
+  static const double selectionPulseMinFactor = 0.5;
 }
 
 /// Status of the touch pointer.
@@ -90,12 +93,13 @@ class CanvasWidget extends StatefulWidget {
   State<CanvasWidget> createState() => _CanvasWidgetState();
 }
 
-class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderStateMixin
+class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMixin
 {
   final StylusPreferenceContent _stylusPrefs = GetIt.I.get<PreferenceManager>().stylusPreferenceContent;
   final TouchPreferenceContent _touchPrefs = GetIt.I.get<PreferenceManager>().touchPreferenceContent;
   final DesktopPreferenceContent _desktopPrefs = GetIt.I.get<PreferenceManager>().desktopPreferenceContent;
   final ShaderOptions _shaderOptions = GetIt.I.get<ShaderOptions>();
+  final GuiPreferenceContent _guiPrefs = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
   final AppState _appState = GetIt.I.get<AppState>();
   final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier<CoordinateSetD?>(null);
   final ValueNotifier<bool> _isDragging = ValueNotifier<bool>(false);
@@ -152,6 +156,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
   /// The canvas is mounted only while a project is open, so it really is disposed
   /// and rebuilt; a timer that outlives it keeps acting on the global app state.
   final List<Timer> _timers = <Timer>[];
+  final ValueNotifier<double> _selectionPulse = ValueNotifier<double>(1.0);
 
   late KPixPainter kPixPainter = KPixPainter(
     appState: _appState,
@@ -165,6 +170,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
     secondaryDown: _secondaryIsDown,
     primaryPressStart: _pressStartLoc,
     stylusButton1Down: _stylusButtonDown,
+    selectionPulse: _selectionPulse,
   );
 
   late ToolType _previousTool;
@@ -173,6 +179,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
 
   late AnimationController _selectionBarAnimationController;
   late Animation<double> _selectionBarAnimation;
+  late AnimationController _selectionPulseController;
 
   void _setDefaultCursor()
   {
@@ -235,8 +242,17 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
       _appState.flushHistoryData = null;
     }
 
+    _guiPrefs.selectionPulsatingOutline.removeListener(_updateSelectionPulse);
+    _guiPrefs.selectionOpacity.removeListener(_updateSelectionPulse);
+    _appState.selectionState.selection.isEmptyNotifer.removeListener(_updateSelectionPulse);
+    _appState.timeline.isPlaying.removeListener(_updateSelectionPulse);
+    _appState.timeline.layerChangeNotifier.removeListener(_updateSelectionPulse);
+    _appState.timeline.selectedFrameIndexNotifier.removeListener(_updateSelectionPulse);
+
     _selectionBarAnimationController.dispose();
+    _selectionPulseController.dispose();
     kPixPainter.dispose();
+    _selectionPulse.dispose();
     super.dispose();
   }
 
@@ -283,6 +299,53 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
       parent: _selectionBarAnimationController,
       curve: Curves.easeInOut,
     );
+
+    _selectionPulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: _CanvasOptions.selectionPulseDuration),
+    )..addListener(_selectionPulseTick);
+    _guiPrefs.selectionPulsatingOutline.addListener(_updateSelectionPulse);
+    _guiPrefs.selectionOpacity.addListener(_updateSelectionPulse);
+    _appState.selectionState.selection.isEmptyNotifer.addListener(_updateSelectionPulse);
+    _appState.timeline.isPlaying.addListener(_updateSelectionPulse);
+    _appState.timeline.layerChangeNotifier.addListener(_updateSelectionPulse);
+    _appState.timeline.selectedFrameIndexNotifier.addListener(_updateSelectionPulse);
+    _updateSelectionPulse();
+  }
+
+  void _selectionPulseTick()
+  {
+    final double wave = (1.0 - cos(2 * pi * _selectionPulseController.value)) / 2.0;
+    _selectionPulse.value = _CanvasOptions.selectionPulseMinFactor +
+        ((1.0 - _CanvasOptions.selectionPulseMinFactor) * wave);
+  }
+
+  void _updateSelectionPulse()
+  {
+    final bool shouldPulse = _guiPrefs.selectionPulsatingOutline.value &&
+        _guiPrefs.selectionOpacity.value > 0 &&
+        !_appState.selectionState.selection.isEmpty &&
+        !_appState.timeline.isPlaying.value &&
+        _appState.timeline.getCurrentLayer() is DrawingLayerState;
+
+    if (shouldPulse)
+    {
+      if (!_selectionPulseController.isAnimating)
+      {
+        _selectionPulseController.repeat();
+      }
+    }
+    else
+    {
+      if (_selectionPulseController.isAnimating)
+      {
+        _selectionPulseController.stop();
+      }
+      if (_selectionPulse.value != 1.0)
+      {
+        _selectionPulse.value = 1.0;
+      }
+    }
   }
 
   void _updateFromChange()

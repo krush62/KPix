@@ -197,10 +197,11 @@ class GuiPreferenceContent
   final ValueNotifier<int> rasterContrast;
   final ValueNotifier<int> toolOpacity;
   final ValueNotifier<int> selectionOpacity;
+  final ValueNotifier<bool> selectionPulsatingOutline;
   final ValueNotifier<int> canvasBorderOpacity;
   final ValueNotifier<ColorNameScheme> colorNameScheme;
 
-  factory GuiPreferenceContent({required final int themeTypeValue, required final int rasterSizeValue, required final int rasterContrast, required final int colorNameSchemeValue, required final int canvasBorderOpacityValue, required final int selectionOpacityValue, required final int toolOpacityValue})
+  factory GuiPreferenceContent({required final int themeTypeValue, required final int rasterSizeValue, required final int rasterContrast, required final int colorNameSchemeValue, required final int canvasBorderOpacityValue, required final int selectionOpacityValue, required final bool selectionPulsatingValue, required final int toolOpacityValue})
   {
     final ThemeMode themeType = themeTypeIndexMap[themeTypeValue]?? ThemeMode.system;
     final int rasterSizeIndex = max(rasterSizes.indexOf(rasterSizeValue), 0);
@@ -217,11 +218,12 @@ class GuiPreferenceContent
       colorNameScheme:ValueNotifier<ColorNameScheme>(colorNameScheme),
       canvasBorderOpacity: ValueNotifier<int>(canvasBorderOpacity),
       selectionOpacity: ValueNotifier<int>(selectionOpacity),
+      selectionPulsatingOutline: ValueNotifier<bool>(selectionPulsatingValue),
       toolOpacity: ValueNotifier<int>(toolOpacity),
     );
   }
 
-  GuiPreferenceContent._({required this.themeType, required this.rasterSizeIndex, required this.rasterContrast, required this.colorNameScheme, required this.canvasBorderOpacity, required this.selectionOpacity, required this.toolOpacity});
+  GuiPreferenceContent._({required this.themeType, required this.rasterSizeIndex, required this.rasterContrast, required this.colorNameScheme, required this.canvasBorderOpacity, required this.selectionOpacity, required this.selectionPulsatingOutline, required this.toolOpacity});
 
   void copyValuesFrom({required final GuiPreferenceContent other})
   {
@@ -231,6 +233,7 @@ class GuiPreferenceContent
     colorNameScheme.value = other.colorNameScheme.value;
     canvasBorderOpacity.value = other.canvasBorderOpacity.value;
     selectionOpacity.value = other.selectionOpacity.value;
+    selectionPulsatingOutline.value = other.selectionPulsatingOutline.value;
     toolOpacity.value = other.toolOpacity.value;
   }
 }

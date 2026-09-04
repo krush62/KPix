@@ -144,6 +144,8 @@ enum PreferenceBool
 
   DrawingLayerConstraints_DefaultGlowRecursive(defaultValue: true),
 
+  Selection_PulsatingOutline(defaultValue: false),
+
 
   ;
   const PreferenceBool({
@@ -367,6 +369,7 @@ class PreferenceManager
       themeTypeValue: _getValueI(PreferenceInt.ThemeType),
       canvasBorderOpacityValue: _getValueI(PreferenceInt.Opacity_CanvasBorder),
       selectionOpacityValue: _getValueI(PreferenceInt.Opacity_Selection),
+      selectionPulsatingValue: _getValueB(PreferenceBool.Selection_PulsatingOutline),
       toolOpacityValue: _getValueI(PreferenceInt.Opacity_Tool),
     );
 
@@ -466,6 +469,7 @@ class PreferenceManager
     }
     _intMap[PreferenceInt.Opacity_Tool]!.value = guiPreferenceContent.toolOpacity.value;
     _intMap[PreferenceInt.Opacity_Selection]!.value = guiPreferenceContent.selectionOpacity.value;
+    _boolMap[PreferenceBool.Selection_PulsatingOutline]!.value = guiPreferenceContent.selectionPulsatingOutline.value;
     _intMap[PreferenceInt.Opacity_CanvasBorder]!.value = guiPreferenceContent.canvasBorderOpacity.value;
 
     //BEHAVIOR PREFERENCES

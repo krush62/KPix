@@ -94,6 +94,8 @@ class KPixPainter extends CustomPainter
   late Color _blackSelectionAlphaColor;
   late Color _whiteSelectionAlphaColor;
   late Color _blackBorderAlphaColor;
+  late int _selectionAlpha;
+  final ValueNotifier<double> _selectionPulse;
   late Map<ToolType, IToolPainter> toolPainterMap;
   late Size latestSize = Size.zero;
   late int _latestRasterSize = 8;
@@ -126,7 +128,8 @@ class KPixPainter extends CustomPainter
     required final ValueNotifier<bool> stylusLongMoveStarted,
     required final ValueNotifier<bool> stylusLongMoveVertical,
     required final ValueNotifier<bool> stylusButton1Down,
-    required final ValueNotifier<bool> stylusLongMoveHorizontal,})
+    required final ValueNotifier<bool> stylusLongMoveHorizontal,
+    required final ValueNotifier<double> selectionPulse,})
       : _appState = appState,
         _offset = offset,
         _coords = coords,
@@ -138,7 +141,8 @@ class KPixPainter extends CustomPainter
         _primaryDown = primaryDown,
         _secondaryDown = secondaryDown,
         _primaryPressStart = primaryPressStart,
-        super(repaint: appState.repaintNotifier)
+        _selectionPulse = selectionPulse,
+        super(repaint: Listenable.merge(<Listenable>[appState.repaintNotifier, selectionPulse]))
   {
     _backupTimer = Timer.periodic(Duration(milliseconds: _options.backupPainterPollingRateMs), (final Timer t) {_captureTimeout();});
     _guiOptions.selectionOpacity.addListener(_selectionOpacityChanged);
@@ -170,6 +174,7 @@ class KPixPainter extends CustomPainter
   void _setSelectionColors({required final int percentageValue})
   {
     final int alignedValue = (percentageValue.toDouble() * 2.55).round();
+    _selectionAlpha = alignedValue;
     _blackSelectionAlphaColor = Colors.black.withAlpha(alignedValue);
     _whiteSelectionAlphaColor = Colors.white.withAlpha(alignedValue);
   }
@@ -350,11 +355,15 @@ class KPixPainter extends CustomPainter
     drawParams.paint.style = PaintingStyle.stroke;
     drawParams.paint.strokeWidth = _options.selectionSolidStrokeWidth;
 
+    final int pulseAlpha = (_selectionAlpha * _selectionPulse.value).round().clamp(0, 255);
+    final Color blackPulseColor = Colors.black.withAlpha(pulseAlpha);
+    final Color whitePulseColor = Colors.white.withAlpha(pulseAlpha);
+
     if (!_appState.selectionState.selection.isEmpty)
     {
       for (final SelectionLine line in _appState.selectionState.selectionLines) {
         if (line.selectDir == SelectionDirection.left) {
-          drawParams.paint.color = _blackSelectionAlphaColor;
+          drawParams.paint.color = blackPulseColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
@@ -372,7 +381,7 @@ class KPixPainter extends CustomPainter
                       effPxSize +
                       _options.selectionSolidStrokeWidth / 2,),
               drawParams.paint,);
-          drawParams.paint.color = _whiteSelectionAlphaColor;
+          drawParams.paint.color = whitePulseColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
@@ -386,7 +395,7 @@ class KPixPainter extends CustomPainter
                   _offset.value.dy + (line.endLoc.y * effPxSize) + effPxSize,),
               drawParams.paint,);
         } else if (line.selectDir == SelectionDirection.right) {
-          drawParams.paint.color = _blackSelectionAlphaColor;
+          drawParams.paint.color = blackPulseColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
@@ -406,7 +415,7 @@ class KPixPainter extends CustomPainter
                       effPxSize +
                       _options.selectionSolidStrokeWidth / 2,),
               drawParams.paint,);
-          drawParams.paint.color = _whiteSelectionAlphaColor;
+          drawParams.paint.color = whitePulseColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
@@ -422,7 +431,7 @@ class KPixPainter extends CustomPainter
                   _offset.value.dy + (line.endLoc.y * effPxSize) + effPxSize,),
               drawParams.paint,);
         } else if (line.selectDir == SelectionDirection.top) {
-          drawParams.paint.color = _blackSelectionAlphaColor;
+          drawParams.paint.color = blackPulseColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
@@ -440,7 +449,7 @@ class KPixPainter extends CustomPainter
                       (line.endLoc.y * effPxSize) -
                       _options.selectionSolidStrokeWidth / 2,),
               drawParams.paint,);
-          drawParams.paint.color = _whiteSelectionAlphaColor;
+          drawParams.paint.color = whitePulseColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx + (line.startLoc.x * effPxSize),
@@ -454,7 +463,7 @@ class KPixPainter extends CustomPainter
                       _options.selectionSolidStrokeWidth / 2,),
               drawParams.paint,);
         } else if (line.selectDir == SelectionDirection.bottom) {
-          drawParams.paint.color = _blackSelectionAlphaColor;
+          drawParams.paint.color = blackPulseColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
@@ -474,7 +483,7 @@ class KPixPainter extends CustomPainter
                       effPxSize +
                       _options.selectionSolidStrokeWidth / 2,),
               drawParams.paint,);
-          drawParams.paint.color = _whiteSelectionAlphaColor;
+          drawParams.paint.color = whitePulseColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx + (line.startLoc.x * effPxSize),

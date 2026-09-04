@@ -86,6 +86,10 @@ class _GuiPreferencesState extends State<GuiPreferences>
               maxVal: opacityMax.toDouble(),
               notifier: widget.prefs.selectionOpacity,
           ),
+          PrefSwitchRow(
+            label: "Pulsating Selection Outline",
+            notifier: widget.prefs.selectionPulsatingOutline,
+          ),
           PrefSliderRow<int>(
             text: "Canvas Border Opacity",
             minVal: opacityMin.toDouble(),

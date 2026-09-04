@@ -20,9 +20,9 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/canvas_transformation.dart';
+import 'package:kpix/models/constraints/canvas_size_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/widgets/canvas/canvas_size_constraints.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// Layout options for the [CanvasOperationsWidget].

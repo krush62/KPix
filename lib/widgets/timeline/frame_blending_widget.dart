@@ -20,10 +20,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/models/constraints/frame_blending_constraints.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-import 'package:kpix/widgets/timeline/frame_blending_constraints.dart';
 import 'package:kpix/widgets/timeline/frame_blending_options.dart';
 
 class FrameBlendingWidget extends StatefulWidget

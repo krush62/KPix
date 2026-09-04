@@ -26,6 +26,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/constraints/drawing_layer_settings_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -104,45 +105,6 @@ enum DropShadowStyle implements StyleOption
   }
 }
 
-class DrawingLayerSettingsConstraints
-{
-  final int darkenBrightenMin;
-  final int darkenBrightenDefault;
-  final int darkenBrightenMax;
-  final int glowDepthMin;
-  final int glowDepthDefault;
-  final int glowDepthMax;
-  final bool glowRecursiveDefault;
-  final int bevelDistanceMin;
-  final int bevelDistanceDefault;
-  final int bevelDistanceMax;
-  final int bevelStrengthMin;
-  final int bevelStrengthDefault;
-  final int bevelStrengthMax;
-  final int dropShadowOffsetMin;
-  final int dropShadowOffsetDefault;
-  final int dropShadowOffsetMax;
-
-  const DrawingLayerSettingsConstraints({
-    required this.darkenBrightenMin,
-    required this.darkenBrightenDefault,
-    required this.darkenBrightenMax,
-    required this.glowDepthMin,
-    required this.glowDepthDefault,
-    required this.glowDepthMax,
-    required this.glowRecursiveDefault,
-    required this.bevelDistanceMin,
-    required this.bevelDistanceDefault,
-    required this.bevelDistanceMax,
-    required this.bevelStrengthMin,
-    required this.bevelStrengthDefault,
-    required this.bevelStrengthMax,
-    required this.dropShadowOffsetMin,
-    required this.dropShadowOffsetDefault,
-    required this.dropShadowOffsetMax,});
-}
-
-
 class DrawingLayerSettings extends LayerSettings {
   final DrawingLayerSettingsConstraints constraints;
 
@@ -216,7 +178,6 @@ class DrawingLayerSettings extends LayerSettings {
     _setupListeners();
   }
 
-
   DrawingLayerSettings.defaultValues({required final ColorReference startingColor, required this.constraints}) :
     outerStrokeStyle = ValueNotifier<OuterStrokeStyle>(OuterStrokeStyle.off),
     outerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(HashMap<Alignment, bool>()),
@@ -244,7 +205,6 @@ class DrawingLayerSettings extends LayerSettings {
     }
    _setupListeners();
   }
-
 
   DrawingLayerSettings.fromOther({required final DrawingLayerSettings other}) :
         constraints = other.constraints,
@@ -298,8 +258,6 @@ class DrawingLayerSettings extends LayerSettings {
     innerGlowRecursive.addListener(valueChanged);
   }
 
-
-
   void deleteRamp({required final KPalRampData ramp})
   {
     final Set<ValueNotifier<ColorReference>> colorCandidates = <ValueNotifier<ColorReference>>{outerColorReference, innerColorReference, dropShadowColorReference};
@@ -312,7 +270,6 @@ class DrawingLayerSettings extends LayerSettings {
       }
     }
   }
-
 
   CoordinateColorMap getSettingsPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final List<LayerState> layerList, required final bool frameIsSelected})
   {
@@ -499,7 +456,6 @@ class DrawingLayerSettings extends LayerSettings {
         lastSelfGlowAmount = highestSelfGlowAmount;
       }
     }
-
 
     return outerPixels;
   }

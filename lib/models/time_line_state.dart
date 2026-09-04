@@ -24,6 +24,7 @@ import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/constraints/frame_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state_type.dart';
@@ -31,14 +32,6 @@ import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/messages.dart';
-
-class FrameConstraints
-{
-  final int minFps;
-  final int maxFps;
-  final int defaultFps;
-  const FrameConstraints({required this.minFps, required this.maxFps, required this.defaultFps});
-}
 
 class Frame
 {
@@ -171,7 +164,6 @@ class Timeline
     }
   }
 
-
   void selectFrameByIndex({required final int index, final int? layerIndex, final bool addLayerSelectionToHistory = true})
   {
     if (index >= 0 && index < frames.value.length)
@@ -215,7 +207,6 @@ class Timeline
       selectionState.deselect(addToHistoryStack: addToHistoryStack);
     }
   }
-
 
   void _playChanged()
   {
@@ -563,7 +554,6 @@ class Timeline
     }
     return null;
   }
-
 
   int calculateTotalFrameTime({required final bool sectionOnly})
   {

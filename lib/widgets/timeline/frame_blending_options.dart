@@ -17,7 +17,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:kpix/widgets/timeline/frame_blending_constraints.dart';
+import 'package:kpix/models/constraints/frame_blending_constraints.dart';
 
 class FrameBlendingOptions
 {

@@ -17,10 +17,10 @@
 // ignore_for_file: constant_identifier_names
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_theme.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
-import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
+import 'package:kpix/models/constraints/drawing_layer_settings_constraints.dart';
+import 'package:kpix/models/constraints/frame_constraints.dart';
+import 'package:kpix/models/constraints/shading_layer_settings_constraints.dart';
 import 'package:kpix/models/history/history_manager.dart';
-import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/color_names.dart';

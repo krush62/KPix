@@ -16,12 +16,23 @@
  *
  */
 
-import 'package:kpix/widgets/tools/constraints/tool_pencil_constraints.dart';
-
-abstract final class EraserConstraints
+/// Limits and defaults for the shading and dither layers.
+///
+/// A plain value object: the preferences build one and the layer reads it, so
+/// it belongs to neither of them.
+class ShadingLayerSettingsConstraints
 {
-  static const int sizeMin = 1;
-  static const int sizeDefault = 1;
-  static const int sizeMax = 32;
-  static const PencilShape shapeDefault = PencilShape.round;
+  final int shadingStepsMin;
+  final int shadingStepsDefaultBrighten;
+  final int shadingStepsDefaultDarken;
+  final int shadingStepsMax;
+  final int ditherStepsMax;
+
+  const ShadingLayerSettingsConstraints({
+    required this.shadingStepsMin,
+    required this.shadingStepsDefaultBrighten,
+    required this.shadingStepsDefaultDarken,
+    required this.shadingStepsMax,
+    required this.ditherStepsMax,
+  });
 }

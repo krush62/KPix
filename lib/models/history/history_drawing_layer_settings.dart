@@ -19,6 +19,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
+import 'package:kpix/models/constraints/drawing_layer_settings_constraints.dart';
 import 'package:kpix/models/history/history_color_reference.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 

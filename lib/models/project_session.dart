@@ -24,6 +24,7 @@ import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/constraints/frame_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state_type.dart';

@@ -25,6 +25,7 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/constraints/tool_shape_constraints.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/tool_options/shape_options.dart';
@@ -33,7 +34,6 @@ import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/drawing_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/tools/constraints/tool_shape_constraints.dart';
 
 class ShapePainter extends IToolPainter
 {

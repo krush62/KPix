@@ -15,6 +15,7 @@
  */
 
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
+import 'package:kpix/models/constraints/shading_layer_settings_constraints.dart';
 
 class HistoryShadingLayerSettings
 {

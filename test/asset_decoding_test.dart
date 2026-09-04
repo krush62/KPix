@@ -18,8 +18,8 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/managers/font_manager.dart';
+import 'package:kpix/models/stamp_manager_data.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -14,42 +14,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:collection';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/models/stamp_manager_data.dart';
 
 abstract final class _StampManagerEntryOptions
 {
   static const double borderWidth = 2.0;
   static const double borderRadius = 3.0;
   static const int layoutFlex = 6;
-}
-
-typedef StampMap = Map<String, List<StampManagerEntryData>>;
-
-class StampManagerEntryData
-{
-  final ui.Image? thumbnail;
-  final HashMap<CoordinateSetI, int> data;
-  final int width;
-  final int height;
-  final String path;
-  final bool isLocked;
-  final String _name;
-  String get name
-  {
-    if (isLocked)
-    {
-      return "[$_name]";
-    }
-    else
-    {
-      return _name;
-    }
-  }
-
-  StampManagerEntryData({required this.path, required this.thumbnail, required final String name, required this.isLocked, required this.data, required this.width, required this.height}) : _name = name;
 }
 
 class StampManagerEntryWidget extends StatefulWidget

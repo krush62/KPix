@@ -18,7 +18,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/models/status_bar_state.dart';
 
 abstract final class _StatusBarWidgetOptions

@@ -34,6 +34,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/export_types.dart';
 import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/history/history_color_reference.dart';
 import 'package:kpix/models/history/history_drawing_layer.dart';
@@ -56,7 +57,6 @@ import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/file/export_widget.dart';
 
 part 'export/palette/export_palette_adobe.dart';
 part 'export/palette/export_palette_aseprite.dart';

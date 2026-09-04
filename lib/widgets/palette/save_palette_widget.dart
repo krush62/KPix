@@ -17,14 +17,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_paths.dart';
+import 'package:kpix/models/export_types.dart';
 import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
-import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:path/path.dart' as p;
 

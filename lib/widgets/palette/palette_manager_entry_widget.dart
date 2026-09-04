@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/palette_manager_data.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 
 abstract final class _PaletteManagerEntryOptions
@@ -25,36 +26,11 @@ abstract final class _PaletteManagerEntryOptions
   static const int layoutFlex = 6;
 }
 
-class PaletteManagerEntryData
-{
-  final List<KPalRampData> rampDataList;
-  final String? path;
-  final bool isLocked;
-  final String _name;
-
-  String get name
-  {
-    if (isLocked)
-    {
-      return "[$_name]";
-    }
-    else
-    {
-      return _name;
-    }
-  }
-
-  PaletteManagerEntryData({required this.rampDataList, required final String name, required this.isLocked, required this.path}) : _name = name;
-}
-
-
 class PaletteManagerEntryWidget extends StatefulWidget
 {
   final PaletteManagerEntryData entryData;
   final ValueNotifier<PaletteManagerEntryWidget?> selectedWidget;
   const PaletteManagerEntryWidget({super.key, required this.entryData, required this.selectedWidget});
-
-
 
   @override
   State<PaletteManagerEntryWidget> createState() => _PaletteManagerEntryWidgetState();

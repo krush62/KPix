@@ -15,8 +15,8 @@
  */
 
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
-import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history/ramp_resolver.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';

@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:ui' as ui;
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/models/color_types.dart';
@@ -54,3 +55,18 @@ class ImportDataSet
 
   ImportDataSet({required this.referenceLayer, required this.rampDataList, required this.drawingLayer, required this.canvasSize});
 }
+
+class ImportData
+{
+  final int maxClusters;
+  final int maxRamps;
+  final int maxColors;
+  final bool includeReference;
+  final bool createNewPalette;
+  final ui.Image image;
+  final ui.Image scaledImage;
+  final String filePath;
+  const ImportData({required this.filePath, required this.maxRamps, required this.maxColors, required this.image, required this.includeReference, required this.maxClusters, required this.createNewPalette, required this.scaledImage});
+}
+
+/// Screen for importing raster images into the application.

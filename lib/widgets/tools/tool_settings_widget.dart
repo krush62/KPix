@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/models/project_session.dart';
+import 'package:kpix/models/stamp_manager_data.dart';
 import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/tool_type.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
@@ -31,7 +32,6 @@ import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
-import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 
 

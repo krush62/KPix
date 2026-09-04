@@ -15,11 +15,11 @@
  */
 
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/export_types.dart';
+import 'package:kpix/models/io_types.dart';
+import 'package:kpix/models/stamp_manager_data.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/widgets/file/export_widget.dart';
-import 'package:kpix/widgets/file/import_widget.dart';
-import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 
 /// Callback signatures for the dialogs.
 ///

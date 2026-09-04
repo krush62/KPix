@@ -17,10 +17,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/history/history_state.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';

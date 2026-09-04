@@ -14,5 +14,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export 'package:kpix/managers/history/history_shading_layer.dart'
-    show HistoryDitherLayer;
+/// The in-place transformations that can be applied to the whole canvas.
+///
+/// Named here rather than beside the toolbar that offers them: the layers and
+/// the canvas state act on it, and they sit below the widget layer.
+enum CanvasTransformation
+{
+  rotate,
+  flipH,
+  flipV
+}

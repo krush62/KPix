@@ -42,17 +42,20 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/constraints/tool_select_constraints.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
+import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/models/tool_state.dart';
+import 'package:kpix/models/tool_type.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
@@ -62,9 +65,6 @@ import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
-import 'package:kpix/widgets/main/symmetry_widget.dart';
-import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
-import 'package:kpix/widgets/tools/tool_type.dart';
 
 /// Layout options for [CanvasWidget].
 abstract final class _CanvasOptions

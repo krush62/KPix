@@ -31,8 +31,10 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/tool_state.dart';
+import 'package:kpix/models/tool_type.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/eraser_painter.dart';
@@ -49,9 +51,7 @@ import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/timeline/frame_blending_options.dart';
-import 'package:kpix/widgets/tools/tool_type.dart';
 
 class KPixPainterOptions
 {

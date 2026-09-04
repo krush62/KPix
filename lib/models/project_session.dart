@@ -21,23 +21,23 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/history_controller.dart';
+import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/util/messages.dart';
-import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:logger/logger.dart';
 
 

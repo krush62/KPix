@@ -14,7 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-part of '../widgets/kpal/kpal_widget.dart';
+import 'dart:collection';
+
+import 'package:kpix/models/color_types.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
 
 
 

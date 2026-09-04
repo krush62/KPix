@@ -1,4 +1,5 @@
 import 'package:kpix/managers/font_manager.dart';
+import 'package:kpix/models/tool_type.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
@@ -9,7 +10,6 @@ import 'package:kpix/tool_options/shape_options.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
-import 'package:kpix/widgets/tools/tool_type.dart';
 
 
 abstract class IToolOptions{

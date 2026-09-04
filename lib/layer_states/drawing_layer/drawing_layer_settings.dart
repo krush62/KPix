@@ -19,6 +19,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -31,7 +32,6 @@ import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 
 /// A style that can be offered as one segment of a style selector.
 ///

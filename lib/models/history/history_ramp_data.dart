@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:kpix/managers/history/history_shift_set.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/history/history_shift_set.dart';
 
 class HistoryRampData
 {

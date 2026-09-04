@@ -16,8 +16,8 @@
 
 import 'dart:collection';
 
-import 'package:kpix/managers/history/history_frame.dart';
-import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/models/history/history_frame.dart';
+import 'package:kpix/models/history/history_layer.dart';
 
 class HistoryTimeline
 {

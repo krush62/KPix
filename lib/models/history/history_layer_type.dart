@@ -16,11 +16,11 @@
  *
  */
 
-import 'package:kpix/managers/history/history_drawing_layer.dart';
-import 'package:kpix/managers/history/history_grid_layer.dart';
-import 'package:kpix/managers/history/history_layer.dart';
-import 'package:kpix/managers/history/history_reference_layer.dart';
-import 'package:kpix/managers/history/history_shading_layer.dart';
+import 'package:kpix/models/history/history_drawing_layer.dart';
+import 'package:kpix/models/history/history_grid_layer.dart';
+import 'package:kpix/models/history/history_layer.dart';
+import 'package:kpix/models/history/history_reference_layer.dart';
+import 'package:kpix/models/history/history_shading_layer.dart';
 
 class HistoryLayerType<T extends HistoryLayer> {
   const HistoryLayerType(this.id);

@@ -17,10 +17,10 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
-import 'package:kpix/managers/history/history_color_reference.dart';
+import 'package:kpix/models/history/history_color_reference.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 
 class HistoryDrawingLayerSettings {
   final DrawingLayerSettingsConstraints constraints;

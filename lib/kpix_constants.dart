@@ -14,6 +14,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:collection';
+
+import 'package:flutter/material.dart';
+
+/// Every direction a layer stroke or drop shadow can point.
+///
+/// Shared by the direction picker, the drawing-layer settings and their history
+/// snapshot, so it cannot live in the widget that happens to render it.
+final LinkedHashSet<Alignment> allAlignments = LinkedHashSet<Alignment>.from(<Alignment>[Alignment.topLeft, Alignment.topCenter, Alignment.topRight, Alignment.centerRight, Alignment.bottomRight, Alignment.bottomCenter, Alignment.bottomLeft, Alignment.centerLeft]);
+
 /// How long the pointer has to rest on a control before its tooltip appears.
 ///
 /// Used by every widget that shows one, which is why it is a plain constant

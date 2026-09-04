@@ -21,12 +21,12 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/models/constraints/tool_select_constraints.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 
 class SelectionPainter extends IToolPainter
 {

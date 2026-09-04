@@ -21,17 +21,17 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/constraints/reference_layer_constraints.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class ReferenceLayerOptionsWidget extends StatefulWidget

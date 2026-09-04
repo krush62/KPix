@@ -27,7 +27,10 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/canvas_transformation.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/constraints/grid_layer_constraints.dart';
+import 'package:kpix/models/constraints/reference_layer_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -36,9 +39,6 @@ import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
-import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
-import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
 import 'package:logger/logger.dart';
 
 class LayerCollection with ChangeNotifier {

@@ -18,10 +18,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/history/history_shift_set.dart';
+import 'package:kpix/models/constraints/kpal_constraints.dart';
+import 'package:kpix/models/history/history_shift_set.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
-import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:uuid/uuid.dart';
 
 

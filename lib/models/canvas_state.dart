@@ -21,16 +21,16 @@ import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
+import 'package:kpix/models/canvas_transformation.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/status_bar_state.dart';
+import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/messages.dart';
-import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
-import 'package:kpix/widgets/main/symmetry_widget.dart';
 
 /// The size of the drawing area, and the operations that change it.
 ///

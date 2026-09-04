@@ -22,7 +22,7 @@ import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/image_importer.dart';
-import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_size_constraints.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';

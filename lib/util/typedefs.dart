@@ -16,33 +16,13 @@
 
 import 'dart:collection';
 
-import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/widgets/file/export_widget.dart';
-import 'package:kpix/widgets/file/import_widget.dart';
-import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
-
-typedef IdColorSelectedFn = void Function({required IdColor newColor});
-typedef ColorReferenceSelectedFn = void Function({required ColorReference? color});
-typedef ColorRampFn = void Function({required KPalRampData ramp, bool addToHistoryStack});
-typedef ColorRampUpdateFn = void Function({required KPalRampData ramp, required KPalRampData originalData, bool addToHistoryStack});
-typedef ImageExportDataFn = void Function({required ImageExportData exportData, required ImageExportType exportType});
-typedef PaletteExportDataFn = void Function({required PaletteExportData saveData, required PaletteExportType paletteType});
-typedef AnimationExportDataFn = void Function({required AnimationExportData exportData, required AnimationExportType exportType});
-typedef CanvasSizeFn = void Function({required CoordinateSetI size, required CoordinateSetI offset});
-typedef NewFileFn = void Function({required CoordinateSetI size});
-typedef SaveFileFn = void Function({required String fileName, required Function()? callback});
-typedef ChangeTextToolFn = void Function({required String newText});
-typedef SaveKnownFileFn = void Function({Function()? callback});
-typedef ImportImageFn = void Function({required ImportData importData});
-typedef StampEntryDataFn = void Function({required StampManagerEntryData data});
 
 typedef CoordinateColorMap = HashMap<CoordinateSetI, ColorReference>;
 typedef CoordinateColorMapNullable = HashMap<CoordinateSetI, ColorReference?>;
 typedef CoordinateColor = MapEntry<CoordinateSetI, ColorReference>;
 typedef CoordinateColorNullable = MapEntry<CoordinateSetI, ColorReference?>;
-typedef StampMap = Map<String, List<StampManagerEntryData>>;
 
 class StackCol<T> {
   final List<T> _list = <T>[];

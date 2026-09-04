@@ -53,7 +53,7 @@ import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';

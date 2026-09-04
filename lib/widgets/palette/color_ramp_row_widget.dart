@@ -37,7 +37,7 @@ import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
-import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';
 
 abstract final class _ColorRampRowWidgetOptions

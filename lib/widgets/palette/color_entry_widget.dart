@@ -17,9 +17,23 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
-import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/callback_typedefs.dart';
+
+/// The multi-line tooltip for a palette swatch.
+///
+/// Lives here rather than on [IdColor]: it needs the colour-name table from
+/// the preferences, and a value type should not reach for a service.
+String colorTooltipText({required final IdColor idColor})
+{
+  final String name = GetIt.I.get<PreferenceManager>().colorNames.getColorName(r: idColor.color.r, g: idColor.color.g, b: idColor.color.b);
+  final String hsvText = "${idColor.hsv.h.round()}° ${(idColor.hsv.s * 100).round()}% ${(idColor.hsv.v * 100).round()}%";
+  final String rgb = colorToRGBString(color: idColor.color);
+  final String hex = colorToHexString(color: idColor.color);
+  return "$name\n$hsvText\n$rgb\n$hex";
+}
 
 abstract final class ColorEntryWidgetOptions {
   static const double unselectedMargin = 2.0;
@@ -88,7 +102,7 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
               child: Listener(
                 onPointerDown: _colorPressed,
                 child: Tooltip(
-                  message: value.getTooltipText(),
+                  message: colorTooltipText(idColor: value),
                   waitDuration: toolTipDuration,
                   textAlign: TextAlign.center,
                   child: Container(

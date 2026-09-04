@@ -68,7 +68,6 @@ import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/messages.dart';
-import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';

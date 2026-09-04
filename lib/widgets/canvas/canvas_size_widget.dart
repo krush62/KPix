@@ -26,7 +26,7 @@ import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_size_constraints.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';

@@ -26,6 +26,8 @@ abstract final class _StampManagerEntryOptions
   static const int layoutFlex = 6;
 }
 
+typedef StampMap = Map<String, List<StampManagerEntryData>>;
+
 class StampManagerEntryData
 {
   final ui.Image? thumbnail;

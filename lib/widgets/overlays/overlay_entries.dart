@@ -21,7 +21,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
-import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_color_picker_widget.dart';

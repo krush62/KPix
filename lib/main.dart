@@ -159,6 +159,7 @@ class KPixApp extends StatefulWidget
 class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 {
   final ValueNotifier<bool> initialized = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _isFocused = ValueNotifier<bool>(true);
   late KPixOverlay _closeWarningDialog;
   late KPixOverlay _newProjectDialog;
   late KPixOverlay _saveNewWarningDialog;
@@ -229,22 +230,26 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         //On all platforms, this state indicates that the application is in the default running mode for a running application that has input focus and is visible.
         //a frozen process does not receive file system events, and on Android the
         //watch itself can be dropped, so the project cache is refreshed here
+        _isFocused.value = true;
         if (!kIsWeb && initialized.value && GetIt.I.isRegistered<ProjectManager>())
         {
           unawaited(GetIt.I.get<ProjectManager>().reindex());
         }
       case AppLifecycleState.inactive:
         //At least one view of the application is visible, but none have input focus. The application is otherwise running normally.
+        _isFocused.value = false;
         if (!kIsWeb && initialized.value)
         {
           _recoverCheck(ignoreState: true);
         }
       case AppLifecycleState.hidden:
+        _isFocused.value = false;
         //All views of an application are hidden, either because the application is about to be paused (on iOS and Android), or because it has been minimized or placed on a desktop that is no longer visible (on non-web desktop), or is running in a window or tab that is no longer visible (on the web).
-        break;
+        //break;
       case AppLifecycleState.paused:
+        _isFocused.value = false;
         //The application is not currently visible to the user, and not responding to user input.
-        break;
+        //break;
     }
 
   }
@@ -663,6 +668,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         {
           return MainWidget(
             closePressed: _closePressed,
+            inFocus: _isFocused,
           );
         }
         else
@@ -693,8 +699,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 /// The general layout is represented in this class.
 class MainWidget extends StatelessWidget
 {
-  const MainWidget({super.key, required this.closePressed});
+  const MainWidget({super.key, required this.closePressed, required this.inFocus});
   final Function()? closePressed;
+  final ValueNotifier<bool> inFocus;
 
   @override
   Widget build(final BuildContext context) {
@@ -709,48 +716,53 @@ class MainWidget extends StatelessWidget
       children: <Widget>[
         //TOP BAR
         ExcludeFocus(
-          child: ColoredBox(
-            color: Theme.of(context).primaryColor,
-            child: (isDesktop()) ?
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Stack(
-                      alignment: Alignment.centerLeft,
-                      children: <Widget>[
-                        WindowTitleBarBox(child: MoveWindow()),
-                        Padding(
-                          padding: const EdgeInsets.all(_MainLayoutOptions.titleBarPadding),
-                          child: ValueListenableBuilder<bool>(
-                            valueListenable: GetIt.I.get<AppState>().hasChanges,
-                              builder: (final BuildContext context, final bool __, final Widget? ___) {
-                                return ValueListenableBuilder<String?>(
-                                  valueListenable: GetIt.I.get<AppState>().projectName,
-                                  builder: (final BuildContext _, final String? ____, final Widget? _____) {
-                                    return Text(
-                                      GetIt.I.get<AppState>().getTitle(),
-                                      style: Theme.of(context).textTheme.bodyLarge,
-                                      textAlign: TextAlign.center,
+          child: ValueListenableBuilder<bool>(
+            valueListenable: inFocus,
+            builder: (final BuildContext context, final bool foc, final Widget? child) {
+              return ColoredBox(
+                color: foc? Theme.of(context).primaryColor : Theme.of(context).primaryColorDark,
+                child: (isDesktop()) ?
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Stack(
+                          alignment: Alignment.centerLeft,
+                          children: <Widget>[
+                            WindowTitleBarBox(child: MoveWindow()),
+                            Padding(
+                              padding: const EdgeInsets.all(_MainLayoutOptions.titleBarPadding),
+                              child: ValueListenableBuilder<bool>(
+                                valueListenable: GetIt.I.get<AppState>().hasChanges,
+                                  builder: (final BuildContext context, final bool __, final Widget? ___) {
+                                    return ValueListenableBuilder<String?>(
+                                      valueListenable: GetIt.I.get<AppState>().projectName,
+                                      builder: (final BuildContext _, final String? ____, final Widget? _____) {
+                                        return Text(
+                                          GetIt.I.get<AppState>().getTitle(),
+                                          style: Theme.of(context).textTheme.bodyLarge,
+                                          textAlign: TextAlign.center,
+                                        );
+                                      },
                                     );
                                   },
-                                );
-                              },
-                            ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      children: <Widget>[
-                        MinimizeWindowButton(colors: windowButtonColors),
-                        MaximizeWindowButton(colors: windowButtonColors),
-                        CloseWindowButton(colors: windowButtonColors, onPressed: closePressed),
+                        ),
+                        Row(
+                          children: <Widget>[
+                            MinimizeWindowButton(colors: windowButtonColors),
+                            MaximizeWindowButton(colors: windowButtonColors),
+                            CloseWindowButton(colors: windowButtonColors, onPressed: closePressed),
+                          ],
+                        ),
                       ],
-                    ),
-                  ],
-                )
-                : const SizedBox.shrink(),
-            ),
+                    )
+                    : const SizedBox.shrink(),
+                );
+            },
+          ),
         ),
         Expanded(
           child: KPixSplitter(

@@ -29,6 +29,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/update_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
@@ -474,7 +475,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     GetIt.I.get<PreferenceManager>().loadPreferences().then((final void _){
       _closeAllMenus();
-      _appState.repaintNotifier.repaint();
+      GetIt.I.get<ViewState>().repaintNotifier.repaint();
     });
   }
 

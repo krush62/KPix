@@ -27,6 +27,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -125,7 +126,7 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
   void _toggleFrameBlending()
   {
     frameBlendingOptions.enabled.value = !frameBlendingOptions.enabled.value;
-    GetIt.I.get<AppState>().repaintNotifier.repaint();
+    GetIt.I.get<ViewState>().repaintNotifier.repaint();
   }
 
 

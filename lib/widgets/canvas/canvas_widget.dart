@@ -47,6 +47,8 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/status_bar_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
@@ -101,6 +103,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   final ShaderOptions _shaderOptions = GetIt.I.get<ShaderOptions>();
   final GuiPreferenceContent _guiPrefs = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
   final AppState _appState = GetIt.I.get<AppState>();
+  final ViewState _viewState = GetIt.I.get<ViewState>();
   final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier<CoordinateSetD?>(null);
   final ValueNotifier<bool> _isDragging = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _stylusLongMoveStarted = ValueNotifier<bool>(false);
@@ -225,7 +228,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _appState.selectedColorNotifier.removeListener(_updateFromChange);
     _appState.timeline.isPlaying.removeListener(_setDefaultCursor);
 
-    _appState.zoomFactorNotifier.removeListener(_updateFromChange);
+    _viewState.zoomFactorNotifier.removeListener(_updateFromChange);
     _canvasOffset.removeListener(_updateFromChange);
     _appState.selectedToolNotifier.removeListener(_updateFromChange);
     _appState.timeline.isPlaying.removeListener(_updateFromChange);
@@ -280,7 +283,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _shaderOptions.shaderDirection.addListener(_updateFromChange);
     _appState.selectedColorNotifier.addListener(_updateFromChange);
     _appState.timeline.isPlaying.addListener(_setDefaultCursor);
-    _appState.zoomFactorNotifier.addListener(_updateFromChange);
+    _viewState.zoomFactorNotifier.addListener(_updateFromChange);
     _canvasOffset.addListener(_updateFromChange);
     _appState.selectedToolNotifier.addListener(_updateFromChange);
     _appState.timeline.isPlaying.addListener(_updateFromChange);
@@ -350,7 +353,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
   void _updateFromChange()
   {
-    _appState.repaintNotifier.repaint();
+    _viewState.repaintNotifier.repaint();
   }
 
   /// Requests the canvas to be fitted into the viewport.
@@ -387,10 +390,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       return;
     }
 
-    int bestZoomLevel = AppState.zoomLevelMin;
-    for (int i = AppState.zoomLevelMin; i <= AppState.zoomLevelMax; i++)
+    int bestZoomLevel = ViewState.zoomLevelMin;
+    for (int i = ViewState.zoomLevelMin; i <= ViewState.zoomLevelMax; i++)
     {
-      if (_appState.canvasSize.x * i / _appState.devicePixelRatio < _viewportSize.width && _appState.canvasSize.y * i / _appState.devicePixelRatio < _viewportSize.height)
+      if (_appState.canvasSize.x * i / _viewState.devicePixelRatio < _viewportSize.width && _appState.canvasSize.y * i / _viewState.devicePixelRatio < _viewportSize.height)
       {
         bestZoomLevel = i;
       }
@@ -399,10 +402,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         break;
       }
     }
-    _appState.setZoomLevel(val: bestZoomLevel);
-    _setOffset(newOffset: Offset((_viewportSize.width - (_appState.canvasSize.x * _appState.zoomFactor / _appState.devicePixelRatio)) / 2, (_viewportSize.height - (_appState.canvasSize.y * _appState.zoomFactor / _appState.devicePixelRatio)) / 2));
+    _viewState.setZoomLevel(val: bestZoomLevel);
+    _setOffset(newOffset: Offset((_viewportSize.width - (_appState.canvasSize.x * _viewState.zoomFactor / _viewState.devicePixelRatio)) / 2, (_viewportSize.height - (_appState.canvasSize.y * _viewState.zoomFactor / _viewState.devicePixelRatio)) / 2));
     _optimalZoomApplied = true;
-    _appState.repaintNotifier.repaint();
+    _viewState.repaintNotifier.repaint();
   }
 
   /// Stores the size of the drawing area and re-evaluates a pending optimal zoom.
@@ -498,7 +501,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         _dragStartLoc = Offset((_touchPointers.values.elementAt(0).currentPos.dx + _touchPointers.values.elementAt(1).currentPos.dx) / 2, (_touchPointers.values.elementAt(0).currentPos.dy + _touchPointers.values.elementAt(1).currentPos.dy) / 2);
         _isDragging.value = true;
         _initialTouchZoomDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
-        _touchZoomStartLevel = _appState.zoomFactor;
+        _touchZoomStartLevel = _viewState.zoomFactor;
         _mouseCursor.value = SystemMouseCursors.move;
       }
     }
@@ -531,7 +534,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   {
     if (kPixPainter.toolPainter != null && kPixPainter.toolPainter!.hasAsyncUpdate)
     {
-      _appState.repaintNotifier.repaint();
+      _viewState.repaintNotifier.repaint();
       kPixPainter.toolPainter!.hasAsyncUpdate = false;
     }
 
@@ -651,7 +654,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     }
     if (kPixPainter.toolPainter != null)
     {
-      _appState.statusBarState.updateFromPaint(statusBarData: kPixPainter.toolPainter!.statusBarData);
+      GetIt.I.get<StatusBarState>().updateFromPaint(statusBarData: kPixPainter.toolPainter!.statusBarData);
 
     }
 
@@ -670,7 +673,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
     if (_stylusLongMoveStarted.value)
     {
-      final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / _appState.zoomFactor.toDouble();
+      final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / _viewState.zoomFactor.toDouble();
       final double yOffset = _secondaryStartLoc.dy - _cursorPos.value!.y;
       final double xOffset = _secondaryStartLoc.dx - _cursorPos.value!.x;
       final int zoomSteps = (yOffset / _stylusPrefs.stylusZoomStepDistance.value).round();
@@ -701,9 +704,9 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
       }
 
-      if (_stylusLongMoveVertical.value && _appState.setZoomLevelByDistance(startZoomLevel: _stylusZoomStartLevel, steps: zoomSteps))
+      if (_stylusLongMoveVertical.value && _viewState.setZoomLevelByDistance(startZoomLevel: _stylusZoomStartLevel, steps: zoomSteps))
       {
-        _setOffset(newOffset: cursorOffset - (cursorPositionBeforeZoom * _appState.zoomFactor.toDouble()));
+        _setOffset(newOffset: cursorOffset - (cursorPositionBeforeZoom * _viewState.zoomFactor.toDouble()));
       }
     }
 
@@ -730,16 +733,16 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       {
         final double currentDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
         final int zoomSteps = ((currentDistance - _initialTouchZoomDistance) / _touchPrefs.zoomStepDistance.value).round();
-        final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / _appState.zoomFactor.toDouble();
-        if (_appState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps))
+        final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / _viewState.zoomFactor.toDouble();
+        if (_viewState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps))
         {
-          _setOffset(newOffset: cursorOffset - (cursorPositionBeforeZoom * _appState.zoomFactor.toDouble()));
+          _setOffset(newOffset: cursorOffset - (cursorPositionBeforeZoom * _viewState.zoomFactor.toDouble()));
         }
       }
     }
 
     _checkSelectedToolData();
-    _appState.repaintNotifier.repaint();
+    _viewState.repaintNotifier.repaint();
   }
 
   void _checkSelectedToolData()
@@ -809,15 +812,15 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       //ZOOM
       if (!_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && !_hotkeyManager.controlIsPressed)
       {
-        final Offset cursorPositionBeforeZoom = (ev.localPosition - _canvasOffset.value) / _appState.zoomFactor.toDouble();
+        final Offset cursorPositionBeforeZoom = (ev.localPosition - _canvasOffset.value) / _viewState.zoomFactor.toDouble();
 
-        if (ev.scrollDelta.dy < 0.0 && _appState.increaseZoomLevel())
+        if (ev.scrollDelta.dy < 0.0 && _viewState.increaseZoomLevel())
         {
-          _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _appState.zoomFactor.toDouble()));
+          _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _viewState.zoomFactor.toDouble()));
         }
-        else if (ev.scrollDelta.dy > 0.0 && _appState.decreaseZoomLevel())
+        else if (ev.scrollDelta.dy > 0.0 && _viewState.decreaseZoomLevel())
         {
-          _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _appState.zoomFactor.toDouble()));
+          _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _viewState.zoomFactor.toDouble()));
         }
       }
       //CHANGE TOOL SIZE
@@ -853,7 +856,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
             }
           }
         }
-        _appState.repaintNotifier.repaint();
+        _viewState.repaintNotifier.repaint();
       }
       //CHANGE CURRENT LAYER
       else if (_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && !_hotkeyManager.controlIsPressed)
@@ -897,7 +900,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   void _onMouseExit({required final PointerExitEvent pee})
   {
     _cursorPos.value = null;
-    _appState.repaintNotifier.repaint();
+    _viewState.repaintNotifier.repaint();
     _mouseIsInside = false;
   }
 
@@ -943,11 +946,11 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
           final CoordinateSetI normPos = CoordinateSetI(
             x: _getClosestPixel(
               value: _cursorPos.value!.x - _canvasOffset.value.dx,
-              pixelSize: _appState.zoomFactor.toDouble() / _appState.devicePixelRatio,)
+              pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio,)
             ,
             y: _getClosestPixel(
               value: _cursorPos.value!.y - _canvasOffset.value.dy,
-              pixelSize: _appState.zoomFactor.toDouble() / _appState.devicePixelRatio,)
+              pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio,)
             ,);
           final ColorReference? colRef = _appState.getColorFromImageAtPosition(normPos: normPos);
           if (colRef != null && colRef != _appState.selectedColor)
@@ -973,7 +976,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     if (!_stylusHoverDetected && _cursorPos.value != null && !_mouseIsInside)
     {
       _cursorPos.value = null;
-      _appState.repaintNotifier.repaint();
+      _viewState.repaintNotifier.repaint();
     }
     else if (DateTime.now().difference(_stylusHoverTimeStamp).inMilliseconds > _stylusPrefs.stylusPollInterval.value)
     {
@@ -1006,7 +1009,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     //print("STYLUS BTN LONG PRESS");
     _timerStylusRunning = false;
     _stylusLongMoveStarted.value = true;
-    _stylusZoomStartLevel = _appState.zoomFactor;
+    _stylusZoomStartLevel = _viewState.zoomFactor;
     if (_appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
     {
       _stylusToolStartSize = _appState.getCurrentToolSize();
@@ -1023,7 +1026,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   void _setOffset({required final Offset newOffset})
   {
     final CoordinateSetD coords = CoordinateSetD(x: newOffset.dx, y: newOffset.dy);
-    final CoordinateSetD scaledCanvas = CoordinateSetD(x: _appState.canvasSize.x.toDouble() * _appState.zoomFactor / _appState.devicePixelRatio, y: _appState.canvasSize.y.toDouble() * _appState.zoomFactor / _appState.devicePixelRatio);
+    final CoordinateSetD scaledCanvas = CoordinateSetD(x: _appState.canvasSize.x.toDouble() * _viewState.zoomFactor / _viewState.devicePixelRatio, y: _appState.canvasSize.y.toDouble() * _viewState.zoomFactor / _viewState.devicePixelRatio);
     final CoordinateSetD minVisibility = CoordinateSetD(x: _viewportSize.width * _CanvasOptions.minVisibilityFactor, y: _viewportSize.height * _CanvasOptions.minVisibilityFactor);
 
     coords.x = coords.x.clamp(-scaledCanvas.x + minVisibility.x, _viewportSize.width - minVisibility.x);
@@ -1044,7 +1047,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     if (!_isDragging.value)
     {
       _isDragging.value = true;
-      _touchZoomStartLevel = _appState.zoomFactor;
+      _touchZoomStartLevel = _viewState.zoomFactor;
       _dragStartLoc = event.position;
       _initialTouchZoomDistance = 0.0;
     }
@@ -1053,12 +1056,12 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       const double factor = 25.0;
       final double currentDistance = event.scale >= 1.0 ? event.scale * factor - 1 : -(1.0 / event.scale) * factor;
       final double zoomSteps = (currentDistance - _initialTouchZoomDistance) / _touchPrefs.zoomStepDistance.value;
-      _appState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps.toInt());
+      _viewState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps.toInt());
       if (zoomSteps > -1.0 && zoomSteps < 1.0)
       {
         _setOffset(newOffset: _canvasOffset.value + event.panDelta);
       }
-      _appState.repaintNotifier.repaint();
+      _viewState.repaintNotifier.repaint();
     }
   }
 

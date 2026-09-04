@@ -25,7 +25,7 @@ import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
 
 class ReferenceLayerState extends LayerState
@@ -103,7 +103,7 @@ class ReferenceLayerState extends LayerState
 
   void _requestRepaint()
   {
-    GetIt.I.get<AppState>().repaintNotifier.repaint();
+    GetIt.I.get<ViewState>().repaintNotifier.repaint();
   }
 
   @override

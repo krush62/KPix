@@ -31,6 +31,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/eraser_painter.dart';
 import 'package:kpix/painting/fill_painter.dart';
@@ -77,6 +78,7 @@ class KPixPainterOptions
 class KPixPainter extends CustomPainter
 {
   final AppState _appState;
+  final ViewState _viewState = GetIt.I.get<ViewState>();
   final ValueNotifier<Offset> _offset;
   final ValueNotifier<CoordinateSetD?> _coords;
   final ValueNotifier<bool> _isDragging;
@@ -142,7 +144,7 @@ class KPixPainter extends CustomPainter
         _secondaryDown = secondaryDown,
         _primaryPressStart = primaryPressStart,
         _selectionPulse = selectionPulse,
-        super(repaint: Listenable.merge(<Listenable>[appState.repaintNotifier, selectionPulse]))
+        super(repaint: Listenable.merge(<Listenable>[GetIt.I.get<ViewState>().repaintNotifier, selectionPulse]))
   {
     _backupTimer = Timer.periodic(Duration(milliseconds: _options.backupPainterPollingRateMs), (final Timer t) {_captureTimeout();});
     _guiOptions.selectionOpacity.addListener(_selectionOpacityChanged);
@@ -214,18 +216,18 @@ class KPixPainter extends CustomPainter
 
       final Paint noFilterPainter = Paint()..filterQuality = FilterQuality.none..isAntiAlias = false;
       final DrawingParameters drawParams = DrawingParameters(
-        pixelRatio: _appState.devicePixelRatio,
+        pixelRatio: _viewState.devicePixelRatio,
         symmetryHorizontal: _appState.symmetryState.horizontalActivated.value ? _appState.symmetryState.horizontalValue.value : null,
         symmetryVertical: _appState.symmetryState.verticalActivated.value ? _appState.symmetryState.verticalValue.value : null,
         stylusButtonDown: _stylusButton1Down.value,
         offset: _offset.value,
         canvas: canvas,
         paint: noFilterPainter,
-        pixelSize: _appState.zoomFactor,
+        pixelSize: _viewState.zoomFactor,
         canvasSize: _appState.canvasSize,
         drawingSize: size,
         cursorPos: _coords.value,
-        cursorPosNorm: _coords.value != null ? CoordinateSetI(x: IToolPainter.getClosestPixel(value: _coords.value!.x - _offset.value.dx,pixelSize: _appState.zoomFactor.toDouble() / _appState.devicePixelRatio), y: IToolPainter.getClosestPixel(value: _coords.value!.y - _offset.value.dy,pixelSize: _appState.zoomFactor.toDouble() / _appState.devicePixelRatio)) : null,
+        cursorPosNorm: _coords.value != null ? CoordinateSetI(x: IToolPainter.getClosestPixel(value: _coords.value!.x - _offset.value.dx,pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio), y: IToolPainter.getClosestPixel(value: _coords.value!.y - _offset.value.dy,pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio)) : null,
         primaryDown: _primaryDown.value,
         secondaryDown: _secondaryDown.value,
         primaryPressStart: _primaryPressStart.value,
@@ -276,7 +278,7 @@ class KPixPainter extends CustomPainter
 
   void _drawCanvasBorder({required final DrawingParameters drawParams, final int width = 2})
   {
-    final double effPxSize = drawParams.pixelSize.toDouble() / _appState.devicePixelRatio;
+    final double effPxSize = drawParams.pixelSize.toDouble() / _viewState.devicePixelRatio;
     final ui.Rect borderRect = ui.Rect.fromLTWH(
         drawParams.offset.dx - width,
         drawParams.offset.dy - width,
@@ -295,7 +297,7 @@ class KPixPainter extends CustomPainter
   {
     if (refLayer.image != null)
     {
-      final double effPxSize = drawParams.pixelSize.toDouble() / _appState.devicePixelRatio;
+      final double effPxSize = drawParams.pixelSize.toDouble() / _viewState.devicePixelRatio;
       final ui.Image image = refLayer.image!.image;
 
       final ui.Rect borderRect = ui.Rect.fromLTWH(
@@ -315,7 +317,7 @@ class KPixPainter extends CustomPainter
 
   void _handleReferenceLayer({required final DrawingParameters drawParams, required final ReferenceLayerState refLayer})
   {
-    final double effPxSize = drawParams.pixelSize.toDouble() / _appState.devicePixelRatio;
+    final double effPxSize = drawParams.pixelSize.toDouble() / _viewState.devicePixelRatio;
     if (_referenceImglastStartPos != drawParams.primaryPressStart)
     {
       _referenceImgNormStartPos.x = (drawParams.primaryPressStart.dx - drawParams.offset.dx) / effPxSize;
@@ -351,7 +353,7 @@ class KPixPainter extends CustomPainter
 
   void _drawSelection({required final DrawingParameters drawParams})
   {
-    final double effPxSize = drawParams.pixelSize.toDouble() / _appState.devicePixelRatio;
+    final double effPxSize = drawParams.pixelSize.toDouble() / _viewState.devicePixelRatio;
     drawParams.paint.style = PaintingStyle.stroke;
     drawParams.paint.strokeWidth = _options.selectionSolidStrokeWidth;
 
@@ -619,7 +621,7 @@ class KPixPainter extends CustomPainter
     const int strokeAlphaWhite = 96;
     const int strokeAlphaBlack = 192;
 
-    final double effPxSize = drawParams.pixelSize.toDouble() / _appState.devicePixelRatio;
+    final double effPxSize = drawParams.pixelSize.toDouble() / _viewState.devicePixelRatio;
     final Paint p1 = Paint();
     p1.color = Colors.white.withAlpha(strokeAlphaWhite);
     p1.style = PaintingStyle.stroke;
@@ -754,8 +756,8 @@ class KPixPainter extends CustomPainter
     painter ??= drawParams.paint;
 
     final CoordinateSetD effCanvasSize = CoordinateSetD(
-        x: drawParams.scaledCanvasSize.x / _appState.devicePixelRatio,
-        y: drawParams.scaledCanvasSize.y / _appState.devicePixelRatio,);
+        x: drawParams.scaledCanvasSize.x / _viewState.devicePixelRatio,
+        y: drawParams.scaledCanvasSize.y / _viewState.devicePixelRatio,);
 
     final double rightDifference = (drawParams.offset.dx + effCanvasSize.x) - latestSize.width;
     final double bottomDifference = (drawParams.offset.dy + effCanvasSize.y) - latestSize.height;
@@ -781,8 +783,8 @@ class KPixPainter extends CustomPainter
     );
 
     final ui.Rect srcRect = ui.Rect.fromLTWH(
-      leftExceed > 0 ? leftExceed / pxlSzDbl * _appState.devicePixelRatio : 0,
-      topExceed > 0 ? topExceed / pxlSzDbl * _appState.devicePixelRatio : 0,
+      leftExceed > 0 ? leftExceed / pxlSzDbl * _viewState.devicePixelRatio : 0,
+      topExceed > 0 ? topExceed / pxlSzDbl * _viewState.devicePixelRatio : 0,
       drawParams.canvasSize.x.toDouble() * horizontalExceedFactor,
       drawParams.canvasSize.y.toDouble() * verticalExceedFactor,
     );
@@ -809,10 +811,10 @@ class KPixPainter extends CustomPainter
       else
       {
         final List<LayerState> visibleLayers = frame.layerList.getVisibleLayers().toList();
-        final double effPxSize = drawParams.pixelSize.toDouble() / _appState.devicePixelRatio;
+        final double effPxSize = drawParams.pixelSize.toDouble() / _viewState.devicePixelRatio;
         final CoordinateSetD effCanvasSize = CoordinateSetD(
-          x: drawParams.scaledCanvasSize.x / _appState.devicePixelRatio,
-          y: drawParams.scaledCanvasSize.y / _appState.devicePixelRatio,);
+          x: drawParams.scaledCanvasSize.x / _viewState.devicePixelRatio,
+          y: drawParams.scaledCanvasSize.y / _viewState.devicePixelRatio,);
         //layers without any raster image cannot be drawn individually
         //(e.g. right after a history restore); bridge with the backup image
         final bool hasUnreadyLayers = visibleLayers.whereType<RasterableLayerState>().any(
@@ -935,7 +937,7 @@ class KPixPainter extends CustomPainter
                   cursorRasterSet.size.x * effPxSize,
                   cursorRasterSet.size.y * effPxSize,),
                 image: cursorRasterSet.image,
-                scale: 1.0 / pxlSzDbl * _appState.devicePixelRatio,
+                scale: 1.0 / pxlSzDbl * _viewState.devicePixelRatio,
                 fit: BoxFit.none,
                 alignment: Alignment.topLeft,
                 filterQuality: FilterQuality.none,);
@@ -948,10 +950,10 @@ class KPixPainter extends CustomPainter
               paintImage(
                 canvas: drawParams.canvas,
                 rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * effPxSize) , drawParams.offset.dy + (contentRasterSet.offset.y * effPxSize),
-                  contentRasterSet.size.x * drawParams.pixelSize * _appState.devicePixelRatio,
-                  contentRasterSet.size.y * drawParams.pixelSize * _appState.devicePixelRatio,),
+                  contentRasterSet.size.x * drawParams.pixelSize * _viewState.devicePixelRatio,
+                  contentRasterSet.size.y * drawParams.pixelSize * _viewState.devicePixelRatio,),
                 image: contentRasterSet.image,
-                scale: 1.0 / pxlSzDbl * _appState.devicePixelRatio,
+                scale: 1.0 / pxlSzDbl * _viewState.devicePixelRatio,
                 fit: BoxFit.none,
                 alignment: Alignment.topLeft,
                 filterQuality: FilterQuality.none,);
@@ -964,7 +966,7 @@ class KPixPainter extends CustomPainter
           final ContentRasterSet? cachedRaster = _lastContentRaster;
           if (cachedRaster != null)
           {
-            final double effPxSize = drawParams.pixelSize.toDouble() / _appState.devicePixelRatio;
+            final double effPxSize = drawParams.pixelSize.toDouble() / _viewState.devicePixelRatio;
             paintImage(
               canvas: drawParams.canvas,
               rect: ui.Rect.fromLTWH(
@@ -974,7 +976,7 @@ class KPixPainter extends CustomPainter
                 cachedRaster.size.y * effPxSize,
               ),
               image: cachedRaster.image,
-              scale: 1.0 / pxlSzDbl * _appState.devicePixelRatio,
+              scale: 1.0 / pxlSzDbl * _viewState.devicePixelRatio,
               fit: BoxFit.none,
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none,
@@ -1217,10 +1219,10 @@ class KPixPainter extends CustomPainter
 
   void _drawCheckerboard({required final DrawingParameters drawParams})
   {
-    final double effPxSize = drawParams.pixelSize.toDouble() / _appState.devicePixelRatio;
+    final double effPxSize = drawParams.pixelSize.toDouble() / _viewState.devicePixelRatio;
     final CoordinateSetD effCanvasSize = CoordinateSetD(
-      x: drawParams.scaledCanvasSize.x / _appState.devicePixelRatio,
-      y: drawParams.scaledCanvasSize.y / _appState.devicePixelRatio,);
+      x: drawParams.scaledCanvasSize.x / _viewState.devicePixelRatio,
+      y: drawParams.scaledCanvasSize.y / _viewState.devicePixelRatio,);
 
     paintImage(
         canvas: drawParams.canvas,
@@ -1262,18 +1264,18 @@ class KPixPainter extends CustomPainter
   void _selectionOpacityChanged()
   {
     _setSelectionColors(percentageValue: _guiOptions.selectionOpacity.value);
-    _appState.repaintNotifier.repaint();
+    _viewState.repaintNotifier.repaint();
   }
 
   void _canvasBorderOpacityChanged()
   {
     _setCanvasBorderColor(percentageValue: _guiOptions.canvasBorderOpacity.value);
-    _appState.repaintNotifier.repaint();
+    _viewState.repaintNotifier.repaint();
   }
 
   void _checkerboardSettingChanged()
   {
-    _appState.repaintNotifier.repaint();
+    _viewState.repaintNotifier.repaint();
   }
 
   void dispose()

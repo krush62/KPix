@@ -33,7 +33,9 @@ import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/update_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -313,8 +315,12 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       GetIt.I.registerSingleton<AppPaths>(AppPaths(exportDir: exportDirString, internalDir: internalDirString, projectsDir: projectDirResult.resolvedDir));
       logger.i("Creating Update State");
       GetIt.I.registerSingleton<UpdateState>(UpdateState());
+      logger.i("Creating Status Bar State");
+      GetIt.I.registerSingleton<StatusBarState>(StatusBarState());
+      logger.i("Creating View State");
+      GetIt.I.registerSingleton<ViewState>(ViewState(devicePixelRatio: devicePixelRatio));
       logger.i("Creating App State");
-      final AppState appState = AppState(devicePixelRatio: devicePixelRatio);
+      final AppState appState = AppState();
 
       GetIt.I.registerSingleton<AppState>(appState);
       final Size logicalSize = MediaQuery.of(c).size;

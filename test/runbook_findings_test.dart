@@ -20,6 +20,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -111,19 +112,19 @@ void main()
     testWidgets("restores the reported dimensions", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
         expect(appState.canvasSize.x, 4);
-        expect(appState.statusBarState.statusBarDimensionString.value, isNotNull);
-        final String? before = appState.statusBarState.statusBarDimensionString.value;
+        expect(GetIt.I.get<StatusBarState>().statusBarDimensionString.value, isNotNull);
+        final String? before = GetIt.I.get<StatusBarState>().statusBarDimensionString.value;
 
         appState.changeCanvasSize(newSize: CoordinateSetI(x: 8, y: 8), offset: CoordinateSetI(x: 0, y: 0));
         await settle(appState: appState);
         expect(appState.canvasSize.x, 8);
-        expect(appState.statusBarState.statusBarDimensionString.value, isNot(before));
+        expect(GetIt.I.get<StatusBarState>().statusBarDimensionString.value, isNot(before));
 
         appState.undoPressed();
         await settle(appState: appState);
 
         expect(appState.canvasSize.x, 4, reason: "the canvas itself is back");
-        expect(appState.statusBarState.statusBarDimensionString.value, before,
+        expect(GetIt.I.get<StatusBarState>().statusBarDimensionString.value, before,
             reason: "and the status bar has to agree with it",);
       },);
     });
@@ -133,7 +134,7 @@ void main()
         final ColorReference color = appState.colorRamps.first.references.first;
         final DrawingLayerState layer = layerAt(appState: appState, index: 0);
         await _paintAndRecord(appState: appState, layer: layer, coord: pixel, color: color);
-        final String? before = appState.statusBarState.statusBarDimensionString.value;
+        final String? before = GetIt.I.get<StatusBarState>().statusBarDimensionString.value;
 
         appState.selectionState.newSelectionFromShape(
           start: CoordinateSetI(x: 1, y: 1),
@@ -149,7 +150,7 @@ void main()
         await settle(appState: appState);
 
         expect(appState.canvasSize.x, 4);
-        expect(appState.statusBarState.statusBarDimensionString.value, before);
+        expect(GetIt.I.get<StatusBarState>().statusBarDimensionString.value, before);
       },);
     });
   });

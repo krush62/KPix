@@ -47,6 +47,7 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
@@ -281,7 +282,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                   valueListenable: _appState.timeline.selectedFrameIndexNotifier,
                   builder: (final BuildContext context1, final int frameIndex, final Widget? child1) {
                     return ValueListenableBuilder<bool>(
-                      valueListenable: _appState.layerSettingsVisibleNotifier,
+                      valueListenable: GetIt.I.get<ViewState>().layerSettingsVisibleNotifier,
                       builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
                         Widget settingsWidget = const SizedBox.shrink();
                         final LayerState? currentLayer = _appState.timeline.getCurrentLayer();
@@ -333,7 +334,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                         padding: const EdgeInsets.all(8.0),
                                         child: IconButton.outlined(
                                           onPressed: () {
-                                            _appState.layerSettingsVisible = false;
+                                            GetIt.I.get<ViewState>().layerSettingsVisible = false;
                                             if (currentLayer != null && currentLayer is RasterableLayerState)
                                             {
                                               currentLayer.layerSettings.editStarted = false;

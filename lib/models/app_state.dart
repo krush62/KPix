@@ -42,6 +42,7 @@ import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -62,13 +63,6 @@ import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
 
-class RepaintNotifier extends ChangeNotifier
-{
-  void repaint()
-  {
-    notifyListeners();
-  }
-}
 
 class AppState
 {
@@ -114,18 +108,6 @@ class AppState
 
   final Timeline timeline = Timeline.empty();
 
-  final ValueNotifier<bool> layerSettingsVisibleNotifier = ValueNotifier<bool>(false);
-
-
-  bool get layerSettingsVisible
-  {
-    return layerSettingsVisibleNotifier.value;
-  }
-
-  set layerSettingsVisible(final bool newVisibility)
-  {
-    layerSettingsVisibleNotifier.value = newVisibility;
-  }
 
   ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos})
   {
@@ -163,47 +145,29 @@ class AppState
     return pixelCount;
   }
 
-  final RepaintNotifier repaintNotifier = RepaintNotifier();
 
-  final ValueNotifier<int> _zoomFactor = ValueNotifier<int>(1);
-  int get zoomFactor
-  {
-    return _zoomFactor.value;
-  }
-
-  /// Read only view of the zoom level, so the canvas can repaint when it changes.
-  ///
-  /// Nothing used to listen to this: zoom changes only updated a status bar
-  /// string, and the canvas happened to be repainted because that rebuild
-  /// repainted the whole tree. See [repaintNotifier].
-  ValueListenable<int> get zoomFactorNotifier => _zoomFactor;
-  static const int zoomLevelMin = 1;
-  static const int zoomLevelMax = 80;
 
   final CoordinateSetI _canvasSize = CoordinateSetI(x: 1, y: 1);
   CoordinateSetI get canvasSize
   {
     return CoordinateSetI.from(other: _canvasSize);
   }
-  late SelectionState selectionState = SelectionState(repaintNotifier: repaintNotifier);
-  final StatusBarState statusBarState = StatusBarState();
+  late SelectionState selectionState = SelectionState(repaintNotifier: GetIt.I.get<ViewState>().repaintNotifier);
 
   final ValueNotifier<String?> projectName = ValueNotifier<String?>(null);
   final ValueNotifier<bool> hasChanges = ValueNotifier<bool>(false);
 
   static const Duration toolTipDuration = Duration(seconds: 1);
 
-  final double devicePixelRatio;
 
   final SymmetryState symmetryState = SymmetryState();
 
 
-  AppState({required this.devicePixelRatio})
+  AppState()
   {
     setToolSelection(tool: ToolType.pencil, forceSetting: true);
-    statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
     timeline.layerChangeNotifier.addListener((){
-      layerSettingsVisible = false;
+      GetIt.I.get<ViewState>().layerSettingsVisible = false;
       resetColorSupplier();
     });
     _setHotkeys();
@@ -236,17 +200,6 @@ class AppState
     hotkeyManager.addListener(func: () {moveDownLayer(layerState: timeline.getCurrentLayer());}, action: HotkeyAction.layersMoveDown);
     hotkeyManager.addListener(func: selectLayerAbove, action: HotkeyAction.layersSelectAbove);
     hotkeyManager.addListener(func: selectLayerBelow, action: HotkeyAction.layersSelectBelow);
-    hotkeyManager.addListener(func: increaseZoomLevel, action: HotkeyAction.panZoomZoomIn);
-    hotkeyManager.addListener(func: decreaseZoomLevel, action: HotkeyAction.panZoomZoomOut);
-    hotkeyManager.addListener(func: () {setZoomLevel(val: 1);}, action: HotkeyAction.panZoomSetZoom100);
-    hotkeyManager.addListener(func: () {setZoomLevel(val: 2);}, action: HotkeyAction.panZoomSetZoom200);
-    hotkeyManager.addListener(func: () {setZoomLevel(val: 4);}, action: HotkeyAction.panZoomSetZoom400);
-    hotkeyManager.addListener(func: () {setZoomLevel(val: 8);}, action: HotkeyAction.panZoomSetZoom800);
-    hotkeyManager.addListener(func: () {setZoomLevel(val: 16);}, action: HotkeyAction.panZoomSetZoom1600);
-    hotkeyManager.addListener(func: () {setZoomLevel(val: 32);}, action: HotkeyAction.panZoomSetZoom3200);
-    hotkeyManager.addListener(func: () {setZoomLevel(val: 48);}, action: HotkeyAction.panZoomSetZoom4800);
-    hotkeyManager.addListener(func: () {setZoomLevel(val: 64);}, action: HotkeyAction.panZoomSetZoom6400);
-    hotkeyManager.addListener(func: () {setZoomLevel(val: 80);}, action: HotkeyAction.panZoomSetZoom8000);
   }
 
   void init({required final CoordinateSetI dimensions})
@@ -277,7 +230,7 @@ class AppState
   {
     _canvasSize.x = width;
     _canvasSize.y = height;
-    statusBarState.setStatusBarDimensions(width: width, height: height);
+    GetIt.I.get<StatusBarState>().setStatusBarDimensions(width: width, height: height);
     symmetryState.newCanvasDimensions(newSize: _canvasSize);
     if (addToHistoryStack)
     {
@@ -285,57 +238,6 @@ class AppState
     }
   }
 
-  bool increaseZoomLevel()
-  {
-    bool changed = false;
-    if (_zoomFactor.value < zoomLevelMax)
-    {
-      _zoomFactor.value = _zoomFactor.value + 1;
-      statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
-      changed = true;
-    }
-    return changed;
-  }
-
-  bool decreaseZoomLevel()
-  {
-    bool changed = false;
-    if (_zoomFactor.value > zoomLevelMin)
-    {
-      _zoomFactor.value = _zoomFactor.value - 1;
-      statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
-      changed = true;
-    }
-    return changed;
-  }
-
-  bool setZoomLevelByDistance({required final int startZoomLevel, required final int steps})
-  {
-    bool change = false;
-    if (steps != 0)
-    {
-      final int endIndex = startZoomLevel + steps;
-      if (endIndex <= zoomLevelMax && endIndex >= zoomLevelMin && endIndex != _zoomFactor.value)
-      {
-        _zoomFactor.value = endIndex;
-        statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
-        change = true;
-      }
-    }
-    return change;
-  }
-
-  bool setZoomLevel({required final int val})
-  {
-    bool change = false;
-    if (val <= zoomLevelMax && val >= zoomLevelMin && val != _zoomFactor.value)
-    {
-      _zoomFactor.value = val;
-      statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
-      change = true;
-    }
-    return change;
-  }
 
 
   int getCurrentToolSize()
@@ -361,7 +263,7 @@ class AppState
         f.layerList.deleteRampFromLayers(ramp: ramp, backupColor: rampDataList[0].references[0]);
       }
       rasterLayersAll();
-      repaintNotifier.repaint();
+      GetIt.I.get<ViewState>().repaintNotifier.repaint();
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalDelete);
@@ -389,7 +291,7 @@ class AppState
 
     }
     rasterLayersAll();
-    repaintNotifier.repaint();
+    GetIt.I.get<ViewState>().repaintNotifier.repaint();
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalChange);
@@ -1017,7 +919,7 @@ class AppState
       {
         frame.layerList.onLayerVisibilityChanged(layer: layerState);
       }
-      repaintNotifier.repaint();
+      GetIt.I.get<ViewState>().repaintNotifier.repaint();
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerVisibilityChange, originLayer: layerState);
     }
   }
@@ -1093,7 +995,7 @@ class AppState
       {
         selectionState.selection.changeLayer(oldLayer: oldLayer, newLayer: newLayer);
       }
-      repaintNotifier.repaint();
+      GetIt.I.get<ViewState>().repaintNotifier.repaint();
       if (addToHistoryStack && oldLayer != null)
       {
         GetIt.I.get<HistoryManager>().addState(
@@ -1238,7 +1140,7 @@ class AppState
     {
       frame.layerList.layerRasterDone(layer: layer);
     }
-    repaintNotifier.repaint();
+    GetIt.I.get<ViewState>().repaintNotifier.repaint();
   }
 
   void colorSelected({required final ColorReference? color, final bool addToHistory = true})

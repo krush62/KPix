@@ -33,6 +33,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/preference_values.dart';
@@ -229,7 +230,7 @@ abstract class IToolPainter
   void _toolOpacityChanged()
   {
     _setOutlineColors(percentageValue: guiPrefs.toolOpacity.value);
-    appState.repaintNotifier.repaint();
+    GetIt.I.get<ViewState>().repaintNotifier.repaint();
   }
 
   void _setOutlineColors({required final int percentageValue})

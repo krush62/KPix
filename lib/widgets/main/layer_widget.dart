@@ -26,6 +26,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -159,7 +160,7 @@ class _LayerWidgetState extends State<LayerWidget> {
   void _settingsButtonPressed()
   {
     _appState.selectLayer(newLayer: widget.layerState);
-    _appState.layerSettingsVisible = true;
+    GetIt.I.get<ViewState>().layerSettingsVisible = true;
   }
 
 

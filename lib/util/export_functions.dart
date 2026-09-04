@@ -42,6 +42,7 @@ import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -127,7 +128,7 @@ Future<List<RenderedFrame>?> _renderAnimationFrames({
     final Frame frame = appState.timeline.frames.value[i];
     final ui.Image uiImage = await getImageFromLayers(
       selection: appState.selectionState.selection,
-      canvasSize: appState.canvasSize,
+      canvasSize: GetIt.I.get<CanvasState>().canvasSize,
       layerCollection: frame.layerList,
       scalingFactor: exportData.scaling,
       frame: frame,

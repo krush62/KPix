@@ -20,6 +20,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
@@ -113,19 +114,19 @@ void main()
   group("undoing a canvas resize", () {
     testWidgets("restores the reported dimensions", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-        expect(appState.canvasSize.x, 4);
+        expect(GetIt.I.get<CanvasState>().canvasSize.x, 4);
         expect(GetIt.I.get<StatusBarState>().statusBarDimensionString.value, isNotNull);
         final String? before = GetIt.I.get<StatusBarState>().statusBarDimensionString.value;
 
-        appState.changeCanvasSize(newSize: CoordinateSetI(x: 8, y: 8), offset: CoordinateSetI(x: 0, y: 0));
+        GetIt.I.get<CanvasState>().changeCanvasSize(newSize: CoordinateSetI(x: 8, y: 8), offset: CoordinateSetI(x: 0, y: 0));
         await settle(appState: appState);
-        expect(appState.canvasSize.x, 8);
+        expect(GetIt.I.get<CanvasState>().canvasSize.x, 8);
         expect(GetIt.I.get<StatusBarState>().statusBarDimensionString.value, isNot(before));
 
         appState.undoPressed();
         await settle(appState: appState);
 
-        expect(appState.canvasSize.x, 4, reason: "the canvas itself is back");
+        expect(GetIt.I.get<CanvasState>().canvasSize.x, 4, reason: "the canvas itself is back");
         expect(GetIt.I.get<StatusBarState>().statusBarDimensionString.value, before,
             reason: "and the status bar has to agree with it",);
       },);
@@ -144,14 +145,14 @@ void main()
           selectShape: SelectShape.rectangle,
         );
         await settle(appState: appState);
-        appState.cropToSelection();
+        GetIt.I.get<CanvasState>().cropToSelection();
         await settle(appState: appState);
-        expect(appState.canvasSize.x, 2, reason: "setup: cropped to the selection");
+        expect(GetIt.I.get<CanvasState>().canvasSize.x, 2, reason: "setup: cropped to the selection");
 
         appState.undoPressed();
         await settle(appState: appState);
 
-        expect(appState.canvasSize.x, 4);
+        expect(GetIt.I.get<CanvasState>().canvasSize.x, 4);
         expect(GetIt.I.get<StatusBarState>().statusBarDimensionString.value, before);
       },);
     });

@@ -150,8 +150,8 @@ class FillPainter extends IToolPainter
     required final bool shadeCurrentRampOnly,
     required final bool fillWholeRamp,})
   {
-    final int numRows = appState.canvasSize.y;
-    final int numCols = appState.canvasSize.x;
+    final int numRows = canvasState.canvasSize.y;
+    final int numCols = canvasState.canvasSize.x;
     final List<List<bool>> visited = List<List<bool>>.generate(numCols, (final _) => List<bool>.filled(numRows, false));
     final ColorReference? startValue = (appState.timeline.getCurrentLayer() == layer && appState.selectionState.selection.contains(coord: start)) ? appState.selectionState.selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
@@ -247,8 +247,8 @@ class FillPainter extends IToolPainter
     required final CoordinateSetI start,
     required final ShaderDirection shadeDirection,})
   {
-    final int numRows = appState.canvasSize.y;
-    final int numCols = appState.canvasSize.x;
+    final int numRows = canvasState.canvasSize.y;
+    final int numCols = canvasState.canvasSize.x;
     final List<List<bool>> visited = List<List<bool>>.generate(numCols, (final _) => List<bool>.filled(numRows, false));
     final int? startValue = layer.getRawValueAt(coord: start);
     final StackCol<CoordinateSetI> stackPoints = StackCol<CoordinateSetI>();
@@ -331,9 +331,9 @@ class FillPainter extends IToolPainter
     {
       final ColorReference? startValue = layer.getDataEntry(coord: start);
       final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
-      for (int x = 0; x < appState.canvasSize.x; x++)
+      for (int x = 0; x < canvasState.canvasSize.x; x++)
       {
-        for (int y = 0; y < appState.canvasSize.y; y++)
+        for (int y = 0; y < canvasState.canvasSize.y; y++)
         {
           final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
           final ColorReference? refAtPos = layer.getDataEntry(coord: curCoord);
@@ -403,9 +403,9 @@ class FillPainter extends IToolPainter
     final int? startValue = layer.getRawValueAt(coord: start);
     final HashMap<CoordinateSetI, int> addPixels = HashMap<CoordinateSetI, int>();
     final Set<CoordinateSetI> removePixels = <CoordinateSetI>{};
-    for (int x = 0; x < appState.canvasSize.x; x++)
+    for (int x = 0; x < canvasState.canvasSize.x; x++)
     {
-      for (int y = 0; y < appState.canvasSize.y; y++)
+      for (int y = 0; y < canvasState.canvasSize.y; y++)
       {
         final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
         final int? shadeAtPos = layer.getRawValueAt(coord: curCoord);

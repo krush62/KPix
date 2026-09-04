@@ -27,6 +27,7 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -774,11 +775,12 @@ class LayerCollection with ChangeNotifier {
     if (!anyLayerStillPending)
     {
       final AppState appState = GetIt.I.get<AppState>();
+      final CanvasState canvasState = GetIt.I.get<CanvasState>();
       final Frame? frame = appState.timeline.findFrameForCollection(collection: this,);
       final int generation = ++_rasterImageGeneration;
       getImageFromLayers(
           layerCollection: this,
-          canvasSize: appState.canvasSize,
+          canvasSize: canvasState.canvasSize,
           selection: appState.selectionState.selection,
           frame: frame,
       ).then((final ui.Image img) {

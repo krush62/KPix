@@ -53,6 +53,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_manager_data.dart';
@@ -349,6 +350,7 @@ Future<void> saveFilePressed({required final String fileName, final Function()? 
 Future<void> _projectFileSaved({required final String fileName, required final String path, required final Function()? finishCallback,}) async
 {
   final AppState appState = GetIt.I.get<AppState>();
+  final CanvasState canvasState = GetIt.I.get<CanvasState>();
   if (!kIsWeb)
   {
     final String? pngPath = await replaceFileExtension(filePath: path, newExtension: thumbnailExtension,inputFileMustExist: true,);
@@ -357,7 +359,7 @@ Future<void> _projectFileSaved({required final String fileName, required final S
       try
       {
         final Frame frame = appState.timeline.selectedFrame!;
-        final ui.Image img = await getImageFromLayers(canvasSize: appState.canvasSize, layerCollection: frame.layerList, selection: appState.selectionState.selection,frame: frame,);
+        final ui.Image img = await getImageFromLayers(canvasSize: canvasState.canvasSize, layerCollection: frame.layerList, selection: appState.selectionState.selection,frame: frame,);
         try
         {
           final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
@@ -583,7 +585,8 @@ Future<String?> getDirectory({required final String startDir}) async
 Future<Uint8List?> _createImageData({required final ImageExportData exportData, required final ImageExportType exportType,}) async
 {
   final AppState appState = GetIt.I.get<AppState>();
-  final CoordinateSetI canvasSize = appState.canvasSize;
+  final CanvasState canvasState = GetIt.I.get<CanvasState>();
+  final CoordinateSetI canvasSize = canvasState.canvasSize;
   final LayerCollection layerList = appState.timeline.selectedFrame!.layerList;
   final SelectionList selection = appState.selectionState.selection;
   final List<KPalRampData> colorRamps = GetIt.I.get<PaletteState>().colorRamps;

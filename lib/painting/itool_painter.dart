@@ -31,6 +31,7 @@ import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -207,6 +208,7 @@ abstract class IToolPainter
 {
   final AppState appState = GetIt.I.get<AppState>();
   final PaletteState paletteState = GetIt.I.get<PaletteState>();
+  final CanvasState canvasState = GetIt.I.get<CanvasState>();
   final ShaderOptions shaderOptions = GetIt.I.get<ShaderOptions>();
   final GuiPreferenceContent guiPrefs = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
   final KPixPainterOptions painterOptions;

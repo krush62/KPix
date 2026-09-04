@@ -29,6 +29,7 @@ import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/tool_state.dart';
@@ -79,6 +80,7 @@ class KPixPainterOptions
 class KPixPainter extends CustomPainter
 {
   final AppState _appState;
+  final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ViewState _viewState = GetIt.I.get<ViewState>();
   final ValueNotifier<Offset> _offset;
   final ValueNotifier<CoordinateSetD?> _coords;
@@ -207,9 +209,9 @@ class KPixPainter extends CustomPainter
         latestSize = size;
       }
 
-      if (_appState.canvasSize != _latestCanvasSize || rasterSizes[_guiOptions.rasterSizeIndex.value] != _latestRasterSize || _guiOptions.rasterContrast.value != _latestContrast)
+      if (_canvasState.canvasSize != _latestCanvasSize || rasterSizes[_guiOptions.rasterSizeIndex.value] != _latestRasterSize || _guiOptions.rasterContrast.value != _latestContrast)
       {
-        _latestCanvasSize = _appState.canvasSize;
+        _latestCanvasSize = _canvasState.canvasSize;
         _latestRasterSize = rasterSizes[_guiOptions.rasterSizeIndex.value];
         _latestContrast = _guiOptions.rasterContrast.value;
         _createCheckerboardWithVertices();
@@ -225,7 +227,7 @@ class KPixPainter extends CustomPainter
         canvas: canvas,
         paint: noFilterPainter,
         pixelSize: _viewState.zoomFactor,
-        canvasSize: _appState.canvasSize,
+        canvasSize: _canvasState.canvasSize,
         drawingSize: size,
         cursorPos: _coords.value,
         cursorPosNorm: _coords.value != null ? CoordinateSetI(x: IToolPainter.getClosestPixel(value: _coords.value!.x - _offset.value.dx,pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio), y: IToolPainter.getClosestPixel(value: _coords.value!.y - _offset.value.dy,pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio)) : null,
@@ -723,7 +725,7 @@ class KPixPainter extends CustomPainter
   {
     if (_shouldCapture())
     {
-      getImageFromLayers(canvasSize: _appState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection, frame: _appState.timeline.selectedFrame).then((final ui.Image img) {
+      getImageFromLayers(canvasSize: _canvasState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection, frame: _appState.timeline.selectedFrame).then((final ui.Image img) {
         if (_isDisposed)
         {
           img.dispose();

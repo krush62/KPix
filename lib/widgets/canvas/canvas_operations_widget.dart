@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_size_constraints.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -61,6 +62,7 @@ class CanvasOperationsWidget extends StatefulWidget
 class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 {
   final AppState _appState = GetIt.I.get<AppState>();
+  final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   late KPixOverlay _canvasSizeOverlay;
 
   @override
@@ -77,7 +79,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 
   void _crop()
   {
-    _appState.cropToSelection();
+    _canvasState.cropToSelection();
   }
 
   void _setSize()
@@ -87,7 +89,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 
   void _sizeChangeAccepted({required final CoordinateSetI size, required final CoordinateSetI offset})
   {
-    _appState.changeCanvasSize(newSize: size, offset: offset);
+    _canvasState.changeCanvasSize(newSize: size, offset: offset);
     _hideOverlays();
   }
 
@@ -109,7 +111,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                   message: transformationDescriptions[CanvasTransformation.rotate],
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                    onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.rotate);},
+                    onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.rotate);},
                     icon: const Icon(
                       TablerIcons.rotate_clockwise_2,
                       size: _CanvasOperationsWidgetOptions.iconHeight,
@@ -123,7 +125,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                   message: transformationDescriptions[CanvasTransformation.flipH],
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                    onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipH);},
+                    onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.flipH);},
                     icon: const Icon(
                       TablerIcons.flip_vertical,
                       size: _CanvasOperationsWidgetOptions.iconHeight,
@@ -136,7 +138,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                 child: Tooltip(
                   message: transformationDescriptions[CanvasTransformation.flipV],
                   child: IconButton.outlined(
-                    onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipV);},
+                    onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.flipV);},
                     icon: const Icon(
                       TablerIcons.flip_horizontal,
                       size: _CanvasOperationsWidgetOptions.iconHeight,
@@ -153,7 +155,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 
                     if (!_appState.selectionState.selection.isEmpty)
                     {
-                      final (CoordinateSetI?, CoordinateSetI?) selectionSize = _appState.selectionState.selection.getBoundingBox(canvasSize: _appState.canvasSize);
+                      final (CoordinateSetI?, CoordinateSetI?) selectionSize = _appState.selectionState.selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
                       final CoordinateSetI? topLeft = selectionSize.$1;
                       final CoordinateSetI? bottomRight = selectionSize.$2;
                       if (topLeft != null && bottomRight != null && (bottomRight.x - topLeft.x + 1) >= CanvasSizeConstraints.sizeMin && (bottomRight.y - topLeft.y + 1) >= CanvasSizeConstraints.sizeMin)

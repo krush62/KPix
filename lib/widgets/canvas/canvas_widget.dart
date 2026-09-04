@@ -47,6 +47,7 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
@@ -106,6 +107,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   final ShaderOptions _shaderOptions = GetIt.I.get<ShaderOptions>();
   final GuiPreferenceContent _guiPrefs = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
   final AppState _appState = GetIt.I.get<AppState>();
+  final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ViewState _viewState = GetIt.I.get<ViewState>();
   final ToolState _toolState = GetIt.I.get<ToolState>();
   final PaletteState _paletteState = GetIt.I.get<PaletteState>();
@@ -398,7 +400,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     int bestZoomLevel = ViewState.zoomLevelMin;
     for (int i = ViewState.zoomLevelMin; i <= ViewState.zoomLevelMax; i++)
     {
-      if (_appState.canvasSize.x * i / _viewState.devicePixelRatio < _viewportSize.width && _appState.canvasSize.y * i / _viewState.devicePixelRatio < _viewportSize.height)
+      if (_canvasState.canvasSize.x * i / _viewState.devicePixelRatio < _viewportSize.width && _canvasState.canvasSize.y * i / _viewState.devicePixelRatio < _viewportSize.height)
       {
         bestZoomLevel = i;
       }
@@ -408,7 +410,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       }
     }
     _viewState.setZoomLevel(val: bestZoomLevel);
-    _setOffset(newOffset: Offset((_viewportSize.width - (_appState.canvasSize.x * _viewState.zoomFactor / _viewState.devicePixelRatio)) / 2, (_viewportSize.height - (_appState.canvasSize.y * _viewState.zoomFactor / _viewState.devicePixelRatio)) / 2));
+    _setOffset(newOffset: Offset((_viewportSize.width - (_canvasState.canvasSize.x * _viewState.zoomFactor / _viewState.devicePixelRatio)) / 2, (_viewportSize.height - (_canvasState.canvasSize.y * _viewState.zoomFactor / _viewState.devicePixelRatio)) / 2));
     _optimalZoomApplied = true;
     _viewState.repaintNotifier.repaint();
   }
@@ -1033,7 +1035,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   void _setOffset({required final Offset newOffset})
   {
     final CoordinateSetD coords = CoordinateSetD(x: newOffset.dx, y: newOffset.dy);
-    final CoordinateSetD scaledCanvas = CoordinateSetD(x: _appState.canvasSize.x.toDouble() * _viewState.zoomFactor / _viewState.devicePixelRatio, y: _appState.canvasSize.y.toDouble() * _viewState.zoomFactor / _viewState.devicePixelRatio);
+    final CoordinateSetD scaledCanvas = CoordinateSetD(x: _canvasState.canvasSize.x.toDouble() * _viewState.zoomFactor / _viewState.devicePixelRatio, y: _canvasState.canvasSize.y.toDouble() * _viewState.zoomFactor / _viewState.devicePixelRatio);
     final CoordinateSetD minVisibility = CoordinateSetD(x: _viewportSize.width * _CanvasOptions.minVisibilityFactor, y: _viewportSize.height * _CanvasOptions.minVisibilityFactor);
 
     coords.x = coords.x.clamp(-scaledCanvas.x + minVisibility.x, _viewportSize.width - minVisibility.x);

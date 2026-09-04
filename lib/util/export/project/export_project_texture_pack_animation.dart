@@ -30,10 +30,11 @@ Future<Uint8List?> exportTexturePackAnimation({required final AnimationExportDat
   {
     //Frame Name with two padding zeros
     final String frameName = "frame_${frameCounter.toString().padLeft(2, '0')}";
-    final CoordinateColorMapNullable colorMap = await getMergedColors(frame: appState.timeline.frames.value[frameIndex], canvasSize: appState.canvasSize);
+    final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
+    final CoordinateColorMapNullable colorMap = await getMergedColors(frame: appState.timeline.frames.value[frameIndex], canvasSize: canvasSize);
 
-    files["$frameName/color.bin"] = await createColorTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: ramps);
-    files["$frameName/distance.bin"] = await createDistanceTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: ramps);
+    files["$frameName/color.bin"] = await createColorTexture(colorMap: colorMap, canvasSize: canvasSize, ramps: ramps);
+    files["$frameName/distance.bin"] = await createDistanceTexture(colorMap: colorMap, canvasSize: canvasSize, ramps: ramps);
     frameCounter++;
   }
 

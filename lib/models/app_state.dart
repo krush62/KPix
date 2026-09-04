@@ -19,7 +19,6 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
@@ -37,11 +36,11 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/history/ramp_resolver.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
-import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -53,7 +52,6 @@ import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:logger/logger.dart';
 
@@ -90,11 +88,6 @@ class AppState
 
 
 
-  final CoordinateSetI _canvasSize = CoordinateSetI(x: 1, y: 1);
-  CoordinateSetI get canvasSize
-  {
-    return CoordinateSetI.from(other: _canvasSize);
-  }
   late SelectionState selectionState = SelectionState(repaintNotifier: GetIt.I.get<ViewState>().repaintNotifier);
 
   final ValueNotifier<String?> projectName = ValueNotifier<String?>(null);
@@ -118,7 +111,7 @@ class AppState
   void init({required final CoordinateSetI dimensions})
   {
     GetIt.I.get<Logger>().i("Creating new image: ${dimensions.x} x ${dimensions.y}.");
-    _setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
+    GetIt.I.get<CanvasState>().setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
     symmetryState.reset();
     selectionState.deselect(addToHistoryStack: false, notify: false);
     //_layerCollection.clear();
@@ -138,22 +131,6 @@ class AppState
   {
     return "KPix ${projectName.value ?? ""}${hasChanges.value ? "*" : ""}";
   }
-
-  void _setCanvasDimensions({required final int width, required final int height, final bool addToHistoryStack = true})
-  {
-    _canvasSize.x = width;
-    _canvasSize.y = height;
-    GetIt.I.get<StatusBarState>().setStatusBarDimensions(width: width, height: height);
-    symmetryState.newCanvasDimensions(newSize: _canvasSize);
-    if (addToHistoryStack)
-    {
-      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.canvasSizeChange);
-    }
-  }
-
-
-
-
 
   void newFrameAdded({final bool addToHistoryStack = true})
   {
@@ -239,7 +216,7 @@ class AppState
       GetIt.I.get<HistoryManager>().clear();
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: setHasChanges);
       GetIt.I.get<HistoryManager>().markSaved();
-      _setCanvasDimensions(width: loadFileSet.historyState!.canvasSize.x , height: loadFileSet.historyState!.canvasSize.y, addToHistoryStack: false);
+      GetIt.I.get<CanvasState>().setCanvasDimensions(width: loadFileSet.historyState!.canvasSize.x , height: loadFileSet.historyState!.canvasSize.y, addToHistoryStack: false);
       symmetryState.reset();
       GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
       if (loadFileSet.status.isNotEmpty)
@@ -391,9 +368,9 @@ class AppState
           selectionState.createSelectionLines();
           selectionState.notifyRepaint();
 
-          if (canvSize.x != _canvasSize.x || canvSize.y != _canvasSize.y)
+          if (canvSize.x != GetIt.I.get<CanvasState>().canvasSize.x || canvSize.y != GetIt.I.get<CanvasState>().canvasSize.y)
           {
-            _setCanvasDimensions(width: canvSize.x, height: canvSize.y, addToHistoryStack: false);
+            GetIt.I.get<CanvasState>().setCanvasDimensions(width: canvSize.x, height: canvSize.y, addToHistoryStack: false);
           }
 
           //the timeout is a backstop only: a layer that never settles would
@@ -444,89 +421,13 @@ class AppState
 
 
 
-  void canvasTransform({required final CanvasTransformation transformation})
-  {
-    selectionState.deselect(addToHistoryStack: false, notify: false);
-    for (final Frame f in timeline.frames.value)
-    {
-      f.layerList.transformLayers(transformation: transformation, oldSize: canvasSize);
-    }
-    if (transformation == CanvasTransformation.rotate)
-    {
-      _setCanvasDimensions(width: _canvasSize.y, height: _canvasSize.x);
-      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.canvasRotate);
-    }
-    else if (transformation == CanvasTransformation.flipH)
-    {
-      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.canvasFlipH);
-    }
-    else if (transformation == CanvasTransformation.flipV)
-    {
-      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.canvasFlipV);
-    }
-
-  }
-
-  void cropToSelection()
-  {
-    CoordinateSetI? topLeft;
-    CoordinateSetI? bottomRight;
-    (topLeft, bottomRight) = selectionState.selection.getBoundingBox(canvasSize: _canvasSize);
-    if (topLeft != null && bottomRight != null)
-    {
-      final CoordinateSetI newSize = CoordinateSetI(x: bottomRight.x - topLeft.x + 1, y: bottomRight.y - topLeft.y + 1);
-      changeCanvasSize(newSize: newSize, offset: CoordinateSetI(x: -topLeft.x, y: -topLeft.y));
-    }
-    else
-    {
-      //This should never happen
-      showMessage(text: "Could not crop!");
-    }
-  }
-
-  void changeCanvasSize({required final CoordinateSetI newSize, required final CoordinateSetI offset})
-  {
-    selectionState.deselect(addToHistoryStack: false, notify: false);
-    final LinkedHashSet<RasterableLayerState> layerSet = LinkedHashSet<RasterableLayerState>();
-    for (final Frame f in timeline.frames.value)
-    {
-      final LayerCollection layers = f.layerList;
-      for (int i = 0; i < layers.length; i++)
-      {
-        final LayerState l = layers.getLayer(index: i);
-        if (l is RasterableLayerState)
-        {
-          layerSet.add(l);
-        }
-      }
-    }
-    for (final RasterableLayerState l in layerSet)
-    {
-      l.resizeLayer(newSize: newSize, offset: offset);
-    }
-    _setCanvasDimensions(width: newSize.x, height: newSize.y);
-    for (final Frame frame in timeline.frames.value)
-    {
-      final LayerCollection layers = frame.layerList;
-      for (int i = 0; i < layers.length; i++)
-      {
-        final LayerState layer = layers.getLayer(index: i);
-        if (layer is GridLayerState)
-        {
-          layer.manualRender();
-        }
-      }
-    }
-    GetIt.I.get<LayerManager>().rasterLayersAll();
-  }
-
   void importFile({required final ImportResult importResult})
   {
     if (importResult.data != null)
     {
       final DrawingLayerState drawingLayer = importResult.data!.drawingLayer;
       final ReferenceLayerState? referenceLayer = importResult.data!.referenceLayer;
-      _setCanvasDimensions(width: importResult.data!.canvasSize.x, height: importResult.data!.canvasSize.y, addToHistoryStack: false);
+      GetIt.I.get<CanvasState>().setCanvasDimensions(width: importResult.data!.canvasSize.x, height: importResult.data!.canvasSize.y, addToHistoryStack: false);
       final PaletteState paletteState = GetIt.I.get<PaletteState>();
       paletteState.colorRamps = importResult.data!.rampDataList;
       paletteState.selectedColor = paletteState.colorRamps[0].references[0];

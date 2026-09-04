@@ -24,6 +24,7 @@ import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -129,7 +130,7 @@ class Timeline
     final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
     final List<Frame> frameList = <Frame>[];
     final Frame f = Frame.empty(fps: constraints.defaultFps);
-    f.layerList.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: GetIt.I.get<PaletteState>().colorRamps);
+    f.layerList.addNewDrawingLayer(canvasSize: GetIt.I.get<CanvasState>().canvasSize, ramps: GetIt.I.get<PaletteState>().colorRamps);
     f.fps.value = constraints.defaultFps;
     frameList.add(f);
     frames.value = frameList;
@@ -340,7 +341,6 @@ class Timeline
 
   void _addNewFrame({required final _FrameCreationPosition position, required final _FrameCreationMethod method})
   {
-    final AppState appState = GetIt.I.get<AppState>();
     if (frames.value.length >= maxFrames)
     {
       showMessage(text: "Cannot add more frames.");
@@ -401,7 +401,7 @@ class Timeline
       }
       else
       {
-        f.layerList.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: GetIt.I.get<PaletteState>().colorRamps);
+        f.layerList.addNewDrawingLayer(canvasSize: GetIt.I.get<CanvasState>().canvasSize, ramps: GetIt.I.get<PaletteState>().colorRamps);
         f.fps.value = constraints.defaultFps;
       }
       final List<Frame> newFrames = <Frame>[];

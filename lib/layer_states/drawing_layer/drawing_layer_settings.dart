@@ -24,6 +24,7 @@ import 'package:kpix/layer_states/layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -316,10 +317,11 @@ class DrawingLayerSettings extends LayerSettings {
   CoordinateColorMap getSettingsPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final List<LayerState> layerList, required final bool frameIsSelected})
   {
     final AppState appState = GetIt.I.get<AppState>();
+    final CanvasState canvasState = GetIt.I.get<CanvasState>();
     final SelectionList? selectionList = layerState.selectedInCurrentFrameNotifier.value && frameIsSelected ? appState.selectionState.selection : null;
-    final CoordinateColorMap shadowPixels = getDropShadowPixels(layerState: layerState, layers: layerList, data: data, canvasSize: appState.canvasSize);
-    final CoordinateColorMap outerPixels = getOuterStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: appState.canvasSize);
-    final CoordinateColorMap innerPixels = getInnerStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: appState.canvasSize, selectionList: selectionList);
+    final CoordinateColorMap shadowPixels = getDropShadowPixels(layerState: layerState, layers: layerList, data: data, canvasSize: canvasState.canvasSize);
+    final CoordinateColorMap outerPixels = getOuterStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: canvasState.canvasSize);
+    final CoordinateColorMap innerPixels = getInnerStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: canvasState.canvasSize, selectionList: selectionList);
 
     shadowPixels.addAll(outerPixels);
     shadowPixels.addAll(innerPixels);
@@ -327,13 +329,13 @@ class DrawingLayerSettings extends LayerSettings {
   }
 
   HashMap<CoordinateSetI, int> getOuterShadingPixels({required final CoordinateColorMap data}) {
-    final AppState appState = GetIt.I.get<AppState>();
+    final CanvasState canvasState = GetIt.I.get<CanvasState>();
     final HashMap<CoordinateSetI, int> dropShadowPixels = HashMap<CoordinateSetI, int>();
     final HashMap<CoordinateSetI, int> outerEffectPixels = HashMap<CoordinateSetI, int>();
 
     if (dropShadowStyle.value == DropShadowStyle.shade) {
       final Set<CoordinateSetI> dropShadowCoordinates = _getDropShadowCoordinates(
-          dataPositions: data.keys, offset: dropShadowOffset.value, canvasSize: appState.canvasSize,);
+          dataPositions: data.keys, offset: dropShadowOffset.value, canvasSize: canvasState.canvasSize,);
       for (final CoordinateSetI coord in dropShadowCoordinates) {
         dropShadowPixels[coord] = dropShadowDarkenBrighten.value;
       }
@@ -342,7 +344,7 @@ class DrawingLayerSettings extends LayerSettings {
     if (outerStrokeStyle.value == OuterStrokeStyle.shade) {
       final HashMap<CoordinateSetI, CoordinateSetI> outerStrokePixelsWithReference =
       _getOuterStrokePixelsWithReference(
-          selectionMap: outerSelectionMap.value, dataPositions: data.keys, canvasSize: appState.canvasSize,);
+          selectionMap: outerSelectionMap.value, dataPositions: data.keys, canvasSize: canvasState.canvasSize,);
       for (final MapEntry<CoordinateSetI, CoordinateSetI> pixelSet in outerStrokePixelsWithReference.entries) {
         outerEffectPixels[pixelSet.key] = outerDarkenBrighten.value;
       }
@@ -362,7 +364,7 @@ class DrawingLayerSettings extends LayerSettings {
         _getOuterStrokePixelsWithAmount(
             selectionMap: outerSelectionMap.value,
             dataPositions: currentLayerEdge,
-            canvasSize: appState.canvasSize,);
+            canvasSize: canvasState.canvasSize,);
 
         final Set<CoordinateSetI> nextLayerEdgeCandidates = <CoordinateSetI>{};
         int currentIterationHighestSelfGlowAmount = 0;

@@ -27,6 +27,7 @@ import 'package:kpix/managers/history/history_selection_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/history/history_timeline.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -172,7 +173,7 @@ class HistoryState
 
     final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex, allLayers: historyLayerSet);
 
-    final CoordinateSetI canvasSize = CoordinateSetI.from(other: appState.canvasSize);
+    final CoordinateSetI canvasSize = CoordinateSetI.from(other: GetIt.I.get<CanvasState>().canvasSize);
     final int selectionRevision = appState.selectionState.selection.revision;
     final HistorySelectionState selectionState;
     if (previousState != null &&

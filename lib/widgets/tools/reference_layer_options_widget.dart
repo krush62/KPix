@@ -24,6 +24,7 @@ import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -65,7 +66,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
           final ReferenceImage? oldImage = widget.referenceState.imageNotifier.value;
           widget.referenceState.imageNotifier.value = img;
           widget.referenceState.thumbnail.value = img.image;
-          final CoordinateSetI canvasSize = GetIt.I.get<AppState>().canvasSize;
+          final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
           final double targetZoomX = canvasSize.x.toDouble() / (widget.referenceState.image!.image.width.toDouble() * widget.referenceState.aspectRatioFactorX);
           final double targetZoomY = canvasSize.y.toDouble() / (widget.referenceState.image!.image.height.toDouble() * widget.referenceState.aspectRatioFactorY);
           if (targetZoomX < targetZoomY)
@@ -93,7 +94,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   {
     if (widget.referenceState.image != null)
     {
-      final CoordinateSetI canvasSize = GetIt.I.get<AppState>().canvasSize;
+      final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
       final double targetZoom = canvasSize.x.toDouble() / (widget.referenceState.image!.image.width.toDouble() * widget.referenceState.aspectRatioFactorX);
       widget.referenceState.setZoomSliderFromZoomFactor(factor: targetZoom);
       widget.referenceState.offsetXNotifier.value = 0;
@@ -105,7 +106,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   {
     if (widget.referenceState.image != null)
     {
-      final CoordinateSetI canvasSize = GetIt.I.get<AppState>().canvasSize;
+      final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
       final double targetZoom = canvasSize.y.toDouble() / (widget.referenceState.image!.image.height.toDouble() * widget.referenceState.aspectRatioFactorY);
       widget.referenceState.setZoomSliderFromZoomFactor(factor: targetZoom);
       widget.referenceState.offsetYNotifier.value = 0;
@@ -117,7 +118,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   {
     if (widget.referenceState.image != null)
     {
-      final CoordinateSetI canvasSize = GetIt.I.get<AppState>().canvasSize;
+      final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
       widget.referenceState.offsetXNotifier.value = 0;
       widget.referenceState.offsetYNotifier.value = 0;
       final double targetAspectRatioX = canvasSize.x.toDouble() / canvasSize.y.toDouble();

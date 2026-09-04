@@ -20,6 +20,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -192,6 +193,7 @@ class _ExportWidgetState extends State<ExportWidget>
   final ValueNotifier<int> _scalingIndex = ValueNotifier<int>(0);
   final ValueNotifier<String> _fileName = ValueNotifier<String>("");
   final AppState _appState = GetIt.I.get<AppState>();
+  final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier<FileNameStatus>(FileNameStatus.available);
   final ValueNotifier<ExportSectionType> _selectedSection = ValueNotifier<ExportSectionType>(ExportSectionType.image);
 
@@ -498,7 +500,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                       builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
                                         final bool isScalable = (section == ExportSectionType.image && ImageExportData.exportTypeMap[imageType]!.scalable) || (section == ExportSectionType.animation && AnimationExportData.exportTypeMap[animationType]!.scalable);
                                         return Text(isScalable ?
-                                        "${_appState.canvasSize.x *  exportScalingValues[scalingIndexVal]} x ${_appState.canvasSize.y *  exportScalingValues[scalingIndexVal]}" : "${_appState.canvasSize.x} x ${_appState.canvasSize.y}",
+                                        "${_canvasState.canvasSize.x *  exportScalingValues[scalingIndexVal]} x ${_canvasState.canvasSize.y *  exportScalingValues[scalingIndexVal]}" : "${_canvasState.canvasSize.x} x ${_canvasState.canvasSize.y}",
                                           textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium,
                                         );
                                       },

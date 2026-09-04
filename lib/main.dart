@@ -33,6 +33,7 @@ import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
@@ -324,6 +325,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       GetIt.I.registerSingleton<ViewState>(ViewState(devicePixelRatio: devicePixelRatio));
       logger.i("Creating Palette State");
       GetIt.I.registerSingleton<PaletteState>(PaletteState());
+      GetIt.I.registerSingleton<CanvasState>(CanvasState());
       logger.i("Creating App State");
       final AppState appState = AppState();
 

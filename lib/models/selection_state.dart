@@ -26,6 +26,7 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
@@ -61,6 +62,7 @@ class SelectionLine
 class SelectionState with ChangeNotifier
 {
   final AppState _appState = GetIt.I.get<AppState>();
+  final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
   final SelectionList selection = SelectionList();
   CoordinateColorMapNullable? clipboard;
@@ -108,7 +110,7 @@ class SelectionState with ChangeNotifier
       deselect(notify: false, addToHistoryStack: false);
     }
 
-    final Set<CoordinateSetI> canvasPoints = points.where((final CoordinateSetI p) => p.x >= 0 && p.y >= 0 && p.x < _appState.canvasSize.x && p.y < _appState.canvasSize.y).toSet();
+    final Set<CoordinateSetI> canvasPoints = points.where((final CoordinateSetI p) => p.x >= 0 && p.y >= 0 && p.x < _canvasState.canvasSize.x && p.y < _canvasState.canvasSize.y).toSet();
     _addPixelsWithMode(coords: canvasPoints, mode: selectionOptions.mode.value);
     createSelectionLines();
 
@@ -140,7 +142,7 @@ class SelectionState with ChangeNotifier
         {
           for (int y = start.y; y <= end.y; y++)
           {
-            if (x >= 0 && x < _appState.canvasSize.x && y >= 0 && y < _appState.canvasSize.y)
+            if (x >= 0 && x < _canvasState.canvasSize.x && y >= 0 && y < _canvasState.canvasSize.y)
             {
               coords.add(CoordinateSetI(x: x, y: y));
             }
@@ -160,7 +162,7 @@ class SelectionState with ChangeNotifier
         {
           for (int y = start.y; y <= end.y; y++)
           {
-            if (x >= 0 && x < _appState.canvasSize.x && y >= 0 && y < _appState.canvasSize.y)
+            if (x >= 0 && x < _canvasState.canvasSize.x && y >= 0 && y < _canvasState.canvasSize.y)
             {
               final double dx = (x + 0.5) - centerX;
               final double dy = (y + 0.5) - centerY;
@@ -232,8 +234,8 @@ class SelectionState with ChangeNotifier
     required final CoordinateSetI start,
     required final bool selectFromWholeRamp,})
   {
-    final int numRows = _appState.canvasSize.y;
-    final int numCols = _appState.canvasSize.x;
+    final int numRows = _canvasState.canvasSize.y;
+    final int numCols = _canvasState.canvasSize.x;
     final ColorReference? targetValue = (_appState.timeline.getCurrentLayer() == layer && selection.contains(coord: start)) ? selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
     final Set<CoordinateSetI> result = <CoordinateSetI>{};
     final Set<CoordinateSetI> visited = <CoordinateSetI>{};
@@ -281,9 +283,9 @@ class SelectionState with ChangeNotifier
   {
     final Set<CoordinateSetI> result = <CoordinateSetI>{};
     final ColorReference? targetValue = (_appState.timeline.getCurrentLayer() == layer && selection.contains(coord: start)) ? selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
-    for (int x = 0; x < _appState.canvasSize.x; x++)
+    for (int x = 0; x < _canvasState.canvasSize.x; x++)
     {
-      for (int y = 0; y < _appState.canvasSize.y; y++)
+      for (int y = 0; y < _canvasState.canvasSize.y; y++)
       {
         final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
         final ColorReference? refAtPos = (_appState.timeline.getCurrentLayer() == layer && selection.contains(coord: curCoord)) ? selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
@@ -462,9 +464,9 @@ class SelectionState with ChangeNotifier
   {
     final Set<CoordinateSetI> addSet = <CoordinateSetI>{};
     final Set<CoordinateSetI> removeSet = <CoordinateSetI>{};
-    for (int x = 0; x < _appState.canvasSize.x; x++)
+    for (int x = 0; x < _canvasState.canvasSize.x; x++)
     {
-      for (int y = 0; y < _appState.canvasSize.y; y++)
+      for (int y = 0; y < _canvasState.canvasSize.y; y++)
       {
         final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
         if (selection.contains(coord: coord))
@@ -514,9 +516,9 @@ class SelectionState with ChangeNotifier
   void selectAll({final bool notify = true, final bool addToHistoryStack = true})
   {
     final Set<CoordinateSetI> addSet = <CoordinateSetI>{};
-    for (int x = 0; x < _appState.canvasSize.x; x++)
+    for (int x = 0; x < _canvasState.canvasSize.x; x++)
     {
-      for (int y = 0; y < _appState.canvasSize.y; y++)
+      for (int y = 0; y < _canvasState.canvasSize.y; y++)
       {
         final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
         if (!selection.contains(coord: coord))
@@ -841,11 +843,11 @@ class SelectionState with ChangeNotifier
 
   void centerSelectionH()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final int width = bottomRight.x - topLeft.x;
-      final int newX = (_appState.canvasSize.x / 2 - width / 2).floor();
+      final int newX = (_canvasState.canvasSize.x / 2 - width / 2).floor();
       if (newX != topLeft.x)
       {
         final CoordinateSetI offset = CoordinateSetI(x: newX - topLeft.x, y: 0);
@@ -856,11 +858,11 @@ class SelectionState with ChangeNotifier
 
   void centerSelectionV()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final int height = bottomRight.y - topLeft.y;
-      final int newY = (_appState.canvasSize.y / 2 - height / 2).floor();
+      final int newY = (_canvasState.canvasSize.y / 2 - height / 2).floor();
       if (newY != topLeft.y)
       {
         final CoordinateSetI offset = CoordinateSetI(x: 0, y: newY - topLeft.y);
@@ -871,7 +873,7 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionLeft()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && topLeft.x != 0)
     {
       final CoordinateSetI offset = CoordinateSetI(x: -topLeft.x, y: 0);
@@ -881,11 +883,11 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionRight()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final int width = bottomRight.x - topLeft.x;
-      final int newX = _appState.canvasSize.x - width - 1;
+      final int newX = _canvasState.canvasSize.x - width - 1;
       if (newX != topLeft.x)
       {
         final CoordinateSetI offset = CoordinateSetI(x: newX - topLeft.x, y: 0);
@@ -896,7 +898,7 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionTop()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && topLeft.y != 0)
     {
       final CoordinateSetI offset = CoordinateSetI(x: 0, y: -topLeft.y);
@@ -906,11 +908,11 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionBottom()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final int height = bottomRight.x - topLeft.x;
-      final int newY = _appState.canvasSize.y - height - 1;
+      final int newY = _canvasState.canvasSize.y - height - 1;
       if (newY != topLeft.y)
       {
         final CoordinateSetI offset = CoordinateSetI(x: 0, y: newY - topLeft.y);
@@ -925,6 +927,7 @@ class SelectionList
 {
   CoordinateColorMapNullable _content = HashMap<CoordinateSetI, ColorReference?>();
   final AppState _appState = GetIt.I.get<AppState>();
+  final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ValueNotifier<bool> isEmptyNotifer = ValueNotifier<bool>(true);
   int _revision = 0;
   int _maskRevision = 0;
@@ -1074,7 +1077,7 @@ class SelectionList
     final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
     for (final CoordinateSetI coord in coords)
     {
-      if (coord.x >= 0 && coord.y >= 0 && coord.x < _appState.canvasSize.x && coord.y < _appState.canvasSize.y)
+      if (coord.x >= 0 && coord.y >= 0 && coord.x < _canvasState.canvasSize.x && coord.y < _canvasState.canvasSize.y)
       {
         if (_content[coord] != null)
         {
@@ -1097,7 +1100,7 @@ class SelectionList
     final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
     for (final CoordinateColorNullable entry in _content.entries)
     {
-      if (entry.value != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < _appState.canvasSize.x && entry.key.y < _appState.canvasSize.y)
+      if (entry.value != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < _canvasState.canvasSize.x && entry.key.y < _canvasState.canvasSize.y)
       {
         refs[entry.key] = entry.value;
       }
@@ -1166,7 +1169,7 @@ class SelectionList
 
   void rotate90cw()
   {
-    final CoordinateSetI minCoords = _appState.canvasSize;
+    final CoordinateSetI minCoords = _canvasState.canvasSize;
     final CoordinateSetI maxCoords = CoordinateSetI.zero();
     for (final CoordinateSetI coord in _content.keys)
     {
@@ -1235,7 +1238,7 @@ class SelectionList
         for (final CoordinateSetI coord in selectedPixels.keys)
         {
           final CoordinateSetI newCoord = CoordinateSetI(x: coord.x + (offset.x - _lastOffset.x), y: coord.y + (offset.y - _lastOffset.y));
-          if (newCoord.x >= 0 && newCoord.y >= 0 && newCoord.x < _appState.canvasSize.x && newCoord.y < _appState.canvasSize.y)
+          if (newCoord.x >= 0 && newCoord.y >= 0 && newCoord.x < _canvasState.canvasSize.x && newCoord.y < _canvasState.canvasSize.y)
           {
             coordinateList.add(newCoord);
           }

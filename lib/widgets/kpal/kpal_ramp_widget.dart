@@ -53,6 +53,7 @@ class _KPalRampState extends State<KPalRamp>
 {
   final ValueNotifier<List<KPalColorCardWidget>> _colorCards = ValueNotifier<List<KPalColorCardWidget>>(<KPalColorCardWidget>[]);
   final AppState _appState = GetIt.I.get<AppState>();
+  final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ValueNotifier<ui.Image?> _previewImage = ValueNotifier<ui.Image?>(null);
   bool _hasRenderChanges = false;
   bool _hasShiftChanges = false;
@@ -180,7 +181,7 @@ class _KPalRampState extends State<KPalRamp>
     final bool hasRasterizingLayers = _drawingLayers.where((final RasterableLayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.isRasterizing)).isNotEmpty;
     if (_hasRenderChanges && !hasRasterizingLayers)
     {
-      getImageFromLayers(canvasSize: _appState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection, layerStack: _drawingLayers).then((final ui.Image img) {
+      getImageFromLayers(canvasSize: _canvasState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection, layerStack: _drawingLayers).then((final ui.Image img) {
         if (_isDisposed)
         {
           img.dispose();

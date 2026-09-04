@@ -32,6 +32,7 @@ import 'package:kpix/managers/history/history_dither_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -227,6 +228,7 @@ class DitherLayerState extends ShadingLayerState
   Future<DualRasterResult> createRasters() async
   {
     final AppState appState = GetIt.I.get<AppState>();
+    final CanvasState canvasState = GetIt.I.get<CanvasState>();
     final Map<Frame, RasterImagePair> rasterImages = <Frame, RasterImagePair>{};
 
     int? currentIndex;
@@ -242,7 +244,7 @@ class DitherLayerState extends ShadingLayerState
       }
       if (currentIndex != null)
       {
-        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: layerStack!, currentIndex: currentIndex, frame: null);
+        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, rasterLayers: layerStack!, currentIndex: currentIndex, frame: null);
         return DualRasterResult(rasterImages: rasterImages, externalStackImages: externalStackImages);
       }
       else
@@ -267,7 +269,7 @@ class DitherLayerState extends ShadingLayerState
         }
         if (frameLayerIndex != null)
         {
-          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: rasterLayers, currentIndex: frameLayerIndex, frame: frame);
+          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, rasterLayers: rasterLayers, currentIndex: frameLayerIndex, frame: frame);
           rasterImages[frame] = rasterImagePair;
         }
       }

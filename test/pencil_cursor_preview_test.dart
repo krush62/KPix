@@ -21,6 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
@@ -58,7 +59,7 @@ DrawingParameters _params({
     canvas: Canvas(recorder),
     paint: Paint(),
     pixelSize: 1,
-    canvasSize: appState.canvasSize,
+    canvasSize: GetIt.I.get<CanvasState>().canvasSize,
     drawingSize: const Size(4, 4),
     cursorPos: CoordinateSetD(x: cursor.x.toDouble(), y: cursor.y.toDouble()),
     cursorPosNorm: cursor,

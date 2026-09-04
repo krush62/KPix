@@ -113,7 +113,6 @@ class AppState
   {
     return _selectedColor;
   }
-  final Map<ToolType, bool> _toolMap = <ToolType, bool>{};
 
   final Timeline timeline = Timeline.empty();
 
@@ -167,7 +166,6 @@ class AppState
   }
 
   final RepaintNotifier repaintNotifier = RepaintNotifier();
-  final ToolOptions toolOptions = GetIt.I.get<ToolOptions>();
 
   final ValueNotifier<int> _zoomFactor = ValueNotifier<int>(1);
   int get zoomFactor
@@ -258,10 +256,6 @@ class AppState
 
   AppState({required final String exportDir, required final String internalDir, required final String projectsDir, required this.devicePixelRatio}) : _exportDir = ValueNotifier<String>(exportDir), _internalDir = ValueNotifier<String>(internalDir), _projectsDir = ValueNotifier<String>(projectsDir), _hasUpdate = ValueNotifier<bool>(false)
   {
-    for (final ToolType toolType in ToolType.values)
-    {
-      _toolMap[toolType] = false;
-    }
     setToolSelection(tool: ToolType.pencil, forceSetting: true);
     statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
     timeline.layerChangeNotifier.addListener((){
@@ -1341,20 +1335,12 @@ class AppState
     }
     if (tool != _selectedTool.value || forceSetting)
     {
-      for (final ToolType k in _toolMap.keys)
-      {
-        final bool shouldSelect = (k == tool);
-        if (_toolMap[k] != shouldSelect)
-        {
-          _toolMap[k] = shouldSelect;
-        }
-      }
       if (tool.isDrawTool())
       {
         _previousDrawTool = tool;
       }
       _selectedTool.value = tool;
-      _currentToolOptions = toolOptions.toolOptionMap[_selectedTool.value]!;
+      _currentToolOptions = GetIt.I.get<ToolOptions>().toolOptionMap[_selectedTool.value]!;
     }
   }
 

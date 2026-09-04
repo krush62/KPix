@@ -16,6 +16,31 @@
 
 import 'package:flutter/material.dart';
 
+/// Notifier for theme change.
+class ThemeNotifier extends ChangeNotifier
+{
+  ThemeMode _themeMode = ThemeMode.system;
+  ThemeMode get themeMode
+  {
+   return _themeMode;
+  }
+
+  set themeMode(final ThemeMode theme)
+  {
+    _themeMode = theme;
+    notifyListeners();
+  }
+
+  @override
+  void notifyListeners()
+  {
+    super.notifyListeners();
+  }
+}
+
+/// Currently used theme (system/light/dark).
+final ThemeNotifier themeSettings = ThemeNotifier();
+
 class ColorSet
 {
   final Color normal;

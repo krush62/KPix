@@ -67,30 +67,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 import 'package:version/version.dart';
 
-/// Notifier for theme change.
-class ThemeNotifier extends ChangeNotifier
-{
-  ThemeMode _themeMode = ThemeMode.system;
-  ThemeMode get themeMode
-  {
-   return _themeMode;
-  }
-
-  set themeMode(final ThemeMode theme)
-  {
-    _themeMode = theme;
-    notifyListeners();
-  }
-
-  @override
-  void notifyListeners()
-  {
-    super.notifyListeners();
-  }
-}
-
-/// Currently used theme (system/light/dark).
-final ThemeNotifier themeSettings = ThemeNotifier();
 /// Default size of the desktop application.
 const Size defaultDesktopSize = Size(1600, 900);
 /// Minimum screen resolution size a device needs to have.

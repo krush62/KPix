@@ -24,13 +24,14 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
+import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
+import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/tools/constraints/tool_pencil_constraints.dart';
 
 class SprayCanPainter extends IToolPainter
 {
@@ -77,7 +78,7 @@ class SprayCanPainter extends IToolPainter
               _drawingPixels.clear();
               if (rasterLayer is DrawingLayerState)
               {
-                _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+                _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions));
               }
               else if (rasterLayer is ShadingLayerState)
               {
@@ -107,7 +108,7 @@ class SprayCanPainter extends IToolPainter
             final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _allPaintPositions, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+              _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions));
               _dumpDrawing(currentLayer: rasterLayer);
               _waitingForDump = true;
             }
@@ -135,9 +136,9 @@ class SprayCanPainter extends IToolPainter
   {
     if (_drawingPixels.isNotEmpty)
     {
-      if (!appState.selectionState.selection.isEmpty)
+      if (!documentState.selectionState.selection.isEmpty)
       {
-        appState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
+        documentState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
       }
       else
       {

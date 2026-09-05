@@ -21,7 +21,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/managers/project_scanner.dart';
+import 'package:kpix/models/app_paths.dart';
+import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
@@ -108,7 +110,7 @@ class ProjectManager
       return;
     }
     _started = true;
-    GetIt.I.get<AppState>().projectsDirNotifier.addListener(_onProjectsDirChanged);
+    GetIt.I.get<AppPaths>().projectsDirNotifier.addListener(_onProjectsDirChanged);
     await reindex();
     _startWatch();
   }
@@ -178,7 +180,7 @@ class ProjectManager
     _pollTimer = null;
     if (_started)
     {
-      GetIt.I.get<AppState>().projectsDirNotifier.removeListener(_onProjectsDirChanged);
+      GetIt.I.get<AppPaths>().projectsDirNotifier.removeListener(_onProjectsDirChanged);
     }
     for (final ProjectManagerEntryData entry in _cache.values)
     {
@@ -199,7 +201,7 @@ class ProjectManager
   Future<void> _runFullScan() async
   {
     final int generation = _generation;
-    final String dir = GetIt.I.get<AppState>().projectsDir;
+    final String dir = GetIt.I.get<AppPaths>().projectsDir;
     //everything a queued single file update would have done is covered by a
     //full scan of the same directory
     _pendingPaths.clear();
@@ -456,7 +458,7 @@ class ProjectManager
     //never leave a previous subscription behind, a second directory change while
     //the first one is still re-indexing would otherwise leak it
     _stopWatch();
-    final String dir = GetIt.I.get<AppState>().projectsDir;
+    final String dir = GetIt.I.get<AppPaths>().projectsDir;
     _watchedDir = dir;
     _watchFailed = false;
     if (!FileSystemEntity.isWatchSupported)

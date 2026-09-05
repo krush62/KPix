@@ -18,8 +18,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/models/status_bar_state.dart';
 
 abstract final class _StatusBarWidgetOptions
 {
@@ -47,17 +47,17 @@ class StatusBarWidget extends StatefulWidget
     final Key? key,
   })
   {
-    final AppState appState = GetIt.I.get<AppState>();
     const double fIconSize = _StatusBarWidgetOptions.height - 2 * _StatusBarWidgetOptions.padding;
+    final StatusBarState statusBarState = GetIt.I.get<StatusBarState>();
     return StatusBarWidget._(
         key: key,
-        dimensionString: appState.statusBarState.statusBarDimensionString,
-        cursorPositionString: appState.statusBarState.statusBarCursorPositionString,
-        zoomFactorString: appState.statusBarState.statusBarZoomFactorString,
-        toolAngleString: appState.statusBarState.statusBarToolAngleString,
-        toolAspectRatioString: appState.statusBarState.statusBarToolAspectRatioString,
-        toolDiagonalString: appState.statusBarState.statusBarToolDiagonalString,
-        toolDimensionString: appState.statusBarState.statusBarToolDimensionString,
+        dimensionString: statusBarState.statusBarDimensionString,
+        cursorPositionString: statusBarState.statusBarCursorPositionString,
+        zoomFactorString: statusBarState.statusBarZoomFactorString,
+        toolAngleString: statusBarState.statusBarToolAngleString,
+        toolAspectRatioString: statusBarState.statusBarToolAspectRatioString,
+        toolDiagonalString: statusBarState.statusBarToolDiagonalString,
+        toolDimensionString: statusBarState.statusBarToolDimensionString,
         iconSize: fIconSize,);
   }
 

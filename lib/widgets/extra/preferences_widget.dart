@@ -17,15 +17,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
-import 'package:kpix/preferences/behavior_preferences.dart';
-import 'package:kpix/preferences/desktop_preferences.dart';
-import 'package:kpix/preferences/gui_preferences.dart';
-import 'package:kpix/preferences/stylus_preferences.dart';
-import 'package:kpix/preferences/touch_preferences.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:kpix/widgets/preferences/behavior_preferences.dart';
+import 'package:kpix/widgets/preferences/desktop_preferences.dart';
+import 'package:kpix/widgets/preferences/gui_preferences.dart';
+import 'package:kpix/widgets/preferences/stylus_preferences.dart';
+import 'package:kpix/widgets/preferences/touch_preferences.dart';
 
 /// Different sections of the preferences.
 enum PreferenceSectionType
@@ -77,7 +77,7 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
       value: section,
       label: Tooltip(
         message: preferenceMap[section]!.title,
-        waitDuration: AppState.toolTipDuration,
+        waitDuration: toolTipDuration,
         child: Icon(
           preferenceMap[section]!.icon,
         ),

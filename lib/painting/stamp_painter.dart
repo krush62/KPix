@@ -22,6 +22,9 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
+import 'package:kpix/managers/stamp_manager.dart';
+import 'package:kpix/models/stamp_manager_data.dart';
+import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
@@ -29,8 +32,6 @@ import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
-import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 
 class StampPainter extends IToolPainter
 {
@@ -91,7 +92,7 @@ class StampPainter extends IToolPainter
         _lastShadingEnabled != shaderOptions.isEnabled.value ||
         _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
         _lastShadingDirection != shaderOptions.shaderDirection.value ||
-        _lastColorSelection != appState.selectedColor;
+        _lastColorSelection != paletteState.selectedColor;
 
       final StampManagerEntryData? currentStamp = _manager.selectedStamp.value;
       if (shouldUpdate && currentStamp != null)
@@ -139,7 +140,7 @@ class StampPainter extends IToolPainter
         CoordinateColorMap cursorPixels = CoordinateColorMap();
         if (rasterLayer is DrawingLayerState)
         {
-          cursorPixels = getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, stampData: mirrorStamp, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
+          cursorPixels = getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, stampData: mirrorStamp, selection: documentState.selectionState, shaderOptions: shaderOptions, selectedColor: paletteState.selectedColor!);
         }
         else if (rasterLayer is ShadingLayerState)
         {
@@ -180,7 +181,7 @@ class StampPainter extends IToolPainter
     _lastShadingEnabled = shaderOptions.isEnabled.value;
     _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
     _lastShadingDirection = shaderOptions.shaderDirection.value;
-    _lastColorSelection = appState.selectedColor;
+    _lastColorSelection = paletteState.selectedColor;
 
     if (drawParams.cursorPos == null)
     {
@@ -191,14 +192,14 @@ class StampPainter extends IToolPainter
 
   void _dump({required final CoordinateSetI canvasSize, required final DrawingLayerState drawingLayer, required final HashMap<CoordinateSetI, int> stampData})
   {
-    final CoordinateColorMap drawingPixels = getStampPixelsToDraw(canvasSize: canvasSize, currentLayer: drawingLayer, stampData: stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
-    if (!appState.selectionState.selection.isEmpty)
+    final CoordinateColorMap drawingPixels = getStampPixelsToDraw(canvasSize: canvasSize, currentLayer: drawingLayer, stampData: stampData, selection: documentState.selectionState, shaderOptions: shaderOptions, selectedColor: paletteState.selectedColor!);
+    if (!documentState.selectionState.selection.isEmpty)
     {
-      appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
+      documentState.selectionState.selection.addDirectlyAll(list: drawingPixels);
     }
     /*else if (!_shaderOptions.isEnabled.value)
     {
-      appState.selectionState.add(data: drawingPixels, notify: false);
+      documentState.selectionState.add(data: drawingPixels, notify: false);
     }*/
     else
     {

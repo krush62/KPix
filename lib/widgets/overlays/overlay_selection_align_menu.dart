@@ -16,7 +16,7 @@
 
  import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
@@ -86,7 +86,7 @@ class OverlaySelectionAlignMenu extends StatefulWidget
 
    /// A single menu entry showing [icon], padded to line up with its neighbours.
    ///
-   /// The [toolTipMessage] is shown after [AppState.toolTipDuration] of
+   /// The [toolTipMessage] is shown after [toolTipDuration] of
    /// hovering and is placed above the entry, so it does not cover the entries
    /// below. Pressing the entry calls [onPressed].
    Widget _getEntry({required final String toolTipMessage, required final Function() onPressed, required final IconData icon})
@@ -96,7 +96,7 @@ class OverlaySelectionAlignMenu extends StatefulWidget
        child: Tooltip(
          message: toolTipMessage,
          preferBelow: false,
-         waitDuration: AppState.toolTipDuration,
+         waitDuration: toolTipDuration,
          child: IconButton.outlined(
            constraints: const BoxConstraints(),
            padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),

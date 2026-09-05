@@ -22,15 +22,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/frame_blending_options.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
-import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/models/view_state.dart';
+import 'package:kpix/util/helpers/platform_helper.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
-import 'package:kpix/widgets/timeline/frame_blending_options.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/timeline/frame_time_widget.dart';
 import 'package:kpix/widgets/timeline/timeline_drag_target_widget.dart';
@@ -125,7 +128,7 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
   void _toggleFrameBlending()
   {
     frameBlendingOptions.enabled.value = !frameBlendingOptions.enabled.value;
-    GetIt.I.get<AppState>().repaintNotifier.repaint();
+    GetIt.I.get<ViewState>().repaintNotifier.repaint();
   }
 
 
@@ -160,7 +163,7 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
                     builder: (final BuildContext context, final bool isExpanded, final Widget? child) {
                       return Tooltip(
                         message: isExpanded ? "Collapse Timeline" : "Expand Timeline",
-                        waitDuration: AppState.toolTipDuration,
+                        waitDuration: toolTipDuration,
                         child: SizedBox(
                           width: widget.height - widget.padding * 2,
                           child: IconButton(
@@ -289,7 +292,7 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
                 },
                 child: Tooltip(
                   message: "Frame ${i + 1}",
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: Theme.of(context).primaryColor,
@@ -347,7 +350,7 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
                       builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                         return Tooltip(
                           message: "${isPlaying ? "Pause" : "Play"}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay)}",
-                          waitDuration: AppState.toolTipDuration,
+                          waitDuration: toolTipDuration,
                           child: SizedBox(
                             width: widget.buttonWidth,
                             child: IconButton(
@@ -499,8 +502,8 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
       if (loopStart == i || loopEnd == i)
       {
-        final Widget startIcon = Tooltip(message: "Loop Start Marker", waitDuration: AppState.toolTipDuration, child: ClipRect(child: Align(widthFactor: 0.5, child: Icon(TablerIcons.caret_right_filled, color: Theme.of(context).primaryColorLight,))));
-        final Widget endIcon = Tooltip(message: "Loop End Marker", waitDuration: AppState.toolTipDuration, child: ClipRect(child: Align(widthFactor: 0.5, child: Icon(TablerIcons.caret_left_filled, color: Theme.of(context).primaryColorLight,))));
+        final Widget startIcon = Tooltip(message: "Loop Start Marker", waitDuration: toolTipDuration, child: ClipRect(child: Align(widthFactor: 0.5, child: Icon(TablerIcons.caret_right_filled, color: Theme.of(context).primaryColorLight,))));
+        final Widget endIcon = Tooltip(message: "Loop End Marker", waitDuration: toolTipDuration, child: ClipRect(child: Align(widthFactor: 0.5, child: Icon(TablerIcons.caret_left_filled, color: Theme.of(context).primaryColorLight,))));
 
         final SizedBox stack = SizedBox(
           width: _cellWidth,
@@ -744,7 +747,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                 builder: (final BuildContext context1, final bool isPlaying, final Widget? child1) {
                   return Tooltip(
                     message: "Change Duration",
-                    waitDuration: AppState.toolTipDuration,
+                    waitDuration: toolTipDuration,
                     child: InkWell(
                       onTap: () {
                         widget.timeline.selectFrameByIndex(index: i);
@@ -826,17 +829,17 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
   void _changeLayerOrder(final LayerState layer, final int newPosition)
   {
-    GetIt.I.get<AppState>().changeLayerOrder(state: layer, newPosition: newPosition);
+    GetIt.I.get<LayerManager>().changeLayerOrder(state: layer, newPosition: newPosition);
   }
 
   void _copyLayerToOtherFrame(final Frame targetFrame, final LayerState sourceLayer, final int position)
   {
-    GetIt.I.get<AppState>().copyLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
+    GetIt.I.get<LayerManager>().copyLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
   }
 
   void _linkLayerToOtherFrame(final Frame targetFrame, final LayerState sourceLayer, final int position)
   {
-    GetIt.I.get<AppState>().linkLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
+    GetIt.I.get<LayerManager>().linkLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
   }
 
 
@@ -878,7 +881,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                               builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                                 return Tooltip(
                                   message: "${isPlaying ? "Pause" : "Play"}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay)}",
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   child: SizedBox(
                                     height: _cellHeight,
                                     child: IconButton.outlined(
@@ -911,7 +914,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                     builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                                       return Tooltip(
                                         message: "Move Frame Left${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameLeft)}",
-                                        waitDuration: AppState.toolTipDuration,
+                                        waitDuration: toolTipDuration,
                                         child: SizedBox(
                                           height: _cellHeight,
                                           child: IconButton.outlined(
@@ -932,7 +935,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         ),
                         Tooltip(
                           message: "Move Frame",
-                          waitDuration: AppState.toolTipDuration,
+                          waitDuration: toolTipDuration,
                           child: Icon(
                             TablerIcons.arrows_left_right,
                             //size: _layerIconSize,
@@ -954,7 +957,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                     builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                                       return Tooltip(
                                         message: "Move Frame Right${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameRight)}",
-                                        waitDuration: AppState.toolTipDuration,
+                                        waitDuration: toolTipDuration,
                                         child: SizedBox(
                                           height: _cellHeight,
                                           child: IconButton.outlined(
@@ -981,7 +984,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                             builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                               return Tooltip(
                                 message: "Add Frame Left",
-                                waitDuration: AppState.toolTipDuration,
+                                waitDuration: toolTipDuration,
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
@@ -998,7 +1001,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         ),
                         Tooltip(
                           message: "Add Frame",
-                          waitDuration: AppState.toolTipDuration,
+                          waitDuration: toolTipDuration,
                           child: Icon(
                             TablerIcons.file,
                             //size: _layerIconSize,
@@ -1014,7 +1017,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                             builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                               return Tooltip(
                                 message: "Add Frame Right",
-                                waitDuration: AppState.toolTipDuration,
+                                waitDuration: toolTipDuration,
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
@@ -1037,7 +1040,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                             builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                               return Tooltip(
                                 message: "Copy Frame Left",
-                                waitDuration: AppState.toolTipDuration,
+                                waitDuration: toolTipDuration,
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
@@ -1054,7 +1057,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         ),
                         Tooltip(
                           message: "Copy Frame",
-                          waitDuration: AppState.toolTipDuration,
+                          waitDuration: toolTipDuration,
                           child: Icon(
                             TablerIcons.copy,
                             //size: _layerIconSize,
@@ -1070,7 +1073,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                             builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                               return Tooltip(
                                 message: "Copy Frame Right",
-                                waitDuration: AppState.toolTipDuration,
+                                waitDuration: toolTipDuration,
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
@@ -1093,7 +1096,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                             builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                               return Tooltip(
                                 message: "Create Linked Frame Left",
-                                waitDuration: AppState.toolTipDuration,
+                                waitDuration: toolTipDuration,
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
@@ -1110,7 +1113,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         ),
                         Tooltip(
                           message: "Create Linked Frame",
-                          waitDuration: AppState.toolTipDuration,
+                          waitDuration: toolTipDuration,
                           child: Icon(
                             TablerIcons.link,
                             //size: _layerIconSize,
@@ -1126,7 +1129,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                             builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                               return Tooltip(
                                 message: "Create Linked Frame Right",
-                                waitDuration: AppState.toolTipDuration,
+                                waitDuration: toolTipDuration,
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
@@ -1149,7 +1152,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                           builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                             return Tooltip(
                               message: "Delete Frame",
-                              waitDuration: AppState.toolTipDuration,
+                              waitDuration: toolTipDuration,
                               child: SizedBox(
                                 height: _cellHeight,
                                 child: IconButton.outlined(
@@ -1172,7 +1175,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                           builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                             return Tooltip(
                               message: "Frame Blending\nToggle: ${GetIt.I.get<HotkeyManager>().getShortcutString(action: HotkeyAction.timelineToggleFrameBlending, precededNewLine: false)}",
-                              waitDuration: AppState.toolTipDuration,
+                              waitDuration: toolTipDuration,
                               child: SizedBox(
                                 height: _cellHeight,
                                 child: IconButton.outlined(
@@ -1275,7 +1278,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
                           Expanded(
                             child: ListenableBuilder(
-                              listenable: GetIt.I.get<AppState>().timeline.layerChangeNotifier,
+                              listenable: GetIt.I.get<DocumentState>().timeline.layerChangeNotifier,
                               builder: (final BuildContext context, final Widget? child) {
                                 return LayoutBuilder(
                                   builder: (final BuildContext context4, final BoxConstraints constraints) {

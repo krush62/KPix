@@ -16,12 +16,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/models/constraints/tool_shape_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-import 'package:kpix/widgets/tools/constraints/tool_shape_constraints.dart';
-import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 
 

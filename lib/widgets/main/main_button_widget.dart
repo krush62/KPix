@@ -21,18 +21,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/kpix_theme.dart';
-import 'package:kpix/main.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/app_paths.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/export_types.dart';
+import 'package:kpix/models/file_callbacks.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history_controller.dart';
+import 'package:kpix/models/io_types.dart';
+import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/project_session.dart';
+import 'package:kpix/models/update_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/image_importer.dart';
-import 'package:kpix/widgets/file/export_widget.dart';
-import 'package:kpix/widgets/file/import_widget.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:logger/logger.dart';
@@ -58,7 +67,8 @@ class MainButtonWidget extends StatefulWidget
 
 class _MainButtonWidgetState extends State<MainButtonWidget>
 {
-  final AppState _appState = GetIt.I.get<AppState>();
+  final ProjectSession _projectSession = GetIt.I.get<ProjectSession>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final HistoryManager _historyManager = GetIt.I.get<HistoryManager>();
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   late KPixOverlay _loadMenu;
@@ -128,7 +138,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onAcceptPalette: _paletteSavePressed,);
     _aboutDialog = getAboutDialog(
       onDismiss: _closeAllMenus,
-      /*canvasSize: _appState.canvasSize,*/);
+      /*canvasSize: _canvasState.canvasSize,*/);
     _preferencesDialog = getPreferencesDialog(
       onDismiss: _reloadPreferences,
       onAccept: _savePreferencesPressed,
@@ -158,8 +168,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _hotkeyManager.addListener(func: _redoPressed, action: HotkeyAction.generalRedo);
     _hotkeyManager.addListener(func: _exportFile, action: HotkeyAction.generalExport);
 
-    KPixApp.saveCallbackFunc = _saveFile;
-    KPixApp.openCallbackFunc = _loadFile;
+    saveFileCallback = _saveFile;
+    openFileCallback = _loadFile;
 
   }
 
@@ -179,7 +189,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     if (fileName != null && fileName.isNotEmpty)
     {
-      _appState.showMessage(text: "Exported to: $fileName");
+      showMessage(text: "Exported to: $fileName");
       if (!kIsWeb && Platform.isAndroid)
       {
         const MethodChannel channel = MethodChannel('media_scanner');
@@ -188,7 +198,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
     else
     {
-      _appState.showMessage(text: "Error exporting file");
+      showMessage(text: "Error exporting file");
     }
     _closeAllMenus();
   }
@@ -212,7 +222,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _newFile()
   {
-    _appState.hasProjectNotifier.value = false;
+    _projectSession.hasProjectNotifier.value = false;
     _closeAllMenus();
   }
 
@@ -225,7 +235,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     if (kIsWeb)
     {
-      if (_appState.hasChanges.value)
+      if (_projectSession.hasChanges.value)
       {
         _saveLoadWarningDialog.show(context: context);
       }
@@ -244,7 +254,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _importFile()
   {
-    if (_appState.hasChanges.value)
+    if (_projectSession.hasChanges.value)
     {
       _saveImportWarningDialog.show(context: context);
     }
@@ -319,13 +329,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _saveFile({final Function()? callback})
   {
-    if (_appState.projectName.value == null)
+    if (_projectSession.projectName.value == null)
     {
       _saveAsFile(callback: callback);
     }
     else
     {
-      saveFilePressed(fileName: _appState.projectName.value!, finishCallback: callback);
+      saveFilePressed(fileName: _projectSession.projectName.value!, finishCallback: callback);
       _closeAllMenus();
     }
   }
@@ -355,11 +365,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     {
       if (path != null)
       {
-        _appState.showMessage(text: "Exported palette to: $path.");
+        showMessage(text: "Exported palette to: $path.");
       }
       else
       {
-        _appState.showMessage(text: "Error exporting palette file.");
+        showMessage(text: "Error exporting palette file.");
       }
       _closeAllMenus();
     },);
@@ -378,12 +388,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _undoPressed()
   {
-    _appState.undoPressed();
+    GetIt.I.get<HistoryController>().undoPressed();
   }
 
   void _redoPressed()
   {
-    _appState.redoPressed();
+    GetIt.I.get<HistoryController>().redoPressed();
   }
 
   void _savePreferencesPressed()
@@ -404,10 +414,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       return;
     }
     final BehaviorPreferenceContent behaviorPrefs = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
-    final String defaultDir = getDefaultProjectsDir(internalDir: _appState.internalDir);
+    final String defaultDir = getDefaultProjectsDir(internalDir: GetIt.I.get<AppPaths>().internalDir);
     final bool useCustom = behaviorPrefs.useCustomProjectDirectory.value && behaviorPrefs.customProjectDirectory.value.isNotEmpty;
     final String targetDir = useCustom ? behaviorPrefs.customProjectDirectory.value : defaultDir;
-    final String currentDir = _appState.projectsDir;
+    final String currentDir = GetIt.I.get<AppPaths>().projectsDir;
     if (p.equals(targetDir, currentDir))
     {
       return;
@@ -419,8 +429,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     movingDialog.hide();
     if (moveResult.success)
     {
-      _appState.projectsDir = targetDir;
-      _appState.showMessage(text: "Changed project directory to $targetDir (moved ${moveResult.projectCount} project file(s)).");
+      GetIt.I.get<AppPaths>().projectsDir = targetDir;
+      showMessage(text: "Changed project directory to $targetDir (moved ${moveResult.projectCount} project file(s)).");
       await _handleAllFilesAccessPermission(switchedToCustomDir: useCustom);
     }
     else
@@ -471,7 +481,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     GetIt.I.get<PreferenceManager>().loadPreferences().then((final void _){
       _closeAllMenus();
-      _appState.repaintNotifier.repaint();
+      GetIt.I.get<ViewState>().repaintNotifier.repaint();
     });
   }
 
@@ -480,18 +490,18 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _importLoadingDialog.show(context: context);
     try
     {
-      import(importData: importData, currentRamps: _appState.colorRamps).then((final ImportResult result)
+      import(importData: importData, currentRamps: GetIt.I.get<PaletteState>().colorRamps).then((final ImportResult result)
       {
-        _appState.importFile(importResult: result);
+        _projectSession.importFile(importResult: result);
         GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
-        _appState.rasterLayersFrame();
-        _appState.timeline.layerChangeNotifier.reportChange();
+        GetIt.I.get<LayerManager>().rasterLayersFrame();
+        _documentState.timeline.layerChangeNotifier.reportChange();
       });
     }
     catch (e, s)
     {
       const String failMsg = "Error importing image.";
-      _appState.showMessage(text: failMsg);
+      showMessage(text: failMsg);
       GetIt.I.get<Logger>().w(failMsg, error: e, stackTrace: s);
     }
     _closeAllMenus();
@@ -515,7 +525,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   anchorKey: _loadMenuAnchorKey,
                   child: Tooltip(
                     message: "New/Open...",
-                    waitDuration: AppState.toolTipDuration,
+                    waitDuration: toolTipDuration,
                     child: IconButton.outlined(
                       icon: const Icon(
                         TablerIcons.folder_open,
@@ -532,7 +542,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   anchorKey: _saveMenuAnchorKey,
                   child: Tooltip(
                     message: "Save...",
-                    waitDuration: AppState.toolTipDuration,
+                    waitDuration: toolTipDuration,
                     child: IconButton.outlined(
                       icon: const Icon(
                         TablerIcons.device_floppy,
@@ -547,7 +557,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
               Expanded(
                 child: Tooltip(
                   message: "Preferences",
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: IconButton.outlined(
                     icon: const Icon(
                       TablerIcons.settings,
@@ -561,7 +571,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
               Expanded(
                 child: Tooltip(
                   message: "About",
-                  waitDuration: AppState.toolTipDuration,
+                  waitDuration: toolTipDuration,
                   child: Stack(
                     alignment: Alignment.topCenter,
                     fit: StackFit.passthrough,
@@ -574,7 +584,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                         onPressed: _questionPressed,
                       ),
                       ValueListenableBuilder<bool>(
-                        valueListenable: _appState.hasUpdateNotifier,
+                        valueListenable: GetIt.I.get<UpdateState>().hasUpdateNotifier,
                         builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
                         {
                           if (hasUpdate)
@@ -615,7 +625,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     builder: (final BuildContext context, final bool hasUndo, final Widget? child) {
                       return Tooltip(
                         message: "Undo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo)}",
-                        waitDuration: AppState.toolTipDuration,
+                        waitDuration: toolTipDuration,
                         child: IconButton.outlined(
                           icon: const Icon(
                             TablerIcons.arrow_back_up,
@@ -636,7 +646,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     builder: (final BuildContext context, final bool hasRedo, final Widget? child) {
                       return Tooltip(
                         message: "Redo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo)}",
-                        waitDuration: AppState.toolTipDuration,
+                        waitDuration: toolTipDuration,
                         child: IconButton.outlined(
                           icon: const Icon(
                             TablerIcons.arrow_forward_up,

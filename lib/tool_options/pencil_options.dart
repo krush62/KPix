@@ -16,10 +16,10 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/widgets/tools/constraints/tool_pencil_constraints.dart';
-import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class PencilOptions extends IToolOptions
 {

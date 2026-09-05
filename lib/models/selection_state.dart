@@ -19,21 +19,25 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/constraints/tool_select_constraints.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 import 'package:logger/logger.dart';
 
 enum SelectionDirection
@@ -57,7 +61,8 @@ class SelectionLine
 
 class SelectionState with ChangeNotifier
 {
-  final AppState _appState = GetIt.I.get<AppState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
+  final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
   final SelectionList selection = SelectionList();
   CoordinateColorMapNullable? clipboard;
@@ -77,7 +82,7 @@ class SelectionState with ChangeNotifier
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) copyMerged();}, action: HotkeyAction.selectionCopyMerged);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) cut();}, action: HotkeyAction.selectionCut);
     hotkeyManager.addListener(func: () {if (clipboard != null) paste();}, action: HotkeyAction.selectionPaste);
-    hotkeyManager.addListener(func: () {if (clipboard != null) _appState.addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: _appState.selectionState.clipboard);}, action: HotkeyAction.selectionPasteAsNewLayer);
+    hotkeyManager.addListener(func: () {if (clipboard != null) GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: _documentState.selectionState.clipboard);}, action: HotkeyAction.selectionPasteAsNewLayer);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) delete();}, action: HotkeyAction.selectionDelete);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) flipH();}, action: HotkeyAction.selectionFlipH);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) flipV();}, action: HotkeyAction.selectionFlipV);
@@ -105,7 +110,7 @@ class SelectionState with ChangeNotifier
       deselect(notify: false, addToHistoryStack: false);
     }
 
-    final Set<CoordinateSetI> canvasPoints = points.where((final CoordinateSetI p) => p.x >= 0 && p.y >= 0 && p.x < _appState.canvasSize.x && p.y < _appState.canvasSize.y).toSet();
+    final Set<CoordinateSetI> canvasPoints = points.where((final CoordinateSetI p) => p.x >= 0 && p.y >= 0 && p.x < _canvasState.canvasSize.x && p.y < _canvasState.canvasSize.y).toSet();
     _addPixelsWithMode(coords: canvasPoints, mode: selectionOptions.mode.value);
     createSelectionLines();
 
@@ -113,7 +118,7 @@ class SelectionState with ChangeNotifier
     //to be an undo step like them too
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionNew, originLayer: _appState.timeline.getCurrentLayer());
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionNew, originLayer: _documentState.timeline.getCurrentLayer());
     }
 
     if (notify)
@@ -137,7 +142,7 @@ class SelectionState with ChangeNotifier
         {
           for (int y = start.y; y <= end.y; y++)
           {
-            if (x >= 0 && x < _appState.canvasSize.x && y >= 0 && y < _appState.canvasSize.y)
+            if (x >= 0 && x < _canvasState.canvasSize.x && y >= 0 && y < _canvasState.canvasSize.y)
             {
               coords.add(CoordinateSetI(x: x, y: y));
             }
@@ -157,7 +162,7 @@ class SelectionState with ChangeNotifier
         {
           for (int y = start.y; y <= end.y; y++)
           {
-            if (x >= 0 && x < _appState.canvasSize.x && y >= 0 && y < _appState.canvasSize.y)
+            if (x >= 0 && x < _canvasState.canvasSize.x && y >= 0 && y < _canvasState.canvasSize.y)
             {
               final double dx = (x + 0.5) - centerX;
               final double dy = (y + 0.5) - centerY;
@@ -179,7 +184,7 @@ class SelectionState with ChangeNotifier
     }
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionNew, originLayer: _appState.timeline.getCurrentLayer());
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionNew, originLayer: _documentState.timeline.getCurrentLayer());
     }
 
     if (notify)
@@ -190,7 +195,7 @@ class SelectionState with ChangeNotifier
 
   void newSelectionFromWand({required final CoordinateSetI coord, required final SelectMode mode, required final bool continuous, required final bool selectFromWholeRamp, final bool notify = true, final bool addToHistoryStack = true})
   {
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       if (selectionOptions.mode.value == SelectMode.replace)
@@ -212,7 +217,7 @@ class SelectionState with ChangeNotifier
       }
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionNew, originLayer: _appState.timeline.getCurrentLayer());
+        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionNew, originLayer: _documentState.timeline.getCurrentLayer());
       }
     }
   }
@@ -229,9 +234,9 @@ class SelectionState with ChangeNotifier
     required final CoordinateSetI start,
     required final bool selectFromWholeRamp,})
   {
-    final int numRows = _appState.canvasSize.y;
-    final int numCols = _appState.canvasSize.x;
-    final ColorReference? targetValue = (_appState.timeline.getCurrentLayer() == layer && selection.contains(coord: start)) ? selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
+    final int numRows = _canvasState.canvasSize.y;
+    final int numCols = _canvasState.canvasSize.x;
+    final ColorReference? targetValue = (_documentState.timeline.getCurrentLayer() == layer && selection.contains(coord: start)) ? selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
     final Set<CoordinateSetI> result = <CoordinateSetI>{};
     final Set<CoordinateSetI> visited = <CoordinateSetI>{};
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
@@ -243,7 +248,7 @@ class SelectionState with ChangeNotifier
       final CoordinateSetI curCoord = pointStack.pop();
       if (curCoord.x >= 0 && curCoord.y < numRows && curCoord.y >= 0 && curCoord.x < numCols)
       {
-        final ColorReference? refAtPos = (_appState.timeline.getCurrentLayer() == layer && selection.contains(coord: curCoord)) ? selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
+        final ColorReference? refAtPos = (_documentState.timeline.getCurrentLayer() == layer && selection.contains(coord: curCoord)) ? selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
         if (!visited.contains(curCoord) && (refAtPos == targetValue || (refAtPos != null && targetValue != null && selectFromWholeRamp && refAtPos.ramp == targetValue.ramp)))
         {
           result.add(curCoord);
@@ -277,13 +282,13 @@ class SelectionState with ChangeNotifier
     required final bool selectFromWholeRamp,})
   {
     final Set<CoordinateSetI> result = <CoordinateSetI>{};
-    final ColorReference? targetValue = (_appState.timeline.getCurrentLayer() == layer && selection.contains(coord: start)) ? selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
-    for (int x = 0; x < _appState.canvasSize.x; x++)
+    final ColorReference? targetValue = (_documentState.timeline.getCurrentLayer() == layer && selection.contains(coord: start)) ? selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
+    for (int x = 0; x < _canvasState.canvasSize.x; x++)
     {
-      for (int y = 0; y < _appState.canvasSize.y; y++)
+      for (int y = 0; y < _canvasState.canvasSize.y; y++)
       {
         final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-        final ColorReference? refAtPos = (_appState.timeline.getCurrentLayer() == layer && selection.contains(coord: curCoord)) ? selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
+        final ColorReference? refAtPos = (_documentState.timeline.getCurrentLayer() == layer && selection.contains(coord: curCoord)) ? selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
         if (refAtPos == targetValue || (selectFromWholeRamp && refAtPos != null && targetValue != null && refAtPos.ramp == targetValue.ramp))
         {
           result.add(curCoord);
@@ -459,9 +464,9 @@ class SelectionState with ChangeNotifier
   {
     final Set<CoordinateSetI> addSet = <CoordinateSetI>{};
     final Set<CoordinateSetI> removeSet = <CoordinateSetI>{};
-    for (int x = 0; x < _appState.canvasSize.x; x++)
+    for (int x = 0; x < _canvasState.canvasSize.x; x++)
     {
-      for (int y = 0; y < _appState.canvasSize.y; y++)
+      for (int y = 0; y < _canvasState.canvasSize.y; y++)
       {
         final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
         if (selection.contains(coord: coord))
@@ -480,7 +485,7 @@ class SelectionState with ChangeNotifier
     createSelectionLines();
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionInverse, originLayer: _appState.timeline.getCurrentLayer());
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionInverse, originLayer: _documentState.timeline.getCurrentLayer());
     }
     if (notify)
     {
@@ -500,7 +505,7 @@ class SelectionState with ChangeNotifier
     createSelectionLines();
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionDeselect, originLayer: _appState.timeline.getCurrentLayer());
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionDeselect, originLayer: _documentState.timeline.getCurrentLayer());
     }
     if (notify)
     {
@@ -511,9 +516,9 @@ class SelectionState with ChangeNotifier
   void selectAll({final bool notify = true, final bool addToHistoryStack = true})
   {
     final Set<CoordinateSetI> addSet = <CoordinateSetI>{};
-    for (int x = 0; x < _appState.canvasSize.x; x++)
+    for (int x = 0; x < _canvasState.canvasSize.x; x++)
     {
-      for (int y = 0; y < _appState.canvasSize.y; y++)
+      for (int y = 0; y < _canvasState.canvasSize.y; y++)
       {
         final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
         if (!selection.contains(coord: coord))
@@ -526,7 +531,7 @@ class SelectionState with ChangeNotifier
     createSelectionLines();
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionSelectAll, originLayer: _appState.timeline.getCurrentLayer());
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionSelectAll, originLayer: _documentState.timeline.getCurrentLayer());
     }
     if (notify)
     {
@@ -536,23 +541,23 @@ class SelectionState with ChangeNotifier
 
   void delete({final bool notify = true, final bool keepSelection = true, final bool addToHistoryStack = true})
   {
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        _appState.showMessage(text: "Cannot delete from hidden layer!");
+        showMessage(text: "Cannot delete from hidden layer!");
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        _appState.showMessage(text: "Cannot delete from locked layer!");
+        showMessage(text: "Cannot delete from locked layer!");
       }
       else
       {
         selection.delete(keepSelection: keepSelection);
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionDelete, originLayer: _appState.timeline.getCurrentLayer());
+          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionDelete, originLayer: _documentState.timeline.getCurrentLayer());
         }
         if (!keepSelection)
         {
@@ -569,23 +574,23 @@ class SelectionState with ChangeNotifier
 
   void cut({final bool notify = true, final bool keepSelection = false, final bool addToHistoryStack = true})
   {
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        _appState.showMessage(text: "Cannot cut from hidden layer!");
+        showMessage(text: "Cannot cut from hidden layer!");
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        _appState.showMessage(text: "Cannot cut from locked layer!");
+        showMessage(text: "Cannot cut from locked layer!");
       }
       else if (copy(notify: false, keepSelection: true))
       {
         delete(notify: false);
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionCut, originLayer: _appState.timeline.getCurrentLayer());
+          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionCut, originLayer: _documentState.timeline.getCurrentLayer());
         }
         if (notify)
         {
@@ -619,14 +624,14 @@ class SelectionState with ChangeNotifier
     }
     else
     {
-      _appState.showMessage(text: "Nothing to copy!");
+      showMessage(text: "Nothing to copy!");
     }
     return hasCopied;
   }
 
   void copyMerged({final bool notify = true, final bool keepSelection = false})
   {
-    final Frame? frame = _appState.timeline.selectedFrame;
+    final Frame? frame = _documentState.timeline.selectedFrame;
     if (frame != null)
     {
       final CoordinateColorMapNullable tempCB = HashMap<CoordinateSetI, ColorReference?>();
@@ -642,7 +647,7 @@ class SelectionState with ChangeNotifier
           if (layer is DrawingLayerState)
           {
             ColorReference? colRef = layer.getDataEntry(coord: coord);
-            if (layer == _appState.timeline.getCurrentLayer())
+            if (layer == _documentState.timeline.getCurrentLayer())
             {
               final ColorReference? selColRef = selection.getColorReference(coord: coord);
               if (selColRef != null)
@@ -680,23 +685,23 @@ class SelectionState with ChangeNotifier
       }
       else
       {
-        _appState.showMessage(text: "Nothing to copy!");
+        showMessage(text: "Nothing to copy!");
       }
     }
   }
 
   void paste({final bool notify = true, final bool addToHistoryStack = true})
   {
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (clipboard != null && layer != null && layer is DrawingLayerState) //should always be the case
     {
       if (layer.lockState.value == LayerLockState.locked)
       {
-        _appState.showMessage(text: "Cannot paste to a locked layer!");
+        showMessage(text: "Cannot paste to a locked layer!");
       }
       else if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        _appState.showMessage(text: "Cannot paste to a hidden layer!");
+        showMessage(text: "Cannot paste to a hidden layer!");
       }
       else
       {
@@ -705,7 +710,7 @@ class SelectionState with ChangeNotifier
         createSelectionLines();
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionPaste, originLayer: _appState.timeline.getCurrentLayer());
+          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionPaste, originLayer: _documentState.timeline.getCurrentLayer());
         }
 
         if (notify)
@@ -719,16 +724,16 @@ class SelectionState with ChangeNotifier
 
   void flipH({final bool notify = true, final bool addToHistoryStack = true})
   {
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        _appState.showMessage(text: "Cannot transform on a hidden layer!");
+        showMessage(text: "Cannot transform on a hidden layer!");
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        _appState.showMessage(text: "Cannot transform on a locked layer!");
+        showMessage(text: "Cannot transform on a locked layer!");
       }
       else
       {
@@ -736,7 +741,7 @@ class SelectionState with ChangeNotifier
         createSelectionLines();
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionFlipH, originLayer: _appState.timeline.getCurrentLayer());
+          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionFlipH, originLayer: _documentState.timeline.getCurrentLayer());
         }
 
         if (notify)
@@ -750,16 +755,16 @@ class SelectionState with ChangeNotifier
 
   void flipV({final bool notify = true, final bool addToHistoryStack = true})
   {
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        _appState.showMessage(text: "Cannot transform on a hidden layer!");
+        showMessage(text: "Cannot transform on a hidden layer!");
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        _appState.showMessage(text: "Cannot transform on a locked layer!");
+        showMessage(text: "Cannot transform on a locked layer!");
       }
       else
       {
@@ -767,7 +772,7 @@ class SelectionState with ChangeNotifier
         createSelectionLines();
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionFlipV, originLayer: _appState.timeline.getCurrentLayer());
+          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionFlipV, originLayer: _documentState.timeline.getCurrentLayer());
         }
 
         if (notify)
@@ -781,16 +786,16 @@ class SelectionState with ChangeNotifier
 
   void rotate({final bool notify = true, final bool addToHistoryStack = true})
   {
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        _appState.showMessage(text: "Cannot transform on a hidden layer!");
+        showMessage(text: "Cannot transform on a hidden layer!");
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        _appState.showMessage(text: "Cannot transform on a locked layer!");
+        showMessage(text: "Cannot transform on a locked layer!");
       }
       else
       {
@@ -798,7 +803,7 @@ class SelectionState with ChangeNotifier
         createSelectionLines();
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionRotate, originLayer: _appState.timeline.getCurrentLayer());
+          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionRotate, originLayer: _documentState.timeline.getCurrentLayer());
         }
 
         if (notify)
@@ -827,9 +832,9 @@ class SelectionState with ChangeNotifier
     selection.resetLastOffset();
     if (!selection.isEmpty)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionMove, originLayer: _appState.timeline.getCurrentLayer());
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionMove, originLayer: _documentState.timeline.getCurrentLayer());
     }
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       layer.doManualRaster = true;
@@ -838,11 +843,11 @@ class SelectionState with ChangeNotifier
 
   void centerSelectionH()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final int width = bottomRight.x - topLeft.x;
-      final int newX = (_appState.canvasSize.x / 2 - width / 2).floor();
+      final int newX = (_canvasState.canvasSize.x / 2 - width / 2).floor();
       if (newX != topLeft.x)
       {
         final CoordinateSetI offset = CoordinateSetI(x: newX - topLeft.x, y: 0);
@@ -853,11 +858,11 @@ class SelectionState with ChangeNotifier
 
   void centerSelectionV()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final int height = bottomRight.y - topLeft.y;
-      final int newY = (_appState.canvasSize.y / 2 - height / 2).floor();
+      final int newY = (_canvasState.canvasSize.y / 2 - height / 2).floor();
       if (newY != topLeft.y)
       {
         final CoordinateSetI offset = CoordinateSetI(x: 0, y: newY - topLeft.y);
@@ -868,7 +873,7 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionLeft()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && topLeft.x != 0)
     {
       final CoordinateSetI offset = CoordinateSetI(x: -topLeft.x, y: 0);
@@ -878,11 +883,11 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionRight()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final int width = bottomRight.x - topLeft.x;
-      final int newX = _appState.canvasSize.x - width - 1;
+      final int newX = _canvasState.canvasSize.x - width - 1;
       if (newX != topLeft.x)
       {
         final CoordinateSetI offset = CoordinateSetI(x: newX - topLeft.x, y: 0);
@@ -893,7 +898,7 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionTop()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && topLeft.y != 0)
     {
       final CoordinateSetI offset = CoordinateSetI(x: 0, y: -topLeft.y);
@@ -903,11 +908,11 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionBottom()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final int height = bottomRight.x - topLeft.x;
-      final int newY = _appState.canvasSize.y - height - 1;
+      final int newY = _canvasState.canvasSize.y - height - 1;
       if (newY != topLeft.y)
       {
         final CoordinateSetI offset = CoordinateSetI(x: 0, y: newY - topLeft.y);
@@ -921,7 +926,8 @@ class SelectionState with ChangeNotifier
 class SelectionList
 {
   CoordinateColorMapNullable _content = HashMap<CoordinateSetI, ColorReference?>();
-  final AppState _appState = GetIt.I.get<AppState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
+  final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ValueNotifier<bool> isEmptyNotifer = ValueNotifier<bool>(true);
   int _revision = 0;
   int _maskRevision = 0;
@@ -952,7 +958,7 @@ class SelectionList
     }
     else if (claimOwner)
     {
-      _owner = _appState.timeline.getCurrentLayer();
+      _owner = _documentState.timeline.getCurrentLayer();
     }
     if (notifyEmpty)
     {
@@ -962,7 +968,7 @@ class SelectionList
 
   void _checkOwnership({required final String operation})
   {
-    if (_content.isEmpty || _owner == null || identical(_owner, _appState.timeline.getCurrentLayer()))
+    if (_content.isEmpty || _owner == null || identical(_owner, _documentState.timeline.getCurrentLayer()))
     {
       return;
     }
@@ -1015,7 +1021,7 @@ class SelectionList
   void transferAll({required final Set<CoordinateSetI> coords, final bool notifyEmpty = true})
   {
     _checkOwnership(operation: "adding to the selection");
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       for (final CoordinateSetI coord in coords)
@@ -1038,7 +1044,7 @@ class SelectionList
     final bool maskChanged = !_content.containsKey(coord);
     _content[coord] = colRef;
     _touch(claimOwner: true, maskChanged: maskChanged);
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       layer.doManualRaster = true;
@@ -1058,7 +1064,7 @@ class SelectionList
     }
     _content.addAll(list);
     _touch(claimOwner: true, maskChanged: maskChanged);
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       layer.doManualRaster = true;
@@ -1071,7 +1077,7 @@ class SelectionList
     final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
     for (final CoordinateSetI coord in coords)
     {
-      if (coord.x >= 0 && coord.y >= 0 && coord.x < _appState.canvasSize.x && coord.y < _appState.canvasSize.y)
+      if (coord.x >= 0 && coord.y >= 0 && coord.x < _canvasState.canvasSize.x && coord.y < _canvasState.canvasSize.y)
       {
         if (_content[coord] != null)
         {
@@ -1080,7 +1086,7 @@ class SelectionList
         _content.remove(coord);
       }
     }
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       layer.setDataAll(list: refs);
@@ -1094,12 +1100,12 @@ class SelectionList
     final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
     for (final CoordinateColorNullable entry in _content.entries)
     {
-      if (entry.value != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < _appState.canvasSize.x && entry.key.y < _appState.canvasSize.y)
+      if (entry.value != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < _canvasState.canvasSize.x && entry.key.y < _canvasState.canvasSize.y)
       {
         refs[entry.key] = entry.value;
       }
     }
-    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       layer.setDataAll(list: refs);
@@ -1163,7 +1169,7 @@ class SelectionList
 
   void rotate90cw()
   {
-    final CoordinateSetI minCoords = _appState.canvasSize;
+    final CoordinateSetI minCoords = _canvasState.canvasSize;
     final CoordinateSetI maxCoords = CoordinateSetI.zero();
     for (final CoordinateSetI coord in _content.keys)
     {
@@ -1220,7 +1226,7 @@ class SelectionList
         _lastOffset.x = offset.x;
         _lastOffset.y = offset.y;
 
-        final LayerState? layer = _appState.timeline.getCurrentLayer();
+        final LayerState? layer = _documentState.timeline.getCurrentLayer();
         if (layer != null && layer is DrawingLayerState)
         {
           layer.doManualRaster = true;
@@ -1232,7 +1238,7 @@ class SelectionList
         for (final CoordinateSetI coord in selectedPixels.keys)
         {
           final CoordinateSetI newCoord = CoordinateSetI(x: coord.x + (offset.x - _lastOffset.x), y: coord.y + (offset.y - _lastOffset.y));
-          if (newCoord.x >= 0 && newCoord.y >= 0 && newCoord.x < _appState.canvasSize.x && newCoord.y < _appState.canvasSize.y)
+          if (newCoord.x >= 0 && newCoord.y >= 0 && newCoord.x < _canvasState.canvasSize.x && newCoord.y < _canvasState.canvasSize.y)
           {
             coordinateList.add(newCoord);
           }

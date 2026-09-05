@@ -16,23 +16,25 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> exportTexturePackAnimation({required final AnimationExportData exportData, required final AppState appState}) async
+Future<Uint8List?> exportTexturePackAnimation({required final AnimationExportData exportData}) async
 {
+  final List<KPalRampData> ramps = GetIt.I.get<PaletteState>().colorRamps;
   final Map<String, Uint8List> files = <String, Uint8List>{
-    "palette.bin": await createPaletteData(ramps: appState.colorRamps),
+    "palette.bin": await createPaletteData(ramps: ramps),
   };
 
-  final int startFrameIndex = exportData.loopOnly ? appState.timeline.loopStartIndex.value : 0;
-  final int endFrameIndex = exportData.loopOnly ? appState.timeline.loopEndIndex.value : appState.timeline.frames.value.length - 1;
+  final int startFrameIndex = exportData.loopOnly ? GetIt.I.get<DocumentState>().timeline.loopStartIndex.value : 0;
+  final int endFrameIndex = exportData.loopOnly ? GetIt.I.get<DocumentState>().timeline.loopEndIndex.value : GetIt.I.get<DocumentState>().timeline.frames.value.length - 1;
   int frameCounter = 0;
   for (int frameIndex = startFrameIndex; frameIndex <= endFrameIndex; frameIndex++)
   {
     //Frame Name with two padding zeros
     final String frameName = "frame_${frameCounter.toString().padLeft(2, '0')}";
-    final CoordinateColorMapNullable colorMap = await getMergedColors(frame: appState.timeline.frames.value[frameIndex], canvasSize: appState.canvasSize);
+    final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
+    final CoordinateColorMapNullable colorMap = await getMergedColors(frame: GetIt.I.get<DocumentState>().timeline.frames.value[frameIndex], canvasSize: canvasSize);
 
-    files["$frameName/color.bin"] = await createColorTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
-    files["$frameName/distance.bin"] = await createDistanceTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+    files["$frameName/color.bin"] = await createColorTexture(colorMap: colorMap, canvasSize: canvasSize, ramps: ramps);
+    files["$frameName/distance.bin"] = await createDistanceTexture(colorMap: colorMap, canvasSize: canvasSize, ramps: ramps);
     frameCounter++;
   }
 

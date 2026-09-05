@@ -19,17 +19,19 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/reference_image_manager.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/managers/reference_image_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/constraints/reference_layer_constraints.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
-import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class ReferenceLayerOptionsWidget extends StatefulWidget
 {
@@ -64,7 +66,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
           final ReferenceImage? oldImage = widget.referenceState.imageNotifier.value;
           widget.referenceState.imageNotifier.value = img;
           widget.referenceState.thumbnail.value = img.image;
-          final CoordinateSetI canvasSize = GetIt.I.get<AppState>().canvasSize;
+          final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
           final double targetZoomX = canvasSize.x.toDouble() / (widget.referenceState.image!.image.width.toDouble() * widget.referenceState.aspectRatioFactorX);
           final double targetZoomY = canvasSize.y.toDouble() / (widget.referenceState.image!.image.height.toDouble() * widget.referenceState.aspectRatioFactorY);
           if (targetZoomX < targetZoomY)
@@ -78,11 +80,11 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
           if (oldImage != null) {
             GetIt.I.get<ReferenceImageManager>().removeImage(refImage: oldImage);
           }
-          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerChangeReferenceImage, originLayer: GetIt.I.get<AppState>().timeline.getCurrentLayer());
+          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerChangeReferenceImage, originLayer: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());
         }
         else
         {
-          GetIt.I.get<AppState>().showMessage(text: "Could not load image from $loadPath");
+          showMessage(text: "Could not load image from $loadPath");
         }
       });
     }
@@ -92,7 +94,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   {
     if (widget.referenceState.image != null)
     {
-      final CoordinateSetI canvasSize = GetIt.I.get<AppState>().canvasSize;
+      final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
       final double targetZoom = canvasSize.x.toDouble() / (widget.referenceState.image!.image.width.toDouble() * widget.referenceState.aspectRatioFactorX);
       widget.referenceState.setZoomSliderFromZoomFactor(factor: targetZoom);
       widget.referenceState.offsetXNotifier.value = 0;
@@ -104,7 +106,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   {
     if (widget.referenceState.image != null)
     {
-      final CoordinateSetI canvasSize = GetIt.I.get<AppState>().canvasSize;
+      final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
       final double targetZoom = canvasSize.y.toDouble() / (widget.referenceState.image!.image.height.toDouble() * widget.referenceState.aspectRatioFactorY);
       widget.referenceState.setZoomSliderFromZoomFactor(factor: targetZoom);
       widget.referenceState.offsetYNotifier.value = 0;
@@ -116,7 +118,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   {
     if (widget.referenceState.image != null)
     {
-      final CoordinateSetI canvasSize = GetIt.I.get<AppState>().canvasSize;
+      final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
       widget.referenceState.offsetXNotifier.value = 0;
       widget.referenceState.offsetYNotifier.value = 0;
       final double targetAspectRatioX = canvasSize.x.toDouble() / canvasSize.y.toDouble();
@@ -176,7 +178,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
               ),
               const SizedBox(width: ToolSettingsWidgetOptions.padding,),
               Tooltip(
-                waitDuration: AppState.toolTipDuration,
+                waitDuration: toolTipDuration,
                 message: "Reset $name",
                 child: SizedBox(
                   height: _resetButtonHeight,
@@ -245,7 +247,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                             ),
                             Expanded(
                               child: Tooltip(
-                                waitDuration: AppState.toolTipDuration,
+                                waitDuration: toolTipDuration,
                                 message: "Open Reference File",
                                 child: IconButton.outlined(
                                   onPressed: _onLoadPressed,
@@ -340,7 +342,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     children: <Widget>[
                       Expanded(
                         child: Tooltip(
-                          waitDuration: AppState.toolTipDuration,
+                          waitDuration: toolTipDuration,
                           message: "Expand horizontally and center by keeping the current aspect ratio",
                           child: SizedBox(
                             height: _resetButtonHeight,
@@ -356,7 +358,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                       const SizedBox(width: ToolSettingsWidgetOptions.padding),
                       Expanded(
                         child: Tooltip(
-                          waitDuration: AppState.toolTipDuration,
+                          waitDuration: toolTipDuration,
                           message: "Expand vertically and center by keeping the current aspect ratio",
                           child: SizedBox(
                             height: _resetButtonHeight,
@@ -371,7 +373,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                       const SizedBox(width: ToolSettingsWidgetOptions.padding),
                       Expanded(
                         child: Tooltip(
-                          waitDuration: AppState.toolTipDuration,
+                          waitDuration: toolTipDuration,
                           message: "Fits the image into the canvas (changes aspect ratio)",
                           child: SizedBox(
                             height: _resetButtonHeight,

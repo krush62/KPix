@@ -17,7 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// The text field that stands in for the dialog inputs (e.g. the file name of

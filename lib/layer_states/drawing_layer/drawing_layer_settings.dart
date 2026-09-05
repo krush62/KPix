@@ -19,17 +19,20 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/constraints/drawing_layer_settings_constraints.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 
 /// A style that can be offered as one segment of a style selector.
 ///
@@ -101,45 +104,6 @@ enum DropShadowStyle implements StyleOption
     return DropShadowStyle.values.firstWhere((final DropShadowStyle dss) => dss.id == id);
   }
 }
-
-class DrawingLayerSettingsConstraints
-{
-  final int darkenBrightenMin;
-  final int darkenBrightenDefault;
-  final int darkenBrightenMax;
-  final int glowDepthMin;
-  final int glowDepthDefault;
-  final int glowDepthMax;
-  final bool glowRecursiveDefault;
-  final int bevelDistanceMin;
-  final int bevelDistanceDefault;
-  final int bevelDistanceMax;
-  final int bevelStrengthMin;
-  final int bevelStrengthDefault;
-  final int bevelStrengthMax;
-  final int dropShadowOffsetMin;
-  final int dropShadowOffsetDefault;
-  final int dropShadowOffsetMax;
-
-  const DrawingLayerSettingsConstraints({
-    required this.darkenBrightenMin,
-    required this.darkenBrightenDefault,
-    required this.darkenBrightenMax,
-    required this.glowDepthMin,
-    required this.glowDepthDefault,
-    required this.glowDepthMax,
-    required this.glowRecursiveDefault,
-    required this.bevelDistanceMin,
-    required this.bevelDistanceDefault,
-    required this.bevelDistanceMax,
-    required this.bevelStrengthMin,
-    required this.bevelStrengthDefault,
-    required this.bevelStrengthMax,
-    required this.dropShadowOffsetMin,
-    required this.dropShadowOffsetDefault,
-    required this.dropShadowOffsetMax,});
-}
-
 
 class DrawingLayerSettings extends LayerSettings {
   final DrawingLayerSettingsConstraints constraints;
@@ -214,7 +178,6 @@ class DrawingLayerSettings extends LayerSettings {
     _setupListeners();
   }
 
-
   DrawingLayerSettings.defaultValues({required final ColorReference startingColor, required this.constraints}) :
     outerStrokeStyle = ValueNotifier<OuterStrokeStyle>(OuterStrokeStyle.off),
     outerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(HashMap<Alignment, bool>()),
@@ -242,7 +205,6 @@ class DrawingLayerSettings extends LayerSettings {
     }
    _setupListeners();
   }
-
 
   DrawingLayerSettings.fromOther({required final DrawingLayerSettings other}) :
         constraints = other.constraints,
@@ -296,32 +258,27 @@ class DrawingLayerSettings extends LayerSettings {
     innerGlowRecursive.addListener(valueChanged);
   }
 
-
-
   void deleteRamp({required final KPalRampData ramp})
   {
-    if (outerColorReference.value.ramp == ramp)
+    final Set<ValueNotifier<ColorReference>> colorCandidates = <ValueNotifier<ColorReference>>{outerColorReference, innerColorReference, dropShadowColorReference};
+    final ColorReference resetColor = GetIt.I.get<PaletteState>().colorRamps[0].references[0];
+    for (final ValueNotifier<ColorReference> colorRef in colorCandidates)
     {
-      outerColorReference.value = GetIt.I.get<AppState>().colorRamps[0].references[0];
-    }
-    if (innerColorReference.value.ramp == ramp)
-    {
-      innerColorReference.value = GetIt.I.get<AppState>().colorRamps[0].references[0];
-    }
-    if (dropShadowColorReference.value.ramp == ramp)
-    {
-      dropShadowColorReference.value = GetIt.I.get<AppState>().colorRamps[0].references[0];
+      if (colorRef.value.ramp == ramp)
+      {
+        colorRef.value = resetColor;
+      }
     }
   }
 
-
   CoordinateColorMap getSettingsPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final List<LayerState> layerList, required final bool frameIsSelected})
   {
-    final AppState appState = GetIt.I.get<AppState>();
-    final SelectionList? selectionList = layerState.selectedInCurrentFrameNotifier.value && frameIsSelected ? appState.selectionState.selection : null;
-    final CoordinateColorMap shadowPixels = getDropShadowPixels(layerState: layerState, layers: layerList, data: data, canvasSize: appState.canvasSize);
-    final CoordinateColorMap outerPixels = getOuterStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: appState.canvasSize);
-    final CoordinateColorMap innerPixels = getInnerStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: appState.canvasSize, selectionList: selectionList);
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+    final CanvasState canvasState = GetIt.I.get<CanvasState>();
+    final SelectionList? selectionList = layerState.selectedInCurrentFrameNotifier.value && frameIsSelected ? documentState.selectionState.selection : null;
+    final CoordinateColorMap shadowPixels = getDropShadowPixels(layerState: layerState, layers: layerList, data: data, canvasSize: canvasState.canvasSize);
+    final CoordinateColorMap outerPixels = getOuterStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: canvasState.canvasSize);
+    final CoordinateColorMap innerPixels = getInnerStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: canvasState.canvasSize, selectionList: selectionList);
 
     shadowPixels.addAll(outerPixels);
     shadowPixels.addAll(innerPixels);
@@ -329,13 +286,13 @@ class DrawingLayerSettings extends LayerSettings {
   }
 
   HashMap<CoordinateSetI, int> getOuterShadingPixels({required final CoordinateColorMap data}) {
-    final AppState appState = GetIt.I.get<AppState>();
+    final CanvasState canvasState = GetIt.I.get<CanvasState>();
     final HashMap<CoordinateSetI, int> dropShadowPixels = HashMap<CoordinateSetI, int>();
     final HashMap<CoordinateSetI, int> outerEffectPixels = HashMap<CoordinateSetI, int>();
 
     if (dropShadowStyle.value == DropShadowStyle.shade) {
       final Set<CoordinateSetI> dropShadowCoordinates = _getDropShadowCoordinates(
-          dataPositions: data.keys, offset: dropShadowOffset.value, canvasSize: appState.canvasSize,);
+          dataPositions: data.keys, offset: dropShadowOffset.value, canvasSize: canvasState.canvasSize,);
       for (final CoordinateSetI coord in dropShadowCoordinates) {
         dropShadowPixels[coord] = dropShadowDarkenBrighten.value;
       }
@@ -344,7 +301,7 @@ class DrawingLayerSettings extends LayerSettings {
     if (outerStrokeStyle.value == OuterStrokeStyle.shade) {
       final HashMap<CoordinateSetI, CoordinateSetI> outerStrokePixelsWithReference =
       _getOuterStrokePixelsWithReference(
-          selectionMap: outerSelectionMap.value, dataPositions: data.keys, canvasSize: appState.canvasSize,);
+          selectionMap: outerSelectionMap.value, dataPositions: data.keys, canvasSize: canvasState.canvasSize,);
       for (final MapEntry<CoordinateSetI, CoordinateSetI> pixelSet in outerStrokePixelsWithReference.entries) {
         outerEffectPixels[pixelSet.key] = outerDarkenBrighten.value;
       }
@@ -364,7 +321,7 @@ class DrawingLayerSettings extends LayerSettings {
         _getOuterStrokePixelsWithAmount(
             selectionMap: outerSelectionMap.value,
             dataPositions: currentLayerEdge,
-            canvasSize: appState.canvasSize,);
+            canvasSize: canvasState.canvasSize,);
 
         final Set<CoordinateSetI> nextLayerEdgeCandidates = <CoordinateSetI>{};
         int currentIterationHighestSelfGlowAmount = 0;
@@ -499,7 +456,6 @@ class DrawingLayerSettings extends LayerSettings {
         lastSelfGlowAmount = highestSelfGlowAmount;
       }
     }
-
 
     return outerPixels;
   }

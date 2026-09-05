@@ -17,18 +17,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/font_manager.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/app_paths.dart';
+import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/frame_blending_options.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history_controller.dart';
+import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/project_session.dart';
+import 'package:kpix/models/status_bar_state.dart';
+import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/tool_state.dart';
+import 'package:kpix/models/update_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/widgets/timeline/frame_blending_options.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
@@ -39,7 +50,7 @@ import 'package:toastification/toastification.dart';
 ///
 /// The real bootstrap in main.dart also builds stamps, package info and the
 /// project manager; none of that is reachable from the code under test.
-Future<AppState> bootProject({required final CoordinateSetI canvasSize}) async
+Future<ProjectSession> bootProject({required final CoordinateSetI canvasSize}) async
 {
   SharedPreferences.setMockInitialValues(<String, Object>{});
 
@@ -51,13 +62,24 @@ Future<AppState> bootProject({required final CoordinateSetI canvasSize}) async
   GetIt.I.registerSingleton<FrameBlendingOptions>(FrameBlendingOptions());
   GetIt.I.registerSingleton<ShaderOptions>(ShaderOptions());
 
-  final AppState appState = AppState(exportDir: ".", internalDir: ".", projectsDir: ".", devicePixelRatio: 1.0);
-  GetIt.I.registerSingleton<AppState>(appState);
+  GetIt.I.registerSingleton<AppPaths>(AppPaths(exportDir: ".", internalDir: ".", projectsDir: "."));
+  GetIt.I.registerSingleton<UpdateState>(UpdateState());
+  GetIt.I.registerSingleton<StatusBarState>(StatusBarState());
+  GetIt.I.registerSingleton<SymmetryState>(SymmetryState());
+  GetIt.I.registerSingleton<ViewState>(ViewState(devicePixelRatio: 1.0));
+  GetIt.I.registerSingleton<PaletteState>(PaletteState());
+  GetIt.I.registerSingleton<CanvasState>(CanvasState());
+  GetIt.I.registerSingleton<DocumentState>(DocumentState());
+  final ProjectSession projectSession = ProjectSession();
+  GetIt.I.registerSingleton<ProjectSession>(projectSession);
+  GetIt.I.registerSingleton<ToolState>(ToolState());
+  GetIt.I.registerSingleton<LayerManager>(LayerManager());
+  GetIt.I.registerSingleton<HistoryController>(HistoryController());
   GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: 64));
 
-  appState.init(dimensions: canvasSize);
-  await settle(appState: appState);
-  return appState;
+  projectSession.init(dimensions: canvasSize);
+  await settle();
+  return projectSession;
 }
 
 /// Runs [body] with a booted project and a live widget tree.
@@ -69,13 +91,13 @@ Future<AppState> bootProject({required final CoordinateSetI canvasSize}) async
 Future<void> withProject({
   required final WidgetTester tester,
   required final CoordinateSetI canvasSize,
-  required final Future<void> Function(AppState appState) body,
+  required final Future<void> Function(ProjectSession projectSession) body,
 }) async
 {
   await tester.pumpWidget(const ToastificationWrapper(child: MaterialApp(home: SizedBox.shrink())));
   await tester.runAsync(() async {
-    final AppState appState = await bootProject(canvasSize: canvasSize);
-    await body(appState);
+    final ProjectSession projectSession = await bootProject(canvasSize: canvasSize);
+    await body(projectSession);
   });
 }
 
@@ -84,13 +106,13 @@ Future<void> withProject({
 /// Pixel writes land in a raster queue and only reach the layer's data map when
 /// the shared poll timer next runs a raster, so a read taken before that still
 /// sees the state from before the write.
-Future<void> settle({required final AppState appState, final int maxTicks = 60}) async
+Future<void> settle({final int maxTicks = 60}) async
 {
   for (int tick = 0; tick < maxTicks; tick++)
   {
     await Future<void>.delayed(const Duration(milliseconds: 25));
     bool pending = false;
-    for (final Frame frame in appState.timeline.frames.value)
+    for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
     {
       for (int i = 0; i < frame.layerList.length; i++)
       {
@@ -109,9 +131,9 @@ Future<void> settle({required final AppState appState, final int maxTicks = 60})
 }
 
 /// The drawing layer at [index] of the currently selected frame.
-DrawingLayerState layerAt({required final AppState appState, required final int index})
+DrawingLayerState layerAt({required final ProjectSession projectSession, required final int index})
 {
-  return appState.timeline.selectedFrame!.layerList.getLayer(index: index) as DrawingLayerState;
+  return GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getLayer(index: index) as DrawingLayerState;
 }
 
 /// How many of the project's pixel stores hold a colour at [coord].
@@ -119,10 +141,10 @@ DrawingLayerState layerAt({required final AppState appState, required final int 
 /// A floating selection physically owns the pixels it covers, so a coordinate
 /// lives in exactly one place: one layer, or the selection. Any other count
 /// means a hand-over between layers dropped a pixel or left a copy behind.
-int copiesOf({required final AppState appState, required final CoordinateSetI coord})
+int copiesOf({required final ProjectSession projectSession, required final CoordinateSetI coord})
 {
   int count = 0;
-  for (final Frame frame in appState.timeline.frames.value)
+  for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
   {
     for (int i = 0; i < frame.layerList.length; i++)
     {
@@ -133,7 +155,7 @@ int copiesOf({required final AppState appState, required final CoordinateSetI co
       }
     }
   }
-  if (appState.selectionState.selection.getColorReference(coord: coord) != null)
+  if (GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: coord) != null)
   {
     count++;
   }

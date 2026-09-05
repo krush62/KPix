@@ -116,7 +116,7 @@ class FillPainter extends IToolPainter
         {
           if (rasterLayer is DrawingLayerState)
           {
-            _floodFill(fillColor: appState.selectedColor!, layer: rasterLayer, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+            _floodFill(fillColor: paletteState.selectedColor!, layer: rasterLayer, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
           }
           else if (rasterLayer is ShadingLayerState)
           {
@@ -127,7 +127,7 @@ class FillPainter extends IToolPainter
         {
           if (rasterLayer is DrawingLayerState)
           {
-            _wholeFill(fillColor: appState.selectedColor!, layer: rasterLayer, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+            _wholeFill(fillColor: paletteState.selectedColor!, layer: rasterLayer, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
           }
           else if (rasterLayer is ShadingLayerState)
           {
@@ -150,10 +150,10 @@ class FillPainter extends IToolPainter
     required final bool shadeCurrentRampOnly,
     required final bool fillWholeRamp,})
   {
-    final int numRows = appState.canvasSize.y;
-    final int numCols = appState.canvasSize.x;
+    final int numRows = canvasState.canvasSize.y;
+    final int numCols = canvasState.canvasSize.x;
     final List<List<bool>> visited = List<List<bool>>.generate(numCols, (final _) => List<bool>.filled(numRows, false));
-    final ColorReference? startValue = (appState.timeline.getCurrentLayer() == layer && appState.selectionState.selection.contains(coord: start)) ? appState.selectionState.selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
+    final ColorReference? startValue = (documentState.timeline.getCurrentLayer() == layer && documentState.selectionState.selection.contains(coord: start)) ? documentState.selectionState.selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
     final CoordinateColorMap layerPixels = HashMap<CoordinateSetI, ColorReference>();
     final CoordinateColorMap selectionPixels = HashMap<CoordinateSetI, ColorReference>();
@@ -163,9 +163,9 @@ class FillPainter extends IToolPainter
     while(pointStack.isNotEmpty)
     {
       final CoordinateSetI curCoord = pointStack.pop();
-      final ColorReference? refAtPos = (appState.timeline.getCurrentLayer() == layer && appState.selectionState.selection.contains(coord: curCoord)) ? appState.selectionState.selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
+      final ColorReference? refAtPos = (documentState.timeline.getCurrentLayer() == layer && documentState.selectionState.selection.contains(coord: curCoord)) ? documentState.selectionState.selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
       if (!visited[curCoord.x][curCoord.y] &&
-          (appState.selectionState.selection.isEmpty || (!appState.selectionState.selection.isEmpty && appState.selectionState.selection.contains(coord: curCoord))) &&
+          (documentState.selectionState.selection.isEmpty || (!documentState.selectionState.selection.isEmpty && documentState.selectionState.selection.contains(coord: curCoord))) &&
           (
               refAtPos == startValue ||
                   (refAtPos != null && startValue != null && fillWholeRamp && refAtPos.ramp == startValue.ramp) ||
@@ -176,7 +176,7 @@ class FillPainter extends IToolPainter
         visited[curCoord.x][curCoord.y] = true;
 
         //draw on selection
-        if (appState.timeline.getCurrentLayer() == layer && appState.selectionState.selection.contains(coord: curCoord))
+        if (documentState.timeline.getCurrentLayer() == layer && documentState.selectionState.selection.contains(coord: curCoord))
         {
           if (!doShade || refAtPos == null)
           {
@@ -237,7 +237,7 @@ class FillPainter extends IToolPainter
     }
     if (selectionPixels.isNotEmpty)
     {
-      appState.selectionState.selection.addDirectlyAll(list: selectionPixels);
+      documentState.selectionState.selection.addDirectlyAll(list: selectionPixels);
     }
 
   }
@@ -247,8 +247,8 @@ class FillPainter extends IToolPainter
     required final CoordinateSetI start,
     required final ShaderDirection shadeDirection,})
   {
-    final int numRows = appState.canvasSize.y;
-    final int numCols = appState.canvasSize.x;
+    final int numRows = canvasState.canvasSize.y;
+    final int numCols = canvasState.canvasSize.x;
     final List<List<bool>> visited = List<List<bool>>.generate(numCols, (final _) => List<bool>.filled(numRows, false));
     final int? startValue = layer.getRawValueAt(coord: start);
     final StackCol<CoordinateSetI> stackPoints = StackCol<CoordinateSetI>();
@@ -327,13 +327,13 @@ class FillPainter extends IToolPainter
   {
 
     //on layer
-    if (appState.selectionState.selection.isEmpty)
+    if (documentState.selectionState.selection.isEmpty)
     {
       final ColorReference? startValue = layer.getDataEntry(coord: start);
       final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
-      for (int x = 0; x < appState.canvasSize.x; x++)
+      for (int x = 0; x < canvasState.canvasSize.x; x++)
       {
-        for (int y = 0; y < appState.canvasSize.y; y++)
+        for (int y = 0; y < canvasState.canvasSize.y; y++)
         {
           final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
           final ColorReference? refAtPos = layer.getDataEntry(coord: curCoord);
@@ -363,30 +363,30 @@ class FillPainter extends IToolPainter
       layer.setDataAll(list: refs);
     }
     //on selection
-    else if (!appState.selectionState.selection.isEmpty && appState.selectionState.selection.contains(coord: start))
+    else if (!documentState.selectionState.selection.isEmpty && documentState.selectionState.selection.contains(coord: start))
     {
-      final ColorReference? startValue = appState.selectionState.selection.getColorReference(coord: start);
-      final Iterable<CoordinateSetI> selectionCoords = appState.selectionState.selection.getCoordinates();
+      final ColorReference? startValue = documentState.selectionState.selection.getColorReference(coord: start);
+      final Iterable<CoordinateSetI> selectionCoords = documentState.selectionState.selection.getCoordinates();
       for (final CoordinateSetI curCoord in selectionCoords)
       {
-        final ColorReference? refAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
+        final ColorReference? refAtPos = documentState.selectionState.selection.getColorReference(coord: curCoord);
         if (refAtPos == startValue ||
             (refAtPos != null && startValue != null && fillWholeRamp && refAtPos.ramp == startValue.ramp) ||
             (refAtPos != null && doShade && !shadeCurrentRampOnly && fillWholeRamp))
         {
           if (!doShade || refAtPos == null)
           {
-            appState.selectionState.selection.addDirectly(coord: curCoord, colRef: fillColor);
+            documentState.selectionState.selection.addDirectly(coord: curCoord, colRef: fillColor);
           }
           else
           {
             if (shadeDirection == ShaderDirection.right && refAtPos.colorIndex + 1 < refAtPos.ramp.references.length)
             {
-              appState.selectionState.selection.addDirectly(coord: curCoord, colRef: refAtPos.ramp.references[refAtPos.colorIndex + 1]);
+              documentState.selectionState.selection.addDirectly(coord: curCoord, colRef: refAtPos.ramp.references[refAtPos.colorIndex + 1]);
             }
             else if (shadeDirection == ShaderDirection.left && refAtPos.colorIndex - 1 >= 0)
             {
-              appState.selectionState.selection.addDirectly(coord: curCoord, colRef: refAtPos.ramp.references[refAtPos.colorIndex - 1]);
+              documentState.selectionState.selection.addDirectly(coord: curCoord, colRef: refAtPos.ramp.references[refAtPos.colorIndex - 1]);
             }
           }
         }
@@ -403,9 +403,9 @@ class FillPainter extends IToolPainter
     final int? startValue = layer.getRawValueAt(coord: start);
     final HashMap<CoordinateSetI, int> addPixels = HashMap<CoordinateSetI, int>();
     final Set<CoordinateSetI> removePixels = <CoordinateSetI>{};
-    for (int x = 0; x < appState.canvasSize.x; x++)
+    for (int x = 0; x < canvasState.canvasSize.x; x++)
     {
-      for (int y = 0; y < appState.canvasSize.y; y++)
+      for (int y = 0; y < canvasState.canvasSize.y; y++)
       {
         final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
         final int? shadeAtPos = layer.getRawValueAt(coord: curCoord);

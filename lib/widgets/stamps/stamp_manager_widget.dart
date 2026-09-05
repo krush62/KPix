@@ -18,36 +18,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
-import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/managers/stamp_manager.dart';
+import 'package:kpix/models/stamp_manager_data.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
-import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
-
-
-class StampManager
-{
-  final ValueNotifier<StampMap> stampMap = ValueNotifier<StampMap>(<String, List<StampManagerEntryData>>{});
-  final ValueNotifier<StampManagerEntryData?> selectedStamp = ValueNotifier<StampManagerEntryData?>(null);
-  final ValueNotifier<String?> selectedFolder = ValueNotifier<String?>(null);
-
-  Future<void> loadAllStamps() async
-  {
-    stampMap.value = await loadStamps(loadUserStamps: !kIsWeb);
-    for (final MapEntry<String, List<StampManagerEntryData>> stampList in stampMap.value.entries)
-    {
-      if (stampList.value.isNotEmpty)
-      {
-        selectedFolder.value = stampList.key;
-        selectedStamp.value = stampList.value.first;
-      }
-    }
-  }
-
-
-}
 
 abstract final class _StampManagerOptions
 {
@@ -161,7 +139,7 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
     return Expanded(
       child: Tooltip(
         message: tooltip,
-        waitDuration: AppState.toolTipDuration,
+        waitDuration: toolTipDuration,
         child: Padding(
           padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
           child: IconButton.outlined(

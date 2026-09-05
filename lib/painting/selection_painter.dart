@@ -18,15 +18,15 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/models/constraints/tool_select_constraints.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 
 class SelectionPainter extends IToolPainter
 {
@@ -70,11 +70,11 @@ class SelectionPainter extends IToolPainter
         if (_isStartOnCanvas)
         {
           _shouldMove = (drawingLayer.lockState.value != LayerLockState.locked && drawingLayer.visibilityState.value != LayerVisibilityState.hidden) &&
-              (movementStarted || ((options.mode.value == SelectMode.replace || options.mode.value == SelectMode.add) && appState.selectionState.selection.contains(coord: _normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
+              (movementStarted || ((options.mode.value == SelectMode.replace || options.mode.value == SelectMode.add) && documentState.selectionState.selection.contains(coord: _normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
           if (_shouldMove)
           {
             movementStarted = true;
-            appState.selectionState.setOffset(
+            documentState.selectionState.setOffset(
               offset: CoordinateSetI(
                 x: drawParams.cursorPosNorm!.x - _normStartPos.x,
                 y: drawParams.cursorPosNorm!.y - _normStartPos.y,
@@ -146,7 +146,7 @@ class SelectionPainter extends IToolPainter
           if (movementStarted)
           {
             movementStarted = false;
-            appState.selectionState.finishMovement();
+            documentState.selectionState.finishMovement();
           }
           if (polygonDown)
           {

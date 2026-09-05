@@ -23,16 +23,15 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/constraints/frame_constraints.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
+import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
-
-class FrameConstraints
-{
-  final int minFps;
-  final int maxFps;
-  final int defaultFps;
-  const FrameConstraints({required this.minFps, required this.maxFps, required this.defaultFps});
-}
+import 'package:kpix/util/messages.dart';
 
 class Frame
 {
@@ -121,12 +120,12 @@ class Timeline
     _selectedFrameIndex.value = selectedFrameIndex;
   }
 
-  void init({required final AppState appState})
+  void init()
   {
     final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
     final List<Frame> frameList = <Frame>[];
     final Frame f = Frame.empty(fps: constraints.defaultFps);
-    f.layerList.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+    f.layerList.addNewDrawingLayer(canvasSize: GetIt.I.get<CanvasState>().canvasSize, ramps: GetIt.I.get<PaletteState>().colorRamps);
     f.fps.value = constraints.defaultFps;
     frameList.add(f);
     frames.value = frameList;
@@ -165,7 +164,6 @@ class Timeline
     }
   }
 
-
   void selectFrameByIndex({required final int index, final int? layerIndex, final bool addLayerSelectionToHistory = true})
   {
     if (index >= 0 && index < frames.value.length)
@@ -184,7 +182,7 @@ class Timeline
       }
       if (layerToSelect != null)
       {
-        GetIt.I.get<AppState>().selectLayer(newLayer: layerToSelect, oldLayer: oldLayer, addToHistoryStack: addLayerSelectionToHistory && !isPlaying.value);
+        GetIt.I.get<LayerManager>().selectLayer(newLayer: layerToSelect, oldLayer: oldLayer, addToHistoryStack: addLayerSelectionToHistory && !isPlaying.value);
       }
     }
   }
@@ -203,13 +201,12 @@ class Timeline
 
   void _anchorFloatingSelection({final bool addToHistoryStack = true})
   {
-    final SelectionState selectionState = GetIt.I.get<AppState>().selectionState;
+    final SelectionState selectionState = GetIt.I.get<DocumentState>().selectionState;
     if (selectionState.selection.selectedPixels.isNotEmpty)
     {
       selectionState.deselect(addToHistoryStack: addToHistoryStack);
     }
   }
-
 
   void _playChanged()
   {
@@ -286,7 +283,7 @@ class Timeline
       newFrames.insert(selectedFrameIndex - 1, f);
       frames.value = newFrames;
       selectFrameByIndex(index: selectedFrameIndex - 1);
-      GetIt.I.get<AppState>().frameMoved();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameMove);
     }
   }
 
@@ -301,7 +298,7 @@ class Timeline
       newFrames.insert(selectedFrameIndex + 1, f);
       frames.value = newFrames;
       selectFrameByIndex(index: selectedFrameIndex + 1);
-      GetIt.I.get<AppState>().frameMoved();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameMove);
     }
   }
 
@@ -337,10 +334,9 @@ class Timeline
 
   void _addNewFrame({required final _FrameCreationPosition position, required final _FrameCreationMethod method})
   {
-    final AppState appState = GetIt.I.get<AppState>();
     if (frames.value.length >= maxFrames)
     {
-      appState.showMessage(text: "Cannot add more frames.");
+      showMessage(text: "Cannot add more frames.");
       return;
     }
     else
@@ -398,7 +394,7 @@ class Timeline
       }
       else
       {
-        f.layerList.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+        f.layerList.addNewDrawingLayer(canvasSize: GetIt.I.get<CanvasState>().canvasSize, ramps: GetIt.I.get<PaletteState>().colorRamps);
         f.fps.value = constraints.defaultFps;
       }
       final List<Frame> newFrames = <Frame>[];
@@ -429,7 +425,7 @@ class Timeline
       {
         loopStartIndex.value++;
       }
-      GetIt.I.get<AppState>().newFrameAdded();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameAdd);
     }
   }
 
@@ -460,7 +456,7 @@ class Timeline
 
     frames.value = newFrames;
 
-    GetIt.I.get<AppState>().frameDeleted();
+    GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameDelete);
   }
 
   void resetStartMarker()
@@ -468,7 +464,7 @@ class Timeline
     if (loopStartIndex.value != 0)
     {
       loopStartIndex.value = 0;
-      GetIt.I.get<AppState>().loopMarkerChanged();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange);
     }
   }
 
@@ -478,7 +474,7 @@ class Timeline
     if (loopEndIndex.value != lastPosition)
     {
       loopEndIndex.value = frames.value.length - 1;
-      GetIt.I.get<AppState>().loopMarkerChanged();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange);
     }
   }
 
@@ -487,7 +483,7 @@ class Timeline
     if (index >= 0 && index < frames.value.length)
     {
       loopStartIndex.value = index;
-      GetIt.I.get<AppState>().loopMarkerChanged();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange);
     }
   }
 
@@ -496,7 +492,7 @@ class Timeline
     if (index >= 0 && index < frames.value.length)
     {
       loopEndIndex.value = index;
-      GetIt.I.get<AppState>().loopMarkerChanged();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange);
     }
   }
 
@@ -506,7 +502,7 @@ class Timeline
     if (frame.fps.value != fps && fps >= constraints.minFps && fps <= constraints.maxFps)
     {
       frame.fps.value = fps;
-      GetIt.I.get<AppState>().frameTimingChanged();
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameTimeChange);
     }
   }
 
@@ -526,7 +522,7 @@ class Timeline
       }
       if (hasChanges)
       {
-        GetIt.I.get<AppState>().frameTimingChanged();
+        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameTimeChange);
       }
     }
   }
@@ -558,7 +554,6 @@ class Timeline
     }
     return null;
   }
-
 
   int calculateTotalFrameTime({required final bool sectionOnly})
   {

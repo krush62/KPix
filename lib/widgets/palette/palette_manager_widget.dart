@@ -20,12 +20,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/export_types.dart';
+import 'package:kpix/models/file_constants.dart';
+import 'package:kpix/models/io_types.dart';
+import 'package:kpix/models/palette_manager_data.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
-import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:path/path.dart' as p;
@@ -87,11 +93,11 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
       if (fileName == null)
       {
-        GetIt.I.get<AppState>().showMessage(text: "Error saving palette!");
+        showMessage(text: "Error saving palette!");
       }
       else
       {
-        GetIt.I.get<AppState>().showMessage(text: "Palette saved successfully at $fileName.");
+        showMessage(text: "Palette saved successfully at $fileName.");
         _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
           _paletteEntries.value = pList;
         });
@@ -113,14 +119,14 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _paletteWarningYes()
   {
-    GetIt.I.get<AppState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.remap);
+    GetIt.I.get<PaletteState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.remap);
     _closeWarning();
     widget.dismiss();
   }
 
   void _paletteWarningNo()
   {
-    GetIt.I.get<AppState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.replace);
+    GetIt.I.get<PaletteState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.replace);
     _closeWarning();
     widget.dismiss();
   }
@@ -163,7 +169,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _appendPalette()
   {
-    GetIt.I.get<AppState>().appendPalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList));
+    GetIt.I.get<PaletteState>().appendPalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList));
     _closeWarning();
     widget.dismiss();
   }
@@ -214,13 +220,12 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _importFileChosen({required final String? path})
   {
-    final AppState appState = GetIt.I.get<AppState>();
     if (path != null && path.isNotEmpty)
     {
       if (path.endsWith(fileExtensionKpal))
       {
         final String fileName = extractFilenameFromPath(path: path);
-        final String targetPath = p.join(appState.internalDir, palettesSubDirName, fileName);
+        final String targetPath = p.join(GetIt.I.get<AppPaths>().internalDir, palettesSubDirName, fileName);
         if (!File(targetPath).existsSync())
         {
           File(path).copy(targetPath).then((final File newFile) {
@@ -229,29 +234,28 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
         }
         else
         {
-          appState.showMessage(text: "A palette with the same name already exists!");
+          showMessage(text: "A palette with the same name already exists!");
         }
       }
       else
       {
-        appState.showMessage(text: "Please select a KPal file!");
+        showMessage(text: "Please select a KPal file!");
       }
     }
   }
 
   void _importFinished({required final File newFile})
   {
-    final AppState appState = GetIt.I.get<AppState>();
     if (newFile.existsSync())
     {
       _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
         _paletteEntries.value = pList;
       });
-      appState.showMessage(text: "Import successful!");
+      showMessage(text: "Import successful!");
     }
     else
     {
-      appState.showMessage(text: "Import failed!");
+      showMessage(text: "Import failed!");
     }
   }
 
@@ -259,7 +263,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   {
     return Expanded(
       child: Tooltip(
-        waitDuration: AppState.toolTipDuration,
+        waitDuration: toolTipDuration,
         message: tooltip,
         child: Padding(
           padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),

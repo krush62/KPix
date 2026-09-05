@@ -25,15 +25,17 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
-import 'package:kpix/managers/history/history_grid_layer.dart';
-import 'package:kpix/managers/history/history_layer.dart';
-import 'package:kpix/managers/history/history_ramp_data.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/constraints/grid_layer_constraints.dart';
+import 'package:kpix/models/history/history_grid_layer.dart';
+import 'package:kpix/models/history/history_layer.dart';
+import 'package:kpix/models/history/history_ramp_data.dart';
+import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/drawing_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
 import 'package:logger/logger.dart';
 
 class GridLayerState extends LayerState
@@ -236,7 +238,7 @@ class GridLayerState extends LayerState
       if (!identical(outgoingRaster, image)) outgoingRaster,
       if (!identical(outgoingThumbnail, image)) outgoingThumbnail,
     ],);
-    GetIt.I.get<AppState>().newRasterData(layer: this);
+    GetIt.I.get<LayerManager>().newRasterData(layer: this);
     settleRaster();
   }
 
@@ -262,10 +264,9 @@ class GridLayerState extends LayerState
 
   Future<CoordinateColorMap> getHashMap() async
   {
-    final AppState appState = GetIt.I.get<AppState>();
     final Set<CoordinateSetI> rasterCoords = await getRasterData();
     final CoordinateColorMap theMap = HashMap<CoordinateSetI, ColorReference>();
-    final ColorReference color = appState.selectedColor!;
+    final ColorReference color = GetIt.I.get<PaletteState>().selectedColor!;
     for (final CoordinateSetI coord in rasterCoords)
     {
        theMap[coord] = color;
@@ -275,22 +276,22 @@ class GridLayerState extends LayerState
 
   Future<ui.Image> _createRaster() async
   {
-    final AppState appState = GetIt.I.get<AppState>();
-    final ByteData byteDataImg = ByteData(appState.canvasSize.x * appState.canvasSize.y * 4);
+    final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
+    final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final int colorOpacity = ((opacity.toDouble() / 100.0) * 255.0).round();
     final int colorBrightness = ((brightness.toDouble() / 100.0) * 255.0).round();
     final int colorBrightnessPremultiplied = (colorBrightness * colorOpacity) ~/ 255;
 
 
     final Set<CoordinateSetI> rasterCoords = await getRasterData();
-    addCoordListToBytes(coords: rasterCoords, byteDataImg: byteDataImg, canvasSize: appState.canvasSize, brightness: colorBrightnessPremultiplied, opacity: colorOpacity);
+    addCoordListToBytes(coords: rasterCoords, byteDataImg: byteDataImg, canvasSize: canvasSize, brightness: colorBrightnessPremultiplied, opacity: colorOpacity);
 
 
     final Completer<ui.Image> completerImg = Completer<ui.Image>();
     ui.decodeImageFromPixels(
       byteDataImg.buffer.asUint8List(),
-      appState.canvasSize.x,
-      appState.canvasSize.y,
+      canvasSize.x,
+      canvasSize.y,
       ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
       {
         completerImg.complete(convertedImage);
@@ -302,21 +303,21 @@ class GridLayerState extends LayerState
   Future<Set<CoordinateSetI>> getRasterData() async
   {
     final Set<CoordinateSetI> rasterCoords = <CoordinateSetI>{};
-    final AppState appState = GetIt.I.get<AppState>();
+    final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
 
     if (gridType == GridType.onePointPerspective || gridType == GridType.twoPointPerspective || gridType == GridType.threePointPerspective)
     {
-      final int horizonY = (appState.canvasSize.y.toDouble() * horizonPosition).round();
-      rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: horizonY), end: CoordinateSetI(x: appState.canvasSize.x - 1, y: horizonY)));
+      final int horizonY = (canvasSize.y.toDouble() * horizonPosition).round();
+      rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: horizonY), end: CoordinateSetI(x: canvasSize.x - 1, y: horizonY)));
 
       if (gridType == GridType.onePointPerspective)
       {
-        final CoordinateSetI vanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint1).round(), y: horizonY);
+        final CoordinateSetI vanishingPoint = CoordinateSetI(x: (canvasSize.x * vanishingPoint1).round(), y: horizonY);
         final bool showLeft = vanishingPoint.x > 0;
-        final bool showRight = vanishingPoint.x < appState.canvasSize.x - 1;
+        final bool showRight = vanishingPoint.x < canvasSize.x - 1;
         final bool showTop = vanishingPoint.y > 0;
-        final bool showBottom = vanishingPoint.y < appState.canvasSize.y - 1;
-        final Set<CoordinateSetI> edgePoints = _getEdgePointsEven(width: appState.canvasSize.x, height: appState.canvasSize.y, numLines: intervalX, showLeft: showLeft, showRight: showRight, showTop: showTop, showBottom: showBottom);
+        final bool showBottom = vanishingPoint.y < canvasSize.y - 1;
+        final Set<CoordinateSetI> edgePoints = _getEdgePointsEven(width: canvasSize.x, height: canvasSize.y, numLines: intervalX, showLeft: showLeft, showRight: showRight, showTop: showTop, showBottom: showBottom);
         for (final CoordinateSetI edgePoint in edgePoints)
         {
           rasterCoords.addAll(bresenham(start: vanishingPoint, end: edgePoint));
@@ -324,24 +325,24 @@ class GridLayerState extends LayerState
       }
       else if (gridType == GridType.twoPointPerspective || gridType == GridType.threePointPerspective)
       {
-        final CoordinateSetI leftVanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint1).round(), y: horizonY);
-        final CoordinateSetI rightVanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint2).round(), y: horizonY);
+        final CoordinateSetI leftVanishingPoint = CoordinateSetI(x: (canvasSize.x * vanishingPoint1).round(), y: horizonY);
+        final CoordinateSetI rightVanishingPoint = CoordinateSetI(x: (canvasSize.x * vanishingPoint2).round(), y: horizonY);
 
-        final Set<CoordinateSetI> edgePointsLeft = _getEdgePointsEven(width: appState.canvasSize.x, height: appState.canvasSize.y, numLines: intervalX,
+        final Set<CoordinateSetI> edgePointsLeft = _getEdgePointsEven(width: canvasSize.x, height: canvasSize.y, numLines: intervalX,
             showLeft: false,
-            showRight: leftVanishingPoint.x < appState.canvasSize.x - 1,
+            showRight: leftVanishingPoint.x < canvasSize.x - 1,
             showTop: leftVanishingPoint.y > 0,
-            showBottom: leftVanishingPoint.y < appState.canvasSize.y - 1,);
+            showBottom: leftVanishingPoint.y < canvasSize.y - 1,);
         for (final CoordinateSetI edgePoint in edgePointsLeft)
         {
           rasterCoords.addAll(bresenham(start: leftVanishingPoint, end: edgePoint));
         }
 
-        final Set<CoordinateSetI> edgePointsRight = _getEdgePointsEven(width: appState.canvasSize.x, height: appState.canvasSize.y, numLines: intervalX,
+        final Set<CoordinateSetI> edgePointsRight = _getEdgePointsEven(width: canvasSize.x, height: canvasSize.y, numLines: intervalX,
             showRight: false,
             showLeft: rightVanishingPoint.x > 0,
             showTop: rightVanishingPoint.y > 0,
-            showBottom: rightVanishingPoint.y < appState.canvasSize.y - 1,);
+            showBottom: rightVanishingPoint.y < canvasSize.y - 1,);
         for (final CoordinateSetI edgePoint in edgePointsRight)
         {
           rasterCoords.addAll(bresenham(start: rightVanishingPoint, end: edgePoint));
@@ -349,8 +350,8 @@ class GridLayerState extends LayerState
 
         if (gridType == GridType.threePointPerspective)
         {
-          final CoordinateSetI verticalVanishingPoint = CoordinateSetI(x: appState.canvasSize.x ~/ 2, y: (appState.canvasSize.y.toDouble() * vanishingPoint3).round());
-          final Set<CoordinateSetI> edgePointsVertical = _getEdgePointsEven(width: appState.canvasSize.x, height: appState.canvasSize.y, numLines: intervalX, showBottom: vanishingPoint3 < horizonPosition, showTop: vanishingPoint3 > horizonPosition);
+          final CoordinateSetI verticalVanishingPoint = CoordinateSetI(x: canvasSize.x ~/ 2, y: (canvasSize.y.toDouble() * vanishingPoint3).round());
+          final Set<CoordinateSetI> edgePointsVertical = _getEdgePointsEven(width: canvasSize.x, height: canvasSize.y, numLines: intervalX, showBottom: vanishingPoint3 < horizonPosition, showTop: vanishingPoint3 > horizonPosition);
           for (final CoordinateSetI edgePoint in edgePointsVertical)
           {
             rasterCoords.addAll(bresenham(start: verticalVanishingPoint, end: edgePoint));
@@ -361,7 +362,7 @@ class GridLayerState extends LayerState
     }
     else
     {
-      int repeatRows = appState.canvasSize.y;
+      int repeatRows = canvasSize.y;
       if (gridType == GridType.rectangular || gridType == GridType.triangular)
       {
         repeatRows = intervalY;
@@ -379,11 +380,11 @@ class GridLayerState extends LayerState
         repeatRows = intervalY * 2;
       }
 
-      repeatRows = min(repeatRows, appState.canvasSize.y);
+      repeatRows = min(repeatRows, canvasSize.y);
 
       for (int y = 0; y < repeatRows; y++)
       {
-        for (int x = 0; x < appState.canvasSize.x; x++)
+        for (int x = 0; x < canvasSize.x; x++)
         {
           bool shouldDraw = false;
 
@@ -501,10 +502,10 @@ class GridLayerState extends LayerState
 
           if (shouldDraw)
           {
-            for (int r = 0; r < appState.canvasSize.y; r += repeatRows)
+            for (int r = 0; r < canvasSize.y; r += repeatRows)
             {
               final CoordinateSetI coord = CoordinateSetI(x: x, y: y + r);
-              if (coord.x >= 0 && coord.x < appState.canvasSize.x && coord.y >= 0 && coord.y < appState.canvasSize.y)
+              if (coord.x >= 0 && coord.x < canvasSize.x && coord.y >= 0 && coord.y < canvasSize.y)
               {
                 rasterCoords.add(coord);
               }

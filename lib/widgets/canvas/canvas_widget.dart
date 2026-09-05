@@ -37,16 +37,26 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/constraints/tool_select_constraints.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
+import 'package:kpix/models/history_controller.dart';
+import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/status_bar_state.dart';
+import 'package:kpix/models/symmetry_state.dart';
+import 'package:kpix/models/tool_state.dart';
+import 'package:kpix/models/tool_type.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
@@ -55,8 +65,6 @@ import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
-import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
-import 'package:kpix/widgets/tools/tool_type.dart';
 
 /// Layout options for [CanvasWidget].
 abstract final class _CanvasOptions
@@ -100,7 +108,11 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   final DesktopPreferenceContent _desktopPrefs = GetIt.I.get<PreferenceManager>().desktopPreferenceContent;
   final ShaderOptions _shaderOptions = GetIt.I.get<ShaderOptions>();
   final GuiPreferenceContent _guiPrefs = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
-  final AppState _appState = GetIt.I.get<AppState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
+  final CanvasState _canvasState = GetIt.I.get<CanvasState>();
+  final ViewState _viewState = GetIt.I.get<ViewState>();
+  final ToolState _toolState = GetIt.I.get<ToolState>();
+  final PaletteState _paletteState = GetIt.I.get<PaletteState>();
   final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier<CoordinateSetD?>(null);
   final ValueNotifier<bool> _isDragging = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _stylusLongMoveStarted = ValueNotifier<bool>(false);
@@ -159,7 +171,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   final ValueNotifier<double> _selectionPulse = ValueNotifier<double>(1.0);
 
   late KPixPainter kPixPainter = KPixPainter(
-    appState: _appState,
     offset: _canvasOffset,
     coords: _cursorPos,
     isDragging: _isDragging,
@@ -184,7 +195,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   void _setDefaultCursor()
   {
     _defaultMouseCursor = _desktopPrefs.cursorType.value.systemCursor;
-    final bool isForbidden = _appState.timeline.isPlaying.value;
+    final bool isForbidden = _documentState.timeline.isPlaying.value;
     if (isForbidden && _mouseCursor.value == SystemMouseCursors.none)
     {
       _mouseCursor.value = SystemMouseCursors.forbidden;
@@ -222,32 +233,32 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _shaderOptions.isEnabled.removeListener(_updateFromChange);
     _shaderOptions.onlyCurrentRampEnabled.removeListener(_updateFromChange);
     _shaderOptions.shaderDirection.removeListener(_updateFromChange);
-    _appState.selectedColorNotifier.removeListener(_updateFromChange);
-    _appState.timeline.isPlaying.removeListener(_setDefaultCursor);
+    _paletteState.selectedColorNotifier.removeListener(_updateFromChange);
+    _documentState.timeline.isPlaying.removeListener(_setDefaultCursor);
 
-    _appState.zoomFactorNotifier.removeListener(_updateFromChange);
+    _viewState.zoomFactorNotifier.removeListener(_updateFromChange);
     _canvasOffset.removeListener(_updateFromChange);
-    _appState.selectedToolNotifier.removeListener(_updateFromChange);
-    _appState.timeline.isPlaying.removeListener(_updateFromChange);
-    _appState.timeline.frames.removeListener(_updateFromChange);
-    _appState.timeline.selectedFrameIndexNotifier.removeListener(_updateFromChange);
-    _appState.symmetryState.horizontalActivated.removeListener(_updateFromChange);
-    _appState.symmetryState.horizontalValue.removeListener(_updateFromChange);
-    _appState.symmetryState.verticalActivated.removeListener(_updateFromChange);
-    _appState.symmetryState.verticalValue.removeListener(_updateFromChange);
+    _toolState.selectedToolNotifier.removeListener(_updateFromChange);
+    _documentState.timeline.isPlaying.removeListener(_updateFromChange);
+    _documentState.timeline.frames.removeListener(_updateFromChange);
+    _documentState.timeline.selectedFrameIndexNotifier.removeListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().horizontalActivated.removeListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().horizontalValue.removeListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().verticalActivated.removeListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().verticalValue.removeListener(_updateFromChange);
 
     //the global app state holds this callback, so it has to let go of it too
-    if (_appState.flushHistoryData == _flushHistoryData)
+    if (GetIt.I.get<HistoryController>().flushHistoryData == _flushHistoryData)
     {
-      _appState.flushHistoryData = null;
+      GetIt.I.get<HistoryController>().flushHistoryData = null;
     }
 
     _guiPrefs.selectionPulsatingOutline.removeListener(_updateSelectionPulse);
     _guiPrefs.selectionOpacity.removeListener(_updateSelectionPulse);
-    _appState.selectionState.selection.isEmptyNotifer.removeListener(_updateSelectionPulse);
-    _appState.timeline.isPlaying.removeListener(_updateSelectionPulse);
-    _appState.timeline.layerChangeNotifier.removeListener(_updateSelectionPulse);
-    _appState.timeline.selectedFrameIndexNotifier.removeListener(_updateSelectionPulse);
+    _documentState.selectionState.selection.isEmptyNotifer.removeListener(_updateSelectionPulse);
+    _documentState.timeline.isPlaying.removeListener(_updateSelectionPulse);
+    _documentState.timeline.layerChangeNotifier.removeListener(_updateSelectionPulse);
+    _documentState.timeline.selectedFrameIndexNotifier.removeListener(_updateSelectionPulse);
 
     _selectionBarAnimationController.dispose();
     _selectionPulseController.dispose();
@@ -264,7 +275,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _timers.add(Timer.periodic(Duration(milliseconds: _stylusPrefs.stylusPollInterval.value), (final Timer t) {_stylusBtnTimeout(t: t);}));
     _timers.add(Timer.periodic(const Duration(milliseconds: _CanvasOptions.historyCheckPollRate), (final Timer t) {_checkHistoryData(t: t);}));
     _timers.add(Timer.periodic(const Duration(milliseconds: _CanvasOptions.idleTimerRate), (final Timer t) {_idleTimeout(t: t);}));
-    _appState.flushHistoryData = _flushHistoryData;
+    GetIt.I.get<HistoryController>().flushHistoryData = _flushHistoryData;
     _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
     WidgetsBinding.instance.addPostFrameCallback((final _)
     {
@@ -278,18 +289,18 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _shaderOptions.isEnabled.addListener(_updateFromChange);
     _shaderOptions.onlyCurrentRampEnabled.addListener(_updateFromChange);
     _shaderOptions.shaderDirection.addListener(_updateFromChange);
-    _appState.selectedColorNotifier.addListener(_updateFromChange);
-    _appState.timeline.isPlaying.addListener(_setDefaultCursor);
-    _appState.zoomFactorNotifier.addListener(_updateFromChange);
+    _paletteState.selectedColorNotifier.addListener(_updateFromChange);
+    _documentState.timeline.isPlaying.addListener(_setDefaultCursor);
+    _viewState.zoomFactorNotifier.addListener(_updateFromChange);
     _canvasOffset.addListener(_updateFromChange);
-    _appState.selectedToolNotifier.addListener(_updateFromChange);
-    _appState.timeline.isPlaying.addListener(_updateFromChange);
-    _appState.timeline.frames.addListener(_updateFromChange);
-    _appState.timeline.selectedFrameIndexNotifier.addListener(_updateFromChange);
-    _appState.symmetryState.horizontalActivated.addListener(_updateFromChange);
-    _appState.symmetryState.horizontalValue.addListener(_updateFromChange);
-    _appState.symmetryState.verticalActivated.addListener(_updateFromChange);
-    _appState.symmetryState.verticalValue.addListener(_updateFromChange);
+    _toolState.selectedToolNotifier.addListener(_updateFromChange);
+    _documentState.timeline.isPlaying.addListener(_updateFromChange);
+    _documentState.timeline.frames.addListener(_updateFromChange);
+    _documentState.timeline.selectedFrameIndexNotifier.addListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().horizontalActivated.addListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().horizontalValue.addListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().verticalActivated.addListener(_updateFromChange);
+    GetIt.I.get<SymmetryState>().verticalValue.addListener(_updateFromChange);
 
     _selectionBarAnimationController = AnimationController(
       vsync: this,
@@ -306,10 +317,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     )..addListener(_selectionPulseTick);
     _guiPrefs.selectionPulsatingOutline.addListener(_updateSelectionPulse);
     _guiPrefs.selectionOpacity.addListener(_updateSelectionPulse);
-    _appState.selectionState.selection.isEmptyNotifer.addListener(_updateSelectionPulse);
-    _appState.timeline.isPlaying.addListener(_updateSelectionPulse);
-    _appState.timeline.layerChangeNotifier.addListener(_updateSelectionPulse);
-    _appState.timeline.selectedFrameIndexNotifier.addListener(_updateSelectionPulse);
+    _documentState.selectionState.selection.isEmptyNotifer.addListener(_updateSelectionPulse);
+    _documentState.timeline.isPlaying.addListener(_updateSelectionPulse);
+    _documentState.timeline.layerChangeNotifier.addListener(_updateSelectionPulse);
+    _documentState.timeline.selectedFrameIndexNotifier.addListener(_updateSelectionPulse);
     _updateSelectionPulse();
   }
 
@@ -324,9 +335,9 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   {
     final bool shouldPulse = _guiPrefs.selectionPulsatingOutline.value &&
         _guiPrefs.selectionOpacity.value > 0 &&
-        !_appState.selectionState.selection.isEmpty &&
-        !_appState.timeline.isPlaying.value &&
-        _appState.timeline.getCurrentLayer() is DrawingLayerState;
+        !_documentState.selectionState.selection.isEmpty &&
+        !_documentState.timeline.isPlaying.value &&
+        _documentState.timeline.getCurrentLayer() is DrawingLayerState;
 
     if (shouldPulse)
     {
@@ -350,7 +361,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
   void _updateFromChange()
   {
-    _appState.repaintNotifier.repaint();
+    _viewState.repaintNotifier.repaint();
   }
 
   /// Requests the canvas to be fitted into the viewport.
@@ -387,10 +398,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       return;
     }
 
-    int bestZoomLevel = AppState.zoomLevelMin;
-    for (int i = AppState.zoomLevelMin; i <= AppState.zoomLevelMax; i++)
+    int bestZoomLevel = ViewState.zoomLevelMin;
+    for (int i = ViewState.zoomLevelMin; i <= ViewState.zoomLevelMax; i++)
     {
-      if (_appState.canvasSize.x * i / _appState.devicePixelRatio < _viewportSize.width && _appState.canvasSize.y * i / _appState.devicePixelRatio < _viewportSize.height)
+      if (_canvasState.canvasSize.x * i / _viewState.devicePixelRatio < _viewportSize.width && _canvasState.canvasSize.y * i / _viewState.devicePixelRatio < _viewportSize.height)
       {
         bestZoomLevel = i;
       }
@@ -399,10 +410,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         break;
       }
     }
-    _appState.setZoomLevel(val: bestZoomLevel);
-    _setOffset(newOffset: Offset((_viewportSize.width - (_appState.canvasSize.x * _appState.zoomFactor / _appState.devicePixelRatio)) / 2, (_viewportSize.height - (_appState.canvasSize.y * _appState.zoomFactor / _appState.devicePixelRatio)) / 2));
+    _viewState.setZoomLevel(val: bestZoomLevel);
+    _setOffset(newOffset: Offset((_viewportSize.width - (_canvasState.canvasSize.x * _viewState.zoomFactor / _viewState.devicePixelRatio)) / 2, (_viewportSize.height - (_canvasState.canvasSize.y * _viewState.zoomFactor / _viewState.devicePixelRatio)) / 2));
     _optimalZoomApplied = true;
-    _appState.repaintNotifier.repaint();
+    _viewState.repaintNotifier.repaint();
   }
 
   /// Stores the size of the drawing area and re-evaluates a pending optimal zoom.
@@ -471,8 +482,8 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       {
         identifier = HistoryStateTypeIdentifier.toolFill;
       }
-      final LayerState? originLayer = kPixPainter.toolPainter!.historyLayer ?? _appState.timeline.getCurrentLayer();
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: identifier, originLayer: originLayer);
+      final LayerState? originLayer = kPixPainter.toolPainter!.historyLayer ?? _documentState.timeline.getCurrentLayer();
+      GetIt.I.get<HistoryManager>().addState(identifier: identifier, originLayer: originLayer);
       kPixPainter.toolPainter!.hasHistoryData = false;
     }
   }
@@ -498,7 +509,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         _dragStartLoc = Offset((_touchPointers.values.elementAt(0).currentPos.dx + _touchPointers.values.elementAt(1).currentPos.dx) / 2, (_touchPointers.values.elementAt(0).currentPos.dy + _touchPointers.values.elementAt(1).currentPos.dy) / 2);
         _isDragging.value = true;
         _initialTouchZoomDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
-        _touchZoomStartLevel = _appState.zoomFactor;
+        _touchZoomStartLevel = _viewState.zoomFactor;
         _mouseCursor.value = SystemMouseCursors.move;
       }
     }
@@ -510,10 +521,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = true;
-      if (!_shaderOptions.isEnabled.value && !(_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer() is ShadingLayerState))
+      if (!_shaderOptions.isEnabled.value && !(_documentState.timeline.getCurrentLayer() != null && _documentState.timeline.getCurrentLayer() is ShadingLayerState))
       {
-        _previousTool = _appState.selectedTool;
-        _appState.setToolSelection(tool: ToolType.pick);
+        _previousTool = _toolState.selectedTool;
+        _toolState.setToolSelection(tool: ToolType.pick);
       }
     }
 
@@ -531,7 +542,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   {
     if (kPixPainter.toolPainter != null && kPixPainter.toolPainter!.hasAsyncUpdate)
     {
-      _appState.repaintNotifier.repaint();
+      _viewState.repaintNotifier.repaint();
       kPixPainter.toolPainter!.hasAsyncUpdate = false;
     }
 
@@ -572,7 +583,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     else if (_secondaryIsDown.value && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = false;
-      if (_shaderOptions.isEnabled.value || (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer() is ShadingLayerState))
+      if (_shaderOptions.isEnabled.value || (_documentState.timeline.getCurrentLayer() != null && _documentState.timeline.getCurrentLayer() is ShadingLayerState))
       {
         final ShaderDirection currentDirection = _shaderOptions.shaderDirection.value;
         if (currentDirection == ShaderDirection.left)
@@ -589,9 +600,9 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick]! as ColorPickPainter;
         if (colorPickPainter.selectedColor != null)
         {
-          _appState.colorSelected(color: colorPickPainter.selectedColor);
+          _paletteState.colorSelected(color: colorPickPainter.selectedColor);
         }
-        _appState.setToolSelection(tool: _previousTool);
+        _toolState.setToolSelection(tool: _previousTool);
       }
     }
     else if (_isDragging.value && details.kind == PointerDeviceKind.mouse)
@@ -601,7 +612,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     }
     _timerRunning = false;
 
-    if (_appState.selectedTool == ToolType.select)
+    if (_toolState.selectedTool == ToolType.select)
     {
       if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.select])
       {
@@ -610,14 +621,14 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         {
           selectionPainter.hasNewSelection = false;
           if (selectionPainter.options.shape.value == SelectShape.ellipse || selectionPainter.options.shape.value == SelectShape.rectangle) {
-            _appState.selectionState.newSelectionFromShape(
+            _documentState.selectionState.newSelectionFromShape(
                 start: selectionPainter.selectionStart,
                 end: selectionPainter.selectionEnd,
                 selectShape: selectionPainter.options.shape.value,);
           }
           else if (selectionPainter.options.shape.value == SelectShape.wand)
           {
-            _appState.selectionState.newSelectionFromWand(
+            _documentState.selectionState.newSelectionFromWand(
                 coord: selectionPainter.selectionEnd,
                 mode: selectionPainter.options.mode.value,
                 selectFromWholeRamp: selectionPainter.options.wandWholeRamp.value,
@@ -651,7 +662,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     }
     if (kPixPainter.toolPainter != null)
     {
-      _appState.statusBarState.updateFromPaint(statusBarData: kPixPainter.toolPainter!.statusBarData);
+      GetIt.I.get<StatusBarState>().updateFromPaint(statusBarData: kPixPainter.toolPainter!.statusBarData);
 
     }
 
@@ -670,7 +681,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
     if (_stylusLongMoveStarted.value)
     {
-      final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / _appState.zoomFactor.toDouble();
+      final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / _viewState.zoomFactor.toDouble();
       final double yOffset = _secondaryStartLoc.dy - _cursorPos.value!.y;
       final double xOffset = _secondaryStartLoc.dx - _cursorPos.value!.x;
       final int zoomSteps = (yOffset / _stylusPrefs.stylusZoomStepDistance.value).round();
@@ -687,23 +698,23 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         }
       }
 
-      if (_stylusLongMoveHorizontal.value && _appState.timeline.getCurrentLayer() != null)
+      if (_stylusLongMoveHorizontal.value && _documentState.timeline.getCurrentLayer() != null)
       {
-        if (_appState.timeline.getCurrentLayer() is RasterableLayerState)
+        if (_documentState.timeline.getCurrentLayer() is RasterableLayerState)
         {
-          _appState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
+          _toolState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
         }
-        else if (_appState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
+        else if (_documentState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
         {
-           final ReferenceLayerState refLayer = _appState.timeline.getCurrentLayer()! as ReferenceLayerState;
+           final ReferenceLayerState refLayer = _documentState.timeline.getCurrentLayer()! as ReferenceLayerState;
            refLayer.setZoomSliderValue(newVal: -toolSizeSteps + _stylusToolStartSize);
         }
 
       }
 
-      if (_stylusLongMoveVertical.value && _appState.setZoomLevelByDistance(startZoomLevel: _stylusZoomStartLevel, steps: zoomSteps))
+      if (_stylusLongMoveVertical.value && _viewState.setZoomLevelByDistance(startZoomLevel: _stylusZoomStartLevel, steps: zoomSteps))
       {
-        _setOffset(newOffset: cursorOffset - (cursorPositionBeforeZoom * _appState.zoomFactor.toDouble()));
+        _setOffset(newOffset: cursorOffset - (cursorPositionBeforeZoom * _viewState.zoomFactor.toDouble()));
       }
     }
 
@@ -730,21 +741,21 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       {
         final double currentDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
         final int zoomSteps = ((currentDistance - _initialTouchZoomDistance) / _touchPrefs.zoomStepDistance.value).round();
-        final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / _appState.zoomFactor.toDouble();
-        if (_appState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps))
+        final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / _viewState.zoomFactor.toDouble();
+        if (_viewState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps))
         {
-          _setOffset(newOffset: cursorOffset - (cursorPositionBeforeZoom * _appState.zoomFactor.toDouble()));
+          _setOffset(newOffset: cursorOffset - (cursorPositionBeforeZoom * _viewState.zoomFactor.toDouble()));
         }
       }
     }
 
     _checkSelectedToolData();
-    _appState.repaintNotifier.repaint();
+    _viewState.repaintNotifier.repaint();
   }
 
   void _checkSelectedToolData()
   {
-    if (_appState.selectedTool == ToolType.select)
+    if (_toolState.selectedTool == ToolType.select)
     {
       if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
       {
@@ -766,20 +777,20 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
               }
             }
           }
-          _appState.selectionState.newSelectionFromPolygon(points: selection);
+          _documentState.selectionState.newSelectionFromPolygon(points: selection);
           selectionPainter.polygonPoints.clear();
           selectionPainter.polygonDown = false;
         }
       }
     }
-    else if (_appState.selectedTool == ToolType.pick)
+    else if (_toolState.selectedTool == ToolType.pick)
     {
       if (kPixPainter.toolPainterMap[ToolType.pick] != null && kPixPainter.toolPainterMap[ToolType.pick].runtimeType == ColorPickPainter)
       {
         final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick]! as ColorPickPainter;
         if (colorPickPainter.selectedColor != null)
         {
-          _appState.colorSelected(color: colorPickPainter.selectedColor);
+          _paletteState.colorSelected(color: colorPickPainter.selectedColor);
         }
       }
     }
@@ -809,15 +820,15 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       //ZOOM
       if (!_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && !_hotkeyManager.controlIsPressed)
       {
-        final Offset cursorPositionBeforeZoom = (ev.localPosition - _canvasOffset.value) / _appState.zoomFactor.toDouble();
+        final Offset cursorPositionBeforeZoom = (ev.localPosition - _canvasOffset.value) / _viewState.zoomFactor.toDouble();
 
-        if (ev.scrollDelta.dy < 0.0 && _appState.increaseZoomLevel())
+        if (ev.scrollDelta.dy < 0.0 && _viewState.increaseZoomLevel())
         {
-          _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _appState.zoomFactor.toDouble()));
+          _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _viewState.zoomFactor.toDouble()));
         }
-        else if (ev.scrollDelta.dy > 0.0 && _appState.decreaseZoomLevel())
+        else if (ev.scrollDelta.dy > 0.0 && _viewState.decreaseZoomLevel())
         {
-          _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _appState.zoomFactor.toDouble()));
+          _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _viewState.zoomFactor.toDouble()));
         }
       }
       //CHANGE TOOL SIZE
@@ -825,58 +836,60 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       {
         if (ev.scrollDelta.dy < 0.0)
         {
-          if (_appState.timeline.getCurrentLayer() != null)
+          if (_documentState.timeline.getCurrentLayer() != null)
           {
-            if (_appState.timeline.getCurrentLayer() is RasterableLayerState)
+            if (_documentState.timeline.getCurrentLayer() is RasterableLayerState)
             {
-              _appState.setToolSize(1, _appState.getCurrentToolSize());
+              _toolState.setToolSize(1, _toolState.getCurrentToolSize());
             }
-            else if (_appState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
+            else if (_documentState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
             {
-              final ReferenceLayerState refLayer = _appState.timeline.getCurrentLayer()! as ReferenceLayerState;
+              final ReferenceLayerState refLayer = _documentState.timeline.getCurrentLayer()! as ReferenceLayerState;
               refLayer.increaseZoom();
             }
           }
         }
         else
         {
-          if (_appState.timeline.getCurrentLayer() != null)
+          if (_documentState.timeline.getCurrentLayer() != null)
           {
-            if (_appState.timeline.getCurrentLayer() is RasterableLayerState)
+            if (_documentState.timeline.getCurrentLayer() is RasterableLayerState)
             {
-              _appState.setToolSize(-1, _appState.getCurrentToolSize());
+              _toolState.setToolSize(-1, _toolState.getCurrentToolSize());
             }
-            else if (_appState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
+            else if (_documentState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
             {
-              final ReferenceLayerState refLayer = _appState.timeline.getCurrentLayer()! as ReferenceLayerState;
+              final ReferenceLayerState refLayer = _documentState.timeline.getCurrentLayer()! as ReferenceLayerState;
               refLayer.decreaseZoom();
             }
           }
         }
-        _appState.repaintNotifier.repaint();
+        _viewState.repaintNotifier.repaint();
       }
       //CHANGE CURRENT LAYER
       else if (_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && !_hotkeyManager.controlIsPressed)
       {
+        final LayerManager layerManager = GetIt.I.get<LayerManager>();
         if (ev.scrollDelta.dy < 0.0)
         {
-          _appState.selectLayerAbove();
+          layerManager.selectLayerAbove();
         }
         else
         {
-          _appState.selectLayerBelow();
+          layerManager.selectLayerBelow();
         }
       }
       //MOVE LAYER
       else if (_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && _hotkeyManager.controlIsPressed)
       {
+        final LayerManager layerManager = GetIt.I.get<LayerManager>();
         if (ev.scrollDelta.dy < 0.0)
         {
-          _appState.moveUpLayer(layerState: _appState.timeline.getCurrentLayer());
+          layerManager.moveUpLayer(layerState: _documentState.timeline.getCurrentLayer());
         }
         else
         {
-          _appState.moveDownLayer(layerState: _appState.timeline.getCurrentLayer());
+          layerManager.moveDownLayer(layerState: _documentState.timeline.getCurrentLayer());
         }
       }
       //CHANGE COLOR SELECTION
@@ -884,11 +897,11 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       {
         if (ev.scrollDelta.dy < 0.0)
         {
-          _appState.decrementColorSelection();
+          _paletteState.decrementColorSelection();
         }
         else
         {
-          _appState.incrementColorSelection();
+          _paletteState.incrementColorSelection();
         }
       }
     }
@@ -897,7 +910,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   void _onMouseExit({required final PointerExitEvent pee})
   {
     _cursorPos.value = null;
-    _appState.repaintNotifier.repaint();
+    _viewState.repaintNotifier.repaint();
     _mouseIsInside = false;
   }
 
@@ -926,7 +939,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       //if (!_stylusLongMoveStarted.value && !_isDragging.value && _cursorPos.value != null)
       if (diffMs <= _stylusPrefs.stylusPickMaxDuration.value && _cursorPos.value != null)
       {
-        if (_shaderOptions.isEnabled.value || (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer() is ShadingLayerState))
+        if (_shaderOptions.isEnabled.value || (_documentState.timeline.getCurrentLayer() != null && _documentState.timeline.getCurrentLayer() is ShadingLayerState))
         {
           final ShaderDirection currentDirection = _shaderOptions.shaderDirection.value;
           if (currentDirection == ShaderDirection.left)
@@ -943,16 +956,16 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
           final CoordinateSetI normPos = CoordinateSetI(
             x: _getClosestPixel(
               value: _cursorPos.value!.x - _canvasOffset.value.dx,
-              pixelSize: _appState.zoomFactor.toDouble() / _appState.devicePixelRatio,)
+              pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio,)
             ,
             y: _getClosestPixel(
               value: _cursorPos.value!.y - _canvasOffset.value.dy,
-              pixelSize: _appState.zoomFactor.toDouble() / _appState.devicePixelRatio,)
+              pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio,)
             ,);
-          final ColorReference? colRef = _appState.getColorFromImageAtPosition(normPos: normPos);
-          if (colRef != null && colRef != _appState.selectedColor)
+          final ColorReference? colRef = _documentState.getColorFromImageAtPosition(normPos: normPos);
+          if (colRef != null && colRef != _paletteState.selectedColor)
           {
-            _appState.colorSelected(color: colRef);
+            _paletteState.colorSelected(color: colRef);
           }
         }
       }
@@ -973,7 +986,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     if (!_stylusHoverDetected && _cursorPos.value != null && !_mouseIsInside)
     {
       _cursorPos.value = null;
-      _appState.repaintNotifier.repaint();
+      _viewState.repaintNotifier.repaint();
     }
     else if (DateTime.now().difference(_stylusHoverTimeStamp).inMilliseconds > _stylusPrefs.stylusPollInterval.value)
     {
@@ -1006,14 +1019,14 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     //print("STYLUS BTN LONG PRESS");
     _timerStylusRunning = false;
     _stylusLongMoveStarted.value = true;
-    _stylusZoomStartLevel = _appState.zoomFactor;
-    if (_appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    _stylusZoomStartLevel = _viewState.zoomFactor;
+    if (_documentState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
     {
-      _stylusToolStartSize = _appState.getCurrentToolSize();
+      _stylusToolStartSize = _toolState.getCurrentToolSize();
     }
-    else if (_appState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
+    else if (_documentState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
     {
-      _stylusToolStartSize = (_appState.timeline.getCurrentLayer()! as ReferenceLayerState).zoomSliderValue;
+      _stylusToolStartSize = (_documentState.timeline.getCurrentLayer()! as ReferenceLayerState).zoomSliderValue;
     }
 
   }
@@ -1023,7 +1036,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   void _setOffset({required final Offset newOffset})
   {
     final CoordinateSetD coords = CoordinateSetD(x: newOffset.dx, y: newOffset.dy);
-    final CoordinateSetD scaledCanvas = CoordinateSetD(x: _appState.canvasSize.x.toDouble() * _appState.zoomFactor / _appState.devicePixelRatio, y: _appState.canvasSize.y.toDouble() * _appState.zoomFactor / _appState.devicePixelRatio);
+    final CoordinateSetD scaledCanvas = CoordinateSetD(x: _canvasState.canvasSize.x.toDouble() * _viewState.zoomFactor / _viewState.devicePixelRatio, y: _canvasState.canvasSize.y.toDouble() * _viewState.zoomFactor / _viewState.devicePixelRatio);
     final CoordinateSetD minVisibility = CoordinateSetD(x: _viewportSize.width * _CanvasOptions.minVisibilityFactor, y: _viewportSize.height * _CanvasOptions.minVisibilityFactor);
 
     coords.x = coords.x.clamp(-scaledCanvas.x + minVisibility.x, _viewportSize.width - minVisibility.x);
@@ -1044,7 +1057,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     if (!_isDragging.value)
     {
       _isDragging.value = true;
-      _touchZoomStartLevel = _appState.zoomFactor;
+      _touchZoomStartLevel = _viewState.zoomFactor;
       _dragStartLoc = event.position;
       _initialTouchZoomDistance = 0.0;
     }
@@ -1053,12 +1066,12 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       const double factor = 25.0;
       final double currentDistance = event.scale >= 1.0 ? event.scale * factor - 1 : -(1.0 / event.scale) * factor;
       final double zoomSteps = (currentDistance - _initialTouchZoomDistance) / _touchPrefs.zoomStepDistance.value;
-      _appState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps.toInt());
+      _viewState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps.toInt());
       if (zoomSteps > -1.0 && zoomSteps < 1.0)
       {
         _setOffset(newOffset: _canvasOffset.value + event.panDelta);
       }
-      _appState.repaintNotifier.repaint();
+      _viewState.repaintNotifier.repaint();
     }
   }
 
@@ -1105,10 +1118,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
           ),
         ),
         ValueListenableBuilder<ToolType>(
-          valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
+          valueListenable: GetIt.I.get<ToolState>().selectedToolNotifier,
           builder: (final BuildContext contextS, final ToolType toolType, final Widget? childS) {
             return ValueListenableBuilder<bool>(
-              valueListenable: GetIt.I.get<AppState>().selectionState.selection.isEmptyNotifer,
+              valueListenable: GetIt.I.get<DocumentState>().selectionState.selection.isEmptyNotifer,
               builder: (final BuildContext contextT, final bool hasNoSelection, final Widget? childT) {
                 final bool shouldShow = toolType == ToolType.select || !hasNoSelection;
                 if (shouldShow)

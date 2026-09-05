@@ -17,8 +17,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
@@ -68,7 +68,7 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
 
   /// A single menu entry showing [icon], padded to line up with its neighbours.
   ///
-  /// The [tooltip] is shown after [AppState.toolTipDuration] of hovering,
+  /// The [tooltip] is shown after [toolTipDuration] of hovering,
   /// pressing the entry calls [onPressedFunc].
   Padding _createMenuButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc})
   {
@@ -76,7 +76,7 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
       padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing / 2),
       child: Tooltip(
         message: tooltip,
-        waitDuration: AppState.toolTipDuration,
+        waitDuration: toolTipDuration,
         child: IconButton.outlined(
           constraints: const BoxConstraints(),
           padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),

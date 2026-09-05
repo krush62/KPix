@@ -18,32 +18,19 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/models/constraints/canvas_size_constraints.dart';
+import 'package:kpix/models/constraints/kpal_constraints.dart';
+import 'package:kpix/models/io_types.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/image_importer.dart';
-import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/canvas/canvas_size_constraints.dart';
+import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// Data structure for import options used in [ImportWidget].
-class ImportData
-{
-  final int maxClusters;
-  final int maxRamps;
-  final int maxColors;
-  final bool includeReference;
-  final bool createNewPalette;
-  final ui.Image image;
-  final ui.Image scaledImage;
-  final String filePath;
-  const ImportData({required this.filePath, required this.maxRamps, required this.maxColors, required this.image, required this.includeReference, required this.maxClusters, required this.createNewPalette, required this.scaledImage});
-}
-
-/// Screen for importing raster images into the application.
 class ImportWidget extends StatefulWidget
 {
   final Function() dismiss;
@@ -86,7 +73,6 @@ class _ImportWidgetState extends State<ImportWidget>
     _maxRampsNotifier = ValueNotifier<int>(KPalConstraints.rampCountDefault);
     _maxColorsPerRampNotifier = ValueNotifier<int>(KPalConstraints.colorCountDefault);
   }
-
 
   void _chooseImagePressed()
   {
@@ -251,7 +237,7 @@ class _ImportWidgetState extends State<ImportWidget>
                           Expanded(
                             child: Tooltip(
                               message: "Choose Image",
-                              waitDuration: AppState.toolTipDuration,
+                              waitDuration: toolTipDuration,
                               child: IconButton.outlined(
                                 constraints: const BoxConstraints(),
                                 padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
@@ -470,7 +456,7 @@ class _ImportWidgetState extends State<ImportWidget>
               children: <Widget>[
                 Expanded(
                   child: Tooltip(
-                    waitDuration: AppState.toolTipDuration,
+                    waitDuration: toolTipDuration,
                     message: "Close",
                     child: IconButton.outlined(
                       icon: const Icon(
@@ -485,7 +471,7 @@ class _ImportWidgetState extends State<ImportWidget>
                 const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
                 Expanded(
                   child: Tooltip(
-                    waitDuration: AppState.toolTipDuration,
+                    waitDuration: toolTipDuration,
                     message: "Import",
                     child: ValueListenableBuilder<String?>(
                       valueListenable: _fileNameNotifier,

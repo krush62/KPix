@@ -16,14 +16,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/constraints/grid_layer_constraints.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
-import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 bool isPerspectiveGridType({required final GridType gridType})
 {
@@ -96,16 +95,16 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                       {
                         widget.gridState.gridTypeNotifier.value = lastPerspectiveGridType;
                       }
-                      GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                     },
                     segments: <ButtonSegment<bool>>[
                       ButtonSegment<bool>(
                         value: false,
-                        label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Grid", child: Text("GRID", style: Theme.of(context).textTheme.labelSmall!.apply(color: !isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                        label: Tooltip(waitDuration: toolTipDuration, message: "Grid", child: Text("GRID", style: Theme.of(context).textTheme.labelSmall!.apply(color: !isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                       ),
                       ButtonSegment<bool>(
                         value: true,
-                        label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Perspective", child: Text("PERSPECTIVE", style: Theme.of(context).textTheme.labelSmall!.apply(color: isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                        label: Tooltip(waitDuration: toolTipDuration, message: "Perspective", child: Text("PERSPECTIVE", style: Theme.of(context).textTheme.labelSmall!.apply(color: isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                       ),
                     ],
                   ),
@@ -115,7 +114,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         if (isPerspectiveGridType(gridType: g) == isPerspective)
                           ButtonSegment<GridType>(
                             value: g,
-                            label: Tooltip(waitDuration: AppState.toolTipDuration, message: g.name, child: Text(g.label, style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                            label: Tooltip(waitDuration: toolTipDuration, message: g.name, child: Text(g.label, style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                           ),
                     ],
                     selected: <GridType>{gridType},
@@ -131,7 +130,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         lastPerspectiveGridType = types.first;
                       }
                       widget.gridState.gridTypeNotifier.value = types.first;
-                      GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                     },
                   ),
                   Row(
@@ -161,7 +160,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                 widget.gridState.opacityNotifier.value = newVal.round();
                               },
                               onChangedEnd: (final double value) {
-                                GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                                GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                               },
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
@@ -196,7 +195,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                 widget.gridState.brightnessNotifier.value = newVal.round();
                               },
                               onChangedEnd: (final double value) {
-                                GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                                GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                               },
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
@@ -231,7 +230,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                 widget.gridState.intervalXNotifier.value = newVal.round();
                               },
                               onChangedEnd: (final double value) {
-                                GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                                GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                               },
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
@@ -267,7 +266,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                 widget.gridState.intervalYNotifier.value = newVal.round();
                               },
                               onChangedEnd: (final double value) {
-                                GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                                GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                               },
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
@@ -303,7 +302,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                   widget.gridState.horizonPositionNotifier.value = newVal;
                                 },
                                 onChangedEnd: (final double value) {
-                                  GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                                  GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                                 },
                                 textStyle: Theme.of(context).textTheme.bodyLarge!,
                               );
@@ -339,7 +338,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                   widget.gridState.vanishingPoint1Notifier.value = newVal;
                                 },
                                 onChangedEnd: (final double value) {
-                                  GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                                  GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                                 },
                                 textStyle: Theme.of(context).textTheme.bodyLarge!,
                               );
@@ -382,7 +381,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                        widget.gridState.vanishingPoint2Notifier.value = newVals.end;
                                      },
                                      onChangedEnd: (final RangeValues values) {
-                                       GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                                       GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                                      },
                                    );
                                 },
@@ -419,7 +418,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                   widget.gridState.vanishingPoint3Notifier.value = newVal;
                                 },
                                 onChangedEnd: (final double value) {
-                                  GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                                  GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                                 },
                                 textStyle: Theme.of(context).textTheme.bodyLarge!,
                               );

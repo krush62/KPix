@@ -33,6 +33,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
@@ -42,11 +43,14 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/layer_widget_options.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
+import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
@@ -68,7 +72,9 @@ class RightBarWidget extends StatefulWidget
 
 class _RightBarWidgetState extends State<RightBarWidget>
 {
-  final AppState _appState = GetIt.I.get<AppState>();
+  final ProjectSession _projectSession = GetIt.I.get<ProjectSession>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
+  final LayerManager _layerManager = GetIt.I.get<LayerManager>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
 
   final OverlayPortalController _addLayerPortalController = OverlayPortalController();
@@ -88,31 +94,31 @@ class _RightBarWidgetState extends State<RightBarWidget>
 
   void _newDrawingLayerPressed()
   {
-    _appState.addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    _layerManager.addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
   void _newReferenceLayerPressed()
   {
-    _appState.addNewLayer(layerType: ReferenceLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    _layerManager.addNewLayer(layerType: ReferenceLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
   void _newGridLayerPressed()
   {
-    _appState.addNewLayer(layerType: GridLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    _layerManager.addNewLayer(layerType: GridLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
   void _newShadingLayerPressed()
   {
-    _appState.addNewLayer(layerType: ShadingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    _layerManager.addNewLayer(layerType: ShadingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
   void _newDitherLayerPressed()
   {
-    _appState.addNewLayer(layerType: DitherLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    _layerManager.addNewLayer(layerType: DitherLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
@@ -130,7 +136,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
           );
         },
         onAcceptWithDetails: (final DragTargetDetails<LayerState> details) {
-          _appState.changeLayerOrder(state: details.data, newPosition: i);
+          _layerManager.changeLayerOrder(state: details.data, newPosition: i);
         },
       ),);
 
@@ -152,10 +158,10 @@ class _RightBarWidgetState extends State<RightBarWidget>
         );
       },
       onAcceptWithDetails: (final DragTargetDetails<LayerState> details) {
-        final Frame? frame = _appState.timeline.selectedFrame;
+        final Frame? frame = _documentState.timeline.selectedFrame;
         if (frame != null)
         {
-          _appState.changeLayerOrder(state: details.data, newPosition: frame.layerList.length);
+          _layerManager.changeLayerOrder(state: details.data, newPosition: frame.layerList.length);
         }
       },
     ),);
@@ -182,7 +188,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                     borderRadius: const BorderRadius.only(topLeft: Radius.circular(LayerWidgetOptions.borderRadius), bottomLeft: Radius.circular(LayerWidgetOptions.borderRadius)),
                   ),
                   child: ValueListenableBuilder<bool>(
-                    valueListenable: _appState.hasProjectNotifier,
+                    valueListenable: _projectSession.hasProjectNotifier,
                     builder: (final BuildContext context, final bool hasProject, final Widget? child) {
                       if (hasProject)
                       {
@@ -195,7 +201,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                 anchorKey: _addLayerAnchorKey,
                                 child: Tooltip(
                                   message: "Add New Layer...",
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   child: OverlayPortal(
                                     controller: _addLayerPortalController,
                                     overlayChildBuilder: (final BuildContext bcontext) {
@@ -237,16 +243,16 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: <Widget>[
                                   ValueListenableBuilder<int>(
-                                    valueListenable: _appState.timeline.selectedFrameIndexNotifier,
+                                    valueListenable: _documentState.timeline.selectedFrameIndexNotifier,
                                     builder: (final BuildContext context1, final int frameIndex, final Widget? child1) {
-                                      final Frame? currentFrame = _appState.timeline.selectedFrame;
+                                      final Frame? currentFrame = _documentState.timeline.selectedFrame;
                                       if (currentFrame != null)
                                       {
                                         return ListenableBuilder(
-                                          listenable: _appState.timeline.layerChangeNotifier,
+                                          listenable: _documentState.timeline.layerChangeNotifier,
                                           builder: (final BuildContext context, final Widget? child)
                                           {
-                                            return Column(children: _createWidgetList(layers: _appState.timeline.frames.value[frameIndex].layerList),);
+                                            return Column(children: _createWidgetList(layers: _documentState.timeline.frames.value[frameIndex].layerList),);
                                           },
                                         );
                                       }
@@ -274,17 +280,17 @@ class _RightBarWidgetState extends State<RightBarWidget>
             ],
           ),
           ValueListenableBuilder<bool>(
-            valueListenable: _appState.hasProjectNotifier,
+            valueListenable: _projectSession.hasProjectNotifier,
             builder: (final BuildContext context, final bool hasProject, final Widget? child) {
               if (hasProject) {
                 return ValueListenableBuilder<int>(
-                  valueListenable: _appState.timeline.selectedFrameIndexNotifier,
+                  valueListenable: _documentState.timeline.selectedFrameIndexNotifier,
                   builder: (final BuildContext context1, final int frameIndex, final Widget? child1) {
                     return ValueListenableBuilder<bool>(
-                      valueListenable: _appState.layerSettingsVisibleNotifier,
+                      valueListenable: GetIt.I.get<ViewState>().layerSettingsVisibleNotifier,
                       builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
                         Widget settingsWidget = const SizedBox.shrink();
-                        final LayerState? currentLayer = _appState.timeline.getCurrentLayer();
+                        final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
                         if (currentLayer != null && currentLayer is RasterableLayerState)
                         {
                           currentLayer.layerSettings.editStarted = true;
@@ -327,20 +333,20 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                       ),
                                     ),
                                     Tooltip(
-                                      waitDuration: AppState.toolTipDuration,
+                                      waitDuration: toolTipDuration,
                                       message: "Close",
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: IconButton.outlined(
                                           onPressed: () {
-                                            _appState.layerSettingsVisible = false;
+                                            GetIt.I.get<ViewState>().layerSettingsVisible = false;
                                             if (currentLayer != null && currentLayer is RasterableLayerState)
                                             {
                                               currentLayer.layerSettings.editStarted = false;
                                               if (currentLayer.layerSettings.hasChanges)
                                               {
-                                                final Frame? frame = _appState.timeline.selectedFrame;
-                                                GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: frame?.layerList.getSelectedLayer());
+                                                final Frame? frame = _documentState.timeline.selectedFrame;
+                                                GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: frame?.layerList.getSelectedLayer());
                                                 currentLayer.layerSettings.hasChanges = false;
                                               }
                                             }

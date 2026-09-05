@@ -19,12 +19,14 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/constraints/tool_shape_constraints.dart';
+import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/tool_options/shape_options.dart';
@@ -33,7 +35,6 @@ import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/drawing_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/tools/constraints/tool_shape_constraints.dart';
 
 class ShapePainter extends IToolPainter
 {
@@ -158,7 +159,7 @@ class ShapePainter extends IToolPainter
             final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: contentPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              _drawingPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+              _drawingPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
             }
             else if (rasterLayer is ShadingLayerState)
             {
@@ -177,7 +178,7 @@ class ShapePainter extends IToolPainter
           final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: contentPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
           if (rasterLayer is DrawingLayerState)
           {
-            _drawingPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            _drawingPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
             _dumpDrawingLayer(layer: rasterLayer, canvasSize: drawParams.canvasSize);
             _waitingForRasterization = true;
           }
@@ -205,13 +206,13 @@ class ShapePainter extends IToolPainter
   {
     if (_drawingPixels.isNotEmpty)
     {
-      if (!appState.selectionState.selection.isEmpty)
+      if (!documentState.selectionState.selection.isEmpty)
       {
-        appState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
+        documentState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
       }
       else if (!shaderOptions.isEnabled.value && _behaviorPreferenceContent.selectShapeAfterInsert.value)
       {
-        appState.selectionState.addNewSelectionWithContent(colorMap: _drawingPixels);
+        documentState.selectionState.addNewSelectionWithContent(colorMap: _drawingPixels);
       }
       else
       {

@@ -21,6 +21,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/font_manager.dart';
+import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
@@ -62,7 +63,7 @@ class FontPainter extends IToolPainter
           _lastShadingEnabled != shaderOptions.isEnabled.value ||
           _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
           _lastShadingDirection != shaderOptions.shaderDirection.value ||
-          _lastColorSelection != appState.selectedColor;
+          _lastColorSelection != paletteState.selectedColor;
 
       if (shouldUpdate)
       {
@@ -107,7 +108,7 @@ class FontPainter extends IToolPainter
           final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
           if (rasterLayer is DrawingLayerState)
           {
-            cursorPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            cursorPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
           }
           else if (rasterLayer is ShadingLayerState)
           {
@@ -136,7 +137,7 @@ class FontPainter extends IToolPainter
             final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _textContent, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+              final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
               _dumpDrawing(drawParams: drawParams, drawingPixels: drawingPixels);
             }
             else if (rasterLayer is ShadingLayerState)
@@ -153,7 +154,7 @@ class FontPainter extends IToolPainter
       _lastShadingEnabled = shaderOptions.isEnabled.value;
       _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
       _lastShadingDirection = shaderOptions.shaderDirection.value;
-      _lastColorSelection = appState.selectedColor;
+      _lastColorSelection = paletteState.selectedColor;
 
     }
     else
@@ -181,13 +182,13 @@ class FontPainter extends IToolPainter
     {
       if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer is DrawingLayerState)
       {
-        if (!appState.selectionState.selection.isEmpty)
+        if (!documentState.selectionState.selection.isEmpty)
         {
-          appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
+          documentState.selectionState.selection.addDirectlyAll(list: drawingPixels);
         }
         /*else if (!_shaderOptions.isEnabled.value)
       {
-        appState.selectionState.add(data: drawingPixels, notify: false);
+        documentState.selectionState.add(data: drawingPixels, notify: false);
       }*/
         else
         {

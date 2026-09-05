@@ -19,31 +19,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
-import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
-class SymmetryState
-{
-  final ValueNotifier<bool> horizontalActivated = ValueNotifier<bool>(false);
-  final ValueNotifier<double> horizontalValue = ValueNotifier<double>(1.0);
-  final ValueNotifier<bool> verticalActivated = ValueNotifier<bool>(false);
-  final ValueNotifier<double> verticalValue = ValueNotifier<double>(1.0);
-
-  void reset()
-  {
-    horizontalActivated.value = false;
-    horizontalValue.value = GetIt.I.get<AppState>().canvasSize.x.toDouble() / 2.0;
-    verticalActivated.value = false;
-    verticalValue.value = GetIt.I.get<AppState>().canvasSize.y.toDouble() / 2.0;
-  }
-
-  void newCanvasDimensions({required final CoordinateSetI newSize})
-  {
-    horizontalValue.value = horizontalValue.value.clamp(1.0, newSize.x - 1).toDouble();
-    verticalValue.value = verticalValue.value.clamp(1.0, newSize.y - 1).toDouble();
-  }
-}
 
 
 abstract final class _SymmetryWidgetOptions
@@ -122,7 +102,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
           children: <Widget>[
             Tooltip(
               message: "Symmetry Options",
-              waitDuration: AppState.toolTipDuration,
+              waitDuration: toolTipDuration,
               child: GestureDetector(
                 onTap: _toggleExpand,
                 child: MouseRegion(
@@ -193,13 +173,13 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         padding:  const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
                                         child: Tooltip(
                                           message: "Center Horizontal Ruler",
-                                          waitDuration: AppState.toolTipDuration,
+                                          waitDuration: toolTipDuration,
                                           child: SizedBox(
                                             width: _SymmetryWidgetOptions.buttonWidth,
                                             height: _SymmetryWidgetOptions.buttonHeight,
                                             child: IconButton.outlined(
                                               onPressed: horActivated ? () {
-                                                widget.state.horizontalValue.value = GetIt.I.get<AppState>().canvasSize.x.toDouble() / 2.0;
+                                                widget.state.horizontalValue.value = GetIt.I.get<CanvasState>().canvasSize.x.toDouble() / 2.0;
                                               } : null,
                                               icon: const Icon(TablerIcons.layout_align_middle, size: _SymmetryWidgetOptions.buttonHeight,),
                                             ),
@@ -216,8 +196,8 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         return KPixSlider(
                                           min: 1.0,
                                           value: horVal,
-                                          max: max(GetIt.I.get<AppState>().canvasSize.x - 1, 1.0),
-                                          //divisions: max((GetIt.I.get<AppState>().canvasSize.x - 2) * 2, 1),
+                                          max: max(GetIt.I.get<CanvasState>().canvasSize.x - 1, 1.0),
+                                          //divisions: max((GetIt.I.get<CanvasState>().canvasSize.x - 2) * 2, 1),
                                           label: horVal.toStringAsFixed(1),
                                           onChanged: horActivated ? (final double value) {
                                             widget.state.horizontalValue.value = (value * 2).roundToDouble() / 2.0;
@@ -270,13 +250,13 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         padding: const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
                                         child: Tooltip(
                                           message: "Center Vertical Ruler",
-                                          waitDuration: AppState.toolTipDuration,
+                                          waitDuration: toolTipDuration,
                                           child: SizedBox(
                                             width: _SymmetryWidgetOptions.buttonWidth,
                                             height: _SymmetryWidgetOptions.buttonHeight,
                                             child: IconButton.outlined(
                                               onPressed: vertActivated ? () {
-                                                widget.state.verticalValue.value = GetIt.I.get<AppState>().canvasSize.y.toDouble() / 2.0;
+                                                widget.state.verticalValue.value = GetIt.I.get<CanvasState>().canvasSize.y.toDouble() / 2.0;
                                               } : null,
                                               icon: const Icon(TablerIcons.layout_align_center, size: _SymmetryWidgetOptions.buttonHeight,),
                                             ),
@@ -293,8 +273,8 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         return KPixSlider(
                                           min: 1.0,
                                           value: horVal,
-                                          max: max(GetIt.I.get<AppState>().canvasSize.y - 1, 1.0),
-                                          //divisions: max((GetIt.I.get<AppState>().canvasSize.y - 2) * 2, 1),
+                                          max: max(GetIt.I.get<CanvasState>().canvasSize.y - 1, 1.0),
+                                          //divisions: max((GetIt.I.get<CanvasState>().canvasSize.y - 2) * 2, 1),
                                           label: horVal.toStringAsFixed(1),
                                           onChanged: vertActivated ? (final double value) {
                                             widget.state.verticalValue.value = (value * 2).roundToDouble() / 2.0;

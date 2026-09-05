@@ -16,18 +16,19 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/models/constraints/tool_line_constraints.dart';
+import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
+import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/tools/constraints/tool_line_constraints.dart';
-import 'package:kpix/widgets/tools/constraints/tool_pencil_constraints.dart';
 
 class LinePainter extends IToolPainter
 {
@@ -124,7 +125,7 @@ class LinePainter extends IToolPainter
             final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _linePoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              cursorPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+              cursorPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
             }
             else if (rasterLayer is ShadingLayerState)
             {
@@ -181,10 +182,10 @@ class LinePainter extends IToolPainter
           final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _linePoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
           if (rasterLayer is DrawingLayerState)
           {
-            final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
-            if (!appState.selectionState.selection.isEmpty)
+            final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
+            if (!documentState.selectionState.selection.isEmpty)
             {
-              appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
+              documentState.selectionState.selection.addDirectlyAll(list: drawingPixels);
             }
             else
             {

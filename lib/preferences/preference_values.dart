@@ -20,8 +20,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
-import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/constraints/frame_constraints.dart';
+import 'package:kpix/models/constraints/shading_layer_settings_constraints.dart';
 import 'package:kpix/util/color_names.dart';
 
 class StylusPreferenceContent

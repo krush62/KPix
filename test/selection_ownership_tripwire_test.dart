@@ -15,8 +15,12 @@
  */
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_state.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -30,66 +34,66 @@ void main()
 
   /// Two drawing layers with a pixel on the upper one, lifted into the selection.
   /// Returns (upper, lower).
-  Future<(DrawingLayerState, DrawingLayerState)> setUp({required final AppState appState}) async
+  Future<(DrawingLayerState, DrawingLayerState)> setUp({required final ProjectSession projectSession}) async
   {
-    final ColorReference color = appState.colorRamps.first.references.first;
-    final DrawingLayerState lower = layerAt(appState: appState, index: 0);
-    final DrawingLayerState upper = appState.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+    final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
+    final DrawingLayerState lower = layerAt(projectSession: projectSession, index: 0);
+    final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
     upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
-    await settle(appState: appState);
+    await settle();
 
-    appState.selectionState.selectAll();
-    await settle(appState: appState);
+    GetIt.I.get<DocumentState>().selectionState.selectAll();
+    await settle();
     return (upper, lower);
   }
 
   testWidgets("the selection records which layer its content came from", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      expect(appState.selectionState.selection.owner, isNull, reason: "nothing floating, nothing owned");
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.owner, isNull, reason: "nothing floating, nothing owned");
 
-      final (DrawingLayerState upper, DrawingLayerState _) = await setUp(appState: appState);
-      expect(appState.selectionState.selection.owner, same(upper),
+      final (DrawingLayerState upper, DrawingLayerState _) = await setUp(projectSession: projectSession);
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.owner, same(upper),
           reason: "the pixels were taken out of the upper layer",);
     },);
   });
 
   testWidgets("ownership follows the content across a layer switch", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final (DrawingLayerState _, DrawingLayerState lower) = await setUp(appState: appState);
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
+      final (DrawingLayerState _, DrawingLayerState lower) = await setUp(projectSession: projectSession);
 
-      appState.selectLayer(newLayer: lower);
-      await settle(appState: appState);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
+      await settle();
 
-      expect(appState.selectionState.selection.owner, same(lower),
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.owner, same(lower),
           reason: "the hand-over moved the content, so it moved the ownership with it",);
     },);
   });
 
   testWidgets("ownership is released when the selection empties", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      await setUp(appState: appState);
-      expect(appState.selectionState.selection.owner, isNotNull);
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
+      await setUp(projectSession: projectSession);
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.owner, isNotNull);
 
-      appState.selectionState.deselect(addToHistoryStack: false);
-      await settle(appState: appState);
+      GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
+      await settle();
 
-      expect(appState.selectionState.selection.owner, isNull, reason: "nothing floats, so nobody owns it");
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.owner, isNull, reason: "nothing floats, so nobody owns it");
     },);
   });
 
   testWidgets("deselecting onto a layer the content does not belong to is caught", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final (DrawingLayerState _, DrawingLayerState lower) = await setUp(appState: appState);
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
+      final (DrawingLayerState _, DrawingLayerState lower) = await setUp(projectSession: projectSession);
 
       //LayerCollection.selectLayer changes the selected layer without handing the
       //content over - the shape of every drift bug found so far. Deleting a layer
       //and reordering past the selected one both used to reach the selection this
       //way, and stamped the floating pixels onto whatever ended up selected.
-      appState.timeline.selectedFrame!.layerList.selectLayer(newLayer: lower);
-      await settle(appState: appState);
+      GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.selectLayer(newLayer: lower);
+      await settle();
 
       expect(
-        () => appState.selectionState.deselect(addToHistoryStack: false),
+        () => GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false),
         throwsAssertionError,
         reason: "writing the content to a layer it never came from has to be loud, not silent",
       );
@@ -97,20 +101,20 @@ void main()
   });
 
   testWidgets("adding to a selection that belongs elsewhere is caught", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final (DrawingLayerState _, DrawingLayerState lower) = await setUp(appState: appState);
-      appState.selectionState.deselect(addToHistoryStack: false);
-      await settle(appState: appState);
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
+      final (DrawingLayerState _, DrawingLayerState lower) = await setUp(projectSession: projectSession);
+      GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
+      await settle();
 
       //select on the lower layer, then move the selected layer out from under it
-      appState.selectLayer(newLayer: lower);
-      appState.selectionState.selectAll();
-      await settle(appState: appState);
-      appState.timeline.selectedFrame!.layerList.selectLayer(newLayer: layerAt(appState: appState, index: 0));
-      await settle(appState: appState);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
+      GetIt.I.get<DocumentState>().selectionState.selectAll();
+      await settle();
+      GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.selectLayer(newLayer: layerAt(projectSession: projectSession, index: 0));
+      await settle();
 
       expect(
-        () => appState.selectionState.selection.transferAll(coords: <CoordinateSetI>{pixel}),
+        () => GetIt.I.get<DocumentState>().selectionState.selection.transferAll(coords: <CoordinateSetI>{pixel}),
         throwsAssertionError,
         reason: "lifting more pixels into a selection owned by another layer would mix two layers together",
       );
@@ -118,18 +122,18 @@ void main()
   });
 
   testWidgets("a proper layer switch stays quiet", (final WidgetTester tester) async {
-    await withProject(tester: tester, canvasSize: canvasSize, body: (final AppState appState) async {
-      final (DrawingLayerState upper, DrawingLayerState lower) = await setUp(appState: appState);
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
+      final (DrawingLayerState upper, DrawingLayerState lower) = await setUp(projectSession: projectSession);
 
       //the supported route hands the content over, so nothing is out of place
-      appState.selectLayer(newLayer: lower);
-      await settle(appState: appState);
-      appState.selectLayer(newLayer: upper);
-      await settle(appState: appState);
-      appState.selectionState.deselect(addToHistoryStack: false);
-      await settle(appState: appState);
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
+      await settle();
+      GetIt.I.get<LayerManager>().selectLayer(newLayer: upper);
+      await settle();
+      GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
+      await settle();
 
-      expect(copiesOf(appState: appState, coord: pixel), 1, reason: "and the pixel is where it started");
+      expect(copiesOf(projectSession: projectSession, coord: pixel), 1, reason: "and the pixel is where it started");
     },);
   });
 }

@@ -37,8 +37,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/helpers/hash_helper.dart';
 
@@ -53,14 +51,6 @@ class IdColor
   final Color color;
   final String uuid;
   IdColor({required this.hsv, required this.uuid}) : color = hsv.toColor();
-  String getTooltipText()
-  {
-    final String name = GetIt.I.get<PreferenceManager>().colorNames.getColorName(r: color.r, g: color.g, b: color.b);
-    final String hsv = "${this.hsv.h.round()}° ${(this.hsv.s * 100).round()}% ${(this.hsv.v * 100).round()}%";
-    final String rgb = colorToRGBString(color: color);
-    final String hex = colorToHexString(color: color);
-    return "$name\n$hsv\n$rgb\n$hex";
-  }
 }
 
 class ColorReference

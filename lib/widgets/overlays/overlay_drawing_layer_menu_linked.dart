@@ -33,9 +33,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_widget_options.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
@@ -105,13 +105,13 @@ class _OverlayDrawingLayerMenuLinkedState extends State<OverlayDrawingLayerMenuL
 
   /// A single square menu entry showing [icon].
   ///
-  /// The [tooltip] is shown after [AppState.toolTipDuration] of hovering,
+  /// The [tooltip] is shown after [toolTipDuration] of hovering,
   /// pressing the entry calls [onPressedFunc].
   Tooltip _createMenuButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc})
   {
     return Tooltip(
       message: tooltip,
-      waitDuration: AppState.toolTipDuration,
+      waitDuration: toolTipDuration,
       child: SizedBox(
         width: OverlayEntrySubMenuOptions.buttonHeight * _buttonToIconRatio,
         height: OverlayEntrySubMenuOptions.buttonHeight * _buttonToIconRatio,

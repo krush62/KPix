@@ -18,12 +18,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/models/constraints/tool_line_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/widgets/tools/constraints/tool_line_constraints.dart';
-import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class AngleData
 {
@@ -177,7 +176,7 @@ class LineOptions extends IToolOptions
                           value: sortStyle,
                           label: Tooltip(
                             message: sortStyle.label,
-                            waitDuration: AppState.toolTipDuration,
+                            waitDuration: toolTipDuration,
                             child: Text(sortStyle.iconText),
                           ),
                         ),

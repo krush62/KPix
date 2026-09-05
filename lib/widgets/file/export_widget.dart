@@ -17,150 +17,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/models/app_paths.dart';
+import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/export_types.dart';
+import 'package:kpix/models/file_constants.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// Supported image export types.
-enum ImageExportType
-{
-  png,
-  aseprite,
-  photoshop,
-  gimp,
-  pixelorama,
-  kpix,
-  texturePack
-}
-
-/// Supported animation export types.
-enum AnimationExportType
-{
-  gif,
-  apng,
-  zippedPng,
-  //aseprite,
-  //pixelorama,
-  texturePack
-}
-
-/// Supported palette export types.
-enum PaletteExportType
-{
-  kpal,
-  png,
-  aseprite,
-  gimp,
-  paintNet,
-  adobe,
-  jasc,
-  corel,
-  openOffice,
-  json
-}
-
-/// Supported special export types.
-enum KPixExportType
-{
-  kpix,
-  texturePack,
-  texturePackAnimated
-}
-
-// Available export sections.
-enum ExportSectionType
-{
-  image,
-  animation,
-  palette,
-  kpix
-}
-
-/// Data structure for holding information needed for exporting. Like the
-/// [extension], [directory], ...
-abstract class ExportData
-{
-  final String extension;
-  final String name;
-  final String fileName;
-  final String directory;
-  const ExportData({required this.name, required this.extension, this.fileName = "", this.directory = ""});
-}
-
-/// [ExportData] specialization for palettes.
-class PaletteExportData extends ExportData
-{
-  const PaletteExportData({required super.name, required super.extension, super.fileName = "", super.directory = ""});
-  factory PaletteExportData.fromWithConcreteData({required final PaletteExportData other, required final String fileName, required final String directory})
-  {
-    return PaletteExportData(name: other.name, extension: other.extension, directory: directory, fileName: fileName);
-  }
-
-  static const Map<PaletteExportType, PaletteExportData> exportTypeMap =
-  <PaletteExportType, PaletteExportData>{
-    PaletteExportType.png:PaletteExportData(name: "PNG", extension: "png"),
-    PaletteExportType.aseprite:PaletteExportData(name: "ASEPRITE", extension: "aseprite"),
-    PaletteExportType.gimp:PaletteExportData(name: "GIMP", extension: "gpl"),
-    PaletteExportType.paintNet:PaletteExportData(name: "PAINT.NET", extension: "txt"),
-    PaletteExportType.adobe:PaletteExportData(name: "ADOBE", extension: "ase"),
-    PaletteExportType.jasc:PaletteExportData(name: "JASC", extension: "pal"),
-    PaletteExportType.corel:PaletteExportData(name: "COREL", extension: "xml"),
-    PaletteExportType.openOffice:PaletteExportData(name: "STAROFFICE", extension: "soc"),
-    PaletteExportType.json:PaletteExportData(name: "PIXELORAMA", extension: "json"),
-    PaletteExportType.kpal:PaletteExportData(name: "KPAL", extension: fileExtensionKpal),
-  };
-}
-
-/// Available export scaling values.
-const List<int> exportScalingValues = <int>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-
-/// [ExportData] specialization for images.
-class ImageExportData extends ExportData
-{
-  final int scaling;
-  final bool scalable;
-  const ImageExportData({required super.name, required super.extension, required this.scalable, this.scaling = 1, super.fileName = "", super.directory = ""});
-  factory ImageExportData.fromWithConcreteData({required final ImageExportData other, required final int scaling, required final String fileName, required final String directory})
-  {
-    return ImageExportData(name: other.name, extension: other.extension, scalable: other.scalable, scaling: scaling, directory: directory, fileName: fileName);
-  }
-
-  static const Map<ImageExportType, ImageExportData> exportTypeMap = <ImageExportType, ImageExportData>{
-    ImageExportType.png : ImageExportData(name: "PNG", extension: "png", scalable: true),
-    ImageExportType.aseprite : ImageExportData(name: "ASEPRITE", extension: "aseprite", scalable: false),
-    ImageExportType.photoshop : ImageExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
-    ImageExportType.gimp : ImageExportData(name: "GIMP", extension: "xcf", scalable: false),
-    ImageExportType.pixelorama : ImageExportData(name: "PIXELORAMA", extension: "pxo", scalable: false),
-    ImageExportType.texturePack : ImageExportData(name: "TEXTURE PACK", extension: "zip", scalable: false),
-    //NOT USED:
-    ImageExportType.kpix : ImageExportData(name: "KPIX", extension: fileExtensionKpix, scalable: false),
-  };
-}
-
-/// [ExportData] specialization for animations.
-class AnimationExportData extends ImageExportData
-{
-  final bool loopOnly;
-  const AnimationExportData({required super.name, required super.extension, required super.scalable, super.scaling = 1, super.fileName = "", super.directory = "", this.loopOnly = false});
-  factory AnimationExportData.fromWithConcreteData({required final AnimationExportData other, required final int scaling, required final String fileName, required final String directory, required final bool loopOnly})
-  {
-    return AnimationExportData(name: other.name, extension: other.extension, scalable: other.scalable, loopOnly: loopOnly, scaling: scaling, directory: directory, fileName: fileName);
-  }
-  static const Map<AnimationExportType, AnimationExportData> exportTypeMap = <AnimationExportType, AnimationExportData>{
-    AnimationExportType.gif : AnimationExportData(name: "GIF", extension: "gif", scalable: true, ),
-    AnimationExportType.apng : AnimationExportData(name: "APNG", extension: "apng", scalable: true, ),
-    AnimationExportType.zippedPng : AnimationExportData(name: "PNG SEQUENCE", extension: "zip", scalable: true, ),
-    //AnimationExportType.aseprite : AnimationExportData(name: "ASEPRITE", extension: "aseprite", scalable: false),
-    //AnimationExportType.pixelorama : AnimationExportData(name: "PIXELORAMA", extension: "pxo", scalable: false),
-    AnimationExportType.texturePack : AnimationExportData(name: "TEXTURE PACK", extension: "zip", scalable: false, ),
-  };
-}
-
-/// The screen for showing all the options for exporting a project.
 class ExportWidget extends StatefulWidget
 {
   final Function() dismiss;
@@ -190,20 +61,22 @@ class _ExportWidgetState extends State<ExportWidget>
   final ValueNotifier<bool> _animationSectionOnly = ValueNotifier<bool>(false);
   final ValueNotifier<int> _scalingIndex = ValueNotifier<int>(0);
   final ValueNotifier<String> _fileName = ValueNotifier<String>("");
-  final AppState _appState = GetIt.I.get<AppState>();
+  final ProjectSession _projectSession = GetIt.I.get<ProjectSession>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
+  final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier<FileNameStatus>(FileNameStatus.available);
   final ValueNotifier<ExportSectionType> _selectedSection = ValueNotifier<ExportSectionType>(ExportSectionType.image);
 
     void _changeDirectoryPressed()
     {
-      getDirectory(startDir: _appState.exportDir).then((final String? chosenDir) {_handleChosenDirectory(chosenDir: chosenDir);});
+      getDirectory(startDir: GetIt.I.get<AppPaths>().exportDir).then((final String? chosenDir) {_handleChosenDirectory(chosenDir: chosenDir);});
     }
 
     void _handleChosenDirectory({required final String? chosenDir})
     {
       if (chosenDir != null)
       {
-        _appState.exportDir = chosenDir;
+        GetIt.I.get<AppPaths>().exportDir = chosenDir;
         _updateFileNameStatus();
       }
     }
@@ -212,11 +85,11 @@ class _ExportWidgetState extends State<ExportWidget>
   void initState()
   {
     super.initState();
-    if (_appState.timeline.loopStartIndex.value != _appState.timeline.loopEndIndex.value)
+    if (_documentState.timeline.loopStartIndex.value != _documentState.timeline.loopEndIndex.value)
     {
       _selectedSection.value = ExportSectionType.animation;
     }
-    _fileName.value = _appState.projectName.value == null ? "" : _appState.projectName.value!;
+    _fileName.value = _projectSession.projectName.value == null ? "" : _projectSession.projectName.value!;
     _updateFileNameStatus();
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.exportFileNameTextFocus).requestFocus();
   }
@@ -252,7 +125,7 @@ class _ExportWidgetState extends State<ExportWidget>
   void _updateFileNameStatus()
   {
     final String extension = _getExtension(section: _selectedSection.value);
-    _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: _appState.exportDir, extension: extension);
+    _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: GetIt.I.get<AppPaths>().exportDir, extension: extension);
   }
 
   ButtonSegment<ExportSectionType> _createExportSection({required final ExportSectionType type, required final String tooltip, required final IconData icon, final bool isEnabled = true})
@@ -262,7 +135,7 @@ class _ExportWidgetState extends State<ExportWidget>
       value: type,
       label: Tooltip(
         message: tooltip,
-        waitDuration: AppState.toolTipDuration,
+        waitDuration: toolTipDuration,
         child: Icon(icon),
       ),
     );
@@ -289,7 +162,7 @@ class _ExportWidgetState extends State<ExportWidget>
                 return SegmentedButton<ExportSectionType>(
                   segments:  <ButtonSegment<ExportSectionType>>[
                     _createExportSection(type: ExportSectionType.image, tooltip: "Image", icon: TablerIcons.photo),
-                    _createExportSection(type: ExportSectionType.animation, tooltip: "Animation", icon: TablerIcons.movie, isEnabled: _appState.timeline.frames.value.length > 1),
+                    _createExportSection(type: ExportSectionType.animation, tooltip: "Animation", icon: TablerIcons.movie, isEnabled: _documentState.timeline.frames.value.length > 1),
                     _createExportSection(type: ExportSectionType.palette, tooltip: "Palette", icon: Icons.palette),
                     _createExportSection(type: ExportSectionType.kpix, tooltip: "KPix project", icon: TablerIcons.file_export),
                   ],
@@ -348,7 +221,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                 child: ValueListenableBuilder<ImageExportType>(
                                   valueListenable: _fileExportType,
                                   builder: (final BuildContext context, final ImageExportType exportTypeEnum, final Widget? child) {
-                                    final bool isValidTexturePack = _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().isNotEmpty;
+                                    final bool isValidTexturePack = _documentState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().isNotEmpty;
                                     return SegmentedButton<ImageExportType>(
                                       selected: <ImageExportType>{exportTypeEnum},
                                       showSelectedIcon: false,
@@ -369,11 +242,11 @@ class _ExportWidgetState extends State<ExportWidget>
                                       valueListenable: _animationExportType,
                                       builder: (final BuildContext context, final AnimationExportType exportTypeEnum, final Widget? child) {
                                         bool isValidTexturePack = true;
-                                        final int startFrameIndex = sectionOnly ? _appState.timeline.loopStartIndex.value : 0;
-                                        final int endFrameIndex = sectionOnly ? _appState.timeline.loopEndIndex.value : _appState.timeline.frames.value.length - 1;
+                                        final int startFrameIndex = sectionOnly ? _documentState.timeline.loopStartIndex.value : 0;
+                                        final int endFrameIndex = sectionOnly ? _documentState.timeline.loopEndIndex.value : _documentState.timeline.frames.value.length - 1;
                                         for (int i = startFrameIndex; i <= endFrameIndex; i++)
                                         {
-                                          if (_appState.timeline.frames.value[i].layerList.getVisibleRasterLayers().isEmpty)
+                                          if (_documentState.timeline.frames.value[i].layerList.getVisibleRasterLayers().isEmpty)
                                           {
                                             isValidTexturePack = false;
                                             break;
@@ -415,13 +288,13 @@ class _ExportWidgetState extends State<ExportWidget>
                                     return ValueListenableBuilder<KPixExportType>(
                                       valueListenable: _kpixExportType,
                                       builder: (final BuildContext context, final KPixExportType exportTypeEnum, final Widget? child) {
-                                        bool isValidTexturePackAnimation = _appState.timeline.frames.value.length > 1;
-                                        final bool isValidTexturePack = _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().isNotEmpty;
-                                        final int startFrameIndex = sectionOnly ? _appState.timeline.loopStartIndex.value : 0;
-                                        final int endFrameIndex = sectionOnly ? _appState.timeline.loopEndIndex.value : _appState.timeline.frames.value.length - 1;
+                                        bool isValidTexturePackAnimation = _documentState.timeline.frames.value.length > 1;
+                                        final bool isValidTexturePack = _documentState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().isNotEmpty;
+                                        final int startFrameIndex = sectionOnly ? _documentState.timeline.loopStartIndex.value : 0;
+                                        final int endFrameIndex = sectionOnly ? _documentState.timeline.loopEndIndex.value : _documentState.timeline.frames.value.length - 1;
                                         for (int i = startFrameIndex; i <= endFrameIndex; i++)
                                         {
-                                          if (_appState.timeline.frames.value[i].layerList.getVisibleRasterLayers().isEmpty)
+                                          if (_documentState.timeline.frames.value[i].layerList.getVisibleRasterLayers().isEmpty)
                                           {
                                             isValidTexturePackAnimation = false;
                                             break;
@@ -497,7 +370,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                       builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
                                         final bool isScalable = (section == ExportSectionType.image && ImageExportData.exportTypeMap[imageType]!.scalable) || (section == ExportSectionType.animation && AnimationExportData.exportTypeMap[animationType]!.scalable);
                                         return Text(isScalable ?
-                                        "${_appState.canvasSize.x *  exportScalingValues[scalingIndexVal]} x ${_appState.canvasSize.y *  exportScalingValues[scalingIndexVal]}" : "${_appState.canvasSize.x} x ${_appState.canvasSize.y}",
+                                        "${_canvasState.canvasSize.x *  exportScalingValues[scalingIndexVal]} x ${_canvasState.canvasSize.y *  exportScalingValues[scalingIndexVal]}" : "${_canvasState.canvasSize.x} x ${_canvasState.canvasSize.y}",
                                           textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium,
                                         );
                                       },
@@ -527,8 +400,8 @@ class _ExportWidgetState extends State<ExportWidget>
                                 child: ValueListenableBuilder<bool>(
                                   valueListenable: _animationSectionOnly,
                                   builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
-                                    final bool moreThanOneFrame = _appState.timeline.loopStartIndex.value != _appState.timeline.loopEndIndex.value;
-                                    final bool sectionIsNotWhole = _appState.timeline.loopStartIndex.value > 0 || _appState.timeline.loopEndIndex.value < _appState.timeline.frames.value.length - 1;
+                                    final bool moreThanOneFrame = _documentState.timeline.loopStartIndex.value != _documentState.timeline.loopEndIndex.value;
+                                    final bool sectionIsNotWhole = _documentState.timeline.loopStartIndex.value > 0 || _documentState.timeline.loopEndIndex.value < _documentState.timeline.frames.value.length - 1;
                                     return Switch(
                                       value: animationSectionOnly,
                                       onChanged: (moreThanOneFrame && sectionIsNotWhole) ? (final bool newValue) {_animationSectionOnly.value = newValue;} : null,
@@ -541,8 +414,8 @@ class _ExportWidgetState extends State<ExportWidget>
                                 child: ValueListenableBuilder<bool>(
                                   valueListenable: _animationSectionOnly,
                                   builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
-                                    final int animationLengthMs = _appState.timeline.calculateTotalFrameTime(sectionOnly: animationSectionOnly);
-                                    final int frameCount = animationSectionOnly ? _appState.timeline.loopEndIndex.value - _appState.timeline.loopStartIndex.value + 1 : _appState.timeline.frames.value.length;
+                                    final int animationLengthMs = _documentState.timeline.calculateTotalFrameTime(sectionOnly: animationSectionOnly);
+                                    final int frameCount = animationSectionOnly ? _documentState.timeline.loopEndIndex.value - _documentState.timeline.loopStartIndex.value + 1 : _documentState.timeline.frames.value.length;
                                     final String animationLength = "$frameCount frames (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
                                     return Text(animationLength, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium);
                                   },
@@ -563,7 +436,7 @@ class _ExportWidgetState extends State<ExportWidget>
                         Expanded(
                           flex: 4,
                           child: ValueListenableBuilder<String>(
-                            valueListenable: _appState.exportDirNotifier,
+                            valueListenable: GetIt.I.get<AppPaths>().exportDirNotifier,
                             builder: (final BuildContext context, final String expDir, final Widget? child) {
                               return Text(expDir, textAlign: TextAlign.center);
                             },
@@ -573,7 +446,7 @@ class _ExportWidgetState extends State<ExportWidget>
                           flex: 2,
                           child: Tooltip(
                             message: "Change Directory",
-                            waitDuration: AppState.toolTipDuration,
+                            waitDuration: toolTipDuration,
                             child: IconButton.outlined(
                               constraints: const BoxConstraints(),
                               padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
@@ -643,7 +516,7 @@ class _ExportWidgetState extends State<ExportWidget>
                               builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                                 return Tooltip(
                                   message: status.label,
-                                  waitDuration: AppState.toolTipDuration,
+                                  waitDuration: toolTipDuration,
                                   child: Icon(
                                     status.icon,
                                     size: OverlayEntryAlertDialogOptions.iconSize / 2,
@@ -666,7 +539,7 @@ class _ExportWidgetState extends State<ExportWidget>
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: Tooltip(
-                      waitDuration: AppState.toolTipDuration,
+                      waitDuration: toolTipDuration,
                       message: "Close",
                       child: IconButton.outlined(
                         icon: const Icon(
@@ -689,7 +562,7 @@ class _ExportWidgetState extends State<ExportWidget>
                           valueListenable: _fileNameStatus,
                           builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                             return Tooltip(
-                              waitDuration: AppState.toolTipDuration,
+                              waitDuration: toolTipDuration,
                               message: "Export File",
                               child: IconButton.outlined(
                                 icon: const Icon(
@@ -697,31 +570,32 @@ class _ExportWidgetState extends State<ExportWidget>
                                 ),
                                 onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
                                 () {
+                                  final String exportDir = GetIt.I.get<AppPaths>().exportDir;
                                   if (selSection == ExportSectionType.image)
                                   {
-                                    widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: ImageExportData.exportTypeMap[_fileExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: _appState.exportDir), exportType: _fileExportType.value);
+                                    widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: ImageExportData.exportTypeMap[_fileExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: exportDir), exportType: _fileExportType.value);
                                   }
                                   else if (selSection == ExportSectionType.palette)
                                   {
-                                    widget.acceptPalette(saveData: PaletteExportData.fromWithConcreteData(other: PaletteExportData.exportTypeMap[_paletteExportType.value]!, fileName: _fileName.value, directory: _appState.exportDir), paletteType: _paletteExportType.value);
+                                    widget.acceptPalette(saveData: PaletteExportData.fromWithConcreteData(other: PaletteExportData.exportTypeMap[_paletteExportType.value]!, fileName: _fileName.value, directory: exportDir), paletteType: _paletteExportType.value);
                                   }
                                   else if (selSection == ExportSectionType.animation)
                                   {
-                                    widget.acceptAnimation(exportData: AnimationExportData.fromWithConcreteData(other: AnimationExportData.exportTypeMap[_animationExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: _appState.exportDir, loopOnly: _animationSectionOnly.value), exportType: _animationExportType.value);
+                                    widget.acceptAnimation(exportData: AnimationExportData.fromWithConcreteData(other: AnimationExportData.exportTypeMap[_animationExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: exportDir, loopOnly: _animationSectionOnly.value), exportType: _animationExportType.value);
                                   }
                                   else if (selSection == ExportSectionType.kpix)
                                   {
                                     if (_kpixExportType.value == KPixExportType.kpix)
                                     {
-                                      widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: const ImageExportData(name: "KPIX", extension: fileExtensionKpix, scalable: false), scaling: 1, fileName: _fileName.value, directory: _appState.exportDir), exportType: ImageExportType.kpix);
+                                      widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: const ImageExportData(name: "KPIX", extension: fileExtensionKpix, scalable: false), scaling: 1, fileName: _fileName.value, directory: exportDir), exportType: ImageExportType.kpix);
                                     }
                                     else if (_kpixExportType.value == KPixExportType.texturePack)
                                     {
-                                      widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: ImageExportData.exportTypeMap[ImageExportType.texturePack]!, scaling: 1, fileName: _fileName.value, directory: _appState.exportDir), exportType: ImageExportType.texturePack);
+                                      widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: ImageExportData.exportTypeMap[ImageExportType.texturePack]!, scaling: 1, fileName: _fileName.value, directory: exportDir), exportType: ImageExportType.texturePack);
                                     }
                                     else if (_kpixExportType.value == KPixExportType.texturePackAnimated)
                                     {
-                                      widget.acceptAnimation(exportData: AnimationExportData.fromWithConcreteData(other: AnimationExportData.exportTypeMap[AnimationExportType.texturePack]!, scaling: 1, fileName: _fileName.value, directory: _appState.exportDir, loopOnly: _animationSectionOnly.value), exportType: AnimationExportType.texturePack);
+                                      widget.acceptAnimation(exportData: AnimationExportData.fromWithConcreteData(other: AnimationExportData.exportTypeMap[AnimationExportType.texturePack]!, scaling: 1, fileName: _fileName.value, directory: exportDir, loopOnly: _animationSectionOnly.value), exportType: AnimationExportType.texturePack);
                                     }
 
                                   }

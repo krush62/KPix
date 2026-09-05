@@ -17,8 +17,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
@@ -82,7 +82,7 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
 
   /// A single menu entry showing [icon], padded to line up with its neighbours.
   ///
-  /// The [toolTip] is shown after [AppState.toolTipDuration] of hovering and is
+  /// The [toolTip] is shown after [toolTipDuration] of hovering and is
   /// placed above the entry, because the menu grows downwards from its anchor.
   /// Pressing the entry calls [onPressedFunc].
   Padding _createMenuButton({required final String toolTip, required final IconData icon, required final void Function() onPressedFunc})
@@ -92,7 +92,7 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
       child: Tooltip(
         message: toolTip,
         preferBelow: false,
-        waitDuration: AppState.toolTipDuration,
+        waitDuration: toolTipDuration,
         child: IconButton.outlined(
           constraints: const BoxConstraints(),
           padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),

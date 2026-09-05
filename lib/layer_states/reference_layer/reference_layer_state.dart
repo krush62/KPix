@@ -19,14 +19,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
-import 'package:kpix/managers/history/history_layer.dart';
-import 'package:kpix/managers/history/history_ramp_data.dart';
-import 'package:kpix/managers/history/history_reference_layer.dart';
-import 'package:kpix/managers/reference_image_manager.dart';
-import 'package:kpix/models/app_state.dart';
-import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
+import 'package:kpix/models/constraints/reference_layer_constraints.dart';
+import 'package:kpix/models/history/history_layer.dart';
+import 'package:kpix/models/history/history_ramp_data.dart';
+import 'package:kpix/models/history/history_reference_layer.dart';
+import 'package:kpix/models/view_state.dart';
 
 class ReferenceLayerState extends LayerState
 {
@@ -103,7 +103,7 @@ class ReferenceLayerState extends LayerState
 
   void _requestRepaint()
   {
-    GetIt.I.get<AppState>().repaintNotifier.repaint();
+    GetIt.I.get<ViewState>().repaintNotifier.repaint();
   }
 
   @override

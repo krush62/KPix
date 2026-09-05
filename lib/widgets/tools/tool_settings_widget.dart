@@ -16,7 +16,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/managers/stamp_manager.dart';
+import 'package:kpix/models/project_session.dart';
+import 'package:kpix/models/stamp_manager_data.dart';
+import 'package:kpix/models/tool_state.dart';
+import 'package:kpix/models/tool_type.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
@@ -29,19 +34,6 @@ import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
-import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
-import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
-import 'package:kpix/widgets/tools/tool_type.dart';
-
-
-abstract final class ToolSettingsWidgetOptions
-{
-  static const int columnWidthRatio = 2;
-  static const double padding = 8.0;
-  static const double smallButtonSize = 36.0;
-  static const double smallIconSize = 20.0;
-}
-
 
 class ToolSettingsWidget extends StatefulWidget
 {
@@ -55,7 +47,7 @@ class ToolSettingsWidget extends StatefulWidget
 
 class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
 {
-  final AppState appState = GetIt.I.get<AppState>();
+  final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
   final ToolOptions toolOptions = GetIt.I.get<ToolOptions>();
   late KPixOverlay _stampManagerDialog;
 
@@ -81,12 +73,11 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
     _stampManagerDialog.show(context: context);
   }
 
-
   @override
   Widget build(final BuildContext context)
   {
     return ValueListenableBuilder<ToolType>(
-      valueListenable: appState.selectedToolNotifier,
+      valueListenable: GetIt.I.get<ToolState>().selectedToolNotifier,
       builder: (final BuildContext context, final ToolType type, final Widget? child){
         Widget toolWidget;
         switch(type)

@@ -15,9 +15,9 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/models/constraints/tool_fill_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/widgets/tools/constraints/tool_fill_constraints.dart';
 
 class FillOptions extends IToolOptions
 {

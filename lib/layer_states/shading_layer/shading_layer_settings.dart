@@ -16,23 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/layer_settings.dart';
-
-class ShadingLayerSettingsConstraints
-{
-  final int shadingStepsMin;
-  final int shadingStepsDefaultBrighten;
-  final int shadingStepsDefaultDarken;
-  final int shadingStepsMax;
-  final int ditherStepsMax;
-
-  const ShadingLayerSettingsConstraints({
-    required this.shadingStepsMin,
-    required this.shadingStepsDefaultBrighten,
-    required this.shadingStepsDefaultDarken,
-    required this.shadingStepsMax,
-    required this.ditherStepsMax,
-  });
-}
+import 'package:kpix/models/constraints/shading_layer_settings_constraints.dart';
 
 class ShadingLayerSettings extends LayerSettings
 {

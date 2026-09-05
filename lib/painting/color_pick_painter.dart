@@ -57,8 +57,8 @@ class ColorPickPainter extends IToolPainter
         _oldCursorPos.x = drawParams.cursorPosNorm!.x;
         _oldCursorPos.y = drawParams.cursorPosNorm!.y;
 
-        final ColorReference? colRef = appState.getColorFromImageAtPosition(normPos: drawParams.cursorPosNorm!);
-        if (colRef != null && colRef != appState.selectedColor)
+        final ColorReference? colRef = documentState.getColorFromImageAtPosition(normPos: drawParams.cursorPosNorm!);
+        if (colRef != null && colRef != paletteState.selectedColor)
         {
           selectedColor = colRef;
         }

@@ -42,9 +42,9 @@ HashMap<CoordinateSetI, HistoryColorReference> _layerDataForSaving({
   return merged;
 }
 
-Future<ByteData> createKPixData({required final AppState appState}) async
+Future<ByteData> createKPixData() async
 {
-  final HistoryState saveData = HistoryState.fromAppState(appState: appState, identifier: HistoryStateTypeIdentifier.saveData);
+  final HistoryState saveData = HistoryState.fromDocument(identifier: HistoryStateTypeIdentifier.saveData);
   final ByteData byteData = ByteData(_calculateKPixFileSize(saveData: saveData));
 
   int offset = 0;

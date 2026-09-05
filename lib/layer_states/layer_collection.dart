@@ -26,16 +26,19 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/canvas_transformation.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/constraints/grid_layer_constraints.dart';
+import 'package:kpix/models/constraints/reference_layer_constraints.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
-import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
-import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
 import 'package:logger/logger.dart';
 
 class LayerCollection with ChangeNotifier {
@@ -134,7 +137,7 @@ class LayerCollection with ChangeNotifier {
     }
     if (!couldAddAllLayers)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add all layers.");
+      showMessage(text: "Could not add all layers.");
     }
     updateIndividualLayerSelection();
   }
@@ -155,7 +158,7 @@ class LayerCollection with ChangeNotifier {
     final List<LayerState> removed = List<LayerState>.of(_layers);
     _layers.clear();
     _clearDependencies();
-    GetIt.I.get<AppState>().disposeUnusedLayers(candidates: removed);
+    GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: removed);
     _selectedLayerIndexNotifier.value = null;
     if (notify) {
       notifyListeners();
@@ -180,12 +183,12 @@ class LayerCollection with ChangeNotifier {
   {
     if (_layers.length >= maxLayers)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      showMessage(text: "Could not add more layers.");
       return null;
     }
     else if (position < 0 || position > _layers.length)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Invalid layer insert index.");
+      showMessage(text: "Invalid layer insert index.");
       return null;
     }
     else
@@ -203,15 +206,15 @@ class LayerCollection with ChangeNotifier {
   {
     if (_layers.length >= maxLayers)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      showMessage(text: "Could not add more layers.");
     }
     else if (position < 0 || position > _layers.length)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Invalid layer insert index.");
+      showMessage(text: "Invalid layer insert index.");
     }
     else if (_layers.contains(layer))
     {
-      GetIt.I.get<AppState>().showMessage(text: "Layer already exists on that frame.",);
+      showMessage(text: "Layer already exists on that frame.",);
     }
     else
     {
@@ -315,7 +318,7 @@ class LayerCollection with ChangeNotifier {
   {
     if (_layers.length >= maxLayers)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      showMessage(text: "Could not add more layers.");
       return false;
     }
     else
@@ -433,7 +436,7 @@ class LayerCollection with ChangeNotifier {
       }
       _selectedLayerIndexNotifier.value = newSelectedIndex.clamp(0, _layers.length - 1);
       _rebuildDependencies();
-      GetIt.I.get<AppState>().disposeUnusedLayers(candidates: <LayerState>[deleteLayer]);
+      GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: <LayerState>[deleteLayer]);
 
       notifyListeners();
       return true;
@@ -449,13 +452,13 @@ class LayerCollection with ChangeNotifier {
     String? message;
     if (mergeLayer is DrawingLayerState)
     {
-      final AppState appState = GetIt.I.get<AppState>();
+      final DocumentState documentState = GetIt.I.get<DocumentState>();
       final int mergeLayerIndex = _layers.indexOf(mergeLayer);
       if (mergeLayerIndex == _layers.length - 1)
       {
         message = "No layer below!";
       }
-      else if (appState.timeline.isLayerLinked(layer: mergeLayer))
+      else if (documentState.timeline.isLayerLinked(layer: mergeLayer))
       {
         message = "Cannot merge a linked layer!";
       }
@@ -479,7 +482,7 @@ class LayerCollection with ChangeNotifier {
       {
         message = "Can only merge with drawing layers!";
       }
-      else if (appState.timeline.isLayerLinked(layer: _layers[mergeLayerIndex + 1],))
+      else if (documentState.timeline.isLayerLinked(layer: _layers[mergeLayerIndex + 1],))
       {
         message = "Cannot merge with a linked layer!";
       }
@@ -518,7 +521,7 @@ class LayerCollection with ChangeNotifier {
         }
       }
       _layers.remove(drawingIntoLayer);
-      GetIt.I.get<AppState>().disposeUnusedLayers(candidates: <LayerState>[drawingIntoLayer]);
+      GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: <LayerState>[drawingIntoLayer]);
       drawingMergeLayer.setDataAll(list: refs);
       selectLayer(newLayer: drawingMergeLayer);
       notifyListeners();
@@ -529,7 +532,7 @@ class LayerCollection with ChangeNotifier {
   {
     if (_layers.length >= maxLayers)
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      showMessage(text: "Could not add more layers.");
       return null;
     }
     else
@@ -700,7 +703,7 @@ class LayerCollection with ChangeNotifier {
       _rebuildDependencies();
       //the rasterized layer is replaced by its flattened result; it survives only
       //if another frame still links it
-      GetIt.I.get<AppState>().disposeUnusedLayers(candidates: <LayerState>[originalLayer]);
+      GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: <LayerState>[originalLayer]);
       _triggerNewLayerRender(layer: drawingLayer);
       notifyListeners();
     }
@@ -709,10 +712,10 @@ class LayerCollection with ChangeNotifier {
   int getFrameIndex()
   {
     int index = -1;
-    final AppState appState = GetIt.I.get<AppState>();
-    for (int i = 0; i < appState.timeline.frames.value.length; i++)
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+    for (int i = 0; i < documentState.timeline.frames.value.length; i++)
     {
-      if (appState.timeline.frames.value[i].layerList == this)
+      if (documentState.timeline.frames.value[i].layerList == this)
       {
         index = i;
         break;
@@ -771,13 +774,14 @@ class LayerCollection with ChangeNotifier {
 
     if (!anyLayerStillPending)
     {
-      final AppState appState = GetIt.I.get<AppState>();
-      final Frame? frame = appState.timeline.findFrameForCollection(collection: this,);
+      final DocumentState documentState = GetIt.I.get<DocumentState>();
+      final CanvasState canvasState = GetIt.I.get<CanvasState>();
+      final Frame? frame = documentState.timeline.findFrameForCollection(collection: this,);
       final int generation = ++_rasterImageGeneration;
       getImageFromLayers(
           layerCollection: this,
-          canvasSize: appState.canvasSize,
-          selection: appState.selectionState.selection,
+          canvasSize: canvasState.canvasSize,
+          selection: documentState.selectionState.selection,
           frame: frame,
       ).then((final ui.Image img) {
         //only accept the result if no newer composite was requested in the meantime
@@ -1035,8 +1039,8 @@ class LayerCollection with ChangeNotifier {
   {
     layer.doManualRaster = true;
     invalidateDependents(layer: layer);
-    final AppState appState = GetIt.I.get<AppState>();
-    final List<Frame> framesWithThisLayer = appState.timeline
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+    final List<Frame> framesWithThisLayer = documentState.timeline
         .findFramesForLayer(layer: layer);
 
     for (final Frame frame in framesWithThisLayer)

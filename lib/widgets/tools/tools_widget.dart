@@ -16,11 +16,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
-import 'package:kpix/widgets/tools/tool_type.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/tool_state.dart';
+import 'package:kpix/models/tool_type.dart';
 
 
 abstract final class _ToolsWidgetOptions
@@ -51,7 +53,8 @@ class ToolsWidget extends StatefulWidget
 
 class _ToolsWidgetState extends State<ToolsWidget>
 {
-  final AppState _appState = GetIt.I.get<AppState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
+  final ToolState _toolState = GetIt.I.get<ToolState>();
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   late List<SegmentButtonData> toolDataRow1;
   late List<SegmentButtonData> toolDataRow2;
@@ -60,7 +63,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
   void initState()
   {
     super.initState();
-    _appState.timeline.layerChangeNotifier.addListener(currentLayerTypeChanged);
+    _documentState.timeline.layerChangeNotifier.addListener(currentLayerTypeChanged);
     toolDataRow1 =  <SegmentButtonData>[
       SegmentButtonData(toolType: ToolType.pencil, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolPencil)),
       SegmentButtonData(toolType: ToolType.erase, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolEraser)),
@@ -81,16 +84,16 @@ class _ToolsWidgetState extends State<ToolsWidget>
   @override
   void dispose()
   {
-    _appState.timeline.layerChangeNotifier.removeListener(currentLayerTypeChanged);
+    _documentState.timeline.layerChangeNotifier.removeListener(currentLayerTypeChanged);
     super.dispose();
   }
 
   void currentLayerTypeChanged()
   {
-    if (_appState.timeline.getCurrentLayer() is ShadingLayerState &&
-        (_appState.selectedTool == ToolType.select || _appState.selectedTool == ToolType.pick))
+    if (_documentState.timeline.getCurrentLayer() is ShadingLayerState &&
+        (_toolState.selectedTool == ToolType.select || _toolState.selectedTool == ToolType.pick))
     {
-      _appState.setToolSelection(tool: ToolType.pencil);
+      _toolState.setToolSelection(tool: ToolType.pencil);
     }
   }
 
@@ -105,7 +108,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
         enabled: !shouldBeDisabled,
         label: Tooltip(
           message: buttonData.toolType.title + buttonData.toolTipExtraText,
-          waitDuration: AppState.toolTipDuration,
+          waitDuration: toolTipDuration,
           child: Icon(
             buttonData.toolType.icon,
             color: shouldBeDisabled ? Theme.of(context).primaryColorDark : null,
@@ -123,7 +126,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
         selected: <ToolType>{currentTool},
         emptySelectionAllowed: true,
         showSelectedIcon: false,
-        onSelectionChanged: (final Set<ToolType> tools) {if (tools.isNotEmpty && currentTool != tools.first) _appState.setToolSelection(tool: tools.first);},
+        onSelectionChanged: (final Set<ToolType> tools) {if (tools.isNotEmpty && currentTool != tools.first) _toolState.setToolSelection(tool: tools.first);},
         segments: segments,
     );
   }
@@ -134,13 +137,13 @@ class _ToolsWidgetState extends State<ToolsWidget>
     return Padding(
       padding: const EdgeInsets.all(_ToolsWidgetOptions.padding),
       child: ListenableBuilder(
-        listenable: _appState.timeline.layerChangeNotifier,
+        listenable: _documentState.timeline.layerChangeNotifier,
         builder: (final BuildContext context, final Widget? child)
         {
-          final LayerState? currentLayer = _appState.timeline.getCurrentLayer();
+          final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
           final bool isShadingLayer = currentLayer is ShadingLayerState;
           return ValueListenableBuilder<ToolType>(
-            valueListenable: _appState.selectedToolNotifier,
+            valueListenable: _toolState.selectedToolNotifier,
             builder: (final BuildContext context, final ToolType tool, final Widget? child) {
               return Column(
                 mainAxisSize: MainAxisSize.min,

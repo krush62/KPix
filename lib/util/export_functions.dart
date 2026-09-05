@@ -23,25 +23,31 @@ import 'dart:ui' as ui;
 
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/managers/history/history_color_reference.dart';
-import 'package:kpix/managers/history/history_drawing_layer.dart';
-import 'package:kpix/managers/history/history_frame.dart';
-import 'package:kpix/managers/history/history_grid_layer.dart';
-import 'package:kpix/managers/history/history_layer.dart';
-import 'package:kpix/managers/history/history_layer_type.dart';
-import 'package:kpix/managers/history/history_reference_layer.dart';
-import 'package:kpix/managers/history/history_selection_state.dart';
-import 'package:kpix/managers/history/history_shading_layer.dart';
-import 'package:kpix/managers/history/history_state.dart';
-import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/export_types.dart';
+import 'package:kpix/models/file_constants.dart';
+import 'package:kpix/models/history/history_color_reference.dart';
+import 'package:kpix/models/history/history_drawing_layer.dart';
+import 'package:kpix/models/history/history_frame.dart';
+import 'package:kpix/models/history/history_grid_layer.dart';
+import 'package:kpix/models/history/history_layer.dart';
+import 'package:kpix/models/history/history_layer_type.dart';
+import 'package:kpix/models/history/history_reference_layer.dart';
+import 'package:kpix/models/history/history_selection_state.dart';
+import 'package:kpix/models/history/history_shading_layer.dart';
+import 'package:kpix/models/history/history_state.dart';
+import 'package:kpix/models/history/history_state_type.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/color_names.dart';
@@ -51,8 +57,6 @@ import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
-import 'package:kpix/widgets/file/export_widget.dart';
 
 part 'export/palette/export_palette_adobe.dart';
 part 'export/palette/export_palette_aseprite.dart';
@@ -113,19 +117,18 @@ enum _AnimationFormat
 /// report as a failed export.
 Future<List<RenderedFrame>?> _renderAnimationFrames({
   required final AnimationExportData exportData,
-  required final AppState appState,
 }) async
 {
-  final int startFrame = exportData.loopOnly ? appState.timeline.loopStartIndex.value : 0;
-  final int endFrame = exportData.loopOnly ? appState.timeline.loopEndIndex.value : appState.timeline.frames.value.length - 1;
+  final int startFrame = exportData.loopOnly ? GetIt.I.get<DocumentState>().timeline.loopStartIndex.value : 0;
+  final int endFrame = exportData.loopOnly ? GetIt.I.get<DocumentState>().timeline.loopEndIndex.value : GetIt.I.get<DocumentState>().timeline.frames.value.length - 1;
 
   final List<RenderedFrame> renderedFrames = <RenderedFrame>[];
   for (int i = startFrame; i <= endFrame; i++)
   {
-    final Frame frame = appState.timeline.frames.value[i];
+    final Frame frame = GetIt.I.get<DocumentState>().timeline.frames.value[i];
     final ui.Image uiImage = await getImageFromLayers(
-      selection: appState.selectionState.selection,
-      canvasSize: appState.canvasSize,
+      selection: GetIt.I.get<DocumentState>().selectionState.selection,
+      canvasSize: GetIt.I.get<CanvasState>().canvasSize,
       layerCollection: frame.layerList,
       scalingFactor: exportData.scaling,
       frame: frame,

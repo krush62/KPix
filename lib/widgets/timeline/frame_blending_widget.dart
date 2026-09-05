@@ -19,11 +19,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/models/constraints/frame_blending_constraints.dart';
+import 'package:kpix/models/frame_blending_options.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-import 'package:kpix/widgets/timeline/frame_blending_constraints.dart';
-import 'package:kpix/widgets/timeline/frame_blending_options.dart';
 
 class FrameBlendingWidget extends StatefulWidget
 {
@@ -84,7 +85,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                               onChanged: (final bool newEnabled)
                               {
                                 widget.options.enabled.value = newEnabled;
-                                GetIt.I.get<AppState>().repaintNotifier.repaint();
+                                GetIt.I.get<ViewState>().repaintNotifier.repaint();
                               },
                             ),
                           );
@@ -130,7 +131,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                   onChanged: enabled ? (final double newFramesBefore)
                                   {
                                     widget.options.framesBefore.value = newFramesBefore.toInt();
-                                    GetIt.I.get<AppState>().repaintNotifier.repaint();
+                                    GetIt.I.get<ViewState>().repaintNotifier.repaint();
                                   } : null,
                                 );
                               },
@@ -165,7 +166,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                       value: wrapAroundBefore,
                                       onChanged: isEnabled ? (final bool newWrapAroundBefore) {
                                         widget.options.wrapAroundBefore.value = newWrapAroundBefore;
-                                        GetIt.I.get<AppState>().repaintNotifier.repaint();
+                                        GetIt.I.get<ViewState>().repaintNotifier.repaint();
                                       } : null,
                                     ),
                                   );
@@ -216,7 +217,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                   onChanged: enabled ? (final double newFramesAfter)
                                   {
                                     widget.options.framesAfter.value = newFramesAfter.toInt();
-                                    GetIt.I.get<AppState>().repaintNotifier.repaint();
+                                    GetIt.I.get<ViewState>().repaintNotifier.repaint();
                                   } : null,
                                 );
                               },
@@ -251,7 +252,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                       value: wrapAroundAfter,
                                       onChanged: isEnabled ? (final bool newWrapAroundAfter) {
                                         widget.options.wrapAroundAfter.value = newWrapAroundAfter;
-                                        GetIt.I.get<AppState>().repaintNotifier.repaint();
+                                        GetIt.I.get<ViewState>().repaintNotifier.repaint();
                                       } : null,
                                     ),
                                   );
@@ -304,7 +305,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                   onChanged: enabled ? (final double newOpacity)
                                   {
                                     widget.options.opacity.value = newOpacity;
-                                    GetIt.I.get<AppState>().repaintNotifier.repaint();
+                                    GetIt.I.get<ViewState>().repaintNotifier.repaint();
                                   } : null,
                                 );
                               },
@@ -335,7 +336,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                   value: gradualOpacity,
                                   onChanged: enabled ? (final bool newGradualOpacity) {
                                     widget.options.gradualOpacity.value = newGradualOpacity;
-                                    GetIt.I.get<AppState>().repaintNotifier.repaint();
+                                    GetIt.I.get<ViewState>().repaintNotifier.repaint();
                                   } : null,
                                 ),
                               );
@@ -380,7 +381,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                   value: tinting,
                                   onChanged: enabled ? (final bool newTintingValue) {
                                     widget.options.tinting.value = newTintingValue;
-                                    GetIt.I.get<AppState>().repaintNotifier.repaint();
+                                    GetIt.I.get<ViewState>().repaintNotifier.repaint();
                                   } : null,
                                 ),
                               );
@@ -424,7 +425,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                   value: activeLayerOnly,
                                   onChanged: enabled ? (final bool newActiveLayerOnly) {
                                     widget.options.activeLayerOnly.value = newActiveLayerOnly;
-                                    GetIt.I.get<AppState>().repaintNotifier.repaint();
+                                    GetIt.I.get<ViewState>().repaintNotifier.repaint();
                                   } : null,
                                 ),
                               );
@@ -436,7 +437,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                   ],
                 ),
                 const SizedBox(height: _padding,),
-                Tooltip(message: "Close", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(TablerIcons.check))),
+                Tooltip(message: "Close", waitDuration: toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(TablerIcons.check))),
               ],
             ),
           ),

@@ -23,7 +23,6 @@ class ColorPickPainter extends IToolPainter
 {
   ColorPickPainter({required super.painterOptions});
   final CoordinateSetD _cursorStartPos = CoordinateSetD.zero();
-  final CoordinateSetI _oldCursorPos = CoordinateSetI.zero();
   ColorReference? selectedColor;
 
   static const List<MapEntry<int, int>> _symbolPathOutline = <MapEntry<int, int>>[
@@ -52,18 +51,17 @@ class ColorPickPainter extends IToolPainter
       _cursorStartPos.x = drawParams.offset.dx + ((drawParams.cursorPosNorm!.x + 0.5) * effPixelSize);
       _cursorStartPos.y = drawParams.offset.dy + ((drawParams.cursorPosNorm!.y + 0.5) * effPixelSize);
 
-      if (drawParams.secondaryDown || (drawParams.primaryDown && _oldCursorPos != drawParams.cursorPosNorm))
+      if (drawParams.primaryDown)
       {
-        _oldCursorPos.x = drawParams.cursorPosNorm!.x;
-        _oldCursorPos.y = drawParams.cursorPosNorm!.y;
-
-        final ColorReference? colRef = documentState.getColorFromImageAtPosition(normPos: drawParams.cursorPosNorm!);
-        if (colRef != null && colRef != paletteState.selectedColor)
-        {
-          selectedColor = colRef;
-        }
+        selectedColor = documentState.getColorFromImageAtPosition(normPos: drawParams.cursorPosNorm!);
       }
     }
+  }
+
+  @override
+  void reset()
+  {
+    selectedColor = null;
   }
 
   @override

@@ -597,10 +597,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       }
       else
       {
-        final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick]! as ColorPickPainter;
-        if (colorPickPainter.selectedColor != null)
+        final ColorReference? colRef = _getColorAtCursor();
+        if (colRef != null)
         {
-          _paletteState.colorSelected(color: colorPickPainter.selectedColor);
+          _paletteState.colorSelected(color: colRef);
         }
         _toolState.setToolSelection(tool: _previousTool);
       }
@@ -783,14 +783,16 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         }
       }
     }
-    else if (_toolState.selectedTool == ToolType.pick)
+    else if (_toolState.selectedTool == ToolType.pick && !_secondaryIsDown.value)
     {
       if (kPixPainter.toolPainterMap[ToolType.pick] != null && kPixPainter.toolPainterMap[ToolType.pick].runtimeType == ColorPickPainter)
       {
         final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick]! as ColorPickPainter;
-        if (colorPickPainter.selectedColor != null)
+        final ColorReference? pickedColor = colorPickPainter.selectedColor;
+        colorPickPainter.selectedColor = null;
+        if (pickedColor != null)
         {
-          _paletteState.colorSelected(color: colorPickPainter.selectedColor);
+          _paletteState.colorSelected(color: pickedColor);
         }
       }
     }
@@ -921,6 +923,19 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     return (lowerMultiple / pixelSize).round();
   }
 
+  ColorReference? _getColorAtCursor()
+  {
+    if (_cursorPos.value == null)
+    {
+      return null;
+    }
+    final double effPixelSize = _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio;
+    final CoordinateSetI normPos = CoordinateSetI(
+      x: _getClosestPixel(value: _cursorPos.value!.x - _canvasOffset.value.dx, pixelSize: effPixelSize),
+      y: _getClosestPixel(value: _cursorPos.value!.y - _canvasOffset.value.dy, pixelSize: effPixelSize),);
+    return _documentState.getColorFromImageAtPosition(normPos: normPos);
+  }
+
 
   void _stylusBtnTimeout({required final Timer t})
   {
@@ -953,17 +968,8 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
         }
         else
         {
-          final CoordinateSetI normPos = CoordinateSetI(
-            x: _getClosestPixel(
-              value: _cursorPos.value!.x - _canvasOffset.value.dx,
-              pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio,)
-            ,
-            y: _getClosestPixel(
-              value: _cursorPos.value!.y - _canvasOffset.value.dy,
-              pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio,)
-            ,);
-          final ColorReference? colRef = _documentState.getColorFromImageAtPosition(normPos: normPos);
-          if (colRef != null && colRef != _paletteState.selectedColor)
+          final ColorReference? colRef = _getColorAtCursor();
+          if (colRef != null)
           {
             _paletteState.colorSelected(color: colRef);
           }

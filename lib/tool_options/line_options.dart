@@ -104,50 +104,13 @@ class LineOptions extends IToolOptions
           maxVal: LineConstraints.widthMax.toDouble(),
           //divisions: lineOptions.widthMax - lineOptions.widthMin,
         ),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Integer Aspect Ratio",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: ToolSettingsWidgetOptions.columnWidthRatio,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: hotkeyManager.controlNotifier,
-                  builder: (final BuildContext _, final bool controlPressed, final Widget? __) {
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: lineOptions.unmodifiedIntegerAspectRatio,
-                      builder: (final BuildContext context, final bool unmodifiedAspectRatio, final Widget? child){
-                        bool newMode = unmodifiedAspectRatio;
-                        if (controlPressed)
-                        {
-                          newMode = true;
-                        }
-                        lineOptions.integerAspectRatio.value = newMode;
-                        return Switch(
-                          onChanged: (final bool newVal) {
-                            if (!controlPressed)
-                            {
-                              lineOptions.unmodifiedIntegerAspectRatio.value = newVal;
-                            }
-                            lineOptions.integerAspectRatio.value = newVal;
-                          },
-                          value: lineOptions.integerAspectRatio.value,
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
+        ToolModifierSwitchRow(
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
+          notifier: lineOptions.integerAspectRatio,
+          unmodifiedNotifier: lineOptions.unmodifiedIntegerAspectRatio,
+          label: "Integer Aspect Ratio",
+          defaultState: LineConstraints.integerAspectRatioDefault,
+          modifierNotifier: hotkeyManager.controlNotifier,
         ),
         Row(
           children: <Widget>[

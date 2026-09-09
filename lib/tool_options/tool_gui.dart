@@ -64,6 +64,121 @@ class ToolSwitchRow extends StatelessWidget
   }
 }
 
+class ToolModifierSwitchRow extends StatefulWidget
+{
+  const ToolModifierSwitchRow({
+    super.key,
+    required this.notifier,
+    required this.unmodifiedNotifier,
+    required this.label,
+    required this.defaultState,
+    required this.modifierNotifier,
+    this.flex = 1,
+  });
+
+  final int flex;
+  final String label;
+  final bool defaultState;
+  final ValueNotifier<bool> notifier;
+  final ValueNotifier<bool> unmodifiedNotifier;
+  final ValueNotifier<bool> modifierNotifier;
+
+  @override
+  State<ToolModifierSwitchRow> createState() => _ToolModifierSwitchRowState();
+}
+
+class _ToolModifierSwitchRowState extends State<ToolModifierSwitchRow>
+{
+  @override
+  void initState()
+  {
+    super.initState();
+    _addListeners(widget);
+    //the initial sync has to be deferred because this runs during the build phase
+    WidgetsBinding.instance.addPostFrameCallback((final Duration _) {
+      if (mounted)
+      {
+        _syncNotifier();
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(final ToolModifierSwitchRow oldWidget)
+  {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.modifierNotifier != widget.modifierNotifier || oldWidget.unmodifiedNotifier != widget.unmodifiedNotifier)
+    {
+      _removeListeners(oldWidget);
+      _addListeners(widget);
+    }
+  }
+
+  @override
+  void dispose()
+  {
+    _removeListeners(widget);
+    super.dispose();
+  }
+
+  void _addListeners(final ToolModifierSwitchRow w)
+  {
+    w.modifierNotifier.addListener(_syncNotifier);
+    w.unmodifiedNotifier.addListener(_syncNotifier);
+  }
+
+  void _removeListeners(final ToolModifierSwitchRow w)
+  {
+    w.modifierNotifier.removeListener(_syncNotifier);
+    w.unmodifiedNotifier.removeListener(_syncNotifier);
+  }
+
+  void _syncNotifier()
+  {
+    final bool newMode = widget.modifierNotifier.value ? !widget.defaultState : widget.unmodifiedNotifier.value;
+    widget.notifier.value = newMode;
+  }
+
+  @override
+  Widget build(final BuildContext context) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              widget.label,
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: widget.flex,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: ValueListenableBuilder<bool>(
+              valueListenable: widget.notifier,
+              builder: (final BuildContext context, final bool value, final Widget? child)
+              {
+                return Switch(
+                  onChanged: (final bool newVal) {
+                    if (!widget.modifierNotifier.value)
+                    {
+                      widget.unmodifiedNotifier.value = newVal;
+                    }
+                    widget.notifier.value = newVal;
+                  },
+                  value: value,
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class ToolSliderRow<E extends num> extends StatelessWidget
 {
   const ToolSliderRow({

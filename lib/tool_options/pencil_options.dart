@@ -54,55 +54,14 @@ class PencilOptions extends IToolOptions
           valueMap: PencilShape.getLabelMap(),
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
         ),
-
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Smooth",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-        Expanded(
+        ToolModifierSwitchRow(
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: ValueListenableBuilder<bool>(
-              valueListenable: hotkeyManager.controlNotifier,
-              builder: (final BuildContext _, final bool controlPressed, final Widget? __) {
-                return ValueListenableBuilder<bool>(
-                  valueListenable: pencilOptions.unmodifiedPixelPerfect,
-                  builder: (final BuildContext context, final bool pixelPerfect, final Widget? child){
-                    bool newMode = pixelPerfect;
-                    if (controlPressed)
-                    {
-                      newMode = false;
-                    }
-                    pencilOptions.pixelPerfect.value = newMode;
-                    return Switch(
-                      onChanged: (final bool newVal) {
-                        if (!controlPressed)
-                        {
-                          pencilOptions.unmodifiedPixelPerfect.value = newVal;
-                        }
-                        pencilOptions.pixelPerfect.value = newVal;
-                      },
-                      value: pencilOptions.pixelPerfect.value,
-                    );
-                  },
-                );
-              },
-            ),
-          ),
+          notifier: pencilOptions.pixelPerfect,
+          unmodifiedNotifier: pencilOptions.unmodifiedPixelPerfect,
+          label: "Smooth",
+          defaultState: PencilConstraints.pixelPerfectDefault,
+          modifierNotifier: hotkeyManager.controlNotifier,
         ),
-      ]
-      ),
-
-
-
       ],
     );
   }

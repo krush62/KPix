@@ -15,6 +15,8 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/models/constraints/tool_fill_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -22,6 +24,7 @@ import 'package:kpix/tool_options/tool_options.dart';
 class FillOptions extends IToolOptions
 {
   final ValueNotifier<bool> fillAdjacent = ValueNotifier<bool>(FillConstraints.fillAdjacentDefault);
+  final ValueNotifier<bool> unmodifiedFillAdjacent = ValueNotifier<bool>(FillConstraints.fillAdjacentDefault);
   final ValueNotifier<bool> fillWholeRamp = ValueNotifier<bool>(FillConstraints.fillWholeRampDefault);
 
   static Column getWidget({
@@ -29,14 +32,18 @@ class FillOptions extends IToolOptions
     required final FillOptions fillOptions,
   })
   {
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        ToolSwitchRow(
+        ToolModifierSwitchRow(
           //flex: toolSettingsWidgetOptions.columnWidthRatio,
           notifier: fillOptions.fillAdjacent,
+          unmodifiedNotifier: fillOptions.unmodifiedFillAdjacent,
           label: "Fill Adjacent",
+          defaultState: FillConstraints.fillAdjacentDefault,
+          modifierNotifier: hotkeyManager.controlNotifier
         ),
         ToolSwitchRow(
           //flex: toolSettingsWidgetOptions.columnWidthRatio,

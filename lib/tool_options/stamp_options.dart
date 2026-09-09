@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/models/constraints/tool_stamp_constraints.dart';
@@ -32,6 +33,7 @@ class StampOptions extends IToolOptions
   final ValueNotifier<bool> flipH = ValueNotifier<bool>(StampConstraints.flipHDefault);
   final ValueNotifier<bool> flipV = ValueNotifier<bool>(StampConstraints.flipVDefault);
   final ValueNotifier<bool> gridAlign = ValueNotifier<bool>(StampConstraints.gridAlignDefault);
+  final ValueNotifier<bool> unmodifiedGridAlign = ValueNotifier<bool>(StampConstraints.gridAlignDefault);
   final ValueNotifier<int> gridOffsetX = ValueNotifier<int>(StampConstraints.gridOffsetDefault);
   final ValueNotifier<int> gridOffsetY = ValueNotifier<int>(StampConstraints.gridOffsetDefault);
 
@@ -40,6 +42,7 @@ class StampOptions extends IToolOptions
     required final StampOptions stampOptions,
     required final Function() showStampManager,
   }) {
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -167,10 +170,13 @@ class StampOptions extends IToolOptions
             //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
           ),
         ),
-        ToolSwitchRow(
-          notifier: stampOptions.gridAlign,
-          label: "Grid Align",
+        ToolModifierSwitchRow(
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
+          notifier: stampOptions.gridAlign,
+          unmodifiedNotifier: stampOptions.unmodifiedGridAlign,
+          label: "Grid Align",
+            defaultState: StampConstraints.gridAlignDefault,
+          modifierNotifier: hotkeyManager.controlNotifier,
         ),
         ValueListenableBuilder<bool>(
           valueListenable: stampOptions.gridAlign,

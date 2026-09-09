@@ -53,50 +53,13 @@ class ShapeOptions extends IToolOptions
           iconSize: ToolSettingsWidgetOptions.smallIconSize,
           hideLabel: true,
         ),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Keep 1:1",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: ToolSettingsWidgetOptions.columnWidthRatio,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: hotkeyManager.controlNotifier,
-                  builder: (final BuildContext _, final bool controlPressed, final Widget? __) {
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: shapeOptions.unmodifiedKeepRatio,
-                      builder: (final BuildContext context, final bool unmodifiedKeep, final Widget? child) {
-                        bool newMode = unmodifiedKeep;
-                        if (controlPressed)
-                        {
-                          newMode = true;
-                        }
-                        shapeOptions.keepRatio.value = newMode;
-                        return Switch(
-                          onChanged: (final bool newVal) {
-                            if (!controlPressed)
-                            {
-                              shapeOptions.unmodifiedKeepRatio.value = newVal;
-                            }
-                            shapeOptions.keepRatio.value = newVal;
-                            },
-                          value: shapeOptions.keepRatio.value,
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
+        ToolModifierSwitchRow(
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
+          notifier: shapeOptions.keepRatio,
+          unmodifiedNotifier: shapeOptions.unmodifiedKeepRatio,
+          label: "Keep 1:1",
+          defaultState: ToolShapeConstraints.keepRatioDefault,
+          modifierNotifier: hotkeyManager.controlNotifier,
         ),
         Row(
           children: <Widget>[

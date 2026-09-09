@@ -232,12 +232,24 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         {
           _recoverCheck(ignoreState: true);
         }
+        if (GetIt.I.isRegistered<HotkeyManager>())
+        {
+          GetIt.I.get<HotkeyManager>().nullifyModifierKeys();
+        }
       case AppLifecycleState.hidden:
         _isFocused.value = false;
+        if (GetIt.I.isRegistered<HotkeyManager>())
+        {
+          GetIt.I.get<HotkeyManager>().nullifyModifierKeys();
+        }
         //All views of an application are hidden, either because the application is about to be paused (on iOS and Android), or because it has been minimized or placed on a desktop that is no longer visible (on non-web desktop), or is running in a window or tab that is no longer visible (on the web).
         //break;
       case AppLifecycleState.paused:
         _isFocused.value = false;
+        if (GetIt.I.isRegistered<HotkeyManager>())
+        {
+          GetIt.I.get<HotkeyManager>().nullifyModifierKeys();
+        }
         //The application is not currently visible to the user, and not responding to user input.
         //break;
     }

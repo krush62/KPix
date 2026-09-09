@@ -208,6 +208,8 @@ class HotkeyManager
     _createFocusNodeListeners();
   }
 
+
+
   void handleRawKeyboardEvent(final KeyEvent? evt)
   {
     if (!_isActive)
@@ -496,18 +498,28 @@ class HotkeyManager
     {
       _callbackMap.value = _callbackMapBackup;
       _isActive = true;
-      _shiftIsPressed.value = HardwareKeyboard.instance.isShiftPressed;
-      _controlIsPressed.value = HardwareKeyboard.instance.isControlPressed;
-      _altIsPressed.value = HardwareKeyboard.instance.isAltPressed;
+      initModifierKeys();
     }
     else
     {
       _callbackMapBackup = _callbackMap.value;
       _callbackMap.value = <SingleActivator, VoidCallback>{};
       _isActive = false;
-      _shiftIsPressed.value = false;
-      _controlIsPressed.value = false;
-      _altIsPressed.value = false;
+      nullifyModifierKeys();
     }
+  }
+
+  void initModifierKeys()
+  {
+    _shiftIsPressed.value = HardwareKeyboard.instance.isShiftPressed;
+    _controlIsPressed.value = HardwareKeyboard.instance.isControlPressed;
+    _altIsPressed.value = HardwareKeyboard.instance.isAltPressed;
+  }
+
+  void nullifyModifierKeys()
+  {
+    _shiftIsPressed.value = false;
+    _controlIsPressed.value = false;
+    _altIsPressed.value = false;
   }
 }

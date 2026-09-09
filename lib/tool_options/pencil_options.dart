@@ -16,6 +16,8 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
@@ -26,12 +28,14 @@ class PencilOptions extends IToolOptions
   final ValueNotifier<int> size = ValueNotifier<int>(PencilConstraints.sizeDefault);
   final ValueNotifier<PencilShape> shape = ValueNotifier<PencilShape>(PencilConstraints.shapeDefault);
   final ValueNotifier<bool> pixelPerfect = ValueNotifier<bool>(PencilConstraints.pixelPerfectDefault);
+  final ValueNotifier<bool> unmodifiedPixelPerfect = ValueNotifier<bool>(PencilConstraints.pixelPerfectDefault);
 
   static Column getWidget({
     required final BuildContext context,
     required final PencilOptions pencilOptions,
   })
   {
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -50,11 +54,55 @@ class PencilOptions extends IToolOptions
           valueMap: PencilShape.getLabelMap(),
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
         ),
-        ToolSwitchRow(
-          notifier: pencilOptions.pixelPerfect,
-          label: "Smooth",
+
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Smooth",
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+              ),
+            ),
+        Expanded(
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: ValueListenableBuilder<bool>(
+              valueListenable: hotkeyManager.controlNotifier,
+              builder: (final BuildContext _, final bool controlPressed, final Widget? __) {
+                return ValueListenableBuilder<bool>(
+                  valueListenable: pencilOptions.unmodifiedPixelPerfect,
+                  builder: (final BuildContext context, final bool pixelPerfect, final Widget? child){
+                    bool newMode = pixelPerfect;
+                    if (controlPressed)
+                    {
+                      newMode = false;
+                    }
+                    pencilOptions.pixelPerfect.value = newMode;
+                    return Switch(
+                      onChanged: (final bool newVal) {
+                        if (!controlPressed)
+                        {
+                          pencilOptions.unmodifiedPixelPerfect.value = newVal;
+                        }
+                        pencilOptions.pixelPerfect.value = newVal;
+                      },
+                      value: pencilOptions.pixelPerfect.value,
+                    );
+                  },
+                );
+              },
+            ),
+          ),
         ),
+      ]
+      ),
+
+
+
       ],
     );
   }

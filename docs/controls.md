@@ -2,7 +2,7 @@
 
 |                                     | Keyboard            | Keyboard alt     | Mouse                                | Stylus                       | Touch                     |
 |-------------------------------------|---------------------|------------------|--------------------------------------|------------------------------|---------------------------|
-| <h3>General</h3>                    |                     |                  |                                      |                              |                           |
+| **General**                         |                     |                  |                                      |                              |                           |
 | New Project                         | ctrl + n            |                  |                                      |                              |                           |
 | Open                                | ctrl + o            |                  |                                      |                              |                           |
 | Save                                | ctrl + s            |                  |                                      |                              |                           |
@@ -12,7 +12,7 @@
 | Undo                                | ctrl + z            |                  | back button                          |                              |                           |
 | Redo                                | ctrl + y            | ctrl + shift + z | forward button                       |                              |                           |
 |                                     |                     |                  |                                      |                              |                           |
-| <h3>Selection</h3>                  |                     |                  |                                      |                              |                           |
+| **Selection**                       |                     |                  |                                      |                              |                           |
 | Copy                                | ctrl + c            |                  |                                      |                              |                           |
 | Copy Merged                         | ctrl + shift + c    |                  |                                      |                              |                           |
 | Cut                                 | ctrl + x            |                  |                                      |                              |                           |
@@ -33,7 +33,7 @@
 | Move Selection w/o content[^2]      | alt (hold)          |                  | primary down inside selection + move |                              |                           |
 | Change Selection Start Position[^2] | alt (hold)          |                  | primary down inside selection + move |                              |                           |
 |                                     |                     |                  |                                      |                              |                           |
-| <h3>Tool Selection</h3>             |                     |                  |                                      |                              |                           |
+| **Tool Selection**                  |                     |                  |                                      |                              |                           |
 | Pencil                              | b                   |                  |                                      |                              |                           |
 | Shape                               | u                   |                  |                                      |                              |                           |
 | Fill                                | g                   |                  |                                      |                              |                           |
@@ -46,7 +46,7 @@
 | Line                                | l                   |                  |                                      |                              |                           |
 | Stamp                               | p                   |                  |                                      |                              |                           |
 |                                     |                     |                  |                                      |                              |                           |
-| <h3>Tool Settings</h3>              |                     |                  |                                      |                              |                           |
+| **Tool Settings**                   |                     |                  |                                      |                              |                           |
 | Use tool                            |                     |                  | primary down                         | primary down                 | single down               |
 | Color pick                          |                     |                  | secondary down/up[^1]                | quick secondary down/up[^1]  |                           |
 | Selection Add                       | shift (hold)        |                  |                                      |                              |                           |
@@ -54,13 +54,16 @@
 | Selection Intersect                 | ctrl + shift (hold) |                  |                                      |                              |                           |
 | Increase Tool Size                  |                     |                  | ctrl + mouse wheel up                | hold secondary + hover right |                           |
 | Decrease Tool Size                  |                     |                  | ctrl + mouse wheel down              | hold secondary + hover left  |                           |
-| Draw From Center[^2]                | ctrl (hold)         |                  |                                      |                              |                           |
-| Angle Snap                          | ctrl (hold)         |                  |                                      |                              |                           |
-| Keep 1:1 Aspect Ratio               | shift (hold)        |                  |                                      |                              |                           |
-| Line To[^2]                         | shift (hold)        |                  |                                      |                              |                           |
+| Draw From Center (Shape Tool) [^2]  | ctrl (hold)         |                  |                                      |                              |                           |
+| Enable Angle Snap (Line Tool)       | ctrl (hold)         |                  |                                      |                              |                           |
+| Disable Smooth (Pencil Tool)        | ctrl (hold)         |                  |                                      |                              |                           |
+| Disable Adjacent (Fill Tool)        | ctrl (hold)         |                  |                                      |                              |                           |
+| Keep 1:1 Aspect Ratio (Shape Tool)  | ctrl (hold)         |                  |                                      |                              |                           |
+| Grid Align (Stamp Tool)             | ctrl (hold)         |                  |                                      |                              |                           |
+| Line To (Pencil Tool) [^2]          | shift (hold)        |                  |                                      |                              |                           |
 | Change Tool Start Position[^2]      | alt (hold)          |                  |                                      |                              |                           |
 |                                     |                     |                  |                                      |                              |                           |
-| <h3>Layers</h3>                     |                     |                  |                                      |                              |                           |
+| **Layers**                          |                     |                  |                                      |                              |                           |
 | Switch Visibility                   | shift + x           |                  |                                      |                              |                           |
 | Switch Lock                         | shift + l           |                  |                                      |                              |                           |
 | New Drawing Layer                   | shift + n           |                  |                                      |                              |                           |
@@ -83,7 +86,7 @@
 | <h3>Palette</h3>                    |                     |                  |                                      |                              |                           |
 | Change Color                        |                     |                  | alt + mouse wheel                    |                              |                           |
 |                                     |                     |                  |                                      |                              |                           |
-| <h3>Pan & Zoom</h3>                 |                     |                  |                                      |                              |                           |
+| **Pan & Zoom**                      |                     |                  |                                      |                              |                           |
 | Pan                                 |                     |                  | middle down + hover                  | secondary down + hover       | two finger down + move    |
 | Zoom In                             | numpad +            |                  | mouse wheel up                       | hold secondary + hover up    | two finger pinch increase |
 | Zoom Out                            | numpad \-           |                  | mouse wheel down                     | hold secondary + hover down  | two finger pinch decrease |
@@ -98,7 +101,7 @@
 | Set Zoom Level 6400%                | numpad 8            |                  |                                      |                              |                           |
 | Set Zoom Level 8000%                | numpad 9            |                  |                                      |                              |                           |
 |                                     |                     |                  |                                      |                              |                           |
-| <h3>Timeline</h3>                   |                     |                  |                                      |                              |                           |
+| **Timeline**                        |                     |                  |                                      |                              |                           |
 | Play/Pause                          | enter               |                  |                                      |                              |                           |
 | Select Next Frame                   | right               |                  |                                      |                              |                           |
 | Select Previous Frame               | left                |                  |                                      |                              |                           |

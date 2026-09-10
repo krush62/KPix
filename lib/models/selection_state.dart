@@ -911,7 +911,7 @@ class SelectionState with ChangeNotifier
     final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
-      final int height = bottomRight.x - topLeft.x;
+      final int height = bottomRight.y - topLeft.y;
       final int newY = _canvasState.canvasSize.y - height - 1;
       if (newY != topLeft.y)
       {

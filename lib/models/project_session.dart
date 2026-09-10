@@ -80,6 +80,8 @@ class ProjectSession
     GetIt.I.get<CanvasState>().setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
     GetIt.I.get<SymmetryState>().reset();
     GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false, notify: false);
+    //copied colors belong to the previous palette
+    GetIt.I.get<DocumentState>().selectionState.clearClipboard();
     //_layerCollection.clear();
     GetIt.I.get<PaletteState>().setDefaultPalette();
     //addNewDrawingLayer(select: true, addToHistoryStack: false);
@@ -103,6 +105,8 @@ class ProjectSession
     if (loadFileSet.historyState != null && loadFileSet.path != null)
     {
       await GetIt.I.get<HistoryController>().restoreState(historyState: loadFileSet.historyState, typeGroup: HistoryStateTypeGroup.full);
+      //copied colors belong to the previous palette
+      GetIt.I.get<DocumentState>().selectionState.clearClipboard();
       final String projectNameExtracted = extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
       projectName.value = projectNameExtracted == recoverFileName ? null : projectNameExtracted;
       hasChanges.value = setHasChanges;
@@ -151,6 +155,8 @@ class ProjectSession
       final PaletteState paletteState = GetIt.I.get<PaletteState>();
       paletteState.colorRamps = importResult.data!.rampDataList;
       paletteState.selectedColor = paletteState.colorRamps[0].references[0];
+      //copied colors belong to the previous palette
+      GetIt.I.get<DocumentState>().selectionState.clearClipboard();
       final List<LayerState> layerList = <LayerState>[];
       layerList.add(drawingLayer);
       if (referenceLayer != null)

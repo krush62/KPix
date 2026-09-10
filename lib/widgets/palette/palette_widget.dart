@@ -104,7 +104,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
       onAccept: _colorRampUpdate,
       onDelete: _colorRampDelete,
       colorRamp: ramp,
-      usedPixels: _paletteState.getPixelCountForRamp(ramp: ramp),
+      usage: _paletteState.getPixelUsageForRamp(ramp: ramp),
     );
     _kPal.show(context: context);
   }

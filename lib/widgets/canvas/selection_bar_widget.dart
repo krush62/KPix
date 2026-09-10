@@ -19,12 +19,8 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/document_state.dart';
-import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/selection_state.dart';
-import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/overlays/overlay_selection_align_menu.dart';
@@ -50,8 +46,6 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final SelectionState _selectionState = GetIt.I.get<DocumentState>().selectionState;
-  final DocumentState _documentState = GetIt.I.get<DocumentState>();
-  final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
   final GlobalKey _alignAnchorKey = GlobalKey();
   final OverlayPortalController _alignmentController = OverlayPortalController();
 
@@ -97,11 +91,6 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
     _selectionState.alignSelectionBottom();
   }
 
-
-  void _pasteNewPressed()
-  {
-    GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: _documentState.selectionState.clipboard);
-  }
 
   Padding _createBarButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc, final bool isEnabled = true})
   {
@@ -167,13 +156,13 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                 tooltip: "Paste${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPaste)}",
                 icon: TablerIcons.clipboard,
                 onPressedFunc: _selectionState.paste,
-                isEnabled: _selectionState.clipboard != null,
+                isEnabled: _selectionState.hasClipboard,
               ),
               _createBarButton(
                 tooltip: "Paste As New Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPasteAsNewLayer)}",
                 icon: TablerIcons.clipboard_plus,
-                onPressedFunc: _pasteNewPressed,
-                isEnabled: _selectionState.clipboard != null,
+                onPressedFunc: _selectionState.pasteAsNewLayer,
+                isEnabled: _selectionState.hasClipboard,
               ),
               _createBarButton(
                 tooltip: "Horizontal Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipH)}",

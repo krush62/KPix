@@ -29,6 +29,7 @@ import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/kpal_ramp_data.dart';
 import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/view_state.dart';
@@ -37,6 +38,11 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
+
+/// How many pixels of a ramp are on the layers, in the floating selection and
+/// in the clipboard. The first two are part of the image, the clipboard only
+/// holds copied pixels.
+typedef RampPixelUsage = ({int layers, int selection, int clipboard});
 
 /// The project's color ramps and the color currently being drawn with.
 ///
@@ -110,6 +116,16 @@ class PaletteState
     return pixelCount;
   }
 
+  RampPixelUsage getPixelUsageForRamp({required final KPalRampData ramp})
+  {
+    final SelectionState selectionState = GetIt.I.get<DocumentState>().selectionState;
+    return (
+      layers: getPixelCountForRamp(ramp: ramp),
+      selection: selectionState.selection.getPixelCountForRamp(ramp: ramp),
+      clipboard: selectionState.getClipboardPixelCountForRamp(ramp: ramp),
+    );
+  }
+
   void deleteRamp({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
     if (colorRamps.length > KPalConstraints.rampCountMin)
@@ -122,6 +138,9 @@ class PaletteState
       {
         f.layerList.deleteRampFromLayers(ramp: ramp, backupColor: rampDataList[0].references[0]);
       }
+      //the floating selection is part of the image as well; the clipboard needs
+      //nothing, it is matched against the palette when it is pasted
+      GetIt.I.get<DocumentState>().selectionState.selection.deleteRamp(ramp: ramp);
       GetIt.I.get<LayerManager>().rasterLayersAll();
       GetIt.I.get<ViewState>().repaintNotifier.repaint();
       if (addToHistoryStack)
@@ -143,12 +162,17 @@ class PaletteState
     if (ramp.references.length != originalData.references.length)
     {
       final HashMap<int, int> indexMap = remapIndices(oldLength: originalData.references.length, newLength: ramp.references.length);
-      _selectedColor.value = ramp.references[indexMap[_selectedColor.value!.colorIndex]!];
+      //the map only fits this ramp, a selected color of any other ramp stays
+      final ColorReference? selected = _selectedColor.value;
+      if (selected != null && selected.ramp == ramp)
+      {
+        _selectedColor.value = ramp.references[indexMap[selected.colorIndex]!];
+      }
       for (final Frame f in GetIt.I.get<DocumentState>().timeline.frames.value)
       {
         f.layerList.remapLayers(newData: ramp, map: indexMap);
       }
-
+      GetIt.I.get<DocumentState>().selectionState.selection.remapRamp(ramp: ramp, map: indexMap);
     }
     GetIt.I.get<LayerManager>().rasterLayersAll();
     GetIt.I.get<ViewState>().repaintNotifier.repaint();
@@ -249,6 +273,15 @@ class PaletteState
             }
             layer.doManualRaster = true;
           }
+        }
+        final SelectionList selection = GetIt.I.get<DocumentState>().selectionState.selection;
+        if (paletteReplaceBehavior == PaletteReplaceBehavior.replace)
+        {
+          selection.delete(keepSelection: true);
+        }
+        else
+        {
+          selection.remapColors(colorMap: rampMap);
         }
         _selectedColor.value = loadPaletteSet.rampData![0].references[0];
         _colorRamps.value = loadPaletteSet.rampData!;

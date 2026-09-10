@@ -19,6 +19,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/platform_helper.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
@@ -343,14 +344,14 @@ KPixOverlay getRasterLayerMenu({
 
 /// An overlay holding the editor for [colorRamp].
 ///
-/// [onAccept] receives the edited ramp, [onDelete] removes it, and [usedPixels]
+/// [onAccept] receives the edited ramp, [onDelete] removes it, and [usage]
 /// tells the editor how many pixels currently use the ramp. The barrier ignores
 /// taps, so the editor can only be left through its own buttons.
 KPixOverlay getKPal({
   required final ColorRampUpdateFn onAccept,
   required final ColorRampFn onDelete,
   required final KPalRampData colorRamp,
-  required final int usedPixels,
+  required final RampPixelUsage usage,
 })
 {
   return _barrierOverlay(
@@ -361,7 +362,7 @@ KPixOverlay getKPal({
         accept: onAccept,
         delete: onDelete,
         colorRamp: colorRamp,
-        usedPixels: usedPixels,
+        usage: usage,
       ),
     ),
   );

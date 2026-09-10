@@ -24,6 +24,8 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/clipboard_content.dart';
+import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/constraints/tool_select_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_manager.dart';
@@ -65,7 +67,7 @@ class SelectionState with ChangeNotifier
   final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
   final SelectionList selection = SelectionList();
-  CoordinateColorMapNullable? clipboard;
+  ClipboardContent? _clipboard;
   final RepaintNotifier repaintNotifier;
   final SelectOptions selectionOptions = GetIt.I.get<ToolOptions>().selectOptions;
   final List<SelectionLine> selectionLines = <SelectionLine>[];
@@ -81,8 +83,8 @@ class SelectionState with ChangeNotifier
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) copy();}, action: HotkeyAction.selectionCopy);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) copyMerged();}, action: HotkeyAction.selectionCopyMerged);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) cut();}, action: HotkeyAction.selectionCut);
-    hotkeyManager.addListener(func: () {if (clipboard != null) paste();}, action: HotkeyAction.selectionPaste);
-    hotkeyManager.addListener(func: () {if (clipboard != null) GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: _documentState.selectionState.clipboard);}, action: HotkeyAction.selectionPasteAsNewLayer);
+    hotkeyManager.addListener(func: () {if (_clipboard != null) paste();}, action: HotkeyAction.selectionPaste);
+    hotkeyManager.addListener(func: () {if (_clipboard != null) pasteAsNewLayer();}, action: HotkeyAction.selectionPasteAsNewLayer);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) delete();}, action: HotkeyAction.selectionDelete);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) flipH();}, action: HotkeyAction.selectionFlipH);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) flipV();}, action: HotkeyAction.selectionFlipV);
@@ -606,12 +608,13 @@ class SelectionState with ChangeNotifier
     bool hasCopied = false;
     if (selection.hasValues())
     {
-      clipboard = HashMap<CoordinateSetI, ColorReference?>();
+      final CoordinateColorMapNullable copied = HashMap<CoordinateSetI, ColorReference?>();
       final Iterable<CoordinateSetI> coords = selection.getCoordinates();
       for (final CoordinateSetI coord in coords)
       {
-        clipboard![coord] = selection.getColorReference(coord: coord);
+        copied[coord] = selection.getColorReference(coord: coord);
       }
+      _clipboard = ClipboardContent(colors: copied);
       if (!keepSelection)
       {
         deselect(notify: false, addToHistoryStack: false);
@@ -672,7 +675,7 @@ class SelectionState with ChangeNotifier
 
       if (hasValues)
       {
-        clipboard = tempCB;
+        _clipboard = ClipboardContent(colors: tempCB);
         if (!keepSelection)
         {
           deselect(notify: false, addToHistoryStack: false);
@@ -690,10 +693,39 @@ class SelectionState with ChangeNotifier
     }
   }
 
+  bool get hasClipboard => _clipboard != null;
+
+  /// Forgets the copied pixels, e.g. because another project was opened.
+  void clearClipboard()
+  {
+    if (_clipboard != null)
+    {
+      _clipboard = null;
+      notifyListeners();
+    }
+  }
+
+  int getClipboardPixelCountForRamp({required final KPalRampData ramp})
+  {
+    return _clipboard?.getPixelCountForRamp(ramp: ramp) ?? 0;
+  }
+
+  /// The clipboard matched against the current palette, or null (with a message)
+  /// if none of the copied colors is left.
+  CoordinateColorMapNullable? _resolveClipboard()
+  {
+    final CoordinateColorMapNullable? content = _clipboard?.resolve(ramps: _documentState.palette.colorRamps);
+    if (_clipboard != null && content == null)
+    {
+      showMessage(text: "Nothing to paste: the copied colors are no longer in the palette!");
+    }
+    return content;
+  }
+
   void paste({final bool notify = true, final bool addToHistoryStack = true})
   {
     final LayerState? layer = _documentState.timeline.getCurrentLayer();
-    if (clipboard != null && layer != null && layer is DrawingLayerState) //should always be the case
+    if (_clipboard != null && layer != null && layer is DrawingLayerState) //should always be the case
     {
       if (layer.lockState.value == LayerLockState.locked)
       {
@@ -705,20 +737,33 @@ class SelectionState with ChangeNotifier
       }
       else
       {
-        deselect(notify: false, addToHistoryStack: false);
-        selection.addDirectlyAll(list: clipboard!);
-        createSelectionLines();
-        if (addToHistoryStack)
+        final CoordinateColorMapNullable? content = _resolveClipboard();
+        if (content != null)
         {
-          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionPaste, originLayer: _documentState.timeline.getCurrentLayer());
-        }
+          deselect(notify: false, addToHistoryStack: false);
+          selection.addDirectlyAll(list: content);
+          createSelectionLines();
+          if (addToHistoryStack)
+          {
+            GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionPaste, originLayer: _documentState.timeline.getCurrentLayer());
+          }
 
-        if (notify)
-        {
-          notifyRepaint();
-          layer.doManualRaster = true;
+          if (notify)
+          {
+            notifyRepaint();
+            layer.doManualRaster = true;
+          }
         }
       }
+    }
+  }
+
+  void pasteAsNewLayer()
+  {
+    final CoordinateColorMapNullable? content = _resolveClipboard();
+    if (content != null)
+    {
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: content);
     }
   }
 
@@ -1137,6 +1182,78 @@ class SelectionList
       _content.clear();
     }
     _touch(maskChanged: !keepSelection);
+  }
+
+  /// Empties every selected pixel of the deleted [ramp], keeping the shape of
+  /// the selection.
+  void deleteRamp({required final KPalRampData ramp})
+  {
+    bool changed = false;
+    for (final CoordinateSetI coord in _content.keys)
+    {
+      if (_content[coord]?.ramp == ramp)
+      {
+        _content[coord] = null;
+        changed = true;
+      }
+    }
+    if (changed)
+    {
+      _touch(maskChanged: false);
+    }
+  }
+
+  /// Moves the selected pixels of [ramp] after its color count changed, through
+  /// the same [map] the layers are remapped with.
+  void remapRamp({required final KPalRampData ramp, required final HashMap<int, int> map})
+  {
+    bool changed = false;
+    for (final CoordinateSetI coord in _content.keys)
+    {
+      final ColorReference? color = _content[coord];
+      if (color != null && color.ramp == ramp)
+      {
+        _content[coord] = ramp.references[map[color.colorIndex]!];
+        changed = true;
+      }
+    }
+    if (changed)
+    {
+      _touch(maskChanged: false);
+    }
+  }
+
+  /// Swaps every selected color through [colorMap] after the palette was
+  /// replaced. A color missing from the map becomes transparent.
+  void remapColors({required final HashMap<ColorReference, ColorReference> colorMap})
+  {
+    bool changed = false;
+    for (final CoordinateSetI coord in _content.keys)
+    {
+      final ColorReference? color = _content[coord];
+      if (color != null)
+      {
+        _content[coord] = colorMap[color];
+        changed = true;
+      }
+    }
+    if (changed)
+    {
+      _touch(maskChanged: false);
+    }
+  }
+
+  int getPixelCountForRamp({required final KPalRampData ramp})
+  {
+    int count = 0;
+    for (final ColorReference? color in _content.values)
+    {
+      if (color?.ramp == ramp)
+      {
+        count++;
+      }
+    }
+    return count;
   }
 
   void flipH()

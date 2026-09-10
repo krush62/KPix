@@ -50,6 +50,7 @@ import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/constraints/kpal_constraints.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -80,15 +81,15 @@ class KPal extends StatefulWidget
   final KPalRampData _colorRamp;
   final ColorRampUpdateFn _accept;
   final ColorRampFn _delete;
-  final int _usedPixels;
+  final RampPixelUsage _usage;
 
   const KPal({
     super.key,
     required final KPalRampData colorRamp,
     required final void Function({bool addToHistoryStack, required KPalRampData originalData, required KPalRampData ramp}) accept,
     required final void Function({bool addToHistoryStack, required KPalRampData ramp}) delete,
-    required final int usedPixels,
-  }) : _delete = delete, _accept = accept, _colorRamp = colorRamp, _usedPixels = usedPixels;
+    required final RampPixelUsage usage,
+  }) : _delete = delete, _accept = accept, _colorRamp = colorRamp, _usage = usage;
 
   @override
   State<KPal> createState() => _KPalState();
@@ -107,8 +108,23 @@ class _KPalState extends State<KPal>
         onNo: _dismissAlertDialog,
         onYes: _acceptDeletion,
         outsideCancelable: false,
-        message: "Do you really want to delete this color ramp?\n${widget._usedPixels} pixel(s) will be deleted.",
+        message: _deleteMessage(usage: widget._usage),
       );
+  }
+
+  String _deleteMessage({required final RampPixelUsage usage})
+  {
+    final StringBuffer message = StringBuffer("Do you really want to delete this color ramp?\n${usage.layers + usage.selection} pixel(s) will be deleted");
+    if (usage.selection > 0)
+    {
+      message.write(" (${usage.selection} of them in the selection)");
+    }
+    message.write(".");
+    if (usage.clipboard > 0)
+    {
+      message.write("\n${usage.clipboard} pixel(s) in the clipboard will no longer be pasted.");
+    }
+    return message.toString();
   }
 
   void _acceptChange()

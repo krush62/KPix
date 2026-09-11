@@ -68,17 +68,17 @@ class RasterPixels
     return _codec.decode(code: grid.get(x: coord.x, y: coord.y));
   }
 
-  /// Sets the pixel at [coord]; null clears it. The ramp of a color the codec
+  /// Sets the pixel at [x]|[y]; null clears it. The ramp of a color the codec
   /// does not know yet is appended to it (see [PaletteCodec.withRamp]).
-  void setColorAt({required final CoordinateSetI coord, required final ColorReference? color})
+  void setColorAt({required final int x, required final int y, required final ColorReference? color})
   {
     if (color == null)
     {
-      grid.set(x: coord.x, y: coord.y, value: PaletteCodec.transparent);
+      grid.set(x: x, y: y, value: PaletteCodec.transparent);
       return;
     }
     _codec = _codec.withRamp(ramp: color.ramp);
-    grid.set(x: coord.x, y: coord.y, value: _codec.encode(color: color));
+    grid.set(x: x, y: y, value: _codec.encode(color: color));
   }
 }
 
@@ -131,7 +131,7 @@ abstract class RasterableLayerState extends LayerState
   /// Does nothing before the layer rastered for the first time.
   void setCompositeAt({required final Frame? frame, required final CoordinateSetI coord, required final ColorReference? color})
   {
-    pixelsForFrame(frame: frame)?.setColorAt(coord: coord, color: color);
+    pixelsForFrame(frame: frame)?.setColorAt(x: coord.x, y: coord.y, color: color);
   }
   final ValueNotifier<ui.Image?> rasterImage = ValueNotifier<ui.Image?>(null);
   final ValueNotifier<Map<Frame, RasterImagePair>> rasterImageMap = ValueNotifier<Map<Frame, RasterImagePair>>(<Frame, RasterImagePair>{});

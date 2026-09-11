@@ -301,6 +301,30 @@ void main()
     });
   });
 
+  group("signed values", ()
+  {
+    test("keep zero and negative values apart from no value", ()
+    {
+      final PixelGrid grid = PixelGrid(width: _width, height: _height);
+      grid.setSigned(x: 1, y: 1, value: 0);
+      grid.setSigned(x: 2, y: 1, value: -SignedPixels.maxMagnitude);
+      grid.setSigned(x: 3, y: 1, value: SignedPixels.maxMagnitude);
+
+      expect(grid.getSigned(x: 1, y: 1), 0);
+      expect(grid.getSigned(x: 2, y: 1), -SignedPixels.maxMagnitude);
+      expect(grid.getSigned(x: 3, y: 1), SignedPixels.maxMagnitude);
+      expect(grid.getSigned(x: 4, y: 1), isNull);
+
+      final Map<(int, int), int> values = <(int, int), int>{};
+      grid.forEachSigned(action: (final int x, final int y, final int value) => values[(x, y)] = value);
+      expect(values, <(int, int), int>{(1, 1): 0, (2, 1): -SignedPixels.maxMagnitude, (3, 1): SignedPixels.maxMagnitude});
+
+      grid.setSigned(x: 1, y: 1, value: null);
+      expect(grid.getSigned(x: 1, y: 1), isNull);
+      expect(grid.nonZeroCount, 2);
+    });
+  });
+
   group("transforms follow the layer's coordinate math", ()
   {
     //DrawingLayerState.transformLayer and resizeLayer, applied to a plain map

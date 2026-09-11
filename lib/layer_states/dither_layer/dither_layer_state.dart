@@ -23,7 +23,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
-import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
@@ -35,6 +34,7 @@ import 'package:kpix/models/history/history_ramp_data.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:kpix/widgets/layer_settings/shading_layer_settings_widget.dart';
 
 class DitherLayerState extends ShadingLayerState
@@ -54,17 +54,9 @@ class DitherLayerState extends ShadingLayerState
   final HistoryLayer? previousLayer,
   })
   {
-    final HistoryDitherLayer? prevDither =
-    previousLayer is HistoryDitherLayer ? previousLayer : null;
-
-    return prevDither != null
-        ? HistoryDitherLayer.deltaFrom(
-      layerState:    this,
-      previousLayer: prevDither,
-    )
-        : HistoryDitherLayer.fromDitherLayerState(
-      layerState: this,
-    );
+    //a snapshot shares the tiles that did not change, so there is no need for
+    //a delta against the previous one
+    return HistoryDitherLayer.fromDitherLayerState(layerState: this);
   }
 
   DitherLayerState() : this._();
@@ -79,14 +71,8 @@ class DitherLayerState extends ShadingLayerState
 
   factory DitherLayerState.from({required final DitherLayerState other, final List<RasterableLayerState>? layerStack})
   {
-    final HashMap<CoordinateSetI, int> data = HashMap<CoordinateSetI, int>();
-    for (final MapEntry<CoordinateSetI, int> entry in other.shadingData.entries)
-    {
-      data[entry.key] = entry.value;
-    }
     final ShadingLayerSettings settings = ShadingLayerSettings.from(other: other.settings);
-
-    return DitherLayerState.withData(data: data, lState: other.lockState.value, newSettings: settings, layerStack: layerStack);
+    return DitherLayerState.withData(data: other.shadingValues.copy(), lState: other.lockState.value, newSettings: settings, layerStack: layerStack);
   }
 
   DitherLayerState.withData({required super.data, required super.lState, required super.newSettings, super.layerStack})
@@ -282,41 +268,30 @@ class DitherLayerState extends ShadingLayerState
     final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final RasterPixels allColorPixels = RasterPixels.empty(width: canvasSize.x, height: canvasSize.y);
+    final List<RasterPixels> below = pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
 
-    //_ditherData.clear();
     for (int x = 0; x < canvasSize.x; x++)
     {
       for (int y = 0; y < canvasSize.y; y++)
       {
-        final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
-        final int? valAt = sData[coord];
+        final int? valAt = shadingValues.getSigned(x: x, y: y);
         int brightVal = thumbnailBrightnessMap[0]!;
         if (valAt != null)
         {
           brightVal = thumbnailBrightnessMap[valAt]?? 0;
-          for (int i = currentIndex + 1; i < rasterLayers.length; i++)
+          final ColorReference? refCol = ShadingLayerState.colorAmong(pixels: below, x: x, y: y);
+          if (refCol != null)
           {
-            final RasterableLayerState layer = rasterLayers[i];
-            ColorReference? refCol;
-            if (layer.visibilityState.value == LayerVisibilityState.visible)
+            final int currentColorIndex = refCol.colorIndex;
+            final int ditherVal = _ditherValue(value: valAt, x: x, y: y);
+            final int targetColorIndex = (currentColorIndex + ditherVal).clamp(0, refCol.ramp.references.length - 1);
+            final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
+            allColorPixels.setColorAt(x: x, y: y, color: targetColor);
+            final int index = (y * canvasSize.x + x) * 4;
+            if (index >= 0 && index < byteDataImg.lengthInBytes)
             {
-              refCol = layer.compositeAt(frame: frame, coord: coord);
+              byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
             }
-            if (refCol != null)
-            {
-              final int currentColorIndex = refCol.colorIndex;
-              final int ditherVal = getDisplayValueAt(coord: coord);
-              final int targetColorIndex = (currentColorIndex + ditherVal).clamp(0, refCol.ramp.references.length - 1);
-              final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
-              allColorPixels.setColorAt(coord: coord, color: targetColor);
-              final int index = (y * canvasSize.x + x) * 4;
-              if (index >= 0 && index < byteDataImg.lengthInBytes)
-              {
-                byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
-              }
-              break;
-            }
-
           }
         }
         final int pixelIndex = (y * canvasSize.x + x) * 4;
@@ -360,7 +335,13 @@ class DitherLayerState extends ShadingLayerState
   @override
   bool hasCoord({required final CoordinateSetI coord})
   {
-    return sData.containsKey(coord);
+    return shadingValues.getSigned(x: coord.x, y: coord.y) != null;
+  }
+
+  /// The step the dither pattern of [value] makes at [x]|[y].
+  int _ditherValue({required final int value, required final int x, required final int y})
+  {
+    return value != 0 && _ditherMap.containsKey(value) ? _ditherMap[value]![y % 4][x % 4] : 0;
   }
 
   @override
@@ -369,15 +350,7 @@ class DitherLayerState extends ShadingLayerState
     final int? valAt = getRawValueAt(coord: coord);
     if (valAt != null)
     {
-      final int shiftedVal = valAt + shift;
-      if (shiftedVal != 0 && _ditherMap.containsKey(shiftedVal))
-      {
-        return _ditherMap[shiftedVal]![coord.y % 4][coord.x % 4];
-      }
-      else
-      {
-        return 0;
-      }
+      return _ditherValue(value: valAt + shift, x: coord.x, y: coord.y);
     }
     else if (shift != 0)
     {
@@ -392,7 +365,7 @@ class DitherLayerState extends ShadingLayerState
   @override
   int? getRawValueAt({required final CoordinateSetI coord})
   {
-    return sData[coord];
+    return shadingValues.getSigned(x: coord.x, y: coord.y);
   }
 
   @override

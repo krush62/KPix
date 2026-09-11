@@ -31,14 +31,17 @@ import 'package:kpix/layer_states/rendering_helper.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/canvas_transformation.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history/history_ramp_data.dart';
 import 'package:kpix/models/history/history_shading_layer.dart';
 import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:kpix/widgets/layer_settings/shading_layer_settings_widget.dart';
 import 'package:logger/logger.dart';
 
@@ -47,8 +50,9 @@ class ShadingLayerState extends RasterableLayerState
   final ShadingLayerSettings settings;
   @protected
   final HashMap<int, int> thumbnailBrightnessMap = HashMap<int, int>();
+  //the shading steps as signed pixels (see SignedPixels), canvas sized
   @protected
-  final HashMap<CoordinateSetI, int> sData = HashMap<CoordinateSetI, int>();
+  PixelGrid shadingValues;
 
   bool _isUpdateScheduled = false;
   final List<DirtyRegion> _dirtyRegions = <DirtyRegion>[];
@@ -67,48 +71,41 @@ class ShadingLayerState extends RasterableLayerState
     final HistoryLayer? previousLayer,
   })
   {
-    final HistoryShadingLayer? prevShading =
-    previousLayer is HistoryShadingLayer ? previousLayer : null;
-
-    return prevShading != null
-        ? HistoryShadingLayer.deltaFrom(
-      layerState:    this,
-      previousLayer: prevShading,
-    )
-        : HistoryShadingLayer.fromShadingLayerState(
-      layerState: this,
-    );
+    //a snapshot shares the tiles that did not change, so there is no need for
+    //a delta against the previous one
+    return HistoryShadingLayer.fromShadingLayerState(layerState: this);
   }
 
   ShadingLayerState() : this._(settings: ShadingLayerSettings.defaultValue(constraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints));
 
-  ShadingLayerState._({required this.settings}) : super(layerSettings: settings)
+  ShadingLayerState._({required this.settings}) :
+        shadingValues = _canvasSizedGrid(),
+        super(layerSettings: settings)
   {
     _init();
   }
 
-  ShadingLayerState.withData({required final HashMap<CoordinateSetI, int> data, required final LayerLockState lState, required final ShadingLayerSettings newSettings, super.layerStack}) :
+  /// A layer holding [data], shading steps as signed pixels. The grid is taken
+  /// over, not copied.
+  ShadingLayerState.withData({required final PixelGrid data, required final LayerLockState lState, required final ShadingLayerSettings newSettings, super.layerStack}) :
         settings = newSettings,
+        shadingValues = data,
         super(layerSettings: newSettings)
   {
     _init();
-    for (final MapEntry<CoordinateSetI, int> entry in data.entries)
-    {
-      sData[entry.key] = entry.value;
-    }
     lockState.value = lState;
   }
 
   factory ShadingLayerState.from({required final ShadingLayerState other, final List<RasterableLayerState>? layerStack})
   {
-    final HashMap<CoordinateSetI, int> data = HashMap<CoordinateSetI, int>();
-    for (final MapEntry<CoordinateSetI, int> entry in other.shadingData.entries)
-    {
-      data[entry.key] = entry.value;
-    }
     final ShadingLayerSettings settings = ShadingLayerSettings.from(other: other.settings);
+    return ShadingLayerState.withData(data: other.shadingValues.copy(), lState: other.lockState.value, newSettings: settings, layerStack: layerStack);
+  }
 
-    return ShadingLayerState.withData(data: data, lState: other.lockState.value, newSettings: settings, layerStack: layerStack);
+  static PixelGrid _canvasSizedGrid()
+  {
+    final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
+    return PixelGrid(width: canvasSize.x, height: canvasSize.y);
   }
 
   @protected
@@ -132,12 +129,20 @@ class ShadingLayerState extends RasterableLayerState
 
   void _settingsChanged()
   {
-    for (final MapEntry<CoordinateSetI, int> entry in sData.entries)
+    final int low = -settings.shadingStepsMinus.value;
+    final int high = settings.shadingStepsPlus.value;
+    final List<(int, int, int)> clamped = <(int, int, int)>[];
+    shadingValues.forEachSigned(action: (final int x, final int y, final int value)
     {
-      if (sData[entry.key] != null)
+      final int limited = value.clamp(low, high);
+      if (limited != value)
       {
-        sData[entry.key] = sData[entry.key]!.clamp(-settings.shadingStepsMinus.value, settings.shadingStepsPlus.value);
+        clamped.add((x, y, limited));
       }
+    },);
+    for (final (int x, int y, int value) in clamped)
+    {
+      shadingValues.setSigned(x: x, y: y, value: value);
     }
     if (isRasterizing) {
       forceFullRender();
@@ -155,21 +160,29 @@ class ShadingLayerState extends RasterableLayerState
     }
   }
 
-  HashMap<CoordinateSetI, int> get shadingData
+  /// Calls [action] for every pixel that carries a shading step.
+  void forEachValue({required final void Function(int x, int y, int value) action})
   {
-    return sData;
+    shadingValues.forEachSigned(action: action);
+  }
+
+  /// The shading steps as they are now, for the history and the file.
+  PixelGridSnapshot historySnapshot()
+  {
+    return shadingValues.snapshot();
   }
 
   bool hasCoord({required final CoordinateSetI coord})
   {
-    return sData.containsKey(coord);
+    return shadingValues.getSigned(x: coord.x, y: coord.y) != null;
   }
 
   int? getDisplayValueAt({required final CoordinateSetI coord, final int shift = 0})
   {
-    if (hasCoord(coord: coord))
+    final int? value = shadingValues.getSigned(x: coord.x, y: coord.y);
+    if (value != null)
     {
-      return sData[coord]! + shift;
+      return value + shift;
     }
     //a shift on a pixel that carries no shading yet is what drawing there would
     //store, so it has to read as that value instead of as no shading at all
@@ -196,10 +209,7 @@ class ShadingLayerState extends RasterableLayerState
     {
       for (final CoordinateSetI coord in coords)
       {
-        if (sData.containsKey(coord))
-        {
-          sData.remove(coord);
-        }
+        shadingValues.setSigned(x: coord.x, y: coord.y, value: null);
       }
       _trackDirtyRegions(changedCoords: coords);
       doManualRaster = true;
@@ -223,7 +233,8 @@ class ShadingLayerState extends RasterableLayerState
     {
       for (final MapEntry<CoordinateSetI, int> entry in coords.entries)
       {
-        sData[entry.key] = entry.value.clamp(-settings.shadingStepsMinus.value, settings.shadingStepsPlus.value);
+        //the grid drops pixels off the canvas
+        shadingValues.setSigned(x: entry.key.x, y: entry.key.y, value: entry.value.clamp(-settings.shadingStepsMinus.value, settings.shadingStepsPlus.value));
       }
       _trackDirtyRegions(changedCoords: coords.keys);
       doManualRaster = true;
@@ -354,42 +365,30 @@ class ShadingLayerState extends RasterableLayerState
     final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final RasterPixels allColorPixels = RasterPixels.empty(width: canvasSize.x, height: canvasSize.y);
+    final List<RasterPixels> below = pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
 
     for (int x = 0; x < canvasSize.x; x++)
     {
       for (int y = 0; y < canvasSize.y; y++)
       {
-        final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
-        final int? valAt = sData[coord];
+        final int? valAt = shadingValues.getSigned(x: x, y: y);
         int brightVal = thumbnailBrightnessMap[0]!;
 
         if (valAt != null)
         {
           brightVal = thumbnailBrightnessMap[valAt] ?? 0;
-
-          for (int i = currentIndex + 1; i < rasterLayers.length; i++)
+          final ColorReference? refCol = colorAmong(pixels: below, x: x, y: y);
+          if (refCol != null)
           {
-            final RasterableLayerState layer = rasterLayers[i];
-            ColorReference? refCol;
+            final int currentColorIndex = refCol.colorIndex;
+            final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
+            final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
+            allColorPixels.setColorAt(x: x, y: y, color: targetColor);
+            final int index = (y * canvasSize.x + x) * 4;
 
-            if (layer.visibilityState.value == LayerVisibilityState.visible)
+            if (index >= 0 && index < byteDataImg.lengthInBytes)
             {
-              refCol = layer.compositeAt(frame: frame, coord: coord);
-            }
-
-            if (refCol != null)
-            {
-              final int currentColorIndex = refCol.colorIndex;
-              final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
-              final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
-              allColorPixels.setColorAt(coord: coord, color: targetColor);
-              final int index = (y * canvasSize.x + x) * 4;
-
-              if (index >= 0 && index < byteDataImg.lengthInBytes)
-              {
-                byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
-              }
-              break;
+              byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
             }
           }
         }
@@ -509,13 +508,15 @@ class ShadingLayerState extends RasterableLayerState
     final RgbaCache rgbaCache = RgbaCache();
     final ByteData byteDataThb = ByteData(region.width * region.height * 4);
     final ByteData byteDataImg = ByteData(region.width * region.height * 4);
+    final List<RasterPixels> below = pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
+    //the frame's own pixels, which the regions are patched into
+    final RasterPixels? own = pixelsForFrame(frame: frame);
 
     for (int y = region.y; y < region.y + region.height; y++)
     {
       for (int x = region.x; x < region.x + region.width; x++)
       {
-        final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
-        final int? valAt = sData[coord];
+        final int? valAt = shadingValues.getSigned(x: x, y: y);
         int brightVal = thumbnailBrightnessMap[0]!;
 
         bool pixelRendered = false;
@@ -523,41 +524,29 @@ class ShadingLayerState extends RasterableLayerState
         if (valAt != null)
         {
           brightVal = thumbnailBrightnessMap[valAt] ?? 0;
-
-          for (int i = currentIndex + 1; i < rasterLayers.length; i++)
+          final ColorReference? refCol = colorAmong(pixels: below, x: x, y: y);
+          if (refCol != null)
           {
-            final RasterableLayerState layer = rasterLayers[i];
-            ColorReference? refCol;
+            final int currentColorIndex = refCol.colorIndex;
+            final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
+            final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
 
-            if (layer.visibilityState.value == LayerVisibilityState.visible)
+            final int bufferX = x - region.x;
+            final int bufferY = y - region.y;
+            final int index = (bufferY * region.width + bufferX) * 4;
+
+            if (index >= 0 && index < byteDataImg.lengthInBytes)
             {
-              refCol = layer.compositeAt(frame: frame, coord: coord);
-            }
-
-            if (refCol != null)
-            {
-              final int currentColorIndex = refCol.colorIndex;
-              final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
-              final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
-
-              final int bufferX = x - region.x;
-              final int bufferY = y - region.y;
-              final int index = (bufferY * region.width + bufferX) * 4;
-
-              if (index >= 0 && index < byteDataImg.lengthInBytes)
-              {
-                byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
-                setCompositeAt(frame: frame, coord: coord, color: targetColor);
-                pixelRendered = true;
-              }
-              break;
+              byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
+              own?.setColorAt(x: x, y: y, color: targetColor);
+              pixelRendered = true;
             }
           }
         }
 
         if (!pixelRendered)
         {
-          setCompositeAt(frame: frame, coord: coord, color: null);
+          own?.setColorAt(x: x, y: y, color: null);
           final int bufferX = x - region.x;
           final int bufferY = y - region.y;
           final int index = (bufferY * region.width + bufferX) * 4;
@@ -709,19 +698,57 @@ class ShadingLayerState extends RasterableLayerState
   @override
   void resizeLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
-    final HashMap<CoordinateSetI, int> croppedContent = HashMap<CoordinateSetI, int>();
-    for (final MapEntry<CoordinateSetI, int> entry in sData.entries)
+    shadingValues = shadingValues.resized(newWidth: newSize.x, newHeight: newSize.y, offsetX: offset.x, offsetY: offset.y);
+    forceFullRender();
+  }
+
+  /// Turns or mirrors the shading with the canvas. For a rotation, width and
+  /// height swap.
+  void transformLayer({required final CanvasTransformation transformation, required final CoordinateSetI oldSize})
+  {
+    assert(oldSize.x == shadingValues.width && oldSize.y == shadingValues.height, "the layer is ${shadingValues.width}x${shadingValues.height}, not ${oldSize.x}x${oldSize.y}");
+    switch (transformation)
     {
-      final CoordinateSetI newCoord = CoordinateSetI(x: entry.key.x + offset.x, y: entry.key.y + offset.y);
-      if (newCoord.x >= 0 && newCoord.x < newSize.x && newCoord.y >= 0 && newCoord.y < newSize.y)
+      case CanvasTransformation.rotate:
+        shadingValues = shadingValues.rotatedClockwise();
+      case CanvasTransformation.flipH:
+        shadingValues = shadingValues.flippedHorizontally();
+      case CanvasTransformation.flipV:
+        shadingValues = shadingValues.flippedVertically();
+    }
+    forceFullRender();
+  }
+
+  /// What the visible layers below this one in [rasterLayers] showed in
+  /// [frame] when they were last rastered, nearest first.
+  @protected
+  List<RasterPixels> pixelsBelow({required final List<RasterableLayerState> rasterLayers, required final int currentIndex, required final Frame? frame})
+  {
+    final List<RasterPixels> below = <RasterPixels>[];
+    for (int i = currentIndex + 1; i < rasterLayers.length; i++)
+    {
+      final RasterableLayerState layer = rasterLayers[i];
+      final RasterPixels? pixels = layer.visibilityState.value == LayerVisibilityState.visible ? layer.pixelsForFrame(frame: frame) : null;
+      if (pixels != null)
       {
-        croppedContent[newCoord] = entry.value;
+        below.add(pixels);
       }
     }
+    return below;
+  }
 
-    sData.clear();
-    sData.addAll(croppedContent);
-    forceFullRender();
+  /// The color of the first of [pixels] that has one at [x]|[y].
+  static ColorReference? colorAmong({required final List<RasterPixels> pixels, required final int x, required final int y})
+  {
+    for (final RasterPixels layerPixels in pixels)
+    {
+      final int code = layerPixels.grid.get(x: x, y: y);
+      if (code != PaletteCodec.transparent)
+      {
+        return layerPixels.codec.decode(code: code);
+      }
+    }
+    return null;
   }
 
   @override
@@ -807,7 +834,7 @@ class ShadingLayerState extends RasterableLayerState
     stopRasterPolling();
     settings.removeListener(_settingsChanged);
     _isUpdateScheduled = false;
-    sData.clear();
+    shadingValues.clear();
     thumbnailBrightnessMap.clear();
 
     final List<ui.Image?> images = <ui.Image?>[rasterImage.value, thumbnail.value, previousRaster];

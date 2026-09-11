@@ -391,6 +391,43 @@ class PixelGrid extends PixelGridView
   }
 }
 
+/// Signed values such as shading steps, kept in a grid whose zero means "no
+/// value": a value is stored with [bias] added, so that zero itself is a value.
+extension SignedPixels on PixelGridView
+{
+  /// Added to every value stored; values have to stay below it in magnitude.
+  static const int bias = 128;
+
+  /// The largest magnitude a value can have.
+  static const int maxMagnitude = bias - 1;
+
+  /// The value at [x]|[y], or null where there is none.
+  int? getSigned({required final int x, required final int y})
+  {
+    final int stored = get(x: x, y: y);
+    return stored == 0 ? null : stored - bias;
+  }
+
+  /// Calls [action] for every pixel that holds a value.
+  ///
+  /// [action] must not change this grid.
+  void forEachSigned({required final void Function(int x, int y, int value) action})
+  {
+    forEachNonZero(action: (final int x, final int y, final int stored) => action(x, y, stored - bias));
+  }
+}
+
+/// Writing side of [SignedPixels].
+extension SignedPixelWrites on PixelGrid
+{
+  /// Stores [value] at [x]|[y]; null removes it.
+  void setSigned({required final int x, required final int y, required final int? value})
+  {
+    assert(value == null || value.abs() <= SignedPixels.maxMagnitude, "$value is too large for a signed pixel");
+    set(x: x, y: y, value: value == null ? 0 : value + SignedPixels.bias);
+  }
+}
+
 /// A frozen copy of a [PixelGrid], for example for the history.
 ///
 /// See [PixelGrid.snapshot].

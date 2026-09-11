@@ -286,21 +286,20 @@ Future<ByteData> createKPixData() async
       }
 
       //data count
-      final int dataLength = cLayer.data.length;
-      byteData.setUint32(offset, dataLength);
+      byteData.setUint32(offset, cLayer.pixels.nonZeroCount);
       offset+=4;
 
-      for (final MapEntry<CoordinateSetI, int> entry in cLayer.data.entries)
+      cLayer.pixels.forEachSigned(action: (final int x, final int y, final int value)
       {
         //x
-        byteData.setUint16(offset, entry.key.x);
+        byteData.setUint16(offset, x);
         offset+=2;
         //y
-        byteData.setUint16(offset, entry.key.y);
+        byteData.setUint16(offset, y);
         offset+=2;
         //shading
-        byteData.setInt8(offset++, entry.value);
-      }
+        byteData.setInt8(offset++, value);
+      },);
     }
   }
 
@@ -535,7 +534,7 @@ int _calculateKPixFileSize({required final HistoryState saveData})
       size += 4;
       //x (2) + y (2) + shading (1) per pixel. A selection holds color references,
       // which mean nothing on a shading layer, so the writer never merges one in here and neither does this count.
-      size += cLayer.data.length * 5;
+      size += cLayer.pixels.nonZeroCount * 5;
     }
   }
 

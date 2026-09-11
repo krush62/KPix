@@ -650,35 +650,36 @@ class LayerCollection with ChangeNotifier {
         }
       }
 
-      for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.shadingData.entries)
+      shadingLayer.forEachValue(action: (final int x, final int y, final int value)
       {
+        final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
         for (final DrawingLayerState drawingLayer in drawingLayers)
         {
-          final ColorReference? curCol = drawingLayer.getDataEntry(coord: entry.key, withSettingsPixels: true,);
+          final ColorReference? curCol = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true,);
           if (curCol != null)
           {
             if (shadingLayer.runtimeType == ShadingLayerState)
             {
-              final int targetIndex = (curCol.colorIndex + entry.value).clamp(0, curCol.ramp.references.length - 1,);
-              shadeLayerMap[drawingLayer]![entry.key] =
+              final int targetIndex = (curCol.colorIndex + value).clamp(0, curCol.ramp.references.length - 1,);
+              shadeLayerMap[drawingLayer]![coord] =
               curCol.ramp.references[targetIndex];
               break;
             }
             else
             {
               final int ditherVal = shadingLayer.getDisplayValueAt(
-                  coord: entry.key,) ?? 0;
+                  coord: coord,) ?? 0;
               if (ditherVal != 0)
               {
                 final int newColorIndex = (curCol.colorIndex + ditherVal).clamp(0, curCol.ramp.references.length - 1,);
-                shadeLayerMap[drawingLayer]![entry.key] =
+                shadeLayerMap[drawingLayer]![coord] =
                 curCol.ramp.references[newColorIndex];
                 break;
               }
             }
           }
         }
-      }
+      },);
 
       //applying shading
       for (final MapEntry<DrawingLayerState, CoordinateColorMapNullable> entry in shadeLayerMap.entries)
@@ -821,14 +822,18 @@ class LayerCollection with ChangeNotifier {
     }
   }
 
-  /// Transforms every drawing layer not in [done] yet, and adds it there. A
-  /// layer linked into several frames sits in several collections, but must
-  /// only be turned once.
+  /// Transforms every drawing, shading and dither layer not in [done] yet, and
+  /// adds it there. A layer linked into several frames sits in several
+  /// collections, but must only be turned once.
   void transformLayers({required final CanvasTransformation transformation, required final CoordinateSetI oldSize, required final Set<LayerState> done,})
   {
     for (final LayerState layer in _layers)
     {
       if (layer is DrawingLayerState && done.add(layer))
+      {
+        layer.transformLayer(transformation: transformation, oldSize: oldSize,);
+      }
+      else if (layer is ShadingLayerState && done.add(layer))
       {
         layer.transformLayer(transformation: transformation, oldSize: oldSize,);
       }

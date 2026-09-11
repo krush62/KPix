@@ -33,12 +33,18 @@ class RampResolver
   final Map<String, KPalRampData> _byUuid;
 
   /// Pixel data: match the ramp by uuid, skip the pixel if it's gone.
+  ///
+  /// Hands out the ramp's own reference object, so a restored layer shares one
+  /// per color instead of carrying one per pixel. An index past the end of the
+  /// ramp is clamped, which is also how such a pixel is displayed.
   ColorReference? byUuid({required final HistoryColorReference ref})
   {
     final KPalRampData? ramp = _byUuid[_historyRamps[ref.rampIndex].uuid];
-    return ramp == null
-        ? null
-        : ColorReference(colorIndex: ref.colorIndex, ramp: ramp);
+    if (ramp == null)
+    {
+      return null;
+    }
+    return ramp.references[ref.colorIndex.clamp(0, ramp.references.length - 1)];
   }
 
   /// The live ramp list this resolver was built from.

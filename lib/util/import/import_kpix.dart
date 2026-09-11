@@ -569,7 +569,7 @@ LoadFileSet _parseKPixFile({required final Uint8List bytes, required final Strin
           if (colorRampIndex >= rampList.length) return LoadFileSet(status: "Color Ramp index out of range for layer $i : $colorRampIndex");
           final int colorIndex = reader.getUint8();
           if (colorIndex >= rampList[colorRampIndex].settings.colorCount) return LoadFileSet(status: "Color index out of range for layer $i: $colorIndex");
-          data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
+          data[CoordinateSetI(x: x, y: y)] = HistoryColorReference.of(colorIndex: colorIndex, rampIndex: colorRampIndex);
         }
         layerList.add(HistoryDrawingLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: drawingLayerSettings, layerIdentity: i));
       }

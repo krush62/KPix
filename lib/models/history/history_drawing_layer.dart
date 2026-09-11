@@ -183,7 +183,7 @@ class HistoryDrawingLayer extends HistoryLayer
       if (rampIndex != null)
       {
         dt[entry.key] =
-            HistoryColorReference(colorIndex: entry.value.colorIndex, rampIndex: rampIndex);
+            HistoryColorReference.of(colorIndex: entry.value.colorIndex, rampIndex: rampIndex);
       }
     }
 
@@ -195,7 +195,7 @@ class HistoryDrawingLayer extends HistoryLayer
         if (rampIndex != null)
         {
           dt[entry.key] =
-              HistoryColorReference(colorIndex: entry.value!.colorIndex, rampIndex: rampIndex);
+              HistoryColorReference.of(colorIndex: entry.value!.colorIndex, rampIndex: rampIndex);
         }
       }
       else
@@ -224,7 +224,7 @@ class HistoryDrawingLayer extends HistoryLayer
       {
         final int? rampIndex = rampIndexByUuid[entry.value!.ramp.uuid];
         after = rampIndex != null
-            ? HistoryColorReference(
+            ? HistoryColorReference.of(
             colorIndex: entry.value!.colorIndex, rampIndex: rampIndex,)
             : null;
       }

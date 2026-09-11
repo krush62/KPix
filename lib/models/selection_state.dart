@@ -16,6 +16,7 @@
 
 import 'dart:collection';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -240,7 +241,7 @@ class SelectionState with ChangeNotifier
     final int numCols = _canvasState.canvasSize.x;
     final ColorReference? targetValue = (_documentState.timeline.getCurrentLayer() == layer && selection.contains(coord: start)) ? selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
     final Set<CoordinateSetI> result = <CoordinateSetI>{};
-    final Set<CoordinateSetI> visited = <CoordinateSetI>{};
+    final Uint8List visited = Uint8List(numCols * numRows);
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
 
     pointStack.push(CoordinateSetI(x: start.x, y: start.y));
@@ -251,7 +252,7 @@ class SelectionState with ChangeNotifier
       if (curCoord.x >= 0 && curCoord.y < numRows && curCoord.y >= 0 && curCoord.x < numCols)
       {
         final ColorReference? refAtPos = (_documentState.timeline.getCurrentLayer() == layer && selection.contains(coord: curCoord)) ? selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
-        if (!visited.contains(curCoord) && (refAtPos == targetValue || (refAtPos != null && targetValue != null && selectFromWholeRamp && refAtPos.ramp == targetValue.ramp)))
+        if (visited[curCoord.y * numCols + curCoord.x] == 0 && (refAtPos == targetValue || (refAtPos != null && targetValue != null && selectFromWholeRamp && refAtPos.ramp == targetValue.ramp)))
         {
           result.add(curCoord);
           if (curCoord.x + 1 < numCols)
@@ -271,7 +272,7 @@ class SelectionState with ChangeNotifier
             pointStack.push(CoordinateSetI(x: curCoord.x, y: curCoord.y - 1));
           }
         }
-        visited.add(curCoord);
+        visited[curCoord.y * numCols + curCoord.x] = 1;
       }
     }
 

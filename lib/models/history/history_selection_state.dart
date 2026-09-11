@@ -71,7 +71,7 @@ class HistorySelectionState
         final int? rampIndex = rampIndexByUuid[colorRef.ramp.uuid];
         if (rampIndex != null)
         {
-          colors[CoordinateSetI.from(other: entry.key)] = HistoryColorReference(colorIndex: colorRef.colorIndex, rampIndex: rampIndex);
+          colors[CoordinateSetI.from(other: entry.key)] = HistoryColorReference.of(colorIndex: colorRef.colorIndex, rampIndex: rampIndex);
         }
       }
     }

@@ -14,12 +14,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:kpix/models/constraints/kpal_constraints.dart';
+
 class HistoryColorReference
 {
   final int colorIndex;
   final int rampIndex;
 
   const HistoryColorReference({required this.colorIndex, required this.rampIndex});
+
+  /// The shared instance for [colorIndex] of the ramp at [rampIndex].
+  ///
+  /// History snapshots hold one of these per pixel, but a palette only has
+  /// [KPalConstraints.rampCountMax] ramps of up to [KPalConstraints.colorCountMax]
+  /// colors, so pixel data takes them from here instead of allocating an equal
+  /// object per pixel. Values outside those limits cannot come from a valid
+  /// palette; they still get an instance of their own rather than an error.
+  factory HistoryColorReference.of({required final int colorIndex, required final int rampIndex})
+  {
+    if (rampIndex < 0 || rampIndex >= KPalConstraints.rampCountMax || colorIndex < 0 || colorIndex >= KPalConstraints.colorCountMax)
+    {
+      return HistoryColorReference(colorIndex: colorIndex, rampIndex: rampIndex);
+    }
+    return _shared[rampIndex * KPalConstraints.colorCountMax + colorIndex] ??= HistoryColorReference(colorIndex: colorIndex, rampIndex: rampIndex);
+  }
+
+  static final List<HistoryColorReference?> _shared = List<HistoryColorReference?>.filled(KPalConstraints.rampCountMax * KPalConstraints.colorCountMax, null);
 
   @override
   bool operator ==(final Object other) =>

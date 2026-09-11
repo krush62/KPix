@@ -18,26 +18,24 @@
 
 part of '../../export_functions.dart';
 
-HashMap<CoordinateSetI, HistoryColorReference> _layerDataForSaving({
+/// The pixels to write for [layer]: its own, plus the floating selection's for
+/// the selected layer. Codes as in PaletteCodec, relative to the saved ramps.
+PixelGridView _layerPixelsForSaving({
   required final HistoryDrawingLayer layer,
   required final HistorySelectionState selection,
   required final bool isSelectedLayer,
-  required final CoordinateSetI canvasSize,
 })
 {
-  final HashMap<CoordinateSetI, HistoryColorReference> layerData = layer.data;
   if (!isSelectedLayer || selection.isEmpty)
   {
-    return layerData;
+    return layer.pixels;
   }
 
-  final HashMap<CoordinateSetI, HistoryColorReference> merged = HashMap<CoordinateSetI, HistoryColorReference>.from(layerData);
+  final PixelGrid merged = PixelGrid.fromSnapshot(snapshot: layer.pixels);
   for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in selection.colors.entries)
   {
-    if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < canvasSize.x && entry.key.y < canvasSize.y)
-    {
-      merged[entry.key] = entry.value;
-    }
+    //the grid drops floating pixels that are off the canvas
+    merged.set(x: entry.key.x, y: entry.key.y, value: PaletteCodec.codeOf(rampIndex: entry.value.rampIndex, colorIndex: entry.value.colorIndex));
   }
   return merged;
 }
@@ -185,30 +183,29 @@ Future<ByteData> createKPixData() async
         byteData.setInt8(offset++, cLayer.settings.dropShadowDarkenBrighten);
       }
       //data count
-      final HashMap<CoordinateSetI, HistoryColorReference> layerData = _layerDataForSaving(
+      final PixelGridView layerPixels = _layerPixelsForSaving(
         layer: cLayer,
         selection: saveData.selectionState,
         isSelectedLayer: currentlySelectedLayer == cLayer,
-        canvasSize: saveData.canvasSize,
       );
-      byteData.setUint32(offset, layerData.length);
+      byteData.setUint32(offset, layerPixels.nonZeroCount);
       offset+=4;
       //image data
-      for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in layerData.entries)
+      layerPixels.forEachNonZero(action: (final int x, final int y, final int code)
       {
         //x
-        byteData.setUint16(offset, entry.key.x);
+        byteData.setUint16(offset, x);
         offset+=2;
         //y
-        byteData.setUint16(offset, entry.key.y);
+        byteData.setUint16(offset, y);
         offset+=2;
 
         //ramp index
-        byteData.setUint8(offset++, entry.value.rampIndex);
+        byteData.setUint8(offset++, PaletteCodec.rampIndexOf(code: code));
 
         //color index
-        byteData.setUint8(offset++, entry.value.colorIndex);
-      }
+        byteData.setUint8(offset++, PaletteCodec.colorIndexOf(code: code));
+      },);
     }
     else if (cLayer.runtimeType == HistoryReferenceLayer)
     {
@@ -470,12 +467,11 @@ int _calculateKPixFileSize({required final HistoryState saveData})
       //data count
       size += 4;
       //x (2) + y (2) + color ramp index (1) + color index (1) per pixel, counted from the very same merge the writer emits
-      size += _layerDataForSaving(
+      size += _layerPixelsForSaving(
         layer: drawingLayer,
         selection: saveData.selectionState,
         isSelectedLayer: currentlySelectedLayer == cLayer,
-        canvasSize: saveData.canvasSize,
-      ).length * 6;
+      ).nonZeroCount * 6;
     }
     else if (cLayer.runtimeType == HistoryReferenceLayer)
     {

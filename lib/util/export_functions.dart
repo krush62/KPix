@@ -47,6 +47,7 @@ import 'package:kpix/models/history/history_selection_state.dart';
 import 'package:kpix/models/history/history_shading_layer.dart';
 import 'package:kpix/models/history/history_state.dart';
 import 'package:kpix/models/history/history_state_type.dart';
+import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -56,6 +57,7 @@ import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
+import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:kpix/util/typedefs.dart';
 
 part 'export/palette/export_palette_adobe.dart';

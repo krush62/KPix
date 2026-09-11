@@ -28,9 +28,11 @@ import 'package:kpix/models/history/history_color_reference.dart';
 import 'package:kpix/models/history/history_drawing_layer.dart';
 import 'package:kpix/models/history/history_drawing_layer_settings.dart';
 import 'package:kpix/models/io_types.dart';
+import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
+import 'package:kpix/util/helpers/pixel_grid.dart';
 
 const DrawingLayerSettingsConstraints _drawingConstraints = DrawingLayerSettingsConstraints(
   darkenBrightenMin: -5,
@@ -61,16 +63,16 @@ const ShadingLayerSettingsConstraints _shadingConstraints = ShadingLayerSettings
 
 const FrameConstraints _frameConstraints = FrameConstraints(minFps: 1, maxFps: 60, defaultFps: 10);
 
-/// A drawing layer record holding the two map shapes that have to survive the
-/// hop: pixels keyed by [CoordinateSetI] and edges keyed by [Alignment].
+/// A drawing layer record holding the two shapes that have to survive the hop:
+/// pixels in a tiled grid snapshot and edges keyed by [Alignment].
 HistoryDrawingLayer _sampleLayer()
 {
-  final HashMap<CoordinateSetI, HistoryColorReference> pixels = HashMap<CoordinateSetI, HistoryColorReference>();
+  final PixelGrid pixels = PixelGrid(width: 4, height: 4);
   for (int x = 0; x < 4; x++)
   {
     for (int y = 0; y < 4; y++)
     {
-      pixels[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: (x + y) % 3, rampIndex: 0);
+      pixels.set(x: x, y: y, value: PaletteCodec.codeOf(rampIndex: 0, colorIndex: (x + y) % 3));
     }
   }
 
@@ -80,7 +82,7 @@ HistoryDrawingLayer _sampleLayer()
   final HashMap<Alignment, bool> innerMap = HashMap<Alignment, bool>();
   innerMap[Alignment.centerLeft] = true;
 
-  return HistoryDrawingLayer.full(
+  return HistoryDrawingLayer(
     visibilityState: LayerVisibilityState.visible,
     layerIdentity: 42,
     lockState: LayerLockState.unlocked,
@@ -105,7 +107,7 @@ HistoryDrawingLayer _sampleLayer()
       dropShadowOffset: CoordinateSetI(x: 2, y: -2),
       dropShadowDarkenBrighten: 2,
     ),
-    fullData: pixels,
+    pixels: pixels.snapshot(),
   );
 }
 
@@ -134,15 +136,16 @@ void main()
       work: () => original,
     );
 
-    expect(copy.data.length, original.data.length);
+    expect(copy.pixels.nonZeroCount, original.pixels.nonZeroCount);
     expect(copy.visibilityState, LayerVisibilityState.visible);
     expect(copy.lockState, LayerLockState.unlocked);
     expect(copy.layerIdentity, 42);
 
-    //pixels are keyed by a plain class, so identity changes but equality holds
-    final HistoryColorReference? pixel = copy.data[CoordinateSetI(x: 2, y: 1)];
-    expect(pixel, isNotNull);
-    expect(pixel!.colorIndex, 0);
+    //the pixels travel as typed data, so every code arrives as it was written
+    final int code = copy.pixels.get(x: 2, y: 1);
+    expect(PaletteCodec.rampIndexOf(code: code), 0);
+    expect(PaletteCodec.colorIndexOf(code: code), 0);
+    expect(PaletteCodec.colorIndexOf(code: copy.pixels.get(x: 1, y: 0)), 1);
 
     //Alignment looks like a dart:ui handle but is a value type, so the copied
     //keys still match the constants they were built from

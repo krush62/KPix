@@ -23,12 +23,12 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/document_state.dart';
-import 'package:kpix/models/history/history_color_reference.dart';
 import 'package:kpix/models/history/history_drawing_layer.dart';
 import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -65,10 +65,10 @@ Future<Map<CoordinateSetI, String>> _roundTrip() async
   {
     if (layer is HistoryDrawingLayer)
     {
-      for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in layer.data.entries)
+      layer.pixels.forEachNonZero(action: (final int x, final int y, final int code)
       {
-        pixels[entry.key] = "${entry.value.rampIndex}/${entry.value.colorIndex}";
-      }
+        pixels[CoordinateSetI(x: x, y: y)] = "${PaletteCodec.rampIndexOf(code: code)}/${PaletteCodec.colorIndexOf(code: code)}";
+      },);
     }
   }
   return pixels;

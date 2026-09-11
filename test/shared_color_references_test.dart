@@ -26,6 +26,7 @@ import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/history/ramp_resolver.dart';
 import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -75,29 +76,40 @@ void main()
     });
   });
 
-  group("RampResolver.byUuid", ()
+  group("RampResolver pixel codes", ()
   {
-    final KPalRampData ramp = KPalRampData(uuid: "ramp-a", settings: KPalRampSettings());
-    final List<HistoryRampData> historyRamps = <HistoryRampData>[
-      HistoryRampData(otherSettings: ramp.settings, notifierShifts: ramp.shifts, uuid: ramp.uuid),
-    ];
+    final KPalRampData a = KPalRampData(uuid: "ramp-a", settings: KPalRampSettings());
+    final KPalRampData b = KPalRampData(uuid: "ramp-b", settings: KPalRampSettings());
+    HistoryRampData historyOf(final KPalRampData ramp) => HistoryRampData(otherSettings: ramp.settings, notifierShifts: ramp.shifts, uuid: ramp.uuid);
+    final List<HistoryRampData> historyRamps = <HistoryRampData>[historyOf(a), historyOf(b)];
 
-    test("returns the live ramp's own reference", ()
+    test("need no translation when the ramps are the same and in the same order", ()
     {
-      final RampResolver resolver = RampResolver(liveRamps: <KPalRampData>[ramp], historyRamps: historyRamps);
-      expect(resolver.byUuid(ref: HistoryColorReference.of(colorIndex: 2, rampIndex: 0)), same(ramp.references[2]));
+      expect(RampResolver(liveRamps: <KPalRampData>[a, b], historyRamps: historyRamps).pixelsLineUp, isTrue);
     });
 
-    test("skips a pixel whose ramp is gone", ()
+    test("follow a ramp that moved, found by uuid, and decode to its own references", ()
     {
-      final RampResolver resolver = RampResolver(liveRamps: <KPalRampData>[], historyRamps: historyRamps);
-      expect(resolver.byUuid(ref: HistoryColorReference.of(colorIndex: 2, rampIndex: 0)), isNull);
+      final RampResolver resolver = RampResolver(liveRamps: <KPalRampData>[b, a], historyRamps: historyRamps);
+      expect(resolver.pixelsLineUp, isFalse);
+      final int moved = resolver.pixelLut()[PaletteCodec.codeOf(rampIndex: 0, colorIndex: 2)];
+      expect(moved, PaletteCodec.codeOf(rampIndex: 1, colorIndex: 2));
+      expect(resolver.liveCodec.decode(code: moved), same(a.references[2]));
+      expect(resolver.pixelLut()[PaletteCodec.transparent], PaletteCodec.transparent);
     });
 
-    test("clamps an index past the end of the ramp", ()
+    test("drop the pixels of a ramp that is gone", ()
     {
-      final RampResolver resolver = RampResolver(liveRamps: <KPalRampData>[ramp], historyRamps: historyRamps);
-      expect(resolver.byUuid(ref: HistoryColorReference.of(colorIndex: ramp.references.length + 2, rampIndex: 0)), same(ramp.references.last));
+      final RampResolver resolver = RampResolver(liveRamps: <KPalRampData>[a], historyRamps: historyRamps);
+      expect(resolver.pixelsLineUp, isFalse);
+      expect(resolver.pixelLut()[PaletteCodec.codeOf(rampIndex: 1, colorIndex: 2)], PaletteCodec.transparent);
+    });
+
+    test("clamp a color index past the end of the live ramp", ()
+    {
+      final RampResolver resolver = RampResolver(liveRamps: <KPalRampData>[b, a], historyRamps: historyRamps);
+      expect(resolver.pixelLut()[PaletteCodec.codeOf(rampIndex: 0, colorIndex: PaletteCodec.colorsPerRamp - 1)],
+          PaletteCodec.codeOf(rampIndex: 1, colorIndex: a.references.length - 1),);
     });
   });
 

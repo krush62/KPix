@@ -81,9 +81,9 @@ class DrawingLayerState extends RasterableLayerState
     final HistoryLayer? previousLayer,
   })
   {
-    final HistoryDrawingLayer? prev =
-    previousLayer is HistoryDrawingLayer ? previousLayer : null;
-    return prev != null ? HistoryDrawingLayer.deltaFrom(layerState: this, ramps: ramps, previousLayer: prev) : HistoryDrawingLayer.fromDrawingLayerState(layerState: this, ramps: ramps);
+    //a snapshot shares the tiles that did not change, so there is no need for
+    //a delta against the previous one
+    return HistoryDrawingLayer.fromDrawingLayerState(layerState: this, ramps: ramps);
   }
 
   factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings, required final List<KPalRampData> ramps})
@@ -106,6 +106,13 @@ class DrawingLayerState extends RasterableLayerState
     }
     final DrawingLayerSettings settings = drawingLayerSettings ?? DrawingLayerSettings.defaultValues(startingColor: ramps[0].references[0], constraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints);
     return DrawingLayerState._(data: data, codec: codec, settingsPixels: CoordinateColorMap(), settings: settings);
+  }
+
+  /// A layer holding [pixels], whose codes belong to [codec]. The grid is taken
+  /// over, not copied.
+  factory DrawingLayerState.fromPixels({required final PixelGrid pixels, required final PaletteCodec codec, required final DrawingLayerSettings drawingLayerSettings})
+  {
+    return DrawingLayerState._(data: pixels, codec: codec, settingsPixels: CoordinateColorMap(), settings: drawingLayerSettings);
   }
 
   DrawingLayerState._({required final PixelGrid data, required final PaletteCodec codec, required final CoordinateColorMap settingsPixels, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, super.layerStack, required this.settings}) :
@@ -731,12 +738,104 @@ class DrawingLayerState extends RasterableLayerState
     return _codec.decode(code: _data.get(x: coord.x, y: coord.y));
   }
 
-  /// Calls [action] for every stored pixel, without the writes still waiting
-  /// in [rasterQueue].
-  void forEachColor({required final void Function(int x, int y, ColorReference color) action})
+  /// The pixels with the writes still waiting in [rasterQueue] applied, as codes
+  /// whose ramp indices refer to [ramps] (see PaletteCodec). That is what the
+  /// history and the file store. Pixels of ramps missing from [ramps] are left
+  /// out.
+  ///
+  /// When the layer's codes already follow that order, the snapshot shares its
+  /// tiles with the layer. When they do not, after a palette reorder for
+  /// example, the layer first moves its own codes into the palette's order.
+  /// The tiles are then copied once, not on every step.
+  PixelGridSnapshot historySnapshot({required final List<HistoryRampData> ramps})
   {
-    final PaletteCodec codec = _codec;
-    _data.forEachNonZero(action: (final int x, final int y, final int value) => action(x, y, codec.decode(code: value)!));
+    final PaletteCodec palette = GetIt.I.get<DocumentState>().palette.codec;
+    if (_listsSameRamps(codec: palette, ramps: ramps))
+    {
+      _alignCodec(target: palette);
+    }
+
+    PixelGrid? pending;
+    if (rasterQueue.isNotEmpty)
+    {
+      //the queue itself stays: painters watch it to see a stroke land
+      pending = PixelGrid.fromSnapshot(snapshot: _data.snapshot());
+      for (final CoordinateColorNullable entry in rasterQueue.entries)
+      {
+        pending.set(x: entry.key.x, y: entry.key.y, value: _encode(color: entry.value));
+      }
+    }
+
+    final Map<String, int> rampIndices = <String, int>{for (int i = 0; i < ramps.length; i++) ramps[i].uuid: i};
+    final Uint16List lut = Uint16List(_codec.codeCount);
+    bool linesUp = true;
+    for (int rampIndex = 0; rampIndex < _codec.ramps.length; rampIndex++)
+    {
+      final int? targetIndex = rampIndices[_codec.ramps[rampIndex].uuid];
+      linesUp = linesUp && targetIndex == rampIndex;
+      if (targetIndex != null)
+      {
+        for (int colorIndex = 0; colorIndex < PaletteCodec.colorsPerRamp; colorIndex++)
+        {
+          lut[PaletteCodec.codeOf(rampIndex: rampIndex, colorIndex: colorIndex)] = PaletteCodec.codeOf(rampIndex: targetIndex, colorIndex: colorIndex);
+        }
+      }
+    }
+    if (linesUp)
+    {
+      return pending?.snapshot() ?? _data.snapshot();
+    }
+    final PixelGrid translated = pending ?? PixelGrid.fromSnapshot(snapshot: _data.snapshot());
+    translated.remap(lut: lut);
+    return translated.snapshot();
+  }
+
+  static bool _listsSameRamps({required final PaletteCodec codec, required final List<HistoryRampData> ramps})
+  {
+    if (codec.ramps.length != ramps.length)
+    {
+      return false;
+    }
+    for (int i = 0; i < ramps.length; i++)
+    {
+      if (codec.ramps[i].uuid != ramps[i].uuid)
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// Moves the codes into [target]'s order, so that a code means the same in
+  /// this layer and in [target]. Ramps only this layer has pixels of follow
+  /// behind [target]'s; ramps without pixels are dropped. Nothing visible
+  /// changes.
+  void _alignCodec({required final PaletteCodec target})
+  {
+    final List<KPalRampData> current = _codec.ramps;
+    bool inOrder = true;
+    for (int i = 0; inOrder && i < current.length && i < target.ramps.length; i++)
+    {
+      inOrder = identical(current[i], target.ramps[i]);
+    }
+    if (inOrder)
+    {
+      return;
+    }
+
+    final Set<int> usedRamps = <int>{};
+    _data.forEachNonZero(action: (final int x, final int y, final int value) => usedRamps.add(PaletteCodec.rampIndexOf(code: value)));
+    final List<KPalRampData> ordered = <KPalRampData>[...target.ramps];
+    for (final int rampIndex in usedRamps.toList()..sort())
+    {
+      if (target.indexOfRamp(ramp: current[rampIndex]) == null)
+      {
+        ordered.add(current[rampIndex]);
+      }
+    }
+    final PaletteCodec aligned = PaletteCodec(ramps: ordered);
+    _data.remap(lut: _codec.remapLut(target: aligned));
+    _codec = aligned;
   }
 
   /// Every color among the stored pixels, without the writes still waiting in

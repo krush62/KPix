@@ -228,7 +228,7 @@ Future<CoordinateColorMapNullable> getMergedColors({required final Frame frame, 
       final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
       for (final RasterableLayerState layer in layerList)
       {
-        final ColorReference? colAtPos = layer.pixelsForFrame(frame: frame)[coord];
+        final ColorReference? colAtPos = layer.compositeAt(frame: frame, coord: coord);
         if (colAtPos != null)
         {
           colorData[coord] = colAtPos;

@@ -821,11 +821,14 @@ class LayerCollection with ChangeNotifier {
     }
   }
 
-  void transformLayers({required final CanvasTransformation transformation, required final CoordinateSetI oldSize,})
+  /// Transforms every drawing layer not in [done] yet, and adds it there. A
+  /// layer linked into several frames sits in several collections, but must
+  /// only be turned once.
+  void transformLayers({required final CanvasTransformation transformation, required final CoordinateSetI oldSize, required final Set<LayerState> done,})
   {
     for (final LayerState layer in _layers)
     {
-      if (layer is DrawingLayerState)
+      if (layer is DrawingLayerState && done.add(layer))
       {
         layer.transformLayer(transformation: transformation, oldSize: oldSize,);
       }

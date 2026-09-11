@@ -66,9 +66,10 @@ class CanvasState
     final HistoryManager historyManager = GetIt.I.get<HistoryManager>();
 
     documentState.selectionState.deselect(addToHistoryStack: false, notify: false);
+    final Set<LayerState> transformed = Set<LayerState>.identity();
     for (final Frame f in documentState.timeline.frames.value)
     {
-      f.layerList.transformLayers(transformation: transformation, oldSize: canvasSize);
+      f.layerList.transformLayers(transformation: transformation, oldSize: canvasSize, done: transformed);
     }
     if (transformation == CanvasTransformation.rotate)
     {

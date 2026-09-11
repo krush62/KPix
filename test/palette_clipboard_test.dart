@@ -105,7 +105,7 @@ void _expectOnlyPaletteColors()
       final LayerState layer = frame.layerList.getLayer(index: i);
       if (layer is DrawingLayerState)
       {
-        for (final ColorReference color in layer.getData().values)
+        for (final ColorReference color in layer.usedColors())
         {
           check(color, "a layer");
         }

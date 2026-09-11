@@ -177,15 +177,15 @@ class HistoryDrawingLayer extends HistoryLayer
     final HashMap<CoordinateSetI, HistoryColorReference> dt =
     HashMap<CoordinateSetI, HistoryColorReference>();
 
-    for (final CoordinateColor entry in layerState.getData().entries)
+    layerState.forEachColor(action: (final int x, final int y, final ColorReference color)
     {
-      final int? rampIndex = rampIndexByUuid[entry.value.ramp.uuid];
+      final int? rampIndex = rampIndexByUuid[color.ramp.uuid];
       if (rampIndex != null)
       {
-        dt[entry.key] =
-            HistoryColorReference.of(colorIndex: entry.value.colorIndex, rampIndex: rampIndex);
+        dt[CoordinateSetI(x: x, y: y)] =
+            HistoryColorReference.of(colorIndex: color.colorIndex, rampIndex: rampIndex);
       }
-    }
+    },);
 
     for (final CoordinateColorNullable entry in layerState.rasterQueue.entries)
     {

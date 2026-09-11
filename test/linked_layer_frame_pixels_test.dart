@@ -55,11 +55,11 @@ void main()
       layer.doManualRaster = true;
       await settle();
 
-      expect(layer.pixelsForFrame(frame: frameOne)[moved], color,
+      expect(layer.compositeAt(frame: frameOne, coord: moved), color,
           reason: "the selected frame composites the floating content",);
-      expect(layer.pixelsForFrame(frame: frameTwo)[moved], isNull,
+      expect(layer.compositeAt(frame: frameTwo, coord: moved), isNull,
           reason: "a dependent layer in the other frame must not compose with a drag that is not there",);
-      expect(layer.pixelsForFrame(frame: frameTwo)[origin], isNull,
+      expect(layer.compositeAt(frame: frameTwo, coord: origin), isNull,
           reason: "and the pixel is out of the layer while it floats",);
     },);
   });
@@ -72,8 +72,8 @@ void main()
       await settle();
 
       final Frame frame = GetIt.I.get<DocumentState>().timeline.frames.value[0];
-      expect(layer.pixelsForFrame(frame: frame)[origin], color);
-      expect(layer.pixelsForFrame(frame: null)[origin], color,
+      expect(layer.compositeAt(frame: frame, coord: origin), color);
+      expect(layer.compositeAt(frame: null, coord: origin), color,
           reason: "callers without a frame keep getting the selected frame's pixels",);
     },);
   });

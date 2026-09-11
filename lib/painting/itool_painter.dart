@@ -352,7 +352,7 @@ abstract class IToolPainter
               }
               else
               {
-                final ColorReference? layerColRef = currentLayer.pixelsForFrame(frame: frame)[entry.key];
+                final ColorReference? layerColRef = currentLayer.compositeAt(frame: frame, coord: entry.key);
                 if (layerColRef != null)
                 {
                   colRef = layerColRef;

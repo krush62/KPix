@@ -20,9 +20,12 @@ import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/layer_settings.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/util/helpers/pixel_grid.dart';
 
 class RasterImagePair
 {
@@ -38,18 +41,62 @@ class DualRasterResult
   DualRasterResult({required this.rasterImages, this.externalStackImages});
 }
 
+/// What a layer shows in one frame: its pixels with the floating selection and
+/// the layer effects applied, as color codes of [codec].
+class RasterPixels
+{
+  final PixelGrid grid;
+  PaletteCodec _codec;
+
+  RasterPixels({required this.grid, required final PaletteCodec codec}) : _codec = codec;
+
+  /// Nothing shown yet on [width] × [height]; the codec takes in ramps as
+  /// colors are set.
+  factory RasterPixels.empty({required final int width, required final int height})
+  {
+    return RasterPixels(grid: PixelGrid(width: width, height: height), codec: PaletteCodec(ramps: const <KPalRampData>[]));
+  }
+
+  /// The codec the codes in [grid] belong to.
+  PaletteCodec get codec
+  {
+    return _codec;
+  }
+
+  ColorReference? colorAt({required final CoordinateSetI coord})
+  {
+    return _codec.decode(code: grid.get(x: coord.x, y: coord.y));
+  }
+
+  /// Sets the pixel at [coord]; null clears it. The ramp of a color the codec
+  /// does not know yet is appended to it (see [PaletteCodec.withRamp]).
+  void setColorAt({required final CoordinateSetI coord, required final ColorReference? color})
+  {
+    if (color == null)
+    {
+      grid.set(x: coord.x, y: coord.y, value: PaletteCodec.transparent);
+      return;
+    }
+    _codec = _codec.withRamp(ramp: color.ramp);
+    grid.set(x: coord.x, y: coord.y, value: _codec.encode(color: color));
+  }
+}
+
 abstract class RasterableLayerState extends LayerState
 {
   final ValueNotifier<LayerLockState> lockState = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
   bool isRasterizing = false;
-  CoordinateColorMap rasterPixels = CoordinateColorMap();
-  final Map<Frame, CoordinateColorMap> rasterPixelsByFrame = <Frame, CoordinateColorMap>{};
+  RasterPixels? rasterPixels;
+  final Map<Frame, RasterPixels> rasterPixelsByFrame = <Frame, RasterPixels>{};
 
-  CoordinateColorMap pixelsForFrame({required final Frame? frame})
+  /// What the layer showed in [frame] when it was last rastered, or null before
+  /// the first raster. Without a frame, or for a frame not rastered yet, the
+  /// pixels of the last one rastered.
+  RasterPixels? pixelsForFrame({required final Frame? frame})
   {
     if (frame != null)
     {
-      final CoordinateColorMap? framePixels = rasterPixelsByFrame[frame];
+      final RasterPixels? framePixels = rasterPixelsByFrame[frame];
       if (framePixels != null)
       {
         return framePixels;
@@ -58,7 +105,7 @@ abstract class RasterableLayerState extends LayerState
     return rasterPixels;
   }
 
-  void setRasterPixels({required final CoordinateColorMap pixels, required final Frame? frame})
+  void setRasterPixels({required final RasterPixels pixels, required final Frame? frame})
   {
     rasterPixels = pixels;
     if (frame != null)
@@ -69,7 +116,22 @@ abstract class RasterableLayerState extends LayerState
 
   void pruneFramePixels({required final Iterable<Frame> frames})
   {
-    rasterPixelsByFrame.removeWhere((final Frame frame, final CoordinateColorMap pixels) => !frames.contains(frame));
+    rasterPixelsByFrame.removeWhere((final Frame frame, final RasterPixels pixels) => !frames.contains(frame));
+  }
+
+  /// The color this layer shows at [coord] in [frame], with the floating
+  /// selection and the layer effects applied. Without a frame, the pixels of the
+  /// last one rastered.
+  ColorReference? compositeAt({required final Frame? frame, required final CoordinateSetI coord})
+  {
+    return pixelsForFrame(frame: frame)?.colorAt(coord: coord);
+  }
+
+  /// Overwrites what [compositeAt] reports at [coord] in [frame]; null clears it.
+  /// Does nothing before the layer rastered for the first time.
+  void setCompositeAt({required final Frame? frame, required final CoordinateSetI coord, required final ColorReference? color})
+  {
+    pixelsForFrame(frame: frame)?.setColorAt(coord: coord, color: color);
   }
   final ValueNotifier<ui.Image?> rasterImage = ValueNotifier<ui.Image?>(null);
   final ValueNotifier<Map<Frame, RasterImagePair>> rasterImageMap = ValueNotifier<Map<Frame, RasterImagePair>>(<Frame, RasterImagePair>{});

@@ -98,6 +98,28 @@ class PaletteCodec
     return true;
   }
 
+  /// The position of [ramp] in this codec, or null if it is not part of it.
+  int? indexOfRamp({required final KPalRampData ramp})
+  {
+    return _rampIndices[ramp];
+  }
+
+  /// This codec if it knows [ramp] already, otherwise one with [ramp] appended.
+  ///
+  /// Appending keeps every existing code valid, so a buffer can take colors of
+  /// a ramp it has not seen before without being translated.
+  PaletteCodec withRamp({required final KPalRampData ramp})
+  {
+    return _rampIndices.containsKey(ramp) ? this : PaletteCodec(ramps: <KPalRampData>[..._ramps, ramp]);
+  }
+
+  /// This codec if it does not know [ramp], otherwise one without it. The ramps
+  /// behind it move up, so existing codes need a [remapLut] to the result.
+  PaletteCodec withoutRamp({required final KPalRampData ramp})
+  {
+    return _rampIndices.containsKey(ramp) ? PaletteCodec(ramps: _ramps.where((final KPalRampData other) => !identical(other, ramp)).toList()) : this;
+  }
+
   /// The code for the color at [colorIndex] of the ramp at [rampIndex].
   static int codeOf({required final int rampIndex, required final int colorIndex})
   {

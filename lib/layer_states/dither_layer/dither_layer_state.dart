@@ -35,7 +35,6 @@ import 'package:kpix/models/history/history_ramp_data.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_settings/shading_layer_settings_widget.dart';
 
 class DitherLayerState extends ShadingLayerState
@@ -282,7 +281,7 @@ class DitherLayerState extends ShadingLayerState
     final RgbaCache rgbaCache = RgbaCache();
     final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
-    final CoordinateColorMap allColorPixels = CoordinateColorMap();
+    final RasterPixels allColorPixels = RasterPixels.empty(width: canvasSize.x, height: canvasSize.y);
 
     //_ditherData.clear();
     for (int x = 0; x < canvasSize.x; x++)
@@ -301,7 +300,7 @@ class DitherLayerState extends ShadingLayerState
             ColorReference? refCol;
             if (layer.visibilityState.value == LayerVisibilityState.visible)
             {
-              refCol = layer.pixelsForFrame(frame: frame)[coord];
+              refCol = layer.compositeAt(frame: frame, coord: coord);
             }
             if (refCol != null)
             {
@@ -309,7 +308,7 @@ class DitherLayerState extends ShadingLayerState
               final int ditherVal = getDisplayValueAt(coord: coord);
               final int targetColorIndex = (currentColorIndex + ditherVal).clamp(0, refCol.ramp.references.length - 1);
               final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
-              allColorPixels[coord] = targetColor;
+              allColorPixels.setColorAt(coord: coord, color: targetColor);
               final int index = (y * canvasSize.x + x) * 4;
               if (index >= 0 && index < byteDataImg.lengthInBytes)
               {

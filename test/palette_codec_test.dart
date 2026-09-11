@@ -123,6 +123,28 @@ void main()
       expect(() => codec.decode(code: PaletteCodec.codeOf(rampIndex: codec.ramps.length, colorIndex: 0)), throwsA(isA<AssertionError>()));
     });
 
+    test("appending a ramp keeps every existing code", ()
+    {
+      final KPalRampData added = _ramp(uuid: "added", colorCount: 5);
+      final PaletteCodec extended = codec.withRamp(ramp: added);
+      expect(codec.withRamp(ramp: b), same(codec), reason: "a known ramp needs no new codec");
+      expect(extended.indexOfRamp(ramp: added), codec.ramps.length);
+      for (final ColorReference color in _allColors(ramps: codec.ramps))
+      {
+        expect(extended.encode(color: color), codec.encode(color: color));
+      }
+      expect(extended.decode(code: extended.encode(color: added.references[3])), same(added.references[3]));
+    });
+
+    test("removing a ramp moves the ones behind it up", ()
+    {
+      final PaletteCodec reduced = codec.withoutRamp(ramp: b);
+      expect(reduced.ramps, <KPalRampData>[a, c]);
+      expect(reduced.indexOfRamp(ramp: b), isNull);
+      expect(reduced.indexOfRamp(ramp: c), 1);
+      expect(reduced.withoutRamp(ramp: b), same(reduced), reason: "an unknown ramp needs no new codec");
+    });
+
     test("a codec matches only the same ramps in the same order", ()
     {
       expect(codec.matches(ramps: <KPalRampData>[a, b, c]), isTrue, reason: "another list with the same ramps");

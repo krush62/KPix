@@ -39,7 +39,6 @@ import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_settings/shading_layer_settings_widget.dart';
 import 'package:logger/logger.dart';
 
@@ -354,7 +353,7 @@ class ShadingLayerState extends RasterableLayerState
     final RgbaCache rgbaCache = RgbaCache();
     final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
-    final CoordinateColorMap allColorPixels = CoordinateColorMap();
+    final RasterPixels allColorPixels = RasterPixels.empty(width: canvasSize.x, height: canvasSize.y);
 
     for (int x = 0; x < canvasSize.x; x++)
     {
@@ -375,7 +374,7 @@ class ShadingLayerState extends RasterableLayerState
 
             if (layer.visibilityState.value == LayerVisibilityState.visible)
             {
-              refCol = layer.pixelsForFrame(frame: frame)[coord];
+              refCol = layer.compositeAt(frame: frame, coord: coord);
             }
 
             if (refCol != null)
@@ -383,7 +382,7 @@ class ShadingLayerState extends RasterableLayerState
               final int currentColorIndex = refCol.colorIndex;
               final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
               final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
-              allColorPixels[coord] = targetColor;
+              allColorPixels.setColorAt(coord: coord, color: targetColor);
               final int index = (y * canvasSize.x + x) * 4;
 
               if (index >= 0 && index < byteDataImg.lengthInBytes)
@@ -445,7 +444,8 @@ class ShadingLayerState extends RasterableLayerState
     final ui.Image? baseRaster = rasterImage.value;
     final ui.Image? baseThumbnail = thumbnail.value;
 
-    if (baseRaster == null || baseThumbnail == null)
+    //the regions are patched into the frame's pixels, so those have to exist
+    if (baseRaster == null || baseThumbnail == null || pixelsForFrame(frame: frame) == null)
     {
       return await _fullRender(
         canvasSize: canvasSize,
@@ -506,7 +506,6 @@ class ShadingLayerState extends RasterableLayerState
     required final Frame? frame,
   }) async
   {
-    final CoordinateColorMap framePixels = pixelsForFrame(frame: frame);
     final RgbaCache rgbaCache = RgbaCache();
     final ByteData byteDataThb = ByteData(region.width * region.height * 4);
     final ByteData byteDataImg = ByteData(region.width * region.height * 4);
@@ -532,7 +531,7 @@ class ShadingLayerState extends RasterableLayerState
 
             if (layer.visibilityState.value == LayerVisibilityState.visible)
             {
-              refCol = layer.pixelsForFrame(frame: frame)[coord];
+              refCol = layer.compositeAt(frame: frame, coord: coord);
             }
 
             if (refCol != null)
@@ -548,7 +547,7 @@ class ShadingLayerState extends RasterableLayerState
               if (index >= 0 && index < byteDataImg.lengthInBytes)
               {
                 byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
-                framePixels[coord] = targetColor;
+                setCompositeAt(frame: frame, coord: coord, color: targetColor);
                 pixelRendered = true;
               }
               break;
@@ -558,7 +557,7 @@ class ShadingLayerState extends RasterableLayerState
 
         if (!pixelRendered)
         {
-          framePixels.remove(coord);
+          setCompositeAt(frame: frame, coord: coord, color: null);
           final int bufferX = x - region.x;
           final int bufferY = y - region.y;
           final int index = (bufferY * region.width + bufferX) * 4;

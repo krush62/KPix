@@ -29,6 +29,7 @@ import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/kpal_ramp_data.dart';
 import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/tool_state.dart';
@@ -67,6 +68,23 @@ class PaletteState
   set colorRamps(final List<KPalRampData> ramps)
   {
     _colorRamps.value = ramps;
+  }
+
+  PaletteCodec? _codec;
+
+  /// The color codes for the current ramp order, see [PaletteCodec].
+  ///
+  /// A new codec is built on the first call after the ramp order changed. To
+  /// move codes across such a change, hold on to the codec from before it and
+  /// build a [PaletteCodec.remapLut] to the one after.
+  PaletteCodec get codec
+  {
+    final PaletteCodec? current = _codec;
+    if (current != null && current.matches(ramps: _colorRamps.value))
+    {
+      return current;
+    }
+    return _codec = PaletteCodec(ramps: _colorRamps.value);
   }
 
   final ValueNotifier<ColorReference?> _selectedColor = ValueNotifier<ColorReference?>(null);

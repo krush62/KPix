@@ -25,11 +25,11 @@ class HistoryColorReference
 
   /// The shared instance for [colorIndex] of the ramp at [rampIndex].
   ///
-  /// History snapshots hold one of these per pixel, but a palette only has
-  /// [KPalConstraints.rampCountMax] ramps of up to [KPalConstraints.colorCountMax]
-  /// colors, so pixel data takes them from here instead of allocating an equal
-  /// object per pixel. Values outside those limits cannot come from a valid
-  /// palette; they still get an instance of their own rather than an error.
+  /// History snapshots hold one of these per pixel, but the values repeat: ramps
+  /// added by hand stop at [KPalConstraints.rampCountMax], with up to
+  /// [KPalConstraints.colorCountMax] colors each. Pixel data takes them from here
+  /// instead of allocating an equal object per pixel. Palettes loaded from files
+  /// can hold more ramps; colors beyond that limit get an instance of their own.
   factory HistoryColorReference.of({required final int colorIndex, required final int rampIndex})
   {
     if (rampIndex < 0 || rampIndex >= KPalConstraints.rampCountMax || colorIndex < 0 || colorIndex >= KPalConstraints.colorCountMax)

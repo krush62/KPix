@@ -146,7 +146,7 @@ void main()
       GetIt.I.get<LayerManager>().selectLayer(newLayer: GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getLayer(index: 0));
       await settle();
       expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), isA<ShadingLayerState>(), reason: "setup: a shading layer is selected");
-      expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isNotEmpty, reason: "setup: with a selection still floating");
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isFalse, reason: "setup: with a selection still floating");
 
       final int sizeWithSelection = (await _save(projectSession: projectSession)).lengthInBytes;
 

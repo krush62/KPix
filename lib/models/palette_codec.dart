@@ -120,6 +120,79 @@ class PaletteCodec
     return _rampIndices.containsKey(ramp) ? PaletteCodec(ramps: _ramps.where((final KPalRampData other) => !identical(other, ramp)).toList()) : this;
   }
 
+  /// Whether this codec holds exactly the ramps with [uuids], in this order.
+  bool listsUuids({required final List<String> uuids})
+  {
+    if (uuids.length != _ramps.length)
+    {
+      return false;
+    }
+    for (int i = 0; i < uuids.length; i++)
+    {
+      if (_ramps[i].uuid != uuids[i])
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// Whether this codec's ramps start out in [target]'s order, so that a code
+  /// means the same in both wherever both know its ramp.
+  bool followsOrderOf({required final PaletteCodec target})
+  {
+    for (int i = 0; i < _ramps.length && i < target._ramps.length; i++)
+    {
+      if (!identical(_ramps[i], target._ramps[i]))
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// A codec with [target]'s ramps, followed by those ramps at
+  /// [usedRampIndices] of this codec that [target] does not hold. Buffers move
+  /// over with a [remapLut] to it.
+  PaletteCodec alignedTo({required final PaletteCodec target, required final Iterable<int> usedRampIndices})
+  {
+    final List<KPalRampData> ordered = <KPalRampData>[...target._ramps];
+    for (final int rampIndex in usedRampIndices.toList()..sort())
+    {
+      if (!target._rampIndices.containsKey(_ramps[rampIndex]))
+      {
+        ordered.add(_ramps[rampIndex]);
+      }
+    }
+    return PaletteCodec(ramps: ordered);
+  }
+
+  /// A table from this codec's codes to codes whose ramp index is the ramp's
+  /// position in [uuids], which is how the history and the .kpix file store
+  /// pixels. The codes of a ramp missing from [uuids] map to [transparent].
+  ///
+  /// `linesUp` tells whether the table changes nothing, because every ramp of
+  /// this codec already sits at its position in [uuids].
+  ({Uint16List lut, bool linesUp}) remapLutToUuids({required final List<String> uuids})
+  {
+    final Map<String, int> positions = <String, int>{for (int i = 0; i < uuids.length; i++) uuids[i]: i};
+    final Uint16List lut = Uint16List(codeCount);
+    bool linesUp = true;
+    for (int rampIndex = 0; rampIndex < _ramps.length; rampIndex++)
+    {
+      final int? targetIndex = positions[_ramps[rampIndex].uuid];
+      linesUp = linesUp && targetIndex == rampIndex;
+      if (targetIndex != null)
+      {
+        for (int colorIndex = 0; colorIndex < colorsPerRamp; colorIndex++)
+        {
+          lut[codeOf(rampIndex: rampIndex, colorIndex: colorIndex)] = codeOf(rampIndex: targetIndex, colorIndex: colorIndex);
+        }
+      }
+    }
+    return (lut: lut, linesUp: linesUp);
+  }
+
   /// The code for the color at [colorIndex] of the ramp at [rampIndex].
   static int codeOf({required final int rampIndex, required final int colorIndex})
   {

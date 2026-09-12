@@ -292,4 +292,60 @@ void main()
       expect(before.remapLut(target: after)[PaletteCodec.codeOf(rampIndex: 0, colorIndex: 0)], PaletteCodec.codeOf(rampIndex: 1, colorIndex: 0));
     },);
   });
+
+  group("lining codes up with another ramp list", ()
+  {
+    final KPalRampData red = _ramp(uuid: "red", colorCount: 5);
+    final KPalRampData green = _ramp(uuid: "green", colorCount: 5);
+    final KPalRampData blue = _ramp(uuid: "blue", colorCount: 5);
+
+    test("listsUuids only accepts the same ramps in the same order", ()
+    {
+      final PaletteCodec codec = PaletteCodec(ramps: <KPalRampData>[red, green]);
+      expect(codec.listsUuids(uuids: <String>["red", "green"]), isTrue);
+      expect(codec.listsUuids(uuids: <String>["green", "red"]), isFalse);
+      expect(codec.listsUuids(uuids: <String>["red"]), isFalse);
+      expect(codec.listsUuids(uuids: <String>["red", "green", "blue"]), isFalse);
+    });
+
+    test("followsOrderOf accepts a prefix of the target's ramps", ()
+    {
+      final PaletteCodec target = PaletteCodec(ramps: <KPalRampData>[red, green, blue]);
+      expect(PaletteCodec(ramps: <KPalRampData>[red, green]).followsOrderOf(target: target), isTrue);
+      expect(PaletteCodec(ramps: <KPalRampData>[red, green, blue]).followsOrderOf(target: target), isTrue);
+      //a ramp the target does not know is fine behind its ramps, but not in front
+      expect(PaletteCodec(ramps: <KPalRampData>[red, green, blue, _ramp(uuid: "extra", colorCount: 3)]).followsOrderOf(target: target), isTrue);
+      expect(PaletteCodec(ramps: <KPalRampData>[green, red]).followsOrderOf(target: target), isFalse);
+    });
+
+    test("alignedTo takes the target's order and keeps the ramps it has pixels of", ()
+    {
+      final KPalRampData extra = _ramp(uuid: "extra", colorCount: 3);
+      final KPalRampData unused = _ramp(uuid: "unused", colorCount: 3);
+      final PaletteCodec codec = PaletteCodec(ramps: <KPalRampData>[extra, blue, unused, red]);
+      final PaletteCodec aligned = codec.alignedTo(target: PaletteCodec(ramps: <KPalRampData>[red, green, blue]), usedRampIndices: <int>{0, 1, 3});
+
+      expect(aligned.ramps, <KPalRampData>[red, green, blue, extra], reason: "the target's ramps first, then the used ones it does not hold");
+      final Uint16List lut = codec.remapLut(target: aligned);
+      expect(lut[codec.encode(color: extra.references[1])], aligned.encode(color: extra.references[1]), reason: "a color of the extra ramp keeps its place");
+      expect(lut[codec.encode(color: red.references[2])], aligned.encode(color: red.references[2]));
+    });
+
+    test("remapLutToUuids moves codes onto the listed ramps and drops the rest", ()
+    {
+      final PaletteCodec codec = PaletteCodec(ramps: <KPalRampData>[green, red]);
+      final ({Uint16List lut, bool linesUp}) turned = codec.remapLutToUuids(uuids: <String>["red", "green"]);
+      expect(turned.linesUp, isFalse, reason: "neither ramp sits where the list puts it");
+      expect(turned.lut[codec.encode(color: red.references[2])], PaletteCodec.codeOf(rampIndex: 0, colorIndex: 2));
+      expect(turned.lut[codec.encode(color: green.references[1])], PaletteCodec.codeOf(rampIndex: 1, colorIndex: 1));
+
+      final ({Uint16List lut, bool linesUp}) missing = codec.remapLutToUuids(uuids: <String>["green"]);
+      expect(missing.linesUp, isFalse);
+      expect(missing.lut[codec.encode(color: red.references[2])], PaletteCodec.transparent, reason: "a ramp the list does not name is dropped");
+      expect(missing.lut[codec.encode(color: green.references[1])], PaletteCodec.codeOf(rampIndex: 0, colorIndex: 1));
+
+      expect(codec.remapLutToUuids(uuids: <String>["green", "red"]).linesUp, isTrue);
+      expect(codec.remapLutToUuids(uuids: <String>["green", "red", "blue"]).linesUp, isTrue, reason: "a longer list is fine as long as the ramps keep their place");
+    });
+  });
 }

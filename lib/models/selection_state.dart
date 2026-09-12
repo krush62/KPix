@@ -30,8 +30,10 @@ import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/constraints/tool_select_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_ramp_data.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
@@ -39,6 +41,7 @@ import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/selection_buffer.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:logger/logger.dart';
@@ -344,122 +347,58 @@ class SelectionState with ChangeNotifier
 
   void createSelectionLines()
   {
-    final List<SelectionLine> unMergedLines = <SelectionLine>[];
-
-    final Iterable<CoordinateSetI> selectedCoordinates = selection.getCoordinates();
-
-    // Step 1: Add all boundary lines
-    for (final CoordinateSetI coord in selectedCoordinates)
-    {
-      if (!selection.contains(coord: CoordinateSetI(x: coord.x - 1, y: coord.y)))
-      {
-        unMergedLines.add(SelectionLine(selectDir: SelectionDirection.left, startLoc: coord, endLoc: coord));
-      }
-      if (!selection.contains(coord: CoordinateSetI(x: coord.x + 1, y: coord.y)))
-      {
-        unMergedLines.add(SelectionLine(selectDir: SelectionDirection.right, startLoc: coord, endLoc: coord));
-      }
-      if (!selection.contains(coord: CoordinateSetI(x: coord.x, y: coord.y - 1))) {
-        unMergedLines.add(SelectionLine(selectDir: SelectionDirection.top, startLoc: coord, endLoc: coord));
-      }
-      if (!selection.contains(coord: CoordinateSetI(x: coord.x, y: coord.y + 1)))
-      {
-        unMergedLines.add(SelectionLine(selectDir: SelectionDirection.bottom, startLoc: coord, endLoc: coord));
-      }
-    }
-
-    // Step 2: Merge contiguous lines
     selectionLines.clear();
-    if (unMergedLines.isNotEmpty)
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox();
+    if (topLeft == null || bottomRight == null)
     {
-      final Map<SelectionDirection, List<SelectionLine>> groupedLines =
-      <SelectionDirection, List<SelectionLine>>{
-        SelectionDirection.left: <SelectionLine>[],
-        SelectionDirection.right: <SelectionLine>[],
-        SelectionDirection.top: <SelectionLine>[],
-        SelectionDirection.bottom: <SelectionLine>[],
-        SelectionDirection.undefined: <SelectionLine>[],
-      };
-
-      for (final SelectionLine line in unMergedLines)
-      {
-        groupedLines[line.selectDir]!.add(line);
-      }
-
-      for (final SelectionDirection direction in SelectionDirection.values)
-      {
-        final List<SelectionLine> directionLines = groupedLines[direction]!;
-
-        directionLines.sort((final SelectionLine a, final SelectionLine b) {
-          if (direction == SelectionDirection.top || direction == SelectionDirection.bottom)
-          {
-            return (a.startLoc.y != b.startLoc.y)
-                ? a.startLoc.y - b.startLoc.y
-                : a.startLoc.x - b.startLoc.x;
-          }
-          else
-          {
-            return (a.startLoc.x != b.startLoc.x)
-                ? a.startLoc.x - b.startLoc.x
-                : a.startLoc.y - b.startLoc.y;
-          }
-        });
-
-        SelectionLine? currentLine;
-        for (final SelectionLine line in directionLines)
-        {
-          if (currentLine == null)
-          {
-            currentLine = line;
-          }
-          else if (_areContiguous(a: currentLine, b: line))
-          {
-            extendLine(a: currentLine, b: line);
-          }
-          else
-          {
-            selectionLines.add(currentLine);
-            currentLine = line;
-          }
-        }
-
-        if (currentLine != null)
-        {
-          selectionLines.add(currentLine);
-        }
-      }
+      return;
+    }
+    //one pass per direction, so that the lines come out grouped by direction and
+    //in order within a group, as the merged lines did before
+    for (final SelectionDirection direction in <SelectionDirection>[SelectionDirection.left, SelectionDirection.right, SelectionDirection.top, SelectionDirection.bottom])
+    {
+      _addEdgeLines(direction: direction, topLeft: topLeft, bottomRight: bottomRight);
     }
   }
 
-
-  bool _areContiguous({required final SelectionLine a, required final SelectionLine b})
+  /// Adds a line for every run of selected pixels whose neighbour towards
+  /// [direction] is not selected. Left and right edges run down a column, top
+  /// and bottom edges along a row.
+  void _addEdgeLines({required final SelectionDirection direction, required final CoordinateSetI topLeft, required final CoordinateSetI bottomRight})
   {
-    if (a.selectDir == SelectionDirection.top || a.selectDir == SelectionDirection.bottom) {
-      // Horizontal: same y, touching or overlapping in x
-      return a.startLoc.y == b.startLoc.y &&
-          (a.endLoc.x + 1 == b.startLoc.x || b.endLoc.x + 1 == a.startLoc.x);
-    } else {
-      // Vertical: same x, touching or overlapping in y
-      return a.startLoc.x == b.startLoc.x &&
-          (a.endLoc.y + 1 == b.startLoc.y || b.endLoc.y + 1 == a.startLoc.y);
-    }
-  }
+    final bool vertical = direction == SelectionDirection.left || direction == SelectionDirection.right;
+    final int neighbourX = direction == SelectionDirection.left ? -1 : (direction == SelectionDirection.right ? 1 : 0);
+    final int neighbourY = direction == SelectionDirection.top ? -1 : (direction == SelectionDirection.bottom ? 1 : 0);
+    final int firstLine = vertical ? topLeft.x : topLeft.y;
+    final int lastLine = vertical ? bottomRight.x : bottomRight.y;
+    final int runStart = vertical ? topLeft.y : topLeft.x;
+    final int runEnd = vertical ? bottomRight.y : bottomRight.x;
 
-  void extendLine({required final SelectionLine a, required final SelectionLine b})
-  {
-    if (a.selectDir == SelectionDirection.top || a.selectDir == SelectionDirection.bottom)
+    for (int line = firstLine; line <= lastLine; line++)
     {
-      // Horizontal: extend x bounds
-      a.startLoc = CoordinateSetI(
-          x: min(a.startLoc.x, b.startLoc.x), y: a.startLoc.y,);
-      a.endLoc = CoordinateSetI(x: max(a.endLoc.x, b.endLoc.x), y: a.endLoc.y);
-    }
-    else
-    {
-      // Vertical: extend y bounds
-      a.startLoc = CoordinateSetI(
-          x: a.startLoc.x, y: min(a.startLoc.y, b.startLoc.y),);
-      a.endLoc = CoordinateSetI(x: a.endLoc.x, y: max(a.endLoc.y, b.endLoc.y));
+      int? start;
+      //one past the end, so that a run reaching the edge of the box is closed
+      for (int position = runStart; position <= runEnd + 1; position++)
+      {
+        final int x = vertical ? line : position;
+        final int y = vertical ? position : line;
+        final bool isEdge = position <= runEnd &&
+            selection.isSelectedAt(x: x, y: y) &&
+            !selection.isSelectedAt(x: x + neighbourX, y: y + neighbourY);
+        if (isEdge)
+        {
+          start ??= position;
+        }
+        else if (start != null)
+        {
+          selectionLines.add(SelectionLine(
+            selectDir: direction,
+            startLoc: vertical ? CoordinateSetI(x: line, y: start) : CoordinateSetI(x: start, y: line),
+            endLoc: vertical ? CoordinateSetI(x: line, y: position - 1) : CoordinateSetI(x: position - 1, y: line),
+          ),);
+          start = null;
+        }
+      }
     }
   }
 
@@ -609,13 +548,8 @@ class SelectionState with ChangeNotifier
     bool hasCopied = false;
     if (selection.hasValues())
     {
-      final CoordinateColorMapNullable copied = HashMap<CoordinateSetI, ColorReference?>();
-      final Iterable<CoordinateSetI> coords = selection.getCoordinates();
-      for (final CoordinateSetI coord in coords)
-      {
-        copied[coord] = selection.getColorReference(coord: coord);
-      }
-      _clipboard = ClipboardContent(colors: copied);
+      //the copy shares its tiles with the selection until either side changes
+      _clipboard = ClipboardContent(pixels: selection.snapshot()!, codec: selection.codec);
       if (!keepSelection)
       {
         deselect(notify: false, addToHistoryStack: false);
@@ -638,14 +572,20 @@ class SelectionState with ChangeNotifier
     final Frame? frame = _documentState.timeline.selectedFrame;
     if (frame != null)
     {
-      final CoordinateColorMapNullable tempCB = HashMap<CoordinateSetI, ColorReference?>();
       final Iterable<LayerState> visibleLayers = frame.layerList.getVisibleLayers();
-      final Iterable<CoordinateSetI> coords = selection.getCoordinates();
+      final SelectionBuffer merged = SelectionBuffer();
+      final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox();
+      if (topLeft != null && bottomRight != null)
+      {
+        merged.cover(left: topLeft.x, top: topLeft.y, right: bottomRight.x, bottom: bottomRight.y);
+      }
+      //the merged pixels come from several layers, so they get their own codec
+      PaletteCodec codec = PaletteCodec(ramps: const <KPalRampData>[]);
       bool hasValues = false;
 
-      for (final CoordinateSetI coord in coords)
+      for (final CoordinateSetI coord in selection.getCoordinates())
       {
-        bool pixelFound = false;
+        ColorReference? mergedColor;
         for (final LayerState layer in visibleLayers)
         {
           if (layer is DrawingLayerState)
@@ -661,22 +601,24 @@ class SelectionState with ChangeNotifier
             }
             if (colRef != null)
             {
-              hasValues = true;
-              tempCB[coord] = colRef;
-              pixelFound = true;
+              mergedColor = colRef;
               break;
             }
           }
         }
-        if (!pixelFound)
+        int code = PaletteCodec.transparent;
+        if (mergedColor != null)
         {
-          tempCB[coord] = null;
+          hasValues = true;
+          codec = codec.withRamp(ramp: mergedColor.ramp);
+          code = codec.encode(color: mergedColor);
         }
+        merged.select(x: coord.x, y: coord.y, code: code);
       }
 
       if (hasValues)
       {
-        _clipboard = ClipboardContent(colors: tempCB);
+        _clipboard = ClipboardContent(pixels: merged.snapshot()!, codec: codec);
         if (!keepSelection)
         {
           deselect(notify: false, addToHistoryStack: false);
@@ -713,9 +655,9 @@ class SelectionState with ChangeNotifier
 
   /// The clipboard matched against the current palette, or null (with a message)
   /// if none of the copied colors is left.
-  CoordinateColorMapNullable? _resolveClipboard()
+  ResolvedClipboard? _resolveClipboard()
   {
-    final CoordinateColorMapNullable? content = _clipboard?.resolve(ramps: _documentState.palette.colorRamps);
+    final ResolvedClipboard? content = _clipboard?.resolve(ramps: _documentState.palette.colorRamps);
     if (_clipboard != null && content == null)
     {
       showMessage(text: "Nothing to paste: the copied colors are no longer in the palette!");
@@ -738,11 +680,11 @@ class SelectionState with ChangeNotifier
       }
       else
       {
-        final CoordinateColorMapNullable? content = _resolveClipboard();
+        final ResolvedClipboard? content = _resolveClipboard();
         if (content != null)
         {
           deselect(notify: false, addToHistoryStack: false);
-          selection.addDirectlyAll(list: content);
+          selection.replaceContent(pixels: content.pixels, codec: content.codec);
           createSelectionLines();
           if (addToHistoryStack)
           {
@@ -761,10 +703,12 @@ class SelectionState with ChangeNotifier
 
   void pasteAsNewLayer()
   {
-    final CoordinateColorMapNullable? content = _resolveClipboard();
+    final ResolvedClipboard? content = _resolveClipboard();
     if (content != null)
     {
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: content);
+      final CoordinateColorMapNullable colors = HashMap<CoordinateSetI, ColorReference?>();
+      content.pixels.forEach(action: (final int x, final int y, final int code) => colors[CoordinateSetI(x: x, y: y)] = content.codec.decode(code: code));
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: colors);
     }
   }
 
@@ -889,7 +833,7 @@ class SelectionState with ChangeNotifier
 
   void centerSelectionH()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox();
     if (topLeft != null && bottomRight != null)
     {
       final int width = bottomRight.x - topLeft.x;
@@ -904,7 +848,7 @@ class SelectionState with ChangeNotifier
 
   void centerSelectionV()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox();
     if (topLeft != null && bottomRight != null)
     {
       final int height = bottomRight.y - topLeft.y;
@@ -919,7 +863,7 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionLeft()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox();
     if (topLeft != null && topLeft.x != 0)
     {
       final CoordinateSetI offset = CoordinateSetI(x: -topLeft.x, y: 0);
@@ -929,7 +873,7 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionRight()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox();
     if (topLeft != null && bottomRight != null)
     {
       final int width = bottomRight.x - topLeft.x;
@@ -944,7 +888,7 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionTop()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox();
     if (topLeft != null && topLeft.y != 0)
     {
       final CoordinateSetI offset = CoordinateSetI(x: 0, y: -topLeft.y);
@@ -954,7 +898,7 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionBottom()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox();
     if (topLeft != null && bottomRight != null)
     {
       final int height = bottomRight.y - topLeft.y;
@@ -969,38 +913,47 @@ class SelectionState with ChangeNotifier
 
 }
 
+/// The pixels a selection floats: which positions are selected, and the color
+/// each of them holds.
+///
+/// The pixels physically belong to the selection while it is up: they are taken
+/// out of the layer when they are selected ([transferAll]) and written back into
+/// it when they are let go ([clear], [removeAll]). [owner] is the layer they
+/// came from, which has to stay the selected one until then.
 class SelectionList
 {
-  CoordinateColorMapNullable _content = HashMap<CoordinateSetI, ColorReference?>();
+  static final PaletteCodec _noRamps = PaletteCodec(ramps: const <KPalRampData>[]);
+
+  final SelectionBuffer _pixels = SelectionBuffer();
+  //the codes in _pixels belong to this codec, which takes in a ramp the first
+  //time one of its colors is selected. Nothing keeps it in step with the
+  //palette; the history lines it up when it takes a snapshot.
+  PaletteCodec _codec = _noRamps;
   final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final CanvasState _canvasState = GetIt.I.get<CanvasState>();
   final ValueNotifier<bool> isEmptyNotifer = ValueNotifier<bool>(true);
   int _revision = 0;
-  int _maskRevision = 0;
+  //whether a selected pixel holds a color, as of this revision
+  bool _hasValues = false;
+  int _hasValuesRevision = -1;
 
   int get revision => _revision;
 
-  int get maskRevision => _maskRevision;
-
-  Map<CoordinateSetI, ColorReference?> get selectedPixels
-  {
-    return UnmodifiableMapView<CoordinateSetI, ColorReference?>(_content);
-  }
+  /// The codec the codes of [forEachCode] and [snapshot] belong to.
+  PaletteCodec get codec => _codec;
 
   LayerState? _owner;
   LayerState? get owner => _owner;
 
-  void _touch({final bool notifyEmpty = true, final bool claimOwner = false, final bool maskChanged = true})
+  void _touch({final bool notifyEmpty = true, final bool claimOwner = false})
   {
     _revision++;
-    if (maskChanged)
-    {
-      _maskRevision++;
-    }
-    if (_content.isEmpty)
+    if (_pixels.isEmpty)
     {
       //nothing floating, nothing to misplace
       _owner = null;
+      //and no color left for a code to stand for
+      _codec = _noRamps;
     }
     else if (claimOwner)
     {
@@ -1008,13 +961,13 @@ class SelectionList
     }
     if (notifyEmpty)
     {
-      isEmptyNotifer.value = _content.isEmpty;
+      isEmptyNotifer.value = _pixels.isEmpty;
     }
   }
 
   void _checkOwnership({required final String operation})
   {
-    if (_content.isEmpty || _owner == null || identical(_owner, _documentState.timeline.getCurrentLayer()))
+    if (_pixels.isEmpty || _owner == null || identical(_owner, _documentState.timeline.getCurrentLayer()))
     {
       return;
     }
@@ -1025,32 +978,84 @@ class SelectionList
 
   bool get isEmpty
   {
-    return isEmptyNotifer.value;
+    return _pixels.isEmpty;
   }
 
   final CoordinateSetI _lastOffset = CoordinateSetI.zero();
+
+  /// The code for [color] in [codec], which takes in the ramp of a color it has
+  /// not seen before.
+  int _encode({required final ColorReference? color})
+  {
+    if (color == null)
+    {
+      return PaletteCodec.transparent;
+    }
+    _codec = _codec.withRamp(ramp: color.ramp);
+    return _codec.encode(color: color);
+  }
+
+  /// Makes room for [coords], so that a batch of writes grows the buffer once.
+  void _cover({required final Iterable<CoordinateSetI> coords})
+  {
+    if (coords.isEmpty)
+    {
+      return;
+    }
+    int left = coords.first.x;
+    int top = coords.first.y;
+    int right = left;
+    int bottom = top;
+    for (final CoordinateSetI coord in coords)
+    {
+      left = min(left, coord.x);
+      top = min(top, coord.y);
+      right = max(right, coord.x);
+      bottom = max(bottom, coord.y);
+    }
+    _pixels.cover(left: left, top: top, right: right, bottom: bottom);
+  }
+
+  /// Asks the layer the selection floats over for a new raster.
+  void _rasterCurrentLayer()
+  {
+    final LayerState? layer = _documentState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
+    {
+      layer.doManualRaster = true;
+    }
+  }
 
   void changeLayer({required final LayerState? oldLayer, required final LayerState newLayer})
   {
     final CoordinateColorMapNullable refsOld = HashMap<CoordinateSetI, ColorReference?>();
     final CoordinateColorMapNullable refsNew = HashMap<CoordinateSetI, ColorReference?>();
     final DrawingLayerState? receivingLayer = (newLayer is DrawingLayerState && newLayer.lockState.value != LayerLockState.locked) ? newLayer : null;
-    for (final CoordinateSetI key in _content.keys)
+    //what the selection floats afterwards, collected first because the old
+    //colors have to be read before the new codes are written
+    final List<(CoordinateSetI, ColorReference?)> lifted = <(CoordinateSetI, ColorReference?)>[];
+    _pixels.forEach(action: (final int x, final int y, final int code)
     {
-      final ColorReference? curVal = _content[key];
-      if (curVal != null)
+      final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
+      if (code != PaletteCodec.transparent)
       {
-        refsOld[key] = curVal;
+        refsOld[coord] = _codec.decode(code: code);
       }
       if (receivingLayer != null)
       {
-        _content[key] = receivingLayer.getDataEntry(coord: key);
-        refsNew[key] = null;
+        lifted.add((coord, receivingLayer.getDataEntry(coord: coord)));
+        refsNew[coord] = null;
       }
       else
       {
-        _content[key] = null;
+        lifted.add((coord, null));
       }
+    },);
+    //every pixel gets a new color, so the old ones need no code any more
+    _codec = _noRamps;
+    for (final (CoordinateSetI coord, ColorReference? color) in lifted)
+    {
+      _pixels.select(x: coord.x, y: coord.y, code: _encode(color: color));
     }
     if (oldLayer != null && oldLayer is DrawingLayerState)
     {
@@ -1061,7 +1066,7 @@ class SelectionList
     {
       newLayer.setDataAll(list: refsNew);
     }
-    _touch(claimOwner: true, maskChanged: false);
+    _touch(claimOwner: true);
   }
 
   void transferAll({required final Set<CoordinateSetI> coords, final bool notifyEmpty = true})
@@ -1070,9 +1075,10 @@ class SelectionList
     final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
+      _cover(coords: coords);
       for (final CoordinateSetI coord in coords)
       {
-        _content[coord] = layer.getDataEntry(coord: coord);
+        _pixels.select(x: coord.x, y: coord.y, code: _encode(color: layer.getDataEntry(coord: coord)));
       }
       layer.removeDataAll(removeCoordList: coords);
     }
@@ -1081,55 +1087,43 @@ class SelectionList
 
   void addEmpty({required final CoordinateSetI coord})
   {
-    _content[coord] = null;
+    _pixels.select(x: coord.x, y: coord.y, code: PaletteCodec.transparent);
     _touch(claimOwner: true);
   }
 
   void addDirectly({required final CoordinateSetI coord, required final ColorReference? colRef})
   {
-    final bool maskChanged = !_content.containsKey(coord);
-    _content[coord] = colRef;
-    _touch(claimOwner: true, maskChanged: maskChanged);
-    final LayerState? layer = _documentState.timeline.getCurrentLayer();
-    if (layer != null && layer is DrawingLayerState)
-    {
-      layer.doManualRaster = true;
-    }
+    _pixels.select(x: coord.x, y: coord.y, code: _encode(color: colRef));
+    _touch(claimOwner: true);
+    _rasterCurrentLayer();
   }
 
   void addDirectlyAll({required final CoordinateColorMapNullable list})
   {
-    bool maskChanged = false;
-    for (final CoordinateSetI coord in list.keys)
+    _cover(coords: list.keys);
+    for (final CoordinateColorNullable entry in list.entries)
     {
-      if (!_content.containsKey(coord))
-      {
-        maskChanged = true;
-        break;
-      }
+      _pixels.select(x: entry.key.x, y: entry.key.y, code: _encode(color: entry.value));
     }
-    _content.addAll(list);
-    _touch(claimOwner: true, maskChanged: maskChanged);
-    final LayerState? layer = _documentState.timeline.getCurrentLayer();
-    if (layer != null && layer is DrawingLayerState)
-    {
-      layer.doManualRaster = true;
-    }
+    _touch(claimOwner: true);
+    _rasterCurrentLayer();
   }
 
   void removeAll({required final Set<CoordinateSetI> coords})
   {
     _checkOwnership(operation: "removing from the selection");
+    final CoordinateSetI canvasSize = _canvasState.canvasSize;
     final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
     for (final CoordinateSetI coord in coords)
     {
-      if (coord.x >= 0 && coord.y >= 0 && coord.x < _canvasState.canvasSize.x && coord.y < _canvasState.canvasSize.y)
+      if (coord.x >= 0 && coord.y >= 0 && coord.x < canvasSize.x && coord.y < canvasSize.y)
       {
-        if (_content[coord] != null)
+        final int? code = _pixels.codeAt(x: coord.x, y: coord.y);
+        if (code != null && code != PaletteCodec.transparent)
         {
-          refs[coord] = _content[coord];
+          refs[coord] = _codec.decode(code: code);
         }
-        _content.remove(coord);
+        _pixels.deselect(x: coord.x, y: coord.y);
       }
     }
     final LayerState? layer = _documentState.timeline.getCurrentLayer();
@@ -1143,64 +1137,65 @@ class SelectionList
   void clear({final bool notifyEmpty = true})
   {
     _checkOwnership(operation: "deselecting");
+    final CoordinateSetI canvasSize = _canvasState.canvasSize;
     final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
-    for (final CoordinateColorNullable entry in _content.entries)
+    _pixels.forEach(action: (final int x, final int y, final int code)
     {
-      if (entry.value != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < _canvasState.canvasSize.x && entry.key.y < _canvasState.canvasSize.y)
+      //what floats off the canvas is lost, as it was before
+      if (code != PaletteCodec.transparent && x >= 0 && y >= 0 && x < canvasSize.x && y < canvasSize.y)
       {
-        refs[entry.key] = entry.value;
+        refs[CoordinateSetI(x: x, y: y)] = _codec.decode(code: code);
       }
-    }
+    },);
     final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       layer.setDataAll(list: refs);
     }
-    _content.clear();
+    _pixels.clear();
     _touch(notifyEmpty: notifyEmpty);
   }
 
   void deleteDirectly({required final CoordinateSetI coord})
   {
-    if (_content.keys.contains(coord) && _content[coord] != null)
+    final int? code = _pixels.codeAt(x: coord.x, y: coord.y);
+    if (code != null && code != PaletteCodec.transparent)
     {
-      _content[coord] = null;
+      _pixels.select(x: coord.x, y: coord.y, code: PaletteCodec.transparent);
     }
-    _touch(maskChanged: false);
+    _touch();
   }
 
   void delete({required final bool keepSelection})
   {
     if (keepSelection)
     {
-      for (final CoordinateSetI entry in _content.keys)
-      {
-          _content[entry] = null;
-      }
+      //every pixel stays selected, holding no color
+      _pixels.remap(lut: Uint16List(_codec.codeCount));
+      _codec = _noRamps;
     }
     else
     {
-      _content.clear();
+      _pixels.clear();
     }
-    _touch(maskChanged: !keepSelection);
+    _touch();
   }
 
   /// Empties every selected pixel of the deleted [ramp], keeping the shape of
   /// the selection.
   void deleteRamp({required final KPalRampData ramp})
   {
-    bool changed = false;
-    for (final CoordinateSetI coord in _content.keys)
+    final PaletteCodec remaining = _codec.withoutRamp(ramp: ramp);
+    if (!identical(remaining, _codec))
     {
-      if (_content[coord]?.ramp == ramp)
+      final bool changed = getPixelCountForRamp(ramp: ramp) > 0;
+      //the ramp's codes have no place in the remaining codec, so they are dropped
+      _pixels.remap(lut: _codec.remapLut(target: remaining));
+      _codec = remaining;
+      if (changed)
       {
-        _content[coord] = null;
-        changed = true;
+        _touch();
       }
-    }
-    if (changed)
-    {
-      _touch(maskChanged: false);
     }
   }
 
@@ -1208,19 +1203,10 @@ class SelectionList
   /// the same [map] the layers are remapped with.
   void remapRamp({required final KPalRampData ramp, required final HashMap<int, int> map})
   {
-    bool changed = false;
-    for (final CoordinateSetI coord in _content.keys)
+    if (_codec.indexOfRamp(ramp: ramp) != null && getPixelCountForRamp(ramp: ramp) > 0)
     {
-      final ColorReference? color = _content[coord];
-      if (color != null && color.ramp == ramp)
-      {
-        _content[coord] = ramp.references[map[color.colorIndex]!];
-        changed = true;
-      }
-    }
-    if (changed)
-    {
-      _touch(maskChanged: false);
+      _pixels.remap(lut: _codec.remapLut(target: _codec, colorIndexMaps: <KPalRampData, Map<int, int>>{ramp: map}));
+      _touch();
     }
   }
 
@@ -1228,139 +1214,119 @@ class SelectionList
   /// replaced. A color missing from the map becomes transparent.
   void remapColors({required final HashMap<ColorReference, ColorReference> colorMap})
   {
-    bool changed = false;
-    for (final CoordinateSetI coord in _content.keys)
+    if (hasValues())
     {
-      final ColorReference? color = _content[coord];
-      if (color != null)
+      PaletteCodec target = _codec;
+      for (final ColorReference color in colorMap.values)
       {
-        _content[coord] = colorMap[color];
-        changed = true;
+        target = target.withRamp(ramp: color.ramp);
       }
-    }
-    if (changed)
-    {
-      _touch(maskChanged: false);
+      _pixels.remap(lut: _codec.remapLutByColor(target: target, colorMap: colorMap));
+      _codec = target;
+      _touch();
     }
   }
 
   int getPixelCountForRamp({required final KPalRampData ramp})
   {
-    int count = 0;
-    for (final ColorReference? color in _content.values)
+    final int? rampIndex = _codec.indexOfRamp(ramp: ramp);
+    if (rampIndex == null)
     {
-      if (color?.ramp == ramp)
+      return 0;
+    }
+    int count = 0;
+    _pixels.forEach(action: (final int x, final int y, final int code)
+    {
+      if (code != PaletteCodec.transparent && PaletteCodec.rampIndexOf(code: code) == rampIndex)
       {
         count++;
       }
-    }
+    },);
     return count;
   }
 
   void flipH()
   {
-    final CoordinateSetI minXcoord = _content.keys.reduce((final CoordinateSetI a, final CoordinateSetI b) => a.x < b.x ? a : b);
-    final CoordinateSetI maxXcoord = _content.keys.reduce((final CoordinateSetI a, final CoordinateSetI b) => a.x > b.x ? a : b);
-
-    final CoordinateColorMapNullable newContent = HashMap<CoordinateSetI, ColorReference?>();
-    for (final CoordinateColorNullable entry in _content.entries)
-    {
-      newContent[CoordinateSetI(x: maxXcoord.x - entry.key.x + minXcoord.x , y: entry.key.y)] = entry.value;
-    }
-    _content = newContent;
+    _pixels.flipHorizontally();
     _touch();
   }
 
   void flipV()
   {
-    final CoordinateSetI minYcoord = _content.keys.reduce((final CoordinateSetI a, final CoordinateSetI b) => a.y < b.y ? a : b);
-    final CoordinateSetI maxYcoord = _content.keys.reduce((final CoordinateSetI a, final CoordinateSetI b) => a.y > b.y ? a : b);
-
-    final CoordinateColorMapNullable newContent = HashMap<CoordinateSetI, ColorReference?>();
-    for (final CoordinateColorNullable entry in _content.entries)
-    {
-      newContent[CoordinateSetI(x: entry.key.x, y: maxYcoord.y - entry.key.y + minYcoord.y)] = entry.value;
-    }
-    _content = newContent;
+    _pixels.flipVertically();
     _touch();
   }
 
   void rotate90cw()
   {
-    final CoordinateSetI minCoords = _canvasState.canvasSize;
-    final CoordinateSetI maxCoords = CoordinateSetI.zero();
-    for (final CoordinateSetI coord in _content.keys)
-    {
-      minCoords.x = min(coord.x, minCoords.x);
-      minCoords.y = min(coord.y, minCoords.y);
-      maxCoords.x = max(coord.x, maxCoords.x);
-      maxCoords.y = max(coord.y, maxCoords.y);
-    }
-
-    final CoordinateSetI centerCoord = CoordinateSetI(x: (minCoords.x + maxCoords.x) ~/ 2, y: (minCoords.y + maxCoords.y) ~/ 2);
-    final CoordinateColorMapNullable newContent = HashMap<CoordinateSetI, ColorReference?>();
-    for (final CoordinateColorNullable entry in _content.entries)
-    {
-      newContent[CoordinateSetI(x: centerCoord.y - entry.key.y + centerCoord.x, y: entry.key.x - centerCoord.x + centerCoord.y)] = entry.value;
-    }
-    _content = newContent;
+    _pixels.rotateClockwise();
     _touch();
   }
 
   bool contains({required final CoordinateSetI coord})
   {
-    return _content.containsKey(coord);
+    return _pixels.contains(x: coord.x, y: coord.y);
   }
 
-  /*bool isEmpty()
+  /// Whether [x]|[y] is selected, without building a coordinate for it.
+  bool isSelectedAt({required final int x, required final int y})
   {
-    return _content.isEmpty;
-  }*/
-
-  Iterable<CoordinateSetI> getCoordinates()
-  {
-    return _content.keys;
+    return _pixels.contains(x: x, y: y);
   }
 
+  /// Every selected position, in a new list.
+  List<CoordinateSetI> getCoordinates()
+  {
+    final List<CoordinateSetI> coords = <CoordinateSetI>[];
+    _pixels.forEach(action: (final int x, final int y, final int code) => coords.add(CoordinateSetI(x: x, y: y)));
+    return coords;
+  }
 
   ColorReference? getColorReference({required final CoordinateSetI coord})
   {
-    return contains(coord: coord) ? _content[coord] : null;
+    final int? code = _pixels.codeAt(x: coord.x, y: coord.y);
+    return code == null ? null : _codec.decode(code: code);
+  }
+
+  /// Calls [action] for every selected pixel, with the color it floats or null
+  /// where it floats none.
+  void forEachSelected({required final void Function(int x, int y, ColorReference? color) action})
+  {
+    _pixels.forEach(action: (final int x, final int y, final int code) => action(x, y, _codec.decode(code: code)));
+  }
+
+  /// Calls [action] for every selected pixel with its code in [codec].
+  void forEachCode({required final void Function(int x, int y, int code) action})
+  {
+    _pixels.forEach(action: action);
   }
 
   void shiftSelection({required final CoordinateSetI offset, required final bool withContent})
   {
-
     if (offset != _lastOffset)
     {
+      final int stepX = offset.x - _lastOffset.x;
+      final int stepY = offset.y - _lastOffset.y;
       if (withContent)
       {
-        final CoordinateColorMapNullable newContent = HashMap<CoordinateSetI, ColorReference?>();
-        for (final CoordinateColorNullable entry in _content.entries)
-        {
-          newContent[CoordinateSetI(x: entry.key.x + (offset.x - _lastOffset.x), y: entry.key.y + (offset.y - _lastOffset.y))] = entry.value;
-        }
-        _content = newContent;
+        //the pixels stay as they are, only where they float moves
+        _pixels.moveBy(dx: stepX, dy: stepY);
         _lastOffset.x = offset.x;
         _lastOffset.y = offset.y;
-
-        final LayerState? layer = _documentState.timeline.getCurrentLayer();
-        if (layer != null && layer is DrawingLayerState)
-        {
-          layer.doManualRaster = true;
-        }
+        _rasterCurrentLayer();
       }
       else
       {
+        final CoordinateSetI canvasSize = _canvasState.canvasSize;
         final Set<CoordinateSetI> coordinateList = <CoordinateSetI>{};
-        for (final CoordinateSetI coord in selectedPixels.keys)
+        _pixels.forEach(action: (final int x, final int y, final int code)
         {
-          final CoordinateSetI newCoord = CoordinateSetI(x: coord.x + (offset.x - _lastOffset.x), y: coord.y + (offset.y - _lastOffset.y));
-          if (newCoord.x >= 0 && newCoord.y >= 0 && newCoord.x < _canvasState.canvasSize.x && newCoord.y < _canvasState.canvasSize.y)
+          final CoordinateSetI newCoord = CoordinateSetI(x: x + stepX, y: y + stepY);
+          if (newCoord.x >= 0 && newCoord.y >= 0 && newCoord.x < canvasSize.x && newCoord.y < canvasSize.y)
           {
             coordinateList.add(newCoord);
           }
-        }
+        },);
         _lastOffset.x = offset.x;
         _lastOffset.y = offset.y;
 
@@ -1379,43 +1345,99 @@ class SelectionList
 
   bool hasValues()
   {
-    bool has = false;
-    for (final ColorReference? colRef in _content.values)
+    if (_hasValuesRevision != _revision)
     {
-      if (colRef != null)
+      bool has = false;
+      _pixels.forEach(action: (final int x, final int y, final int code)
       {
-        has = true;
-        break;
-      }
+        has = has || code != PaletteCodec.transparent;
+      },);
+      _hasValues = has;
+      _hasValuesRevision = _revision;
     }
-    return has;
+    return _hasValues;
   }
 
-  (CoordinateSetI?, CoordinateSetI?) getBoundingBox(
-      {required final CoordinateSetI canvasSize,})
+  /// The box around the selected pixels, or (null, null) if nothing is selected.
+  (CoordinateSetI?, CoordinateSetI?) getBoundingBox()
   {
-    CoordinateSetI? topLeft;
-    CoordinateSetI? bottomRight;
-    int minX = canvasSize.x;
-    int maxX = -1;
-    int minY = canvasSize.y;
-    int maxY = -1;
-
-    final Iterable<CoordinateSetI> allCoords = _content.keys;
-    for (final CoordinateSetI coord in allCoords)
-    {
-      minX = min(minX, coord.x);
-      maxX = max(maxX, coord.x);
-      minY = min(minY, coord.y);
-      maxY = max(maxY, coord.y);
-    }
-
-    if (minX <= maxX && minY <= maxY)
-    {
-       topLeft = CoordinateSetI(x: minX, y: minY);
-       bottomRight = CoordinateSetI(x: maxX, y: maxY);
-    }
-    return (topLeft, bottomRight);
+    final SelectionBounds? box = _pixels.bounds;
+    return box == null ? (null, null) : (CoordinateSetI(x: box.left, y: box.top), CoordinateSetI(x: box.right, y: box.bottom));
   }
 
+  /// The selected pixels as they are, sharing their tiles until either side
+  /// changes, or null if nothing is selected. Their codes belong to [codec].
+  SelectionBufferSnapshot? snapshot()
+  {
+    return _pixels.snapshot();
+  }
+
+  /// The selected pixels as codes whose ramp index is the ramp's position in
+  /// [ramps], which is how the history and the file store them, or null if
+  /// nothing is selected. A color of a ramp missing from [ramps] is left out.
+  ///
+  /// Like a drawing layer (see DrawingLayerState.historySnapshot), the selection
+  /// first moves its own codes into the palette's order when [ramps] is the
+  /// palette. The snapshot then shares its tiles instead of being translated on
+  /// every step.
+  SelectionBufferSnapshot? historySnapshot({required final List<HistoryRampData> ramps})
+  {
+    if (_pixels.isEmpty)
+    {
+      return null;
+    }
+    final List<String> uuids = <String>[for (final HistoryRampData ramp in ramps) ramp.uuid];
+    final PaletteCodec palette = _documentState.palette.codec;
+    if (palette.listsUuids(uuids: uuids))
+    {
+      _alignCodec(target: palette);
+    }
+    final ({Uint16List lut, bool linesUp}) translation = _codec.remapLutToUuids(uuids: uuids);
+    final SelectionBufferSnapshot current = _pixels.snapshot()!;
+    if (translation.linesUp)
+    {
+      return current;
+    }
+    final SelectionBuffer translated = SelectionBuffer.fromSnapshot(snapshot: current);
+    translated.remap(lut: translation.lut);
+    return translated.snapshot();
+  }
+
+  /// Moves the codes into [target]'s order, so that a code means the same in the
+  /// selection and in [target]. Ramps only the selection floats colors of follow
+  /// behind [target]'s; ramps without pixels are dropped. Nothing visible
+  /// changes.
+  void _alignCodec({required final PaletteCodec target})
+  {
+    if (_codec.followsOrderOf(target: target))
+    {
+      return;
+    }
+    final Set<int> usedRamps = <int>{};
+    _pixels.forEach(action: (final int x, final int y, final int code)
+    {
+      if (code != PaletteCodec.transparent)
+      {
+        usedRamps.add(PaletteCodec.rampIndexOf(code: code));
+      }
+    },);
+    final PaletteCodec aligned = _codec.alignedTo(target: target, usedRampIndices: usedRamps);
+    _pixels.remap(lut: _codec.remapLut(target: aligned));
+    _codec = aligned;
+  }
+
+  /// Replaces the selection with [pixels], whose codes belong to [codec] once
+  /// they went through [lut], if one is given. This is how the history and the
+  /// clipboard hand pixels over, so nothing is taken out of a layer.
+  void replaceContent({required final SelectionBufferSnapshot? pixels, required final PaletteCodec codec, final Uint16List? lut})
+  {
+    _pixels.replaceWith(snapshot: pixels);
+    if (lut != null)
+    {
+      _pixels.remap(lut: lut);
+    }
+    _codec = codec;
+    _touch(claimOwner: true);
+    _rasterCurrentLayer();
+  }
 }

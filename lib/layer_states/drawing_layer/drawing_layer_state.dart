@@ -480,14 +480,21 @@ class DrawingLayerState extends RasterableLayerState
         documentState.selectionState.selection.hasValues();
     if (hasSelection)
     {
-      for (final CoordinateColorNullable entry in documentState.selectionState.selection.selectedPixels.entries)
+      //the selection's codes belong to its own codec
+      final SelectionList selection = documentState.selectionState.selection;
+      for (final KPalRampData ramp in selection.codec.ramps)
+      {
+        _codec = _codec.withRamp(ramp: ramp);
+      }
+      final Uint16List lut = selection.codec.remapLut(target: _codec);
+      selection.forEachCode(action: (final int x, final int y, final int code)
       {
         //the grid drops floating pixels that are off the canvas
-        if (entry.value != null)
+        if (code != PaletteCodec.transparent)
         {
-          content.set(x: entry.key.x, y: entry.key.y, value: _encode(color: entry.value));
+          content.set(x: x, y: y, value: lut[code]);
         }
-      }
+      },);
     }
     return content;
   }
@@ -779,8 +786,9 @@ class DrawingLayerState extends RasterableLayerState
   /// The tiles are then copied once, not on every step.
   PixelGridSnapshot historySnapshot({required final List<HistoryRampData> ramps})
   {
+    final List<String> uuids = <String>[for (final HistoryRampData ramp in ramps) ramp.uuid];
     final PaletteCodec palette = GetIt.I.get<DocumentState>().palette.codec;
-    if (_listsSameRamps(codec: palette, ramps: ramps))
+    if (palette.listsUuids(uuids: uuids))
     {
       _alignCodec(target: palette);
     }
@@ -796,44 +804,14 @@ class DrawingLayerState extends RasterableLayerState
       }
     }
 
-    final Map<String, int> rampIndices = <String, int>{for (int i = 0; i < ramps.length; i++) ramps[i].uuid: i};
-    final Uint16List lut = Uint16List(_codec.codeCount);
-    bool linesUp = true;
-    for (int rampIndex = 0; rampIndex < _codec.ramps.length; rampIndex++)
-    {
-      final int? targetIndex = rampIndices[_codec.ramps[rampIndex].uuid];
-      linesUp = linesUp && targetIndex == rampIndex;
-      if (targetIndex != null)
-      {
-        for (int colorIndex = 0; colorIndex < PaletteCodec.colorsPerRamp; colorIndex++)
-        {
-          lut[PaletteCodec.codeOf(rampIndex: rampIndex, colorIndex: colorIndex)] = PaletteCodec.codeOf(rampIndex: targetIndex, colorIndex: colorIndex);
-        }
-      }
-    }
-    if (linesUp)
+    final ({Uint16List lut, bool linesUp}) translation = _codec.remapLutToUuids(uuids: uuids);
+    if (translation.linesUp)
     {
       return pending?.snapshot() ?? _data.snapshot();
     }
     final PixelGrid translated = pending ?? PixelGrid.fromSnapshot(snapshot: _data.snapshot());
-    translated.remap(lut: lut);
+    translated.remap(lut: translation.lut);
     return translated.snapshot();
-  }
-
-  static bool _listsSameRamps({required final PaletteCodec codec, required final List<HistoryRampData> ramps})
-  {
-    if (codec.ramps.length != ramps.length)
-    {
-      return false;
-    }
-    for (int i = 0; i < ramps.length; i++)
-    {
-      if (codec.ramps[i].uuid != ramps[i].uuid)
-      {
-        return false;
-      }
-    }
-    return true;
   }
 
   /// Moves the codes into [target]'s order, so that a code means the same in
@@ -842,28 +820,13 @@ class DrawingLayerState extends RasterableLayerState
   /// changes.
   void _alignCodec({required final PaletteCodec target})
   {
-    final List<KPalRampData> current = _codec.ramps;
-    bool inOrder = true;
-    for (int i = 0; inOrder && i < current.length && i < target.ramps.length; i++)
-    {
-      inOrder = identical(current[i], target.ramps[i]);
-    }
-    if (inOrder)
+    if (_codec.followsOrderOf(target: target))
     {
       return;
     }
-
     final Set<int> usedRamps = <int>{};
     _data.forEachNonZero(action: (final int x, final int y, final int value) => usedRamps.add(PaletteCodec.rampIndexOf(code: value)));
-    final List<KPalRampData> ordered = <KPalRampData>[...target.ramps];
-    for (final int rampIndex in usedRamps.toList()..sort())
-    {
-      if (target.indexOfRamp(ramp: current[rampIndex]) == null)
-      {
-        ordered.add(current[rampIndex]);
-      }
-    }
-    final PaletteCodec aligned = PaletteCodec(ramps: ordered);
+    final PaletteCodec aligned = _codec.alignedTo(target: target, usedRampIndices: usedRamps);
     _data.remap(lut: _codec.remapLut(target: aligned));
     _codec = aligned;
   }

@@ -91,7 +91,7 @@ class CanvasState
   {
     CoordinateSetI? topLeft;
     CoordinateSetI? bottomRight;
-    (topLeft, bottomRight) = GetIt.I.get<DocumentState>().selectionState.selection.getBoundingBox(canvasSize: _canvasSize);
+    (topLeft, bottomRight) = GetIt.I.get<DocumentState>().selectionState.selection.getBoundingBox();
     if (topLeft != null && bottomRight != null)
     {
       final CoordinateSetI newSize = CoordinateSetI(x: bottomRight.x - topLeft.x + 1, y: bottomRight.y - topLeft.y + 1);

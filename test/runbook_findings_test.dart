@@ -108,7 +108,7 @@ void main()
         expect(timeline.frames.value[1].layerList.getLayer(index: 0), same(source), reason: "setup: a link");
         expect(source.getDataEntry(coord: pixel), color,
             reason: "the content is committed before the frame is added, so both frames show it",);
-        expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isEmpty);
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isTrue);
       },);
     });
   });

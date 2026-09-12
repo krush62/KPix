@@ -112,13 +112,13 @@ void _expectOnlyPaletteColors()
       }
     }
   }
-  for (final ColorReference? color in GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels.values)
+  GetIt.I.get<DocumentState>().selectionState.selection.forEachSelected(action: (final int x, final int y, final ColorReference? color)
   {
     if (color != null)
     {
       check(color, "the selection");
     }
-  }
+  },);
 }
 
 /// Colors that outlive their place in the palette.

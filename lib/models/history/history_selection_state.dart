@@ -14,68 +14,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:collection';
-
-import 'package:kpix/models/history/history_color_reference.dart';
 import 'package:kpix/models/history/history_ramp_data.dart';
 import 'package:kpix/models/selection_state.dart';
-import 'package:kpix/util/helpers/color_helper.dart';
-import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/util/helpers/selection_buffer.dart';
 
 class HistorySelectionState
 {
-  final Set<CoordinateSetI> mask;
-  final HashMap<CoordinateSetI, HistoryColorReference> colors;
-  final int maskRevision;
+  /// The selected pixels, as codes whose ramp index is the ramp's place in the
+  /// state's ramp list (see PaletteCodec), or null without a selection.
+  ///
+  /// A snapshot shares its tiles with the live selection and with earlier
+  /// snapshots, so a history step only costs the tiles that changed.
+  final SelectionBufferSnapshot? pixels;
 
-  HistorySelectionState({required this.mask, required this.colors, this.maskRevision = -1});
+  HistorySelectionState({required this.pixels});
 
-  HistorySelectionState.empty()
-      : mask = <CoordinateSetI>{},
-        colors = HashMap<CoordinateSetI, HistoryColorReference>(),
-        maskRevision = -1;
+  HistorySelectionState.empty() : pixels = null;
 
-  bool get isEmpty => mask.isEmpty;
+  bool get isEmpty => pixels == null;
 
-  factory HistorySelectionState.fromSelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps, final HistorySelectionState? previous})
+  factory HistorySelectionState.fromSelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps})
   {
-    final Map<String, int> rampIndexByUuid = <String, int>{
-      for (int r = 0; r < ramps.length; r++) ramps[r].uuid: r,
-    };
-
-    final Map<CoordinateSetI, ColorReference?> live = sState.selection.selectedPixels;
-    final int maskRevision = sState.selection.maskRevision;
-
-    final Set<CoordinateSetI> mask;
-    if (previous != null && previous.maskRevision == maskRevision && previous.mask.length == live.length)
-    {
-      mask = previous.mask;
-    }
-    else
-    {
-      final Set<CoordinateSetI> freshMask = <CoordinateSetI>{};
-      for (final CoordinateSetI coord in live.keys)
-      {
-        freshMask.add(CoordinateSetI.from(other: coord));
-      }
-      mask = freshMask;
-    }
-
-    final HashMap<CoordinateSetI, HistoryColorReference> colors = HashMap<CoordinateSetI, HistoryColorReference>();
-    for (final CoordinateColorNullable entry in live.entries)
-    {
-      final ColorReference? colorRef = entry.value;
-      if (colorRef != null)
-      {
-        final int? rampIndex = rampIndexByUuid[colorRef.ramp.uuid];
-        if (rampIndex != null)
-        {
-          colors[CoordinateSetI.from(other: entry.key)] = HistoryColorReference.of(colorIndex: colorRef.colorIndex, rampIndex: rampIndex);
-        }
-      }
-    }
-
-    return HistorySelectionState(mask: mask, colors: colors, maskRevision: maskRevision);
+    return HistorySelectionState(pixels: sState.selection.historySnapshot(ramps: ramps));
   }
 }

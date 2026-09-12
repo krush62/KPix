@@ -151,7 +151,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 
                     if (!_documentState.selectionState.selection.isEmpty)
                     {
-                      final (CoordinateSetI?, CoordinateSetI?) selectionSize = _documentState.selectionState.selection.getBoundingBox(canvasSize: _canvasState.canvasSize);
+                      final (CoordinateSetI?, CoordinateSetI?) selectionSize = _documentState.selectionState.selection.getBoundingBox();
                       final CoordinateSetI? topLeft = selectionSize.$1;
                       final CoordinateSetI? bottomRight = selectionSize.$2;
                       if (topLeft != null && bottomRight != null && (bottomRight.x - topLeft.x + 1) >= CanvasSizeConstraints.sizeMin && (bottomRight.y - topLeft.y + 1) >= CanvasSizeConstraints.sizeMin)

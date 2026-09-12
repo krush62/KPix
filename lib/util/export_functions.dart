@@ -36,7 +36,6 @@ import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/export_types.dart';
 import 'package:kpix/models/file_constants.dart';
-import 'package:kpix/models/history/history_color_reference.dart';
 import 'package:kpix/models/history/history_drawing_layer.dart';
 import 'package:kpix/models/history/history_frame.dart';
 import 'package:kpix/models/history/history_grid_layer.dart';

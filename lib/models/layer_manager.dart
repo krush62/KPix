@@ -276,7 +276,7 @@ class LayerManager
       final LayerState? previousLayer = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.selectLayer(newLayer: newLayer);
       GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
       oldLayer ??= previousLayer;
-      final bool handsOverContent = oldLayer != newLayer && GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels.isNotEmpty;
+      final bool handsOverContent = oldLayer != newLayer && !GetIt.I.get<DocumentState>().selectionState.selection.isEmpty;
       if (oldLayer != newLayer)
       {
         GetIt.I.get<DocumentState>().selectionState.selection.changeLayer(oldLayer: oldLayer, newLayer: newLayer);

@@ -32,11 +32,14 @@ PixelGridView _layerPixelsForSaving({
   }
 
   final PixelGrid merged = PixelGrid.fromSnapshot(snapshot: layer.pixels);
-  for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in selection.colors.entries)
+  selection.pixels!.forEach(action: (final int x, final int y, final int code)
   {
     //the grid drops floating pixels that are off the canvas
-    merged.set(x: entry.key.x, y: entry.key.y, value: PaletteCodec.codeOf(rampIndex: entry.value.rampIndex, colorIndex: entry.value.colorIndex));
-  }
+    if (code != PaletteCodec.transparent)
+    {
+      merged.set(x: x, y: y, value: code);
+    }
+  },);
   return merged;
 }
 

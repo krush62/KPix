@@ -1235,22 +1235,22 @@ Future<ui.Image> getImageFromLayers({
         if (i == selectionLayerIndex)
         {
           final Paint paint = Paint();
-          for (final MapEntry<CoordinateSetI, ColorReference?> entry in selection.selectedPixels.entries)
+          selection.forEachSelected(action: (final int x, final int y, final ColorReference? color)
           {
-            if (entry.value != null)
+            if (color != null)
             {
-              paint.color = entry.value!.getIdColor().color;
+              paint.color = color.getIdColor().color;
               canvas.drawRect(
                 Rect.fromLTWH(
-                  entry.key.x.toDouble() * scalingFactor,
-                  entry.key.y.toDouble() * scalingFactor,
+                  x.toDouble() * scalingFactor,
+                  y.toDouble() * scalingFactor,
                   scalingFactor.toDouble(),
                   scalingFactor.toDouble(),
                 ),
                 paint,
               );
             }
-          }
+          },);
         }
       }
     }

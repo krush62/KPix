@@ -19,6 +19,18 @@ import 'dart:collection';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 
+/// Pixels as a map of coordinate to color.
+///
+/// This is the shape of pixels that are on their way somewhere: what a tool is
+/// about to draw, what a painter hands to a layer, what is read back out of one
+/// for a caller that wants colors rather than codes. They are small, they live
+/// for a stroke at most, and their keys are shared with the caller's own map, so
+/// they stay maps.
+///
+/// Everything that keeps pixels — layers, composites, the shading values, the
+/// selection, the clipboard and every history record — holds a `PixelGrid` of
+/// color codes instead (see `PaletteCodec` and `pixel_grid.dart`), which costs
+/// two bytes per pixel instead of about a hundred.
 typedef CoordinateColorMap = HashMap<CoordinateSetI, ColorReference>;
 typedef CoordinateColorMapNullable = HashMap<CoordinateSetI, ColorReference?>;
 typedef CoordinateColor = MapEntry<CoordinateSetI, ColorReference>;

@@ -16,12 +16,14 @@
 
 import 'dart:collection';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
@@ -50,6 +52,15 @@ import 'support/selection_harness.dart';
 Frame _firstFrame()
 {
   return GetIt.I.get<DocumentState>().timeline.frames.value.first;
+}
+
+/// The pixel at [coord] of what [layer] last rastered, as RGBA.
+Future<int> _rgbaAt({required final RasterableLayerState layer, required final CoordinateSetI coord}) async
+{
+  final ui.Image? image = layer.rasterImageMap.value[_firstFrame()]?.raster;
+  expect(image, isNotNull, reason: "setup: the layer has been rastered");
+  final ByteData? bytes = await image!.toByteData();
+  return bytes!.getUint32((coord.y * image.width + coord.x) * 4);
 }
 
 /// The current frame's layer at [index], as the given type.
@@ -106,7 +117,7 @@ void main()
 
       //the second raster is a full one as well: a region is only patched into a
       //raster that has a predecessor
-      await _shade(layer: shading, values: <CoordinateSetI, int>{CoordinateSetI(x: 30, y: 30): 1});
+      await _shade(layer: shading, values: <CoordinateSetI, int>{CoordinateSetI(x: 18, y: 12): 1});
       //a small change is rendered as a region into the frame's pixels
       shading.addCoords(coords: HashMap<CoordinateSetI, int>.of(<CoordinateSetI, int>{b: -1}));
       await settle();
@@ -286,6 +297,53 @@ void main()
       final DrawingLayerState drawing = _layer<DrawingLayerState>(index: 0);
       expect(drawing.getDataEntry(coord: a), same(color.ramp.references[color.colorIndex - 1]));
       expect(drawing.getDataEntry(coord: b), same(color));
+    },);
+  });
+
+  testWidgets("the rendered image shows the shaded colors, in a full and in a partial render", (final WidgetTester tester) async
+  {
+    //a canvas that is not square, so that a row stride mix-up shows
+    await withProject(tester: tester, canvasSize: CoordinateSetI(x: 20, y: 14), body: (final ProjectSession projectSession) async
+    {
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps[0].references[2];
+      layerAt(projectSession: projectSession, index: 0).setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{a: color, b: color}));
+      await settle();
+      await _addAbove(type: ShadingLayerState);
+      final ShadingLayerState shading = _layer<ShadingLayerState>(index: 0);
+
+      await _shade(layer: shading, values: <CoordinateSetI, int>{a: 1});
+      expect(await _rgbaAt(layer: shading, coord: a), RgbaCache().rgbaOf(reference: color.ramp.references[color.colorIndex + 1]));
+      expect(await _rgbaAt(layer: shading, coord: b), 0, reason: "nothing is shaded there");
+
+      //the second raster is full as well, a region is only patched into a
+      //raster that has a predecessor
+      await _shade(layer: shading, values: <CoordinateSetI, int>{CoordinateSetI(x: 18, y: 12): 1});
+      shading.addCoords(coords: HashMap<CoordinateSetI, int>.of(<CoordinateSetI, int>{b: -1}));
+      await settle();
+      expect(await _rgbaAt(layer: shading, coord: b), RgbaCache().rgbaOf(reference: color.ramp.references[color.colorIndex - 1]), reason: "the region the change touched");
+      expect(await _rgbaAt(layer: shading, coord: a), RgbaCache().rgbaOf(reference: color.ramp.references[color.colorIndex + 1]), reason: "and the rest of the image is kept");
+
+      shading.removeCoords(coords: <CoordinateSetI>[a]);
+      await settle();
+      expect(await _rgbaAt(layer: shading, coord: a), 0, reason: "a pixel that is no longer shaded is cleared");
+    },);
+  });
+
+  testWidgets("the rendered image of a dither layer follows its pattern", (final WidgetTester tester) async
+  {
+    await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
+    {
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps[0].references[2];
+      final CoordinateSetI origin = CoordinateSetI(x: 0, y: 0);
+      final CoordinateSetI next = CoordinateSetI(x: 1, y: 0);
+      layerAt(projectSession: projectSession, index: 0).setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color, next: color}));
+      await settle();
+      await _addAbove(type: DitherLayerState);
+      final DitherLayerState dither = _layer<DitherLayerState>(index: 0);
+
+      await _shade(layer: dither, values: <CoordinateSetI, int>{origin: 8, next: 8});
+      expect(await _rgbaAt(layer: dither, coord: origin), RgbaCache().rgbaOf(reference: color.ramp.references[color.colorIndex + 1]));
+      expect(await _rgbaAt(layer: dither, coord: next), RgbaCache().rgbaOf(reference: color), reason: "the checkerboard leaves this one alone");
     },);
   });
 }

@@ -264,7 +264,6 @@ class DitherLayerState extends ShadingLayerState
 
   Future<RasterImagePair> _createRasterFromLayers({required final CoordinateSetI canvasSize, required final List<RasterableLayerState> rasterLayers, required final int currentIndex, required final Frame? frame}) async
   {
-    final RgbaCache rgbaCache = RgbaCache();
     final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final RasterPixels allColorPixels = RasterPixels.empty(width: canvasSize.x, height: canvasSize.y);
@@ -287,11 +286,6 @@ class DitherLayerState extends ShadingLayerState
             final int targetColorIndex = (currentColorIndex + ditherVal).clamp(0, refCol.ramp.references.length - 1);
             final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
             allColorPixels.setColorAt(x: x, y: y, color: targetColor);
-            final int index = (y * canvasSize.x + x) * 4;
-            if (index >= 0 && index < byteDataImg.lengthInBytes)
-            {
-              byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
-            }
           }
         }
         final int pixelIndex = (y * canvasSize.x + x) * 4;
@@ -301,6 +295,7 @@ class DitherLayerState extends ShadingLayerState
         byteDataThb.setUint8(pixelIndex + 3, 255);
       }
     }
+    allColorPixels.writeRgba(target: byteDataImg, width: canvasSize.x, height: canvasSize.y);
     setRasterPixels(pixels: allColorPixels, frame: frame);
 
 

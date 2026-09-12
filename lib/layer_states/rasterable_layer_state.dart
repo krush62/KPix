@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -80,6 +81,34 @@ class RasterPixels
     _codec = _codec.withRamp(ramp: color.ramp);
     grid.set(x: x, y: y, value: _codec.encode(color: color));
   }
+
+  /// Writes the colors of the box at [left]|[top] of [width] × [height] into
+  /// [target] as RGBA rows, which is the layout `ui.decodeImageFromPixels`
+  /// reads.
+  ///
+  /// A pixel that shows nothing is left as it is, so [target] has to start out
+  /// zeroed, as a fresh `ByteData` does.
+  void writeRgba({required final ByteData target, required final int width, required final int height, final int left = 0, final int top = 0})
+  {
+    final Uint32List rgba = _codec.rgbaLut();
+    if (left == 0 && top == 0 && width == grid.width && height == grid.height)
+    {
+      //the whole grid, so the tiles that hold nothing can be skipped
+      grid.forEachNonZero(action: (final int x, final int y, final int code) => target.setUint32((y * width + x) * 4, rgba[code]));
+      return;
+    }
+    for (int y = top; y < top + height; y++)
+    {
+      for (int x = left; x < left + width; x++)
+      {
+        final int code = grid.get(x: x, y: y);
+        if (code != PaletteCodec.transparent)
+        {
+          target.setUint32(((y - top) * width + (x - left)) * 4, rgba[code]);
+        }
+      }
+    }
+  }
 }
 
 abstract class RasterableLayerState extends LayerState
@@ -127,12 +156,6 @@ abstract class RasterableLayerState extends LayerState
     return pixelsForFrame(frame: frame)?.colorAt(coord: coord);
   }
 
-  /// Overwrites what [compositeAt] reports at [coord] in [frame]; null clears it.
-  /// Does nothing before the layer rastered for the first time.
-  void setCompositeAt({required final Frame? frame, required final CoordinateSetI coord, required final ColorReference? color})
-  {
-    pixelsForFrame(frame: frame)?.setColorAt(x: coord.x, y: coord.y, color: color);
-  }
   final ValueNotifier<ui.Image?> rasterImage = ValueNotifier<ui.Image?>(null);
   final ValueNotifier<Map<Frame, RasterImagePair>> rasterImageMap = ValueNotifier<Map<Frame, RasterImagePair>>(<Frame, RasterImagePair>{});
   ui.Image? previousRaster;

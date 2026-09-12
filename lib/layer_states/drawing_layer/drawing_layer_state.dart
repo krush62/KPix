@@ -598,15 +598,7 @@ class DrawingLayerState extends RasterableLayerState
     final RasterPixels framePixels = _composeFrame(frame: frame, frameIsSelected: frameIsSelected, layers: layers);
     setRasterPixels(pixels: framePixels, frame: frame);
 
-    final Uint32List rgba = framePixels.codec.rgbaLut();
-    framePixels.grid.forEachNonZero(action: (final int x, final int y, final int value)
-    {
-      //just to make sure
-      if (x < canvasSize.x && y < canvasSize.y)
-      {
-        byteDataImg.setUint32((y * canvasSize.x + x) * 4, rgba[value]);
-      }
-    },);
+    framePixels.writeRgba(target: byteDataImg, width: canvasSize.x, height: canvasSize.y);
 
     final Completer<ui.Image> completerImg = Completer<ui.Image>();
     ui.decodeImageFromPixels(
@@ -665,7 +657,6 @@ class DrawingLayerState extends RasterableLayerState
 
     final RasterPixels framePixels = _composeFrame(frame: frame, frameIsSelected: frameIsSelected, layers: layers);
     setRasterPixels(pixels: framePixels, frame: frame);
-    final Uint32List rgba = framePixels.codec.rgbaLut();
 
     for (final DirtyRegion region in mergedRegions)
     {
@@ -673,8 +664,7 @@ class DrawingLayerState extends RasterableLayerState
 
       final ui.Image regionImage = await _renderRegion(
         region: clampedRegion,
-        pixels: framePixels.grid,
-        rgba: rgba,
+        pixels: framePixels,
       );
 
       canvas.drawImage(
@@ -693,22 +683,10 @@ class DrawingLayerState extends RasterableLayerState
     return result;
   }
 
-  Future<ui.Image> _renderRegion({required final DirtyRegion region, required final PixelGridView pixels, required final Uint32List rgba}) async
+  Future<ui.Image> _renderRegion({required final DirtyRegion region, required final RasterPixels pixels}) async
   {
     final ByteData byteData = ByteData(region.width * region.height * 4);
-
-    for (int y = region.y; y < region.y + region.height; y++)
-    {
-      for (int x = region.x; x < region.x + region.width; x++)
-      {
-        final int value = pixels.get(x: x, y: y);
-        if (value != PaletteCodec.transparent)
-        {
-          byteData.setUint32(((y - region.y) * region.width + (x - region.x)) * 4, rgba[value]);
-        }
-      }
-    }
-
+    pixels.writeRgba(target: byteData, left: region.x, top: region.y, width: region.width, height: region.height);
     final Completer<ui.Image> completer = Completer<ui.Image>();
     ui.decodeImageFromPixels(
       byteData.buffer.asUint8List(),

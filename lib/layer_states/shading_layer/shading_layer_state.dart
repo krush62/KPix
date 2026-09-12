@@ -361,7 +361,6 @@ class ShadingLayerState extends RasterableLayerState
     required final Frame? frame,
   }) async
   {
-    final RgbaCache rgbaCache = RgbaCache();
     final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final RasterPixels allColorPixels = RasterPixels.empty(width: canvasSize.x, height: canvasSize.y);
@@ -384,12 +383,6 @@ class ShadingLayerState extends RasterableLayerState
             final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
             final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
             allColorPixels.setColorAt(x: x, y: y, color: targetColor);
-            final int index = (y * canvasSize.x + x) * 4;
-
-            if (index >= 0 && index < byteDataImg.lengthInBytes)
-            {
-              byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
-            }
           }
         }
 
@@ -401,6 +394,7 @@ class ShadingLayerState extends RasterableLayerState
       }
     }
 
+    allColorPixels.writeRgba(target: byteDataImg, width: canvasSize.x, height: canvasSize.y);
     setRasterPixels(pixels: allColorPixels, frame: frame);
 
     final Completer<ui.Image> completerThb = Completer<ui.Image>();
@@ -444,7 +438,8 @@ class ShadingLayerState extends RasterableLayerState
     final ui.Image? baseThumbnail = thumbnail.value;
 
     //the regions are patched into the frame's pixels, so those have to exist
-    if (baseRaster == null || baseThumbnail == null || pixelsForFrame(frame: frame) == null)
+    final RasterPixels? framePixels = pixelsForFrame(frame: frame);
+    if (baseRaster == null || baseThumbnail == null || framePixels == null)
     {
       return await _fullRender(
         canvasSize: canvasSize,
@@ -472,10 +467,10 @@ class ShadingLayerState extends RasterableLayerState
 
       final RasterImagePair regionImages = await _renderRegion(
         region: clampedRegion,
-        canvasSize: canvasSize,
         rasterLayers: rasterLayers,
         currentIndex: currentIndex,
         frame: frame,
+        own: framePixels,
       );
 
       final Offset offset = Offset(clampedRegion.x.toDouble(), clampedRegion.y.toDouble());
@@ -499,18 +494,15 @@ class ShadingLayerState extends RasterableLayerState
 
   Future<RasterImagePair> _renderRegion({
     required final DirtyRegion region,
-    required final CoordinateSetI canvasSize,
     required final List<RasterableLayerState> rasterLayers,
     required final int currentIndex,
     required final Frame? frame,
+    required final RasterPixels own,
   }) async
   {
-    final RgbaCache rgbaCache = RgbaCache();
     final ByteData byteDataThb = ByteData(region.width * region.height * 4);
     final ByteData byteDataImg = ByteData(region.width * region.height * 4);
     final List<RasterPixels> below = pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
-    //the frame's own pixels, which the regions are patched into
-    final RasterPixels? own = pixelsForFrame(frame: frame);
 
     for (int y = region.y; y < region.y + region.height; y++)
     {
@@ -518,8 +510,7 @@ class ShadingLayerState extends RasterableLayerState
       {
         final int? valAt = shadingValues.getSigned(x: x, y: y);
         int brightVal = thumbnailBrightnessMap[0]!;
-
-        bool pixelRendered = false;
+        ColorReference? shaded;
 
         if (valAt != null)
         {
@@ -527,45 +518,23 @@ class ShadingLayerState extends RasterableLayerState
           final ColorReference? refCol = colorAmong(pixels: below, x: x, y: y);
           if (refCol != null)
           {
-            final int currentColorIndex = refCol.colorIndex;
-            final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
-            final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
-
-            final int bufferX = x - region.x;
-            final int bufferY = y - region.y;
-            final int index = (bufferY * region.width + bufferX) * 4;
-
-            if (index >= 0 && index < byteDataImg.lengthInBytes)
-            {
-              byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
-              own?.setColorAt(x: x, y: y, color: targetColor);
-              pixelRendered = true;
-            }
+            final int targetColorIndex = (refCol.colorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
+            shaded = refCol.ramp.references[targetColorIndex];
           }
         }
+        //the region replaces what the frame showed here, a pixel that shows
+        //nothing any more included
+        own.setColorAt(x: x, y: y, color: shaded);
 
-        if (!pixelRendered)
-        {
-          own?.setColorAt(x: x, y: y, color: null);
-          final int bufferX = x - region.x;
-          final int bufferY = y - region.y;
-          final int index = (bufferY * region.width + bufferX) * 4;
-
-          if (index >= 0 && index < byteDataImg.lengthInBytes)
-          {
-            byteDataImg.setUint32(index, 0x00000000);
-          }
-        }
-
-        final int bufferX = x - region.x;
-        final int bufferY = y - region.y;
-        final int pixelIndex = (bufferY * region.width + bufferX) * 4;
+        final int pixelIndex = ((y - region.y) * region.width + (x - region.x)) * 4;
         byteDataThb.setUint8(pixelIndex + 0, brightVal);
         byteDataThb.setUint8(pixelIndex + 1, brightVal);
         byteDataThb.setUint8(pixelIndex + 2, brightVal);
         byteDataThb.setUint8(pixelIndex + 3, 255);
       }
     }
+
+    own.writeRgba(target: byteDataImg, left: region.x, top: region.y, width: region.width, height: region.height);
 
     final Completer<ui.Image> completerThb = Completer<ui.Image>();
     ui.decodeImageFromPixels(

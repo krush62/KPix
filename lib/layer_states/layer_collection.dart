@@ -521,6 +521,7 @@ class LayerCollection with ChangeNotifier {
         }
       }
       _layers.remove(drawingIntoLayer);
+      _rebuildDependencies();
       GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: <LayerState>[drawingIntoLayer]);
       drawingMergeLayer.setDataAll(list: refs);
       selectLayer(newLayer: drawingMergeLayer);
@@ -596,6 +597,8 @@ class LayerCollection with ChangeNotifier {
         }
       }
 
+      //what lies below a layer changed, so do the layers its effects read
+      _rebuildDependencies();
       orderChanged = true;
     }
     notifyListeners();

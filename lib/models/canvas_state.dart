@@ -73,7 +73,7 @@ class CanvasState
     }
     if (transformation == CanvasTransformation.rotate)
     {
-      setCanvasDimensions(width: _canvasSize.y, height: _canvasSize.x);
+      setCanvasDimensions(width: _canvasSize.y, height: _canvasSize.x, addToHistoryStack: false);
       historyManager.addState(identifier: HistoryStateTypeIdentifier.canvasRotate);
     }
     else if (transformation == CanvasTransformation.flipH)

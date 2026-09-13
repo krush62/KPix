@@ -93,7 +93,7 @@ class KPixPainter extends CustomPainter
   bool _isDisposed = false;
   final List<ui.Image> _imagesToRetire = <ui.Image>[];
   final List<int> _previousRasterHashes = <int>[];
-  ContentRasterSet? _lastContentRaster;
+  List<ContentRasterSet> _lastContentRasters = <ContentRasterSet>[];
   late final Timer _backupTimer;
 
   // status for reference layer movements
@@ -806,7 +806,7 @@ class KPixPainter extends CustomPainter
                 (rasterLayer.rasterImageMap.value[frame]?.raster == null),);
         if (!hasUnreadyLayers || _backupImage == null)
         {
-          _lastContentRaster = null;
+          _lastContentRasters = <ContentRasterSet>[];
           for (int i = visibleLayers.length - 1; i >= 0; i--)
           {
             final LayerState vLayer = visibleLayers[i];
@@ -926,10 +926,13 @@ class KPixPainter extends CustomPainter
                 filterQuality: FilterQuality.none,);
             }
 
-            final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
-            if (contentRasterSet != null)
+            final List<ContentRasterSet> contentRasterSets = toolPainter?.contentRasters ?? <ContentRasterSet>[];
+            if (contentRasterSets.isNotEmpty)
             {
-              _lastContentRaster = contentRasterSet;
+              _lastContentRasters = contentRasterSets;
+            }
+            for (final ContentRasterSet contentRasterSet in contentRasterSets)
+            {
               paintImage(
                 canvas: drawParams.canvas,
                 rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * effPxSize) , drawParams.offset.dy + (contentRasterSet.offset.y * effPxSize),
@@ -946,8 +949,7 @@ class KPixPainter extends CustomPainter
         else
         {
           _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: _backupImage!);
-          final ContentRasterSet? cachedRaster = _lastContentRaster;
-          if (cachedRaster != null)
+          for (final ContentRasterSet cachedRaster in _lastContentRasters)
           {
             final double effPxSize = drawParams.pixelSize.toDouble() / _viewState.devicePixelRatio;
             paintImage(

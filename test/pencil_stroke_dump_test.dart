@@ -14,14 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:collection';
 import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
@@ -35,7 +33,6 @@ import 'package:kpix/models/kpix_painter_options.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
-import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/pencil_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
@@ -47,6 +44,7 @@ import 'package:kpix/util/helpers/drawing_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
+import 'support/legacy_pencil_painter.dart';
 import 'support/selection_harness.dart';
 
 KPixPainterOptions _painterOptions()
@@ -190,292 +188,6 @@ Set<CoordinateSetI> _legacyIntegerRatioLinePoints({required final IToolPainter p
   }
 
   return linePoints;
-}
-
-/// The pencil as it was before the stroke dump was changed, kept as the oracle
-/// the current painter is checked against. Only the stamping of the stroke
-/// differs, so anything else going wrong shows up as a difference too.
-class _LegacyPencilPainter extends IToolPainter
-{
-  final PencilOptions _options = GetIt.I.get<ToolOptions>().pencilOptions;
-  final LineOptions _lineOptions = GetIt.I.get<ToolOptions>().lineOptions;
-  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
-  final List<CoordinateSetI> _paintPositions = <CoordinateSetI>[];
-  final List<CoordinateSetI> _allPaintPositions = <CoordinateSetI>[];
-  CoordinateSetI? _previousCursorPosNorm;
-  int _previousToolSize = -1;
-  Set<CoordinateSetI> _contentPoints = <CoordinateSetI>{};
-  bool _waitingForDump = false;
-  final CoordinateColorMap _drawingPixels = HashMap<CoordinateSetI, ColorReference>();
-  CoordinateSetI? _lastDrawingPosition;
-  bool _isLineDrawing = false;
-  bool _hasNewCursorPos = false;
-  bool _cursorContentDirty = false;
-  bool _lastShadingEnabled = false;
-  ShaderDirection _lastShadingDirection = ShaderDirection.left;
-  bool _lastShadingCurrentRamp = false;
-  ColorReference? _lastColorSelection;
-
-  _LegacyPencilPainter({required super.painterOptions});
-
-  @override
-  void calculate({required final DrawingParameters drawParams})
-  {
-    if (drawParams.currentRasterLayer != null)
-    {
-      final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
-      if (drawParams.cursorPosNorm != null) {
-
-        _hasNewCursorPos =
-            drawParams.cursorPosNorm! != _previousCursorPosNorm ||
-            _previousToolSize != _options.size.value ||
-            _lastShadingEnabled != shaderOptions.isEnabled.value ||
-            _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
-            _lastShadingDirection != shaderOptions.shaderDirection.value ||
-            _lastColorSelection != paletteState.selectedColor;
-
-        if (_hasNewCursorPos)
-        {
-          _contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: drawParams.cursorPosNorm!);
-          _previousCursorPosNorm = CoordinateSetI(x: drawParams.cursorPosNorm!.x, y: drawParams.cursorPosNorm!.y);
-          _previousToolSize = _options.size.value;
-          _lastShadingEnabled = shaderOptions.isEnabled.value;
-          _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
-          _lastShadingDirection = shaderOptions.shaderDirection.value;
-          _lastColorSelection = paletteState.selectedColor;
-        }
-      }
-      if (!_waitingForDump)
-      {
-        if (drawParams.primaryDown)
-        {
-          if (rasterLayer.lockState.value != LayerLockState.locked && rasterLayer.visibilityState.value != LayerVisibilityState.hidden)
-          {
-            if (_hotkeyManager.shiftIsPressed)
-            {
-              _isLineDrawing = true;
-            }
-            else if (drawParams.cursorPosNorm != null || _previousCursorPosNorm != null)
-            {
-              final CoordinateSetI cpn = drawParams.cursorPosNorm != null ? drawParams.cursorPosNorm! : _previousCursorPosNorm!;
-              if (_paintPositions.isEmpty || (cpn.isAdjacent(other: _paintPositions[_paintPositions.length - 1], withDiagonal: true) && _hasNewCursorPos))
-              {
-                final CoordinateSetI drawPos = CoordinateSetI(x: cpn.x, y: cpn.y);
-                _paintPositions.add(drawPos);
-                _allPaintPositions.add(drawPos);
-                _lastDrawingPosition = drawPos;
-                //PIXEL PERFECT
-                if (_paintPositions.length >= 3)
-                {
-                  if (_options.pixelPerfect.value &&
-                      _paintPositions.last.isDiagonal(other: _paintPositions[_paintPositions.length - 3]))
-                  {
-                    _paintPositions.removeAt(_paintPositions.length - 2);
-                    _allPaintPositions.removeAt(_allPaintPositions.length - 2);
-                  }
-                }
-              }
-              else
-              {
-                final List<CoordinateSetI> bresenLine = bresenham(start: _paintPositions[_paintPositions.length - 1], end: cpn).sublist(1);
-                _paintPositions.addAll(bresenLine);
-                _allPaintPositions.addAll(bresenLine);
-                _lastDrawingPosition = CoordinateSetI.from(other: cpn);
-              }
-            }
-          }
-
-          if (_hasNewCursorPos)
-          {
-            final Set<CoordinateSetI> posSet = _options.pixelPerfect.value ? _paintPositions.sublist(0, _paintPositions.length - min(3, _paintPositions.length)).toSet() : _paintPositions.toSet();
-            final Set<CoordinateSetI> paintPoints = <CoordinateSetI>{};
-            for (final CoordinateSetI pos in posSet)
-            {
-              paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
-            }
-            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: paintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
-            CoordinateColorMap pixelsToDraw = CoordinateColorMap();
-            if (rasterLayer is DrawingLayerState)
-            {
-              pixelsToDraw = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
-            }
-            else if (rasterLayer is ShadingLayerState)
-            {
-              pixelsToDraw = getPixelsToDrawForShading(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
-            }
-
-            _drawingPixels.addAll(pixelsToDraw);
-            if (rasterLayer is DrawingLayerState)
-            {
-              _paintPositions.removeRange(0, _paintPositions.length - min(3, _paintPositions.length));
-            }
-
-            CoordinateColorMap addPixels;
-            if (_paintPositions.isNotEmpty)
-            {
-              final Set<CoordinateSetI> additionalPaintPoints = <CoordinateSetI>{};
-              for (final CoordinateSetI pos in _paintPositions)
-              {
-                additionalPaintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
-              }
-
-              CoordinateColorMap additionalDrawingPixels = CoordinateColorMap();
-              final Set<CoordinateSetI> additionalMirrorPoints = getMirrorPoints(coords: additionalPaintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
-              if (rasterLayer is DrawingLayerState)
-              {
-                additionalDrawingPixels = getPixelsToDraw(coords: additionalMirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
-              }
-              else if (rasterLayer is ShadingLayerState)
-              {
-                additionalDrawingPixels = getPixelsToDrawForShading(coords: additionalMirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
-              }
-
-              addPixels = HashMap<CoordinateSetI, ColorReference>();
-              addPixels.addAll(_drawingPixels);
-              addPixels.addAll(additionalDrawingPixels);
-            }
-            else
-            {
-              addPixels = _drawingPixels;
-            }
-            rasterizePixels(drawingPixels: addPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet) {
-              if (rasterSet != null)
-              {
-                setContentRasterData(content: rasterSet);
-              }
-              else
-              {
-                resetContentRaster(currentLayer: rasterLayer);
-              }
-              hasAsyncUpdate = true;
-            });
-          }
-        }
-        else //final dumping
-        {
-          if (_allPaintPositions.isNotEmpty)
-          {
-            final Set<CoordinateSetI> posSet = _allPaintPositions.toSet();
-            final Set<CoordinateSetI> paintPoints = <CoordinateSetI>{};
-            for (final CoordinateSetI pos in posSet)
-            {
-              paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
-            }
-
-            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: paintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
-            if (rasterLayer is DrawingLayerState)
-            {
-              _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions));
-              _dumpDrawing(currentLayer: rasterLayer);
-              _waitingForDump = true;
-            }
-            else if (rasterLayer is ShadingLayerState)
-            {
-              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
-              _drawingPixels.clear();
-              _cursorContentDirty = true;
-            }
-            _paintPositions.clear();
-            _allPaintPositions.clear();
-          }
-          else if (_hotkeyManager.shiftIsPressed && _isLineDrawing)
-          {
-            final Set<CoordinateSetI> linePoints = _hotkeyManager.controlIsPressed ?
-            getIntegerRatioLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, angles: _lineOptions.angles, shape: _options.shape.value) :
-            getLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, shape: _options.shape.value);
-
-            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: linePoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
-            if (rasterLayer is DrawingLayerState)
-            {
-              _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions));
-              _dumpDrawing(currentLayer: rasterLayer);
-              _waitingForDump = true;
-            }
-            else if (rasterLayer is ShadingLayerState)
-            {
-              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
-              _drawingPixels.clear();
-              _cursorContentDirty = true;
-            }
-            _lastDrawingPosition = CoordinateSetI.from(other: linePoints.last);
-          }
-          _isLineDrawing = false;
-        }
-      }
-      else if (rasterLayer is DrawingLayerState && rasterLayer.rasterQueue.isEmpty && !rasterLayer.isRasterizing && _waitingForDump)
-      {
-        _drawingPixels.clear();
-        _waitingForDump = false;
-      }
-
-      //CURSOR CONTENT
-      final bool strokeHasSettled = rasterLayer is! DrawingLayerState || (rasterLayer.rasterQueue.isEmpty && !rasterLayer.isRasterizing);
-      if ((_hasNewCursorPos || (_cursorContentDirty && strokeHasSettled)) && drawParams.cursorPosNorm != null)
-      {
-        CoordinateColorMap cursorPixels = CoordinateColorMap();
-        if (_hotkeyManager.shiftIsPressed && _lastDrawingPosition != null && _paintPositions.isEmpty && _allPaintPositions.isEmpty)
-        {
-          final Set<CoordinateSetI> linePoints = _hotkeyManager.controlIsPressed ?
-          getIntegerRatioLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, angles: _lineOptions.angles, shape: _options.shape.value) :
-          getLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, shape: _options.shape.value);
-
-          final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: linePoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
-
-          if (rasterLayer is DrawingLayerState)
-          {
-            cursorPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
-          }
-          else if (rasterLayer is ShadingLayerState)
-          {
-            cursorPixels = getPixelsToDrawForShading(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
-          }
-        }
-        else
-        {
-          final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _contentPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
-          if (rasterLayer is DrawingLayerState)
-          {
-            cursorPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
-          }
-          else if (rasterLayer is ShadingLayerState)
-          {
-            cursorPixels = getPixelsToDrawForShading(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
-          }
-        }
-        rasterizePixels(drawingPixels: cursorPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet) {
-          cursorRaster = rasterSet;
-          hasAsyncUpdate = true;
-        });
-        _hasNewCursorPos = false;
-        _cursorContentDirty = false;
-      }
-      else if (drawParams.cursorPos == null)
-      {
-        cursorRaster = null;
-      }
-    }
-  }
-
-  void _dumpDrawing({required final DrawingLayerState currentLayer})
-  {
-    if (_drawingPixels.isNotEmpty)
-    {
-      if (!documentState.selectionState.selection.isEmpty)
-      {
-        documentState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
-      }
-      else
-      {
-        currentLayer.setDataAll(list: _drawingPixels);
-      }
-    }
-    hasHistoryData = true;
-    _cursorContentDirty = true;
-    resetContentRaster(currentLayer: currentLayer);
-  }
-
-  @override
-  void drawCursorOutline({required final DrawingParameters drawParams}) {}
 }
 
 DrawingParameters _params({required final LayerState layer, required final CoordinateSetI cursor, required final bool primaryDown, final double? symmetry})
@@ -739,7 +451,7 @@ void main()
     for (final _Scenario scenario in scenarios)
     {
       testWidgets("$scenario", (final WidgetTester tester) async {
-        final Map<String, String> expected = await _drawStroke(tester: tester, scenario: scenario, createPainter: () => _LegacyPencilPainter(painterOptions: _painterOptions()));
+        final Map<String, String> expected = await _drawStroke(tester: tester, scenario: scenario, createPainter: () => LegacyPencilPainter(painterOptions: _painterOptions()));
         final Map<String, String> actual = await _drawStroke(tester: tester, scenario: scenario, createPainter: () => PencilPainter(painterOptions: _painterOptions()));
         expect(expected.values.where((final String value) => value != "-" && value != "null"), isNotEmpty, reason: "setup: the canvas holds something");
         expect(actual, expected);

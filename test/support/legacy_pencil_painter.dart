@@ -14,11 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -28,7 +26,6 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
-import 'package:kpix/painting/stroke_preview.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -37,7 +34,11 @@ import 'package:kpix/util/helpers/drawing_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
-class PencilPainter extends IToolPainter
+/// The pencil as it was before the stroke dump and the stroke preview were
+/// changed, kept as the oracle the current painter is checked against: what a
+/// stroke lands as and what it shows while it is drawn have to stay the same.
+/// It stamps every position and builds one image of the whole stroke per frame.
+class LegacyPencilPainter extends IToolPainter
 {
   final PencilOptions _options = GetIt.I.get<ToolOptions>().pencilOptions;
   final LineOptions _lineOptions = GetIt.I.get<ToolOptions>().lineOptions;
@@ -58,8 +59,7 @@ class PencilPainter extends IToolPainter
   bool _lastShadingCurrentRamp = false;
   ColorReference? _lastColorSelection;
 
-
-  PencilPainter({required super.painterOptions});
+  LegacyPencilPainter({required super.painterOptions});
 
   @override
   void calculate({required final DrawingParameters drawParams})
@@ -130,8 +130,12 @@ class PencilPainter extends IToolPainter
 
           if (_hasNewCursorPos)
           {
-            final List<CoordinateSetI> positions = _options.pixelPerfect.value ? _paintPositions.sublist(0, _paintPositions.length - min(3, _paintPositions.length)) : _paintPositions;
-            final Set<CoordinateSetI> paintPoints = getStampedContentPoints(shape: _options.shape.value, size: _options.size.value, positions: positions);
+            final Set<CoordinateSetI> posSet = _options.pixelPerfect.value ? _paintPositions.sublist(0, _paintPositions.length - min(3, _paintPositions.length)).toSet() : _paintPositions.toSet();
+            final Set<CoordinateSetI> paintPoints = <CoordinateSetI>{};
+            for (final CoordinateSetI pos in posSet)
+            {
+              paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
+            }
             final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: paintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             CoordinateColorMap pixelsToDraw = CoordinateColorMap();
             if (rasterLayer is DrawingLayerState)
@@ -144,53 +148,75 @@ class PencilPainter extends IToolPainter
             }
 
             _drawingPixels.addAll(pixelsToDraw);
-            //the stamped positions are done with; on a shading layer, the dump
-            //takes the whole stroke from _allPaintPositions
-            _paintPositions.removeRange(0, _paintPositions.length - min(3, _paintPositions.length));
+            if (rasterLayer is DrawingLayerState)
+            {
+              _paintPositions.removeRange(0, _paintPositions.length - min(3, _paintPositions.length));
+            }
 
-            CoordinateColorMap tipPixels = CoordinateColorMap();
+            CoordinateColorMap addPixels;
             if (_paintPositions.isNotEmpty)
             {
-              final Set<CoordinateSetI> additionalPaintPoints = getStampedContentPoints(shape: _options.shape.value, size: _options.size.value, positions: _paintPositions);
+              final Set<CoordinateSetI> additionalPaintPoints = <CoordinateSetI>{};
+              for (final CoordinateSetI pos in _paintPositions)
+              {
+                additionalPaintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
+              }
 
+              CoordinateColorMap additionalDrawingPixels = CoordinateColorMap();
               final Set<CoordinateSetI> additionalMirrorPoints = getMirrorPoints(coords: additionalPaintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
               if (rasterLayer is DrawingLayerState)
               {
-                tipPixels = getPixelsToDraw(coords: additionalMirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
+                additionalDrawingPixels = getPixelsToDraw(coords: additionalMirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
               }
               else if (rasterLayer is ShadingLayerState)
               {
-                tipPixels = getPixelsToDrawForShading(coords: additionalMirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
+                additionalDrawingPixels = getPixelsToDrawForShading(coords: additionalMirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
               }
+
+              addPixels = HashMap<CoordinateSetI, ColorReference>();
+              addPixels.addAll(_drawingPixels);
+              addPixels.addAll(additionalDrawingPixels);
             }
-            _updateStrokePreview(settledPixels: pixelsToDraw, tipPixels: tipPixels, currentLayer: rasterLayer);
+            else
+            {
+              addPixels = _drawingPixels;
+            }
+            rasterizePixels(drawingPixels: addPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet) {
+              if (rasterSet != null)
+              {
+                setContentRasterData(content: rasterSet);
+              }
+              else
+              {
+                resetContentRaster(currentLayer: rasterLayer);
+              }
+              hasAsyncUpdate = true;
+            });
           }
-
-
         }
         else //final dumping
         {
           if (_allPaintPositions.isNotEmpty)
           {
+            final Set<CoordinateSetI> posSet = _allPaintPositions.toSet();
+            final Set<CoordinateSetI> paintPoints = <CoordinateSetI>{};
+            for (final CoordinateSetI pos in posSet)
+            {
+              paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
+            }
+
+            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: paintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              //every position that left _paintPositions while drawing already has
-              //its pixels in _drawingPixels, so only the rest is left to add;
-              //stamping the whole stroke again costs stroke length times brush area
-              final Set<CoordinateSetI> paintPoints = getStampedContentPoints(shape: _options.shape.value, size: _options.size.value, positions: _paintPositions);
-              final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: paintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
               _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions));
               _dumpDrawing(currentLayer: rasterLayer);
               _waitingForDump = true;
             }
             else if (rasterLayer is ShadingLayerState)
             {
-              //shading steps add up per pixel, so the whole stroke goes in at once
-              final Set<CoordinateSetI> paintPoints = getStampedContentPoints(shape: _options.shape.value, size: _options.size.value, positions: _allPaintPositions);
-              final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: paintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
               dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
-               _drawingPixels.clear();
-               _cursorContentDirty = true;
+              _drawingPixels.clear();
+              _cursorContentDirty = true;
             }
             _paintPositions.clear();
             _allPaintPositions.clear();
@@ -273,30 +299,6 @@ class PencilPainter extends IToolPainter
     }
   }
 
-  /// Adds [settledPixels] to the preview of the stroke and shows [tipPixels] on
-  /// top of it, in place of the tip of the last frame. Only these pixels are
-  /// looked at, so a frame costs the same however long the stroke already is.
-  void _updateStrokePreview({required final CoordinateColorMap settledPixels, required final CoordinateColorMap tipPixels, required final LayerState currentLayer})
-  {
-    final PreviewColors? previewColors = getPreviewColors(currentLayer: currentLayer);
-    if (previewColors == null || (settledPixels.isEmpty && tipPixels.isEmpty && !hasStrokePreview))
-    {
-      return;
-    }
-    final StrokePreview preview = strokePreview;
-    for (final CoordinateColor entry in settledPixels.entries)
-    {
-      preview.addPixel(x: entry.key.x, y: entry.key.y, rgba: previewColors.rgbaAt(coord: entry.key, color: entry.value));
-    }
-    final HashMap<CoordinateSetI, int> tip = HashMap<CoordinateSetI, int>();
-    for (final CoordinateColor entry in tipPixels.entries)
-    {
-      tip[entry.key] = previewColors.rgbaAt(coord: entry.key, color: entry.value);
-    }
-    preview.setTip(pixels: tip);
-    unawaited(preview.render());
-  }
-
   void _dumpDrawing({required final DrawingLayerState currentLayer})
   {
     if (_drawingPixels.isNotEmpty)
@@ -315,60 +317,6 @@ class PencilPainter extends IToolPainter
     resetContentRaster(currentLayer: currentLayer);
   }
 
-
-
-
   @override
-  void drawCursorOutline({required final DrawingParameters drawParams})
-  {
-    final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
-    //Surrounding
-    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: _contentPoints);
-    final Path path = Path();
-    for (int i = 0; i < pathPoints.length; i++)
-    {
-      if (i == 0)
-      {
-        path.moveTo((pathPoints[i].x * effPxlSize) + drawParams.offset.dx, (pathPoints[i].y * effPxlSize) + drawParams.offset.dy);
-      }
-
-      if (i < pathPoints.length - 1)
-      {
-        path.lineTo((pathPoints[i + 1].x * effPxlSize) + drawParams.offset.dx, (pathPoints[i + 1].y * effPxlSize) + drawParams.offset.dy);
-      }
-      else
-      {
-        path.lineTo((pathPoints[0].x * effPxlSize) + drawParams.offset.dx, (pathPoints[0].y * effPxlSize) + drawParams.offset.dy);
-      }
-    }
-
-    drawParams.paint.style = PaintingStyle.stroke;
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-    drawParams.paint.color = blackToolAlphaColor;
-    drawParams.canvas.drawPath(path, drawParams.paint);
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-    drawParams.paint.color = whiteToolAlphaColor;
-    drawParams.canvas.drawPath(path, drawParams.paint);
-  }
-
-  @override
-  void setStatusBarData({required final DrawingParameters drawParams})
-  {
-      super.setStatusBarData(drawParams: drawParams);
-      statusBarData.cursorPos = drawParams.cursorPosNorm;
-  }
-
-  @override
-  void reset()
-  {
-    _paintPositions.clear();
-    _allPaintPositions.clear();
-    _previousToolSize = -1;
-    _contentPoints.clear();
-    _waitingForDump = false;
-    _drawingPixels.clear();
-    discardStrokePreview();
-    _lastDrawingPosition = null;
-    _isLineDrawing = false;
-  }
+  void drawCursorOutline({required final DrawingParameters drawParams}) {}
 }

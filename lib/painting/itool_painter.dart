@@ -42,6 +42,7 @@ import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/shader_options.dart';
+import 'package:kpix/painting/stroke_preview.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -182,6 +183,60 @@ class BorderCoordinateSetI
 
 }
 
+/// The color a pixel drawn on a layer shows on the canvas: the visible layers
+/// above it in a frame cover or shade it.
+class PreviewColors
+{
+  final Frame _frame;
+  final int _layerPosition;
+  final RgbaCache _rgbaCache = RgbaCache();
+
+  PreviewColors._({required final Frame frame, required final int layerPosition}) :
+      _frame = frame,
+      _layerPosition = layerPosition;
+
+  /// The RGBA value [color] at [coord] shows, as `ui.PixelFormat.rgba8888`
+  /// reads it.
+  int rgbaAt({required final CoordinateSetI coord, required final ColorReference color})
+  {
+    ColorReference colRef = color;
+    for (int i = _layerPosition - 1; i >= 0; i--)
+    {
+      final LayerState layer = _frame.layerList.getLayer(index: i);
+      if (layer is DrawingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
+      {
+        final int? shadingVal = layer.outerShadingAt(frame: _frame, coord: coord);
+        if (shadingVal != null)
+        {
+          final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);
+          colRef = colRef.ramp.references[targetShading];
+        }
+        else
+        {
+          final ColorReference? layerColRef = layer.compositeAt(frame: _frame, coord: coord);
+          if (layerColRef != null)
+          {
+            colRef = layerColRef;
+          }
+        }
+      }
+      else if (layer is ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
+      {
+        final int? shadingVal = layer.getRawValueAt(coord: coord);
+        if (shadingVal != null)
+        {
+          if (layer.runtimeType == ShadingLayerState)
+          {
+            final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);
+            colRef = colRef.ramp.references[targetShading];
+          }
+        }
+      }
+    }
+    return _rgbaCache.rgbaOf(reference: colRef);
+  }
+}
+
 abstract class IToolPainter
 {
   final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
@@ -201,6 +256,9 @@ abstract class IToolPainter
   LayerState? historyLayer;
   ContentRasterSet? _contentRaster;
   int _contentRasterVersion = 0;
+  StrokePreview? _strokePreview;
+  //previews of strokes that are handed to their layer but not shown by it yet
+  final List<StrokePreview> _landingPreviews = <StrokePreview>[];
   ContentRasterSet? cursorRaster;
   bool hasAsyncUpdate = false;
 
@@ -384,7 +442,16 @@ abstract class IToolPainter
     return points;
   }
 
-  ContentRasterSet? get contentRaster => _contentRaster;
+  /// The images of the content being drawn, in the order they are drawn.
+  List<ContentRasterSet> get contentRasters
+  {
+    final ContentRasterSet? contentRaster = _contentRaster;
+    return <ContentRasterSet>[
+      for (final StrokePreview preview in _landingPreviews) ...preview.rasters,
+      ...?_strokePreview?.rasters,
+      if (contentRaster != null) contentRaster,
+    ];
+  }
 
   void setContentRasterData({required final ContentRasterSet content})
   {
@@ -392,15 +459,47 @@ abstract class IToolPainter
       _contentRasterVersion++;
   }
 
+  /// The preview of the stroke being drawn, started on first use.
+  StrokePreview get strokePreview
+  {
+    return _strokePreview ??= StrokePreview(onUpdate: () => hasAsyncUpdate = true);
+  }
+
+  /// Whether a stroke being drawn has a preview yet.
+  bool get hasStrokePreview => _strokePreview != null;
+
+  /// Throws away the preview of the stroke being drawn, which never lands.
+  void discardStrokePreview()
+  {
+    _strokePreview?.dispose();
+    _strokePreview = null;
+  }
+
+  /// Takes the content off the canvas once [currentLayer] shows it.
+  ///
+  /// The stroke preview is handed over at once, so a stroke started in the
+  /// meantime gets a preview of its own.
   void resetContentRaster({required final LayerState currentLayer})
   {
     final int versionAtRequest = _contentRasterVersion;
+    final StrokePreview? landingPreview = _strokePreview;
+    _strokePreview = null;
+    if (landingPreview != null)
+    {
+      _landingPreviews.add(landingPreview);
+    }
     _waitForLayerToFinishRasterizing(currentLayer: currentLayer).then((final void _) {
       //only clear if the content was not replaced in the meantime
       //(e.g. by a newly started stroke)
       if (_contentRasterVersion == versionAtRequest)
       {
         _contentRaster = null;
+      }
+      if (landingPreview != null)
+      {
+        _landingPreviews.remove(landingPreview);
+        landingPreview.dispose();
+        hasAsyncUpdate = true;
       }
     });
   }
@@ -415,6 +514,15 @@ abstract class IToolPainter
     },);
   }
 
+  /// How pixels drawn on [currentLayer] show through the layers above it in
+  /// the selected frame, or null if that frame does not hold the layer.
+  PreviewColors? getPreviewColors({required final LayerState currentLayer})
+  {
+    final Frame? frame = documentState.timeline.selectedFrame;
+    final int? layerPosition = frame?.layerList.getLayerPosition(state: currentLayer);
+    return frame == null || layerPosition == null ? null : PreviewColors._(frame: frame, layerPosition: layerPosition);
+  }
+
   Future<ContentRasterSet?> rasterizePixels({required final CoordinateColorMap drawingPixels, required final LayerState currentLayer}) async
   {
     final Frame? frame = documentState.timeline.selectedFrame;
@@ -425,52 +533,16 @@ abstract class IToolPainter
       final CoordinateSetI offset = CoordinateSetI(x: min.x, y: min.y);
       final CoordinateSetI size = CoordinateSetI(x: max.x - min.x + 1, y: max.y - min.y + 1);
       final ByteData byteDataImg = ByteData(size.x * size.y * 4);
-      final RgbaCache rgbaCache = RgbaCache();
-      final int? layerPosition = frame.layerList.getLayerPosition(state: currentLayer);
+      final PreviewColors? previewColors = getPreviewColors(currentLayer: currentLayer);
 
-      if (layerPosition != null)
+      if (previewColors != null)
       {
         for (final CoordinateColor entry in drawingPixels.entries)
         {
-          ColorReference colRef = entry.value;
-          for (int i = layerPosition - 1; i >= 0; i--)
-          {
-            final LayerState currentLayer = frame.layerList.getLayer(index: i);
-            if (currentLayer is DrawingLayerState && currentLayer.visibilityState.value == LayerVisibilityState.visible)
-            {
-              final int? shadingVal = currentLayer.outerShadingAt(frame: frame, coord: entry.key);
-              if (shadingVal != null)
-              {
-                final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);
-                colRef = colRef.ramp.references[targetShading];
-              }
-              else
-              {
-                final ColorReference? layerColRef = currentLayer.compositeAt(frame: frame, coord: entry.key);
-                if (layerColRef != null)
-                {
-                  colRef = layerColRef;
-                }
-              }
-            }
-            else if (currentLayer is ShadingLayerState && currentLayer.visibilityState.value == LayerVisibilityState.visible)
-            {
-              final int? shadingVal = currentLayer.getRawValueAt(coord: entry.key);
-              if (shadingVal != null)
-              {
-                if (currentLayer.runtimeType == ShadingLayerState)
-                {
-                  final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);
-                  colRef = colRef.ramp.references[targetShading];
-                }
-              }
-            }
-          }
-
           final int index = ((entry.key.y - offset.y) * size.x + (entry.key.x - offset.x)) * 4;
           if (index < byteDataImg.lengthInBytes)
           {
-            byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: colRef));
+            byteDataImg.setUint32(index, previewColors.rgbaAt(coord: entry.key, color: entry.value));
           }
         }
       }

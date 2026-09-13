@@ -290,6 +290,100 @@ abstract class IToolPainter
     return coords;
   }
 
+  //brushes as offsets from the stamping position, x and y taking turns, in the
+  //order getRoundSquareContentPoints lists their pixels
+  static final Map<(PencilShape, int), Int32List> _brushOffsets = <(PencilShape, int), Int32List>{};
+  //beyond this many pixels, the stamped area is too large for a bit mask and
+  //stamps are told apart by hashing instead
+  static const int _maxStampMaskArea = 1 << 25;
+
+  /// The pixels a brush of [shape] and [size] covers when stamped at each of
+  /// [positions]: the union of [getRoundSquareContentPoints] at every position,
+  /// in the order in which adding those sets one after another first reaches
+  /// each pixel.
+  ///
+  /// Consecutive stamps of a stroke cover mostly the same pixels. Rather than
+  /// building a set per stamp and merging it, the brush is worked out once and a
+  /// bit mask over the stamped area skips the pixels already covered.
+  Set<CoordinateSetI> getStampedContentPoints({required final PencilShape shape, required final int size, required final Iterable<CoordinateSetI> positions})
+  {
+    final Int32List offsets = _brushOffsets.putIfAbsent((shape, size), ()
+    {
+      final Set<CoordinateSetI> brush = getRoundSquareContentPoints(shape: shape, size: size, position: CoordinateSetI(x: 0, y: 0));
+      final Int32List brushOffsets = Int32List(brush.length * 2);
+      int i = 0;
+      for (final CoordinateSetI coord in brush)
+      {
+        brushOffsets[i++] = coord.x;
+        brushOffsets[i++] = coord.y;
+      }
+      return brushOffsets;
+    },);
+
+    final Set<CoordinateSetI> points = <CoordinateSetI>{};
+    if (offsets.isEmpty || positions.isEmpty)
+    {
+      return points;
+    }
+
+    int left = positions.first.x;
+    int right = left;
+    int top = positions.first.y;
+    int bottom = top;
+    for (final CoordinateSetI position in positions)
+    {
+      left = min(left, position.x);
+      right = max(right, position.x);
+      top = min(top, position.y);
+      bottom = max(bottom, position.y);
+    }
+    int offsetLeft = offsets[0];
+    int offsetRight = offsetLeft;
+    int offsetTop = offsets[1];
+    int offsetBottom = offsetTop;
+    for (int i = 0; i < offsets.length; i += 2)
+    {
+      offsetLeft = min(offsetLeft, offsets[i]);
+      offsetRight = max(offsetRight, offsets[i]);
+      offsetTop = min(offsetTop, offsets[i + 1]);
+      offsetBottom = max(offsetBottom, offsets[i + 1]);
+    }
+    left += offsetLeft;
+    top += offsetTop;
+    final int width = right + offsetRight - left + 1;
+    final int area = width * (bottom + offsetBottom - top + 1);
+
+    if (area > _maxStampMaskArea)
+    {
+      for (final CoordinateSetI position in positions)
+      {
+        for (int i = 0; i < offsets.length; i += 2)
+        {
+          points.add(CoordinateSetI(x: position.x + offsets[i], y: position.y + offsets[i + 1]));
+        }
+      }
+      return points;
+    }
+
+    final Uint8List covered = Uint8List((area + 7) >> 3);
+    for (final CoordinateSetI position in positions)
+    {
+      for (int i = 0; i < offsets.length; i += 2)
+      {
+        final int x = position.x + offsets[i];
+        final int y = position.y + offsets[i + 1];
+        final int bit = (y - top) * width + (x - left);
+        final int flag = 1 << (bit & 7);
+        if ((covered[bit >> 3] & flag) == 0)
+        {
+          covered[bit >> 3] |= flag;
+          points.add(CoordinateSetI(x: x, y: y));
+        }
+      }
+    }
+    return points;
+  }
+
   ContentRasterSet? get contentRaster => _contentRaster;
 
   void setContentRasterData({required final ContentRasterSet content})
@@ -409,12 +503,7 @@ abstract class IToolPainter
     }
     else
     {
-      final Set<CoordinateSetI> lPoints = <CoordinateSetI>{};
-      for (final CoordinateSetI coord in bresenhamPoints)
-      {
-        lPoints.addAll(getRoundSquareContentPoints(shape: shape, size: size, position: coord));
-      }
-      linePoints = lPoints;
+      linePoints = getStampedContentPoints(shape: shape, size: size, positions: bresenhamPoints);
     }
     return linePoints;
   }
@@ -535,12 +624,7 @@ abstract class IToolPainter
       }
       else
       {
-        final Set<CoordinateSetI> widePoints = <CoordinateSetI>{};
-        for (final CoordinateSetI coord in lPoints)
-        {
-          widePoints.addAll(getRoundSquareContentPoints(shape: shape, size: size, position: coord));
-        }
-        linePoints = widePoints;
+        linePoints = getStampedContentPoints(shape: shape, size: size, positions: lPoints);
       }
     }
 

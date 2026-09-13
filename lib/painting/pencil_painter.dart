@@ -128,12 +128,8 @@ class PencilPainter extends IToolPainter
 
           if (_hasNewCursorPos)
           {
-            final Set<CoordinateSetI> posSet = _options.pixelPerfect.value ? _paintPositions.sublist(0, _paintPositions.length - min(3, _paintPositions.length)).toSet() : _paintPositions.toSet();
-            final Set<CoordinateSetI> paintPoints = <CoordinateSetI>{};
-            for (final CoordinateSetI pos in posSet)
-            {
-              paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
-            }
+            final List<CoordinateSetI> positions = _options.pixelPerfect.value ? _paintPositions.sublist(0, _paintPositions.length - min(3, _paintPositions.length)) : _paintPositions;
+            final Set<CoordinateSetI> paintPoints = getStampedContentPoints(shape: _options.shape.value, size: _options.size.value, positions: positions);
             final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: paintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             CoordinateColorMap pixelsToDraw = CoordinateColorMap();
             if (rasterLayer is DrawingLayerState)
@@ -154,11 +150,7 @@ class PencilPainter extends IToolPainter
             CoordinateColorMap addPixels;
             if (_paintPositions.isNotEmpty)
             {
-              final Set<CoordinateSetI> additionalPaintPoints = <CoordinateSetI>{};
-              for (final CoordinateSetI pos in _paintPositions)
-              {
-                additionalPaintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
-              }
+              final Set<CoordinateSetI> additionalPaintPoints = getStampedContentPoints(shape: _options.shape.value, size: _options.size.value, positions: _paintPositions);
 
               CoordinateColorMap additionalDrawingPixels = CoordinateColorMap();
               final Set<CoordinateSetI> additionalMirrorPoints = getMirrorPoints(coords: additionalPaintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
@@ -199,24 +191,23 @@ class PencilPainter extends IToolPainter
         {
           if (_allPaintPositions.isNotEmpty)
           {
-            final Set<CoordinateSetI> posSet = _allPaintPositions.toSet();
-            final Set<CoordinateSetI> paintPoints = <CoordinateSetI>{};
-            for (final CoordinateSetI pos in posSet)
-            {
-              paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
-            }
-
-
-            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: paintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
+              //every position that left _paintPositions while drawing already has
+              //its pixels in _drawingPixels, so only the rest is left to add;
+              //stamping the whole stroke again costs stroke length times brush area
+              final Set<CoordinateSetI> paintPoints = getStampedContentPoints(shape: _options.shape.value, size: _options.size.value, positions: _paintPositions);
+              final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: paintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
               _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions));
               _dumpDrawing(currentLayer: rasterLayer);
               _waitingForDump = true;
             }
             else if (rasterLayer is ShadingLayerState)
             {
-               dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
+              //shading steps add up per pixel, so the whole stroke goes in at once
+              final Set<CoordinateSetI> paintPoints = getStampedContentPoints(shape: _options.shape.value, size: _options.size.value, positions: _allPaintPositions);
+              final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: paintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
+              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
                _drawingPixels.clear();
                _cursorContentDirty = true;
             }

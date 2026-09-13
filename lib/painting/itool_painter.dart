@@ -468,6 +468,34 @@ abstract class IToolPainter
   /// Whether a stroke being drawn has a preview yet.
   bool get hasStrokePreview => _strokePreview != null;
 
+  /// Adds [settledPixels] to the preview of the stroke being drawn and, if
+  /// given, shows [tipPixels] on top of it in place of the last tip. Only these
+  /// pixels are looked at, so an update costs the same however much the stroke
+  /// already holds.
+  void updateStrokePreview({required final CoordinateColorMap settledPixels, final CoordinateColorMap? tipPixels, required final LayerState currentLayer})
+  {
+    final PreviewColors? previewColors = getPreviewColors(currentLayer: currentLayer);
+    if (previewColors == null || (settledPixels.isEmpty && (tipPixels == null || tipPixels.isEmpty) && !hasStrokePreview))
+    {
+      return;
+    }
+    final StrokePreview preview = strokePreview;
+    for (final CoordinateColor entry in settledPixels.entries)
+    {
+      preview.addPixel(x: entry.key.x, y: entry.key.y, rgba: previewColors.rgbaAt(coord: entry.key, color: entry.value));
+    }
+    if (tipPixels != null)
+    {
+      final HashMap<CoordinateSetI, int> tip = HashMap<CoordinateSetI, int>();
+      for (final CoordinateColor entry in tipPixels.entries)
+      {
+        tip[entry.key] = previewColors.rgbaAt(coord: entry.key, color: entry.value);
+      }
+      preview.setTip(pixels: tip);
+    }
+    unawaited(preview.render());
+  }
+
   /// Throws away the preview of the stroke being drawn, which never lands.
   void discardStrokePreview()
   {

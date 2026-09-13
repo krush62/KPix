@@ -1,0 +1,183 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import 'dart:async';
+import 'dart:collection';
+import 'dart:math';
+
+import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
+import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
+import 'package:kpix/painting/content_raster_set.dart';
+import 'package:kpix/painting/itool_painter.dart';
+import 'package:kpix/tool_options/spray_can_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/typedefs.dart';
+
+/// The spray can as it was before its preview only rendered what is new, kept
+/// as the oracle the current painter is checked against. It works out and
+/// renders everything sprayed so far on every update.
+///
+/// The changes are what a test needs to repeat a spray and compare against it:
+/// the random numbers come from [random], [spray] is what the timer calls, and
+/// a preview image is only shown if no later one was shown (the original
+/// showed whichever image arrived last, which under load can be an older one).
+/// The cursor outline, which never reaches the canvas content, is left out.
+class LegacySprayCanPainter extends IToolPainter
+{
+  LegacySprayCanPainter({required super.painterOptions, required final Random random}) : _random = random;
+
+  final Random _random;
+  final SprayCanOptions _options = GetIt.I.get<ToolOptions>().sprayCanOptions;
+  final CoordinateColorMap _drawingPixels = HashMap<CoordinateSetI, ColorReference>();
+  CoordinateSetI? _lastCursorPosNorm;
+  final Set<CoordinateSetI> _allPaintPositions = <CoordinateSetI>{};
+  bool _waitingForDump = false;
+  bool _isDown = false;
+  late Timer timer;
+  bool timerInitialized = false;
+  bool _hasNewPositions = false;
+  int _previewRequests = 0;
+  int _shownPreviewRequest = 0;
+
+  @override
+  void calculate({required final DrawingParameters drawParams})
+  {
+    if (drawParams.currentRasterLayer != null)
+    {
+      final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
+      if (drawParams.cursorPos != null)
+      {
+        _lastCursorPosNorm = drawParams.cursorPosNorm;
+        if (!_waitingForDump && (rasterLayer.lockState.value != LayerLockState.locked && rasterLayer.visibilityState.value != LayerVisibilityState.hidden))
+        {
+          if (drawParams.primaryDown)
+          {
+            if (!timerInitialized || !timer.isActive)
+            {
+              timer = Timer.periodic(Duration(milliseconds: 500 ~/ _options.intensity.value), (final Timer timer) {spray();});
+              timerInitialized = true;
+            }
+
+            if (!_isDown)
+            {
+              _isDown = true;
+            }
+            if (_hasNewPositions)
+            {
+              final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _allPaintPositions, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
+              _drawingPixels.clear();
+              if (rasterLayer is DrawingLayerState)
+              {
+                _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions));
+              }
+              else if (rasterLayer is ShadingLayerState)
+              {
+                _drawingPixels.addAll(getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: mirrorPoints, shaderOptions: shaderOptions));
+              }
+
+              final int previewRequest = ++_previewRequests;
+              rasterizePixels(drawingPixels: _drawingPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet)
+              {
+                if (previewRequest < _shownPreviewRequest)
+                {
+                  return;
+                }
+                _shownPreviewRequest = previewRequest;
+                if (rasterSet != null)
+                {
+                  setContentRasterData(content: rasterSet);
+                }
+                else
+                {
+                  resetContentRaster(currentLayer: rasterLayer);
+                }
+
+                hasAsyncUpdate = true;
+              });
+              _hasNewPositions = false;
+            }
+          }
+          else if (!drawParams.primaryDown && _isDown)
+          {
+            timer.cancel();
+            _drawingPixels.clear();
+            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _allPaintPositions, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
+            if (rasterLayer is DrawingLayerState)
+            {
+              _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions));
+              _dumpDrawing(currentLayer: rasterLayer);
+              _waitingForDump = true;
+            }
+            else if (rasterLayer is ShadingLayerState)
+            {
+              _drawingPixels.addAll(getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: mirrorPoints, shaderOptions: shaderOptions));
+              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
+              _drawingPixels.clear();
+            }
+
+            _allPaintPositions.clear();
+            _isDown = false;
+          }
+        }
+        else if (_waitingForDump)
+        {
+          _drawingPixels.clear();
+          _waitingForDump = false;
+        }
+      }
+    }
+  }
+
+  void _dumpDrawing({required final DrawingLayerState currentLayer})
+  {
+    if (_drawingPixels.isNotEmpty)
+    {
+      if (!documentState.selectionState.selection.isEmpty)
+      {
+        documentState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
+      }
+      else
+      {
+        currentLayer.setDataAll(list: _drawingPixels);
+      }
+      hasHistoryData = true;
+      resetContentRaster(currentLayer: currentLayer);
+    }
+  }
+
+  void spray()
+  {
+    if (_lastCursorPosNorm != null)
+    {
+      final double r = _options.radius.value * sqrt(_random.nextDouble());
+      final double theta = _random.nextDouble() * 2 * pi;
+      final int x = (_lastCursorPosNorm!.x + (r * cos(theta))).round();
+      final int y = (_lastCursorPosNorm!.y + (r * sin(theta))).round();
+      _allPaintPositions.addAll(getRoundSquareContentPoints(shape: PencilShape.round, size: _options.blobSize.value, position: CoordinateSetI(x: x, y: y)));
+      hasAsyncUpdate = true;
+      _hasNewPositions = true;
+    }
+  }
+
+  @override
+  void drawCursorOutline({required final DrawingParameters drawParams}) {}
+}

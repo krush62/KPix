@@ -38,6 +38,10 @@ import 'package:kpix/util/typedefs.dart';
 /// changed, kept as the oracle the current painter is checked against: what a
 /// stroke lands as and what it shows while it is drawn have to stay the same.
 /// It stamps every position and builds one image of the whole stroke per frame.
+///
+/// One change: the images are made asynchronously and the original showed
+/// whichever arrived last, which under load can be an older one. A test cannot
+/// compare against that, so an image is only shown if no later one was shown.
 class LegacyPencilPainter extends IToolPainter
 {
   final PencilOptions _options = GetIt.I.get<ToolOptions>().pencilOptions;
@@ -58,6 +62,8 @@ class LegacyPencilPainter extends IToolPainter
   ShaderDirection _lastShadingDirection = ShaderDirection.left;
   bool _lastShadingCurrentRamp = false;
   ColorReference? _lastColorSelection;
+  int _previewRequests = 0;
+  int _shownPreviewRequest = 0;
 
   LegacyPencilPainter({required super.painterOptions});
 
@@ -181,7 +187,13 @@ class LegacyPencilPainter extends IToolPainter
             {
               addPixels = _drawingPixels;
             }
+            final int previewRequest = ++_previewRequests;
             rasterizePixels(drawingPixels: addPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet) {
+              if (previewRequest < _shownPreviewRequest)
+              {
+                return;
+              }
+              _shownPreviewRequest = previewRequest;
               if (rasterSet != null)
               {
                 setContentRasterData(content: rasterSet);

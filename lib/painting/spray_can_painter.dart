@@ -25,7 +25,6 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
-import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -35,13 +34,16 @@ import 'package:kpix/util/typedefs.dart';
 
 class SprayCanPainter extends IToolPainter
 {
-  SprayCanPainter({required super.painterOptions});
+  SprayCanPainter({required super.painterOptions, final Random? random}) : _random = random ?? Random();
 
+  final Random _random;
   final SprayCanOptions _options = GetIt.I.get<ToolOptions>().sprayCanOptions;
   final CoordinateColorMap _drawingPixels = HashMap<CoordinateSetI, ColorReference>();
   CoordinateSetI? _lastCursorPosNorm;
   Set<CoordinateSetI> _cursorPoints = <CoordinateSetI>{};
   final Set<CoordinateSetI> _allPaintPositions = <CoordinateSetI>{};
+  //the sprayed pixels whose colors are not worked out yet
+  final Set<CoordinateSetI> _newPaintPositions = <CoordinateSetI>{};
   bool _waitingForDump = false;
   bool _isDown = false;
   late Timer timer;
@@ -64,7 +66,7 @@ class SprayCanPainter extends IToolPainter
           {
             if (!timerInitialized || !timer.isActive)
             {
-              timer = Timer.periodic(Duration(milliseconds: 500 ~/ _options.intensity.value), (final Timer timer) {_timeout(timer: timer);});
+              timer = Timer.periodic(Duration(milliseconds: 500 ~/ _options.intensity.value), (final Timer timer) {spray();});
               timerInitialized = true;
             }
 
@@ -74,52 +76,33 @@ class SprayCanPainter extends IToolPainter
             }
             if (_hasNewPositions)
             {
-              final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _allPaintPositions, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
-              _drawingPixels.clear();
-              if (rasterLayer is DrawingLayerState)
-              {
-                _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions));
-              }
-              else if (rasterLayer is ShadingLayerState)
-              {
-                _drawingPixels.addAll(getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: mirrorPoints, shaderOptions: shaderOptions));
-              }
-
-              rasterizePixels(drawingPixels: _drawingPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet)
-              {
-                if (rasterSet != null)
-                {
-                  setContentRasterData(content: rasterSet);
-                }
-                else
-                {
-                  resetContentRaster(currentLayer: rasterLayer);
-                }
-
-                hasAsyncUpdate = true;
-              });
+              //only the pixels sprayed since the last update are new; the colors
+              //of the others are already in _drawingPixels and in the preview
+              final CoordinateColorMap newPixels = _takeNewPixels(drawParams: drawParams, rasterLayer: rasterLayer);
+              _drawingPixels.addAll(newPixels);
+              updateStrokePreview(settledPixels: newPixels, currentLayer: rasterLayer);
               _hasNewPositions = false;
             }
           }
           else if (!drawParams.primaryDown && _isDown)
           {
             timer.cancel();
-            _drawingPixels.clear();
-            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _allPaintPositions, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions));
+              _drawingPixels.addAll(_takeNewPixels(drawParams: drawParams, rasterLayer: rasterLayer));
               _dumpDrawing(currentLayer: rasterLayer);
               _waitingForDump = true;
             }
             else if (rasterLayer is ShadingLayerState)
             {
-              _drawingPixels.addAll(getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: mirrorPoints, shaderOptions: shaderOptions));
+              //shading steps add up per pixel, so the whole spray goes in at once
+              final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _allPaintPositions, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
               dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
               _drawingPixels.clear();
             }
 
             _allPaintPositions.clear();
+            _newPaintPositions.clear();
             _isDown = false;
           }
         }
@@ -149,15 +132,44 @@ class SprayCanPainter extends IToolPainter
     }
   }
 
-  void _timeout({required final Timer timer})
+  /// The colors of the pixels sprayed since the last call, as they go onto
+  /// [rasterLayer].
+  CoordinateColorMap _takeNewPixels({required final DrawingParameters drawParams, required final RasterableLayerState rasterLayer})
+  {
+    CoordinateColorMap pixels = CoordinateColorMap();
+    //without symmetry, the mirror points are the set itself, so it is only
+    //emptied once they are used
+    final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _newPaintPositions, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
+    if (rasterLayer is DrawingLayerState)
+    {
+      pixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
+    }
+    else if (rasterLayer is ShadingLayerState)
+    {
+      pixels = getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: mirrorPoints, shaderOptions: shaderOptions);
+    }
+    _newPaintPositions.clear();
+    return pixels;
+  }
+
+  /// Sprays one blob around the cursor; the timer calls this while the button
+  /// is held.
+  @visibleForTesting
+  void spray()
   {
     if (_lastCursorPosNorm != null)
     {
-      final double r = _options.radius.value * sqrt(Random().nextDouble());
-      final double theta = Random().nextDouble() * 2 * pi;
+      final double r = _options.radius.value * sqrt(_random.nextDouble());
+      final double theta = _random.nextDouble() * 2 * pi;
       final int x = (_lastCursorPosNorm!.x + (r * cos(theta))).round();
       final int y = (_lastCursorPosNorm!.y + (r * sin(theta))).round();
-      _allPaintPositions.addAll(getRoundSquareContentPoints(shape: PencilShape.round, size: _options.blobSize.value, position: CoordinateSetI(x: x, y: y)));
+      for (final CoordinateSetI point in getRoundSquareContentPoints(shape: PencilShape.round, size: _options.blobSize.value, position: CoordinateSetI(x: x, y: y)))
+      {
+        if (_allPaintPositions.add(point))
+        {
+          _newPaintPositions.add(point);
+        }
+      }
       hasAsyncUpdate = true;
       _hasNewPositions = true;
     }
@@ -213,6 +225,8 @@ class SprayCanPainter extends IToolPainter
     _cursorPoints.clear();
     _hasNewPositions = false;
     _allPaintPositions.clear();
+    _newPaintPositions.clear();
+    discardStrokePreview();
     _waitingForDump = false;
     _isDown = false;
     if (timerInitialized)

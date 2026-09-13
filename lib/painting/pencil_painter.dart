@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 
@@ -28,7 +27,6 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
-import 'package:kpix/painting/stroke_preview.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -163,7 +161,7 @@ class PencilPainter extends IToolPainter
                 tipPixels = getPixelsToDrawForShading(coords: additionalMirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
               }
             }
-            _updateStrokePreview(settledPixels: pixelsToDraw, tipPixels: tipPixels, currentLayer: rasterLayer);
+            updateStrokePreview(settledPixels: pixelsToDraw, tipPixels: tipPixels, currentLayer: rasterLayer);
           }
 
 
@@ -271,30 +269,6 @@ class PencilPainter extends IToolPainter
         cursorRaster = null;
       }
     }
-  }
-
-  /// Adds [settledPixels] to the preview of the stroke and shows [tipPixels] on
-  /// top of it, in place of the tip of the last frame. Only these pixels are
-  /// looked at, so a frame costs the same however long the stroke already is.
-  void _updateStrokePreview({required final CoordinateColorMap settledPixels, required final CoordinateColorMap tipPixels, required final LayerState currentLayer})
-  {
-    final PreviewColors? previewColors = getPreviewColors(currentLayer: currentLayer);
-    if (previewColors == null || (settledPixels.isEmpty && tipPixels.isEmpty && !hasStrokePreview))
-    {
-      return;
-    }
-    final StrokePreview preview = strokePreview;
-    for (final CoordinateColor entry in settledPixels.entries)
-    {
-      preview.addPixel(x: entry.key.x, y: entry.key.y, rgba: previewColors.rgbaAt(coord: entry.key, color: entry.value));
-    }
-    final HashMap<CoordinateSetI, int> tip = HashMap<CoordinateSetI, int>();
-    for (final CoordinateColor entry in tipPixels.entries)
-    {
-      tip[entry.key] = previewColors.rgbaAt(coord: entry.key, color: entry.value);
-    }
-    preview.setTip(pixels: tip);
-    unawaited(preview.render());
   }
 
   void _dumpDrawing({required final DrawingLayerState currentLayer})

@@ -64,6 +64,7 @@ import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/history/history_timeline.dart';
 import 'package:kpix/models/history/ramp_resolver.dart';
 import 'package:kpix/models/io_types.dart';
+import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/palette_manager_data.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
@@ -77,6 +78,7 @@ import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
+import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:kpix/util/helpers/platform_helper.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:logger/logger.dart';
@@ -1233,22 +1235,22 @@ Future<ui.Image> getImageFromLayers({
         if (i == selectionLayerIndex)
         {
           final Paint paint = Paint();
-          for (final MapEntry<CoordinateSetI, ColorReference?> entry in selection.selectedPixels.entries)
+          selection.forEachSelected(action: (final int x, final int y, final ColorReference? color)
           {
-            if (entry.value != null)
+            if (color != null)
             {
-              paint.color = entry.value!.getIdColor().color;
+              paint.color = color.getIdColor().color;
               canvas.drawRect(
                 Rect.fromLTWH(
-                  entry.key.x.toDouble() * scalingFactor,
-                  entry.key.y.toDouble() * scalingFactor,
+                  x.toDouble() * scalingFactor,
+                  y.toDouble() * scalingFactor,
                   scalingFactor.toDouble(),
                   scalingFactor.toDouble(),
                 ),
                 paint,
               );
             }
-          }
+          },);
         }
       }
     }

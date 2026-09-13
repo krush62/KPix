@@ -26,7 +26,6 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/document_state.dart';
-import 'package:kpix/models/history/history_color_reference.dart';
 import 'package:kpix/models/history/history_drawing_layer.dart';
 import 'package:kpix/models/history/history_frame.dart';
 import 'package:kpix/models/history/history_layer.dart';
@@ -40,10 +39,8 @@ import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/time_line_state.dart';
-import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/messages.dart';
-import 'package:kpix/util/typedefs.dart';
 import 'package:logger/logger.dart';
 
 /// Undo, redo, and putting a [HistoryState] back onto the live document.
@@ -195,14 +192,13 @@ class HistoryController
 
 
           //SELECTION
-          final CoordinateColorMapNullable selectionContent = HashMap<CoordinateSetI, ColorReference?>();
-          for (final CoordinateSetI coord in historyState.selectionState.mask)
-          {
-            final HistoryColorReference? ref = historyState.selectionState.colors[coord];
-            selectionContent[CoordinateSetI.from(other: coord)] = ref == null ? null : rampResolver.byIndex(ref: ref);
-          }
-          GetIt.I.get<DocumentState>().selectionState.selection.delete(keepSelection: false);
-          GetIt.I.get<DocumentState>().selectionState.selection.addDirectlyAll(list: selectionContent);
+          //the codes follow the state's ramp list, which is the live one on
+          //every restore short of a damaged state
+          GetIt.I.get<DocumentState>().selectionState.selection.replaceContent(
+            pixels: historyState.selectionState.pixels,
+            codec: rampResolver.liveCodec,
+            lut: rampResolver.pixelsLineUp ? null : rampResolver.pixelLut(),
+          );
           GetIt.I.get<DocumentState>().selectionState.createSelectionLines();
           GetIt.I.get<DocumentState>().selectionState.notifyRepaint();
 

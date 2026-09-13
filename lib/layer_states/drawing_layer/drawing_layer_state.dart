@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
+import 'package:kpix/layer_states/drawing_layer/layer_effects.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
@@ -37,10 +38,12 @@ import 'package:kpix/models/history/history_drawing_layer.dart';
 import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history/history_ramp_data.dart';
 import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_settings/drawing_layer_settings_widget.dart';
 import 'package:logger/logger.dart';
@@ -48,12 +51,21 @@ import 'package:logger/logger.dart';
 class DrawingLayerState extends RasterableLayerState
 {
 
-  final CoordinateColorMap _data;
-  CoordinateColorMap _settingsPixels;
+  //the pixels as color codes of _codec; see docs/dev/pixel_storage_plan.md
+  PixelGrid _data;
+  //grows by a ramp the first time a color of that ramp is stored, which keeps
+  //every existing code valid; palette operations that drop or move colors go
+  //through deleteRamp and the remap methods
+  PaletteCodec _codec;
+  //the effect pixels of the last raster, which the effects of the layers above
+  //look at; null while all effects are off
+  RasterPixels? _settingsPixels;
   final Map<CoordinateSetI, ColorReference?> rasterQueue = <CoordinateSetI, ColorReference?>{};
 
   final DrawingLayerSettings settings;
-  Map<Frame, HashMap<CoordinateSetI, int>> settingsShadingPixels = <Frame, HashMap<CoordinateSetI, int>>{};
+  //per frame, how far the outer effects shade what lies below, as signed
+  //pixels so that a shading of zero is told apart from none
+  final Map<Frame, PixelGrid> _outerShadingPixels = <Frame, PixelGrid>{};
 
   bool _isUpdateScheduled = false;
 
@@ -74,33 +86,43 @@ class DrawingLayerState extends RasterableLayerState
     final HistoryLayer? previousLayer,
   })
   {
-    final HistoryDrawingLayer? prev =
-    previousLayer is HistoryDrawingLayer ? previousLayer : null;
-    return prev != null ? HistoryDrawingLayer.deltaFrom(layerState: this, ramps: ramps, previousLayer: prev) : HistoryDrawingLayer.fromDrawingLayerState(layerState: this, ramps: ramps);
+    //a snapshot shares the tiles that did not change, so there is no need for
+    //a delta against the previous one
+    return HistoryDrawingLayer.fromDrawingLayerState(layerState: this, ramps: ramps);
   }
 
   factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings, required final List<KPalRampData> ramps})
   {
-    final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
-    final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
+    final PixelGrid data = PixelGrid(width: size.x, height: size.y);
+    PaletteCodec codec = PaletteCodec(ramps: ramps);
 
     if (content != null)
     {
       for (final CoordinateColorNullable entry in content.entries)
       {
-        if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < size.x && entry.key.y < size.y && entry.value != null)
+        final ColorReference? color = entry.value;
+        //the grid drops pixels outside the canvas
+        if (color != null)
         {
-          data[entry.key] = entry.value!;
+          codec = codec.withRamp(ramp: color.ramp);
+          data.set(x: entry.key.x, y: entry.key.y, value: codec.encode(color: color));
         }
       }
     }
     final DrawingLayerSettings settings = drawingLayerSettings ?? DrawingLayerSettings.defaultValues(startingColor: ramps[0].references[0], constraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints);
-    return DrawingLayerState._(data: data, settingsPixels: settingsPixels, settings: settings);
+    return DrawingLayerState._(data: data, codec: codec, settings: settings);
   }
 
-  DrawingLayerState._({required final CoordinateColorMap data, required final CoordinateColorMap settingsPixels, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, super.layerStack, required this.settings}) :
+  /// A layer holding [pixels], whose codes belong to [codec]. The grid is taken
+  /// over, not copied.
+  factory DrawingLayerState.fromPixels({required final PixelGrid pixels, required final PaletteCodec codec, required final DrawingLayerSettings drawingLayerSettings})
+  {
+    return DrawingLayerState._(data: pixels, codec: codec, settings: drawingLayerSettings);
+  }
+
+  DrawingLayerState._({required final PixelGrid data, required final PaletteCodec codec, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, super.layerStack, required this.settings}) :
         _data = data,
-        _settingsPixels = settingsPixels,
+        _codec = codec,
         super(layerSettings: settings)
   {
     requestRaster();
@@ -148,40 +170,44 @@ class DrawingLayerState extends RasterableLayerState
   }
 
 
-  static CoordinateColorMap _resolvedData({required final DrawingLayerState other})
+  /// The pixels of [other] with its pending writes applied, sharing tiles with
+  /// it until either side writes.
+  static (PixelGrid, PaletteCodec) _resolvedData({required final DrawingLayerState other})
   {
-    final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>.from(other._data);
+    final PixelGrid data = other._data.copy();
+    PaletteCodec codec = other._codec;
     for (final CoordinateColorNullable entry in other.rasterQueue.entries)
     {
-      if (entry.value == null)
+      final ColorReference? color = entry.value;
+      if (color != null)
       {
-        data.remove(entry.key);
+        codec = codec.withRamp(ramp: color.ramp);
       }
-      else
-      {
-        data[entry.key] = entry.value!;
-      }
+      data.set(x: entry.key.x, y: entry.key.y, value: codec.encode(color: color));
     }
-    return data;
+    return (data, codec);
   }
 
   factory DrawingLayerState.from({required final DrawingLayerState other, final List<RasterableLayerState>? layerStack})
   {
-    final CoordinateColorMap data = _resolvedData(other: other);
-    final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
+    final (PixelGrid data, PaletteCodec codec) = _resolvedData(other: other);
     final DrawingLayerSettings newSettings = DrawingLayerSettings.fromOther(other: other.settings);
-    return DrawingLayerState._(settingsPixels: settingsPixels, data: data, lState: other.lockState.value, vState: other.visibilityState.value, layerStack: layerStack, settings: newSettings);
+    return DrawingLayerState._(data: data, codec: codec, lState: other.lockState.value, vState: other.visibilityState.value, layerStack: layerStack, settings: newSettings);
   }
 
   factory DrawingLayerState.deepClone({required final DrawingLayerState other, required final KPalRampData originalRampData, required final KPalRampData rampData})
   {
-    final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
-    final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
-    for (final CoordinateColor ref in _resolvedData(other: other).entries)
+    final (PixelGrid resolved, PaletteCodec resolvedCodec) = _resolvedData(other: other);
+    final PixelGrid data = PixelGrid(width: resolved.width, height: resolved.height);
+    PaletteCodec codec = resolvedCodec.withRamp(ramp: rampData);
+    resolved.forEachNonZero(action: (final int x, final int y, final int value)
     {
-      data[ref.key] = (ref.value.ramp == originalRampData) ? rampData.references[ref.value.colorIndex] : ref.value;
-    }
-    return DrawingLayerState._(data: data, settingsPixels: settingsPixels, lState: other.lockState.value, vState: other.visibilityState.value, settings: other.settings);
+      final ColorReference color = resolvedCodec.decode(code: value)!;
+      final ColorReference cloned = (color.ramp == originalRampData) ? rampData.references[color.colorIndex] : color;
+      codec = codec.withRamp(ramp: cloned.ramp);
+      data.set(x: x, y: y, value: codec.encode(color: cloned));
+    },);
+    return DrawingLayerState._(data: data, codec: codec, lState: other.lockState.value, vState: other.visibilityState.value, settings: other.settings);
   }
 
   @override
@@ -248,18 +274,12 @@ class DrawingLayerState extends RasterableLayerState
     }
 
     isRasterizing = true;
-    final Set<CoordinateSetI> deleteData = <CoordinateSetI>{};
-    for (final CoordinateColor entry in _data.entries)
+    final PaletteCodec remaining = _codec.withoutRamp(ramp: ramp);
+    if (!identical(remaining, _codec))
     {
-      if (entry.value.ramp == ramp)
-      {
-        deleteData.add(entry.key);
-      }
-    }
-
-    for (final CoordinateSetI coord in deleteData)
-    {
-      _data.remove(coord);
+      //the ramp's codes have no place in the remaining codec, so they are dropped
+      _data.remap(lut: _codec.remapLut(target: remaining));
+      _codec = remaining;
     }
 
     settings.deleteRamp(ramp: ramp);
@@ -300,10 +320,13 @@ class DrawingLayerState extends RasterableLayerState
     }
 
     isRasterizing = true;
-    for (final CoordinateColor entry in _data.entries)
+    PaletteCodec target = _codec;
+    for (final ColorReference color in rampMap.values)
     {
-      _data[entry.key] = rampMap[entry.value]!;
+      target = target.withRamp(ramp: color.ramp);
     }
+    _data.remap(lut: _codec.remapLutByColor(target: target, colorMap: rampMap));
+    _codec = target;
     isRasterizing = false;
     forceFullRender();
 
@@ -339,12 +362,9 @@ class DrawingLayerState extends RasterableLayerState
     }
 
     isRasterizing = true;
-    for (final CoordinateColor entry in _data.entries)
+    if (_codec.indexOfRamp(ramp: newData) != null)
     {
-      if (entry.value.ramp == newData)
-      {
-        _data[entry.key] = newData.references[map[entry.value.colorIndex]!];
-      }
+      _data.remap(lut: _codec.remapLut(target: _codec, colorIndexMaps: <KPalRampData, Map<int, int>>{newData: map}));
     }
     isRasterizing = false;
     forceFullRender();
@@ -403,26 +423,120 @@ class DrawingLayerState extends RasterableLayerState
     }
   }
 
-  CoordinateColorMap _getContentWithSelection({required final bool frameIsSelected})
+  /// The code for [color] in [_codec], which takes in the ramp of a color it
+  /// has not seen before.
+  int _encode({required final ColorReference? color})
   {
-    final CoordinateColorMap allColorPixels = CoordinateColorMap();
+    if (color == null)
+    {
+      return PaletteCodec.transparent;
+    }
+    _codec = _codec.withRamp(ramp: color.ramp);
+    return _codec.encode(color: color);
+  }
+
+  /// What the layers below this one in [layers] show at a position, see
+  /// [DrawingLayerSettings.colorBelow].
+  EffectColorLookup _colorBelow({required final List<LayerState> layers, required final bool withSettingsPixels})
+  {
+    return (final int x, final int y) => DrawingLayerSettings.colorBelow(coord: CoordinateSetI(x: x, y: y), layers: layers, layerState: this, withSettingsPixels: withSettingsPixels);
+  }
+
+  /// The color an inner stroke shades at a position: the floating selection's
+  /// where it floats in [selection], the layer's own everywhere else.
+  EffectColorLookup _innerColorAt({required final SelectionList? selection})
+  {
+    return (final int x, final int y)
+    {
+      final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
+      return selection != null && selection.contains(coord: coord) ? selection.getColorReference(coord: coord) : getDataEntry(coord: coord);
+    };
+  }
+
+  ColorReference? _layerColorAt(final int x, final int y)
+  {
+    return getDataEntry(coord: CoordinateSetI(x: x, y: y));
+  }
+
+  /// Moves the pending writes of [rasterQueue] into the grid.
+  void _applyQueue()
+  {
+    for (final CoordinateColorNullable entry in rasterQueue.entries)
+    {
+      _data.set(x: entry.key.x, y: entry.key.y, value: _encode(color: entry.value));
+    }
+    rasterQueue.clear();
+  }
+
+  /// The layer's pixels with the floating selection on top, in a copy that
+  /// shares tiles with [_data] until either side writes.
+  PixelGrid _contentWithSelection({required final bool frameIsSelected})
+  {
+    final PixelGrid content = _data.copy();
     final DocumentState documentState = GetIt.I.get<DocumentState>();
-    final CanvasState canvasState = GetIt.I.get<CanvasState>();
     final bool hasSelection = frameIsSelected &&
         layerStack == null &&
         documentState.timeline.getCurrentLayer() == this &&
         documentState.selectionState.selection.hasValues();
-    allColorPixels.addAll(_data);
     if (hasSelection)
     {
-      final CoordinateColorMap nonNullMap = CoordinateColorMap.fromEntries(
-        documentState.selectionState.selection.selectedPixels.entries.where((final MapEntry<CoordinateSetI, ColorReference?> entry) => entry.value != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < canvasState.canvasSize.x && entry.key.y < canvasState.canvasSize.y).map(
-              (final MapEntry<CoordinateSetI, ColorReference?> entry) => MapEntry<CoordinateSetI, ColorReference>(entry.key, entry.value!),
-        ),
-      );
-      allColorPixels.addAll(nonNullMap);
+      //the selection's codes belong to its own codec
+      final SelectionList selection = documentState.selectionState.selection;
+      for (final KPalRampData ramp in selection.codec.ramps)
+      {
+        _codec = _codec.withRamp(ramp: ramp);
+      }
+      final Uint16List lut = selection.codec.remapLut(target: _codec);
+      selection.forEachCode(action: (final int x, final int y, final int code)
+      {
+        //the grid drops floating pixels that are off the canvas
+        if (code != PaletteCodec.transparent)
+        {
+          content.set(x: x, y: y, value: lut[code]);
+        }
+      },);
     }
-    return allColorPixels;
+    return content;
+  }
+
+  /// What the layer shows in a frame: content, floating selection and layer
+  /// effects. Also works out the effect pixels the other layers ask for.
+  RasterPixels _composeFrame({required final Frame? frame, required final bool frameIsSelected, required final List<LayerState> layers})
+  {
+    final PixelGrid composite = _contentWithSelection(frameIsSelected: frameIsSelected);
+    if (settings.hasActiveSettings())
+    {
+      final LayerEffects effects = LayerEffects(settings: settings, content: composite, codec: _codec);
+      //LAYER EFFECT PIXELS OUTSIDE THE CONTENT
+      if (frame != null)
+      {
+        PixelGrid? shading;
+        effects.outerShading(emit: (final int x, final int y, final int amount)
+        {
+          (shading ??= PixelGrid(width: composite.width, height: composite.height)).setSigned(x: x, y: y, value: amount);
+        },);
+        final PixelGrid? frameShading = shading;
+        if (frameShading != null)
+        {
+          _outerShadingPixels[frame] = frameShading;
+        }
+      }
+      //LAYER EFFECT PIXELS INSIDE THE CONTENT, later effects over earlier ones
+      final SelectionList? selection = selectedInCurrentFrameNotifier.value && frameIsSelected ? GetIt.I.get<DocumentState>().selectionState.selection : null;
+      final PixelGrid effectPixels = PixelGrid(width: composite.width, height: composite.height);
+      void add(final int x, final int y, final ColorReference color) => effectPixels.set(x: x, y: y, value: _encode(color: color));
+      effects.dropShadow(colorBelow: _colorBelow(layers: layers, withSettingsPixels: true), emit: add);
+      effects.outerStroke(colorBelow: _colorBelow(layers: layers, withSettingsPixels: false), emit: add);
+      effects.innerStroke(innerColorAt: _innerColorAt(selection: selection), layerColorAt: _layerColorAt, emit: add);
+      //taken after the effects, which may have added ramps to the codec
+      _settingsPixels = RasterPixels(grid: effectPixels, codec: _codec);
+      effectPixels.forEachNonZero(action: (final int x, final int y, final int value) => composite.set(x: x, y: y, value: value));
+    }
+    else
+    {
+      _settingsPixels = null;
+    }
+    return RasterPixels(grid: composite, codec: _codec);
   }
 
 
@@ -431,20 +545,9 @@ class DrawingLayerState extends RasterableLayerState
     final DocumentState documentState = GetIt.I.get<DocumentState>();
     final CanvasState canvasState = GetIt.I.get<CanvasState>();
     final Map<Frame, RasterImagePair> rasterImages = <Frame, RasterImagePair>{};
-    for (final CoordinateColorNullable entry in rasterQueue.entries)
-    {
-      if (entry.value == null)
-      {
-        _data.remove(entry.key);
-      }
-      else
-      {
-        _data[entry.key] = entry.value!;
-      }
-    }
-    rasterQueue.clear();
+    _applyQueue();
 
-    settingsShadingPixels.clear();
+    _outerShadingPixels.clear();
 
     //consume the render flags now; flags set during rasterization describe
     //changes that are not part of this render and must survive it
@@ -492,31 +595,10 @@ class DrawingLayerState extends RasterableLayerState
   Future<ui.Image> _fullRender({required final CoordinateSetI canvasSize, final Frame? frame, required final bool frameIsSelected, required final List<LayerState> layers}) async
   {
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
-    //NORMAL OPAQUE PIXELS
-    final CoordinateColorMap framePixels = _getContentWithSelection(frameIsSelected: frameIsSelected);
+    final RasterPixels framePixels = _composeFrame(frame: frame, frameIsSelected: frameIsSelected, layers: layers);
     setRasterPixels(pixels: framePixels, frame: frame);
-    //LAYER EFFECT PIXELS OUTSIDE THE CONTENT
-    if (frame != null)
-    {
-      settingsShadingPixels[frame] = settings.getOuterShadingPixels(data: framePixels);
-    }
-    //LAYER EFFECT PIXELS INSIDE THE CONTENT
-    _settingsPixels = settings.getSettingsPixels(data: framePixels, layerState: this, layerList: layers, frameIsSelected: frameIsSelected);
-    framePixels.addAll(_settingsPixels);
 
-    final RgbaCache rgbaCache = RgbaCache();
-    for (final CoordinateColor entry in framePixels.entries)
-    {
-      //just to make sure
-      if (canvasSize.contains(coord: entry.key))
-      {
-        final int index = (entry.key.y * canvasSize.x + entry.key.x) * 4;
-        if (index >= 0 && index < byteDataImg.lengthInBytes)
-        {
-          byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: entry.value));
-        }
-      }
-    }
+    framePixels.writeRgba(target: byteDataImg, width: canvasSize.x, height: canvasSize.y);
 
     final Completer<ui.Image> completerImg = Completer<ui.Image>();
     ui.decodeImageFromPixels(
@@ -573,15 +655,8 @@ class DrawingLayerState extends RasterableLayerState
 
     canvas.drawImage(baseImage, Offset.zero, paint);
 
-    final CoordinateColorMap allPixels = _getContentWithSelection(frameIsSelected: frameIsSelected);
-    if (frame != null)
-    {
-      settingsShadingPixels[frame] = settings.getOuterShadingPixels(data: allPixels);
-    }
-    _settingsPixels = settings.getSettingsPixels(data: allPixels, layerState: this, layerList: layers, frameIsSelected: frameIsSelected);
-
-    allPixels.addAll(_settingsPixels);
-    setRasterPixels(pixels: allPixels, frame: frame);
+    final RasterPixels framePixels = _composeFrame(frame: frame, frameIsSelected: frameIsSelected, layers: layers);
+    setRasterPixels(pixels: framePixels, frame: frame);
 
     for (final DirtyRegion region in mergedRegions)
     {
@@ -589,7 +664,7 @@ class DrawingLayerState extends RasterableLayerState
 
       final ui.Image regionImage = await _renderRegion(
         region: clampedRegion,
-        allPixels: allPixels,
+        pixels: framePixels,
       );
 
       canvas.drawImage(
@@ -608,30 +683,10 @@ class DrawingLayerState extends RasterableLayerState
     return result;
   }
 
-  Future<ui.Image> _renderRegion({required final DirtyRegion region,required final CoordinateColorMap allPixels,}) async
+  Future<ui.Image> _renderRegion({required final DirtyRegion region, required final RasterPixels pixels}) async
   {
     final ByteData byteData = ByteData(region.width * region.height * 4);
-    final RgbaCache rgbaCache = RgbaCache();
-
-    for (int y = region.y; y < region.y + region.height; y++)
-    {
-      for (int x = region.x; x < region.x + region.width; x++)
-      {
-        final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
-        final ColorReference? colorRef = allPixels[coord];
-
-        if (colorRef != null) {
-          final int bufferX = x - region.x;
-          final int bufferY = y - region.y;
-          final int index = (bufferY * region.width + bufferX) * 4;
-
-          if (index >= 0 && index < byteData.lengthInBytes) {
-            byteData.setUint32(index, rgbaCache.rgbaOf(reference: colorRef));
-          }
-        }
-      }
-    }
-
+    pixels.writeRgba(target: byteData, left: region.x, top: region.y, width: region.width, height: region.height);
     final Completer<ui.Image> completer = Completer<ui.Image>();
     ui.decodeImageFromPixels(
       byteData.buffer.asUint8List(),
@@ -646,51 +701,121 @@ class DrawingLayerState extends RasterableLayerState
     return await completer.future;
   }
 
+  /// The effects of the layer's stored pixels, as writes to hand to [setDataAll].
+  CoordinateColorMapNullable _rasteredEffect({required final void Function(LayerEffects effects, EffectPixelSink emit) run})
+  {
+    final CoordinateColorMapNullable pixels = CoordinateColorMapNullable();
+    run(LayerEffects(settings: settings, content: _data, codec: _codec), (final int x, final int y, final ColorReference color) => pixels[CoordinateSetI(x: x, y: y)] = color);
+    return pixels;
+  }
+
   void rasterOutline({required final List<LayerState> layers})
   {
-    final CanvasState canvasState = GetIt.I.get<CanvasState>();
-    final CoordinateColorMap outerPixels = settings.getOuterStrokePixels(data: _data, layerState: this, canvasSize: canvasState.canvasSize, layers: layers);
-    setDataAll(list: outerPixels);
+    setDataAll(list: _rasteredEffect(run: (final LayerEffects effects, final EffectPixelSink emit) => effects.outerStroke(colorBelow: _colorBelow(layers: layers, withSettingsPixels: false), emit: emit)));
   }
 
   void rasterInline({required final List<LayerState> layers, required final bool frameIsSelected})
   {
     final DocumentState documentState = GetIt.I.get<DocumentState>();
-    final CanvasState canvasState = GetIt.I.get<CanvasState>();
     final SelectionList? selectionList = selectedInCurrentFrameNotifier.value && frameIsSelected ? documentState.selectionState.selection : null;
-    final CoordinateColorMap innerPixels = settings.getInnerStrokePixels(data: _data, layerState: this, canvasSize: canvasState.canvasSize, layers: layers, selectionList: selectionList);
-    setDataAll(list: innerPixels);
+    setDataAll(list: _rasteredEffect(run: (final LayerEffects effects, final EffectPixelSink emit) => effects.innerStroke(innerColorAt: _innerColorAt(selection: selectionList), layerColorAt: _layerColorAt, emit: emit)));
   }
 
   void rasterDropShadow({required final List<LayerState> layers})
   {
-    final CanvasState canvasState = GetIt.I.get<CanvasState>();
-    final CoordinateColorMap dropShadowPixels = settings.getDropShadowPixels(data: _data, layerState: this, canvasSize: canvasState.canvasSize, layers: layers);
-    setDataAll(list: dropShadowPixels);
+    setDataAll(list: _rasteredEffect(run: (final LayerEffects effects, final EffectPixelSink emit) => effects.dropShadow(colorBelow: _colorBelow(layers: layers, withSettingsPixels: true), emit: emit)));
   }
 
 
   ColorReference? getSettingsPixel({required final CoordinateSetI coord})
   {
-      return _settingsPixels[coord];
+      return _settingsPixels?.colorAt(coord: coord);
+  }
+
+  /// How far the outer effects of this layer shade what lies below [coord] in
+  /// [frame], or null where they do not reach.
+  int? outerShadingAt({required final Frame frame, required final CoordinateSetI coord})
+  {
+    return _outerShadingPixels[frame]?.getSigned(x: coord.x, y: coord.y);
   }
 
   ColorReference? getDataEntry({required final CoordinateSetI coord, final bool withSettingsPixels = false})
   {
-    if (withSettingsPixels && _settingsPixels.containsKey(coord))
+    final ColorReference? effect = withSettingsPixels ? _settingsPixels?.colorAt(coord: coord) : null;
+    if (effect != null)
     {
-      return _settingsPixels[coord];
+      return effect;
     }
     else if (rasterQueue.containsKey(coord))
     {
       return rasterQueue[coord];
     }
-    return _data[coord];
+    return _codec.decode(code: _data.get(x: coord.x, y: coord.y));
   }
 
-  CoordinateColorMap getData()
+  /// The pixels with the writes still waiting in [rasterQueue] applied, as codes
+  /// whose ramp indices refer to [ramps] (see PaletteCodec). That is what the
+  /// history and the file store. Pixels of ramps missing from [ramps] are left
+  /// out.
+  ///
+  /// When the layer's codes already follow that order, the snapshot shares its
+  /// tiles with the layer. When they do not, after a palette reorder for
+  /// example, the layer first moves its own codes into the palette's order.
+  /// The tiles are then copied once, not on every step.
+  PixelGridSnapshot historySnapshot({required final List<HistoryRampData> ramps})
   {
-    return _data;
+    final List<String> uuids = <String>[for (final HistoryRampData ramp in ramps) ramp.uuid];
+    final PaletteCodec palette = GetIt.I.get<DocumentState>().palette.codec;
+    if (palette.listsUuids(uuids: uuids))
+    {
+      _alignCodec(target: palette);
+    }
+
+    PixelGrid? pending;
+    if (rasterQueue.isNotEmpty)
+    {
+      //the queue itself stays: painters watch it to see a stroke land
+      pending = PixelGrid.fromSnapshot(snapshot: _data.snapshot());
+      for (final CoordinateColorNullable entry in rasterQueue.entries)
+      {
+        pending.set(x: entry.key.x, y: entry.key.y, value: _encode(color: entry.value));
+      }
+    }
+
+    final ({Uint16List lut, bool linesUp}) translation = _codec.remapLutToUuids(uuids: uuids);
+    if (translation.linesUp)
+    {
+      return pending?.snapshot() ?? _data.snapshot();
+    }
+    final PixelGrid translated = pending ?? PixelGrid.fromSnapshot(snapshot: _data.snapshot());
+    translated.remap(lut: translation.lut);
+    return translated.snapshot();
+  }
+
+  /// Moves the codes into [target]'s order, so that a code means the same in
+  /// this layer and in [target]. Ramps only this layer has pixels of follow
+  /// behind [target]'s; ramps without pixels are dropped. Nothing visible
+  /// changes.
+  void _alignCodec({required final PaletteCodec target})
+  {
+    if (_codec.followsOrderOf(target: target))
+    {
+      return;
+    }
+    final Set<int> usedRamps = <int>{};
+    _data.forEachNonZero(action: (final int x, final int y, final int value) => usedRamps.add(PaletteCodec.rampIndexOf(code: value)));
+    final PaletteCodec aligned = _codec.alignedTo(target: target, usedRampIndices: usedRamps);
+    _data.remap(lut: _codec.remapLut(target: aligned));
+    _codec = aligned;
+  }
+
+  /// Every color among the stored pixels, without the writes still waiting in
+  /// [rasterQueue].
+  Set<ColorReference> usedColors()
+  {
+    final Set<int> codes = <int>{};
+    _data.forEachNonZero(action: (final int x, final int y, final int value) => codes.add(value));
+    return <ColorReference>{for (final int code in codes) _codec.decode(code: code)!};
   }
 
 
@@ -722,110 +847,47 @@ class DrawingLayerState extends RasterableLayerState
   }
 
 
+  /// Turns or mirrors the layer, pending writes included. For a rotation, width
+  /// and height swap.
   void transformLayer({required final CanvasTransformation transformation, required final CoordinateSetI oldSize})
   {
-    final CoordinateColorMapNullable rotatedContent = CoordinateColorMapNullable();
-    final Set<CoordinateSetI> removeCoordList = <CoordinateSetI>{};
-    final CoordinateSetI newSize = CoordinateSetI.from(other: oldSize);
-    if (transformation == CanvasTransformation.rotate)
+    assert(oldSize.x == _data.width && oldSize.y == _data.height, "the layer is ${_data.width}x${_data.height}, not ${oldSize.x}x${oldSize.y}");
+    _applyQueue();
+    switch (transformation)
     {
-      newSize.x = oldSize.y;
-      newSize.y = oldSize.x;
+      case CanvasTransformation.rotate:
+        _data = _data.rotatedClockwise();
+      case CanvasTransformation.flipH:
+        _data = _data.flippedHorizontally();
+      case CanvasTransformation.flipV:
+        _data = _data.flippedVertically();
     }
-    for (final CoordinateColor entry in _data.entries)
-    {
-      final CoordinateSetI rotCoord = CoordinateSetI.from(other: entry.key);
-      if (transformation == CanvasTransformation.rotate)
-      {
-        rotCoord.x = (oldSize.y - 1) - entry.key.y;
-        rotCoord.y = entry.key.x;
-      }
-      else if (transformation == CanvasTransformation.flipH)
-      {
-        rotCoord.x = (oldSize.x - 1) - entry.key.x;
-      }
-      else if (transformation == CanvasTransformation.flipV)
-      {
-        rotCoord.y = (oldSize.y - 1) - entry.key.y;
-      }
-
-      removeCoordList.add(entry.key);
-      rotatedContent[rotCoord] = entry.value;
-    }
-    if (rasterQueue.isNotEmpty)
-    {
-      for (final CoordinateColorNullable entry in rasterQueue.entries)
-      {
-        final CoordinateSetI rotCoord = CoordinateSetI.from(other: entry.key);
-        if (transformation == CanvasTransformation.rotate)
-        {
-          rotCoord.x = (oldSize.y - 1) - entry.key.y;
-          rotCoord.y = entry.key.x;
-        }
-        else if (transformation == CanvasTransformation.flipH)
-        {
-          rotCoord.x = (oldSize.x - 1) - entry.key.x;
-        }
-        else if (transformation == CanvasTransformation.flipV)
-        {
-          rotCoord.y = (oldSize.y - 1) - entry.key.y;
-        }
-        removeCoordList.add(entry.key);
-        rotatedContent[rotCoord] = entry.value;
-      }
-    }
-    removeDataAll(removeCoordList: removeCoordList);
-    setDataAll(list: rotatedContent);
     forceFullRender();
   }
 
   @override
   void resizeLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
-    final CoordinateColorMap croppedContent = HashMap<CoordinateSetI, ColorReference>();
-    for (final CoordinateColor entry in _data.entries)
-    {
-      final CoordinateSetI newCoord = CoordinateSetI(x: entry.key.x + offset.x, y: entry.key.y + offset.y);
-      if (newCoord.x >= 0 && newCoord.x < newSize.x && newCoord.y >= 0 && newCoord.y < newSize.y)
-      {
-        croppedContent[newCoord] = entry.value;
-      }
-    }
-
-    if (rasterQueue.isNotEmpty)
-    {
-      for (final CoordinateColorNullable entry in rasterQueue.entries)
-      {
-        final CoordinateSetI newCoord = CoordinateSetI(x: entry.key.x + offset.x, y: entry.key.y + offset.y);
-        if (newCoord.x >= 0 && newCoord.x < newSize.x && newCoord.y >= 0 && newCoord.y < newSize.y)
-        {
-          if (entry.value != null)
-          {
-            croppedContent[newCoord] = entry.value!;
-          }
-          else if (croppedContent.containsKey(newCoord))
-          {
-            croppedContent.remove(newCoord);
-          }
-        }
-      }
-    }
-    _data.clear();
-    rasterQueue.clear();
-    _data.addAll(croppedContent);
+    _applyQueue();
+    _data = _data.resized(newWidth: newSize.x, newHeight: newSize.y, offsetX: offset.x, offsetY: offset.y);
     forceFullRender();
   }
 
   int getPixelCountForRamp({required final KPalRampData ramp})
   {
-    int count = 0;
-    for (final CoordinateColor entry in _data.entries)
+    final int? rampIndex = _codec.indexOfRamp(ramp: ramp);
+    if (rampIndex == null)
     {
-      if (entry.value.ramp == ramp)
+      return 0;
+    }
+    int count = 0;
+    _data.forEachNonZero(action: (final int x, final int y, final int value)
+    {
+      if (PaletteCodec.rampIndexOf(code: value) == rampIndex)
       {
         count++;
       }
-    }
+    },);
     return count;
   }
 
@@ -933,7 +995,8 @@ class DrawingLayerState extends RasterableLayerState
 
     rasterQueue.clear();
     _data.clear();
-    _settingsPixels.clear();
+    _settingsPixels = null;
+    _outerShadingPixels.clear();
 
     final List<ui.Image?> images = <ui.Image?>[rasterImage.value, thumbnail.value, previousRaster];
     for (final RasterImagePair pair in rasterImageMap.value.values)

@@ -22,11 +22,11 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/document_state.dart';
-import 'package:kpix/models/history/history_color_reference.dart';
 import 'package:kpix/models/history/history_drawing_layer.dart';
 import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/export_functions.dart';
@@ -67,10 +67,10 @@ Map<CoordinateSetI, String> _pixelsOf({required final LoadFileSet loaded})
   {
     if (layer is HistoryDrawingLayer)
     {
-      for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in layer.data.entries)
+      layer.pixels.forEachNonZero(action: (final int x, final int y, final int code)
       {
-        pixels[entry.key] = "${entry.value.rampIndex}/${entry.value.colorIndex}";
-      }
+        pixels[CoordinateSetI(x: x, y: y)] = "${PaletteCodec.rampIndexOf(code: code)}/${PaletteCodec.colorIndexOf(code: code)}";
+      },);
     }
   }
   return pixels;
@@ -146,7 +146,7 @@ void main()
       GetIt.I.get<LayerManager>().selectLayer(newLayer: GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getLayer(index: 0));
       await settle();
       expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), isA<ShadingLayerState>(), reason: "setup: a shading layer is selected");
-      expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isNotEmpty, reason: "setup: with a selection still floating");
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isFalse, reason: "setup: with a selection still floating");
 
       final int sizeWithSelection = (await _save(projectSession: projectSession)).lengthInBytes;
 

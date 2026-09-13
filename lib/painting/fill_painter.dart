@@ -15,6 +15,7 @@
  */
 
 import 'dart:collection';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -152,7 +153,12 @@ class FillPainter extends IToolPainter
   {
     final int numRows = canvasState.canvasSize.y;
     final int numCols = canvasState.canvasSize.x;
-    final List<List<bool>> visited = List<List<bool>>.generate(numCols, (final _) => List<bool>.filled(numRows, false));
+    //the visited mask is flat, so a start off the canvas would alias another pixel
+    if (start.x < 0 || start.y < 0 || start.x >= numCols || start.y >= numRows)
+    {
+      return;
+    }
+    final Uint8List visited = Uint8List(numCols * numRows);
     final ColorReference? startValue = (documentState.timeline.getCurrentLayer() == layer && documentState.selectionState.selection.contains(coord: start)) ? documentState.selectionState.selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
     final CoordinateColorMap layerPixels = HashMap<CoordinateSetI, ColorReference>();
@@ -164,7 +170,7 @@ class FillPainter extends IToolPainter
     {
       final CoordinateSetI curCoord = pointStack.pop();
       final ColorReference? refAtPos = (documentState.timeline.getCurrentLayer() == layer && documentState.selectionState.selection.contains(coord: curCoord)) ? documentState.selectionState.selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
-      if (!visited[curCoord.x][curCoord.y] &&
+      if (visited[curCoord.y * numCols + curCoord.x] == 0 &&
           (documentState.selectionState.selection.isEmpty || (!documentState.selectionState.selection.isEmpty && documentState.selectionState.selection.contains(coord: curCoord))) &&
           (
               refAtPos == startValue ||
@@ -173,7 +179,7 @@ class FillPainter extends IToolPainter
 
           ))
       {
-        visited[curCoord.x][curCoord.y] = true;
+        visited[curCoord.y * numCols + curCoord.x] = 1;
 
         //draw on selection
         if (documentState.timeline.getCurrentLayer() == layer && documentState.selectionState.selection.contains(coord: curCoord))
@@ -249,7 +255,12 @@ class FillPainter extends IToolPainter
   {
     final int numRows = canvasState.canvasSize.y;
     final int numCols = canvasState.canvasSize.x;
-    final List<List<bool>> visited = List<List<bool>>.generate(numCols, (final _) => List<bool>.filled(numRows, false));
+    //the visited mask is flat, so a start off the canvas would alias another pixel
+    if (start.x < 0 || start.y < 0 || start.x >= numCols || start.y >= numRows)
+    {
+      return;
+    }
+    final Uint8List visited = Uint8List(numCols * numRows);
     final int? startValue = layer.getRawValueAt(coord: start);
     final StackCol<CoordinateSetI> stackPoints = StackCol<CoordinateSetI>();
     final HashMap<CoordinateSetI, int> addPixels = HashMap<CoordinateSetI, int>();
@@ -261,9 +272,9 @@ class FillPainter extends IToolPainter
     {
       final CoordinateSetI curCoord = stackPoints.pop();
       final int? shadeAtPos = layer.getRawValueAt(coord: curCoord);
-      if (!visited[curCoord.x][curCoord.y] && shadeAtPos == startValue)
+      if (visited[curCoord.y * numCols + curCoord.x] == 0 && shadeAtPos == startValue)
       {
-        visited[curCoord.x][curCoord.y] = true;
+        visited[curCoord.y * numCols + curCoord.x] = 1;
         int shadeVal = shadeAtPos?? 0;
 
         if (shadeDirection == ShaderDirection.right)

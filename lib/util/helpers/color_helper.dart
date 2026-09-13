@@ -438,8 +438,13 @@ double getDeltaE00({
   return sqrt(sum < 0.0 ? 0.0 : sum);
 }
 
-/// Converts an argb color to a rgba color.
-/// Caches the packed RGBA value of each [ColorReference] for one render pass.
+/// Colors to RGBA, remembered per color reference.
+///
+/// Pixel buffers render through `PaletteCodec.rgbaLut` instead, which is a
+/// table indexed by color code. This cache is for the one place that still
+/// works on a map of colors: the raster of the pixels a tool is about to draw
+/// (`IToolPainter.rasterizePixels`), which is built fresh on every cursor move
+/// and never stored.
 class RgbaCache
 {
   final Map<ColorReference, int> _values = <ColorReference, int>{};

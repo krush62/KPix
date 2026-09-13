@@ -43,7 +43,7 @@ class FillOptions extends IToolOptions
           unmodifiedNotifier: fillOptions.unmodifiedFillAdjacent,
           label: "Fill Adjacent",
           defaultState: FillConstraints.fillAdjacentDefault,
-          modifierNotifier: hotkeyManager.controlNotifier
+          modifierNotifier: hotkeyManager.controlNotifier,
         ),
         ToolSwitchRow(
           //flex: toolSettingsWidgetOptions.columnWidthRatio,

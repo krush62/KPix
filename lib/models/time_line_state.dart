@@ -202,7 +202,7 @@ class Timeline
   void _anchorFloatingSelection({final bool addToHistoryStack = true})
   {
     final SelectionState selectionState = GetIt.I.get<DocumentState>().selectionState;
-    if (selectionState.selection.selectedPixels.isNotEmpty)
+    if (!selectionState.selection.isEmpty)
     {
       selectionState.deselect(addToHistoryStack: addToHistoryStack);
     }

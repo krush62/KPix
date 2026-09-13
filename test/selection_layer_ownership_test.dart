@@ -72,7 +72,7 @@ void main()
         GetIt.I.get<LayerManager>().layerDeletedSelected(deleteLayer: doomed);
         await settle();
 
-        expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isEmpty,
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isTrue,
             reason: "the layer the content belongs to is gone, so nothing may still be floating",);
         expect(keeper.getDataEntry(coord: pixel), isNull,
             reason: "the deleted layer's pixels must not reappear on the layer that happens to be selected next",);

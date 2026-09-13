@@ -64,7 +64,7 @@ Future<ImportResult> import({required final ImportData importData, required fina
 
 
       drawingLayer = await _createDrawingLayer(colorList: colorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
-      await _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
+      await _removeUnusedRamps(ramps: ramps, references: drawingLayer.usedColors());
       if (!ramps.contains(drawingLayer.settings.outerColorReference.value.ramp))
       {
         drawingLayer.settings.outerColorReference.value = ramps.first.references.first;

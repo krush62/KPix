@@ -93,7 +93,7 @@ void main()
         GetIt.I.get<HistoryController>().undoPressed();
         await settle();
 
-        expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isEmpty, reason: "the selection is undone");
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isTrue, reason: "the selection is undone");
         //restoring rebuilds the layer it touched, so the live one has to be looked up again
         expect(layerAt(projectSession: projectSession, index: 0).getDataEntry(coord: pixel), color, reason: "and the pixel is back where it came from");
         expect(copiesOf(projectSession: projectSession, coord: pixel), 1);
@@ -132,8 +132,8 @@ void main()
 
     testWidgets("an untouched selection reports itself as empty", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
-        expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isEmpty);
-        expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isTrue,
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isTrue);
+        expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmptyNotifer.value, isTrue,
             reason: "the notifier drives every selection button, so it has to start out agreeing with the content",);
       },);
     });

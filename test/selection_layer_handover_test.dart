@@ -168,10 +168,10 @@ void main()
 
       GetIt.I.get<DocumentState>().selectionState.selectAll();
       await settle();
-      expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isNotEmpty);
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isFalse);
 
       timeline.togglePlaying();
-      expect(GetIt.I.get<DocumentState>().selectionState.selection.selectedPixels, isEmpty,
+      expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isTrue,
           reason: "playback reselects a layer per frame and would drag the content along",);
       expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), "deselect",
           reason: "committing the content is an edit and has to be undoable",);

@@ -560,7 +560,8 @@ LoadFileSet _parseKPixFile({required final Uint8List bytes, required final Strin
             dropShadowDarkenBrighten: dropShadowDarkenBrighten,);
         }
         final int dataCount = reader.getUint32();
-        final HashMap<CoordinateSetI, HistoryColorReference> data = HashMap<CoordinateSetI, HistoryColorReference>();
+        //a pixel outside the canvas is dropped by the grid
+        final PixelGrid data = PixelGrid(width: canvasSize.x, height: canvasSize.y);
         for (int j = 0; j < dataCount; j++)
         {
           final int x = reader.getUint16();
@@ -569,9 +570,9 @@ LoadFileSet _parseKPixFile({required final Uint8List bytes, required final Strin
           if (colorRampIndex >= rampList.length) return LoadFileSet(status: "Color Ramp index out of range for layer $i : $colorRampIndex");
           final int colorIndex = reader.getUint8();
           if (colorIndex >= rampList[colorRampIndex].settings.colorCount) return LoadFileSet(status: "Color index out of range for layer $i: $colorIndex");
-          data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
+          data.set(x: x, y: y, value: PaletteCodec.codeOf(rampIndex: colorRampIndex, colorIndex: colorIndex));
         }
-        layerList.add(HistoryDrawingLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: drawingLayerSettings, layerIdentity: i));
+        layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, pixels: data.snapshot(), settings: drawingLayerSettings, layerIdentity: i));
       }
       else if (layerType == HistoryReferenceLayer) //REFERENCE LAYER
           {
@@ -798,22 +799,24 @@ LoadFileSet _parseKPixFile({required final Uint8List bytes, required final Strin
         }
 
         final int dataCount = reader.getUint32();
-        final HashMap<CoordinateSetI, int> data = HashMap<CoordinateSetI, int>();
+        //a pixel outside the canvas is dropped by the grid
+        final PixelGrid data = PixelGrid(width: canvasSize.x, height: canvasSize.y);
         for (int j = 0; j < dataCount; j++)
         {
           final int x = reader.getUint16();
           final int y = reader.getUint16();
-          final int shading = reader.getInt8();
-          data[CoordinateSetI(x: x, y: y)] = shading;
+          //-128, which one byte can hold, is beyond any shading limit and beyond what a signed pixel can store
+          final int shading = reader.getInt8().clamp(-SignedPixels.maxMagnitude, SignedPixels.maxMagnitude);
+          data.setSigned(x: x, y: y, value: shading);
         }
 
         if (layerType == HistoryShadingLayer)
         {
-          layerList.add(HistoryShadingLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: shadingLayerSettings, layerIdentity: i));
+          layerList.add(HistoryShadingLayer(visibilityState: visibilityState, lockState: lockState, pixels: data.snapshot(), settings: shadingLayerSettings, layerIdentity: i));
         }
         else if (layerType == HistoryDitherLayer)
         {
-          layerList.add(HistoryDitherLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: shadingLayerSettings, layerIdentity: i));
+          layerList.add(HistoryDitherLayer(visibilityState: visibilityState, lockState: lockState, pixels: data.snapshot(), settings: shadingLayerSettings, layerIdentity: i));
         }
       }
     }

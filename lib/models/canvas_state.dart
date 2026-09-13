@@ -66,9 +66,10 @@ class CanvasState
     final HistoryManager historyManager = GetIt.I.get<HistoryManager>();
 
     documentState.selectionState.deselect(addToHistoryStack: false, notify: false);
+    final Set<LayerState> transformed = Set<LayerState>.identity();
     for (final Frame f in documentState.timeline.frames.value)
     {
-      f.layerList.transformLayers(transformation: transformation, oldSize: canvasSize);
+      f.layerList.transformLayers(transformation: transformation, oldSize: canvasSize, done: transformed);
     }
     if (transformation == CanvasTransformation.rotate)
     {
@@ -90,7 +91,7 @@ class CanvasState
   {
     CoordinateSetI? topLeft;
     CoordinateSetI? bottomRight;
-    (topLeft, bottomRight) = GetIt.I.get<DocumentState>().selectionState.selection.getBoundingBox(canvasSize: _canvasSize);
+    (topLeft, bottomRight) = GetIt.I.get<DocumentState>().selectionState.selection.getBoundingBox();
     if (topLeft != null && bottomRight != null)
     {
       final CoordinateSetI newSize = CoordinateSetI(x: bottomRight.x - topLeft.x + 1, y: bottomRight.y - topLeft.y + 1);

@@ -19,8 +19,11 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/widgets/layer_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/overlays/overlay_selection_align_menu.dart';
@@ -54,6 +57,31 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
   void initState()
   {
     super.initState();
+    _hotkeyManager.addListener(func: _pasteAsNewLayerHotkey, action: HotkeyAction.selectionPasteAsNewLayer);
+  }
+
+  @override
+  void dispose()
+  {
+    _hotkeyManager.removeListener(func: _pasteAsNewLayerHotkey, action: HotkeyAction.selectionPasteAsNewLayer);
+    super.dispose();
+  }
+
+  void _pasteAsNewLayerHotkey()
+  {
+    if (_selectionState.hasClipboard)
+    {
+      _pasteAsNewLayerPressed();
+    }
+  }
+
+  void _pasteAsNewLayerPressed()
+  {
+    final LayerActionResult? result = _selectionState.pasteAsNewLayer();
+    if (result != null)
+    {
+      showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
+    }
   }
 
   void _alignDismiss()
@@ -161,7 +189,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               _createBarButton(
                 tooltip: "Paste As New Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPasteAsNewLayer, context: context)}",
                 icon: TablerIcons.clipboard_plus,
-                onPressedFunc: _selectionState.pasteAsNewLayer,
+                onPressedFunc: _pasteAsNewLayerPressed,
                 isEnabled: _selectionState.hasClipboard,
               ),
               _createBarButton(

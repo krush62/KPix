@@ -22,6 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
@@ -88,7 +89,8 @@ class SelectionState with ChangeNotifier
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) copyMerged();}, action: HotkeyAction.selectionCopyMerged);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) cut();}, action: HotkeyAction.selectionCut);
     hotkeyManager.addListener(func: () {if (_clipboard != null) paste();}, action: HotkeyAction.selectionPaste);
-    hotkeyManager.addListener(func: () {if (_clipboard != null) pasteAsNewLayer();}, action: HotkeyAction.selectionPasteAsNewLayer);
+    //pasting as a new layer reports a LayerActionResult that needs a localized
+    //message, so its hotkey is handled by the SelectionBarWidget
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) delete();}, action: HotkeyAction.selectionDelete);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) flipH();}, action: HotkeyAction.selectionFlipH);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) flipV();}, action: HotkeyAction.selectionFlipV);
@@ -701,15 +703,20 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  void pasteAsNewLayer()
+  /// Adds the clipboard as a new drawing layer.
+  ///
+  /// Returns null if there was nothing to paste, otherwise the result of adding
+  /// the layer.
+  LayerActionResult? pasteAsNewLayer()
   {
     final ResolvedClipboard? content = _resolveClipboard();
     if (content != null)
     {
       final CoordinateColorMapNullable colors = HashMap<CoordinateSetI, ColorReference?>();
       content.pixels.forEach(action: (final int x, final int y, final int code) => colors[CoordinateSetI(x: x, y: y)] = content.codec.decode(code: code));
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: colors);
+      return GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: colors).$1;
     }
+    return null;
   }
 
   void flipH({final bool notify = true, final bool addToHistoryStack = true})

@@ -19,6 +19,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
@@ -96,8 +97,8 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   String _getStepSliderLabel({required final int value})
   {
     final String prefix = value > 0 ? "+" : "";
-    final String suffix = value == 1 || value == -1 ? " step" : " steps";
-    return prefix + value.toString() + suffix;
+    final String suffix = value == 1 || value == -1 ? AppLocalizations.of(context)!.step : AppLocalizations.of(context)!.steps;
+    return "$prefix$value $suffix";
   }
 
 
@@ -138,9 +139,9 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
               value: option,
               label: Tooltip(
                 waitDuration: toolTipDuration,
-                message: option.desc,
+                message: option.description(AppLocalizations.of(context)!),
                 child: Text(
-                  option.label,
+                  option.label(AppLocalizations.of(context)!),
                   style: Theme.of(context).textTheme.bodySmall!.apply(color: selected == option ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
                 ),
               ),
@@ -263,7 +264,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
     return <Widget>[
       Row(
         children: <Widget>[
-          const Expanded(child: Text("Recursive", textAlign: TextAlign.end,)),
+          Expanded(child: Text(AppLocalizations.of(context)!.recursive, textAlign: TextAlign.end,)),
           ValueListenableBuilder<bool>(
             valueListenable: recursiveNotifier,
             builder: (final BuildContext context, final bool glowRec, final Widget? child) {
@@ -335,7 +336,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   List<Widget> _outerStrokeSection({required final BuildContext context})
   {
     return <Widget>[
-      ..._sectionHeader(context: context, title: "OUTER STROKE"),
+      ..._sectionHeader(context: context, title: AppLocalizations.of(context)!.outerStroke.toUpperCase()),
       _styleSelector<OuterStrokeStyle>(
         notifier: _settings.outerStrokeStyle,
         values: OuterStrokeStyle.values,
@@ -361,11 +362,11 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        const Text("Color", textAlign: TextAlign.center,),
+                        Text(AppLocalizations.of(context)!.color, textAlign: TextAlign.center,),
                         SizedBox(
                           height: _colorButtonHeight,
                           child: _colorButton(
-                            dialogTitle: "SELECT OUTER STROKE COLOR",
+                            dialogTitle: AppLocalizations.of(context)!.selectOuterStrokeColor.toUpperCase(),
                             notifier: _settings.outerColorReference,
                           ),
                         ),
@@ -379,7 +380,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        const Text("Darken/Brighten"),
+                        Text(AppLocalizations.of(context)!.darkenBrighten),
                         _indexedSlider(notifier: _settings.outerDarkenBrighten, values: _darkenBrightenValues),
                       ],
                     ),
@@ -402,7 +403,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
       ),
       const SizedBox(width: _generalPadding),
       _applyButton<OuterStrokeStyle>(
-        tooltip: "Apply Outline",
+        tooltip: AppLocalizations.of(context)!.applyOuterStroke,
         notifier: _settings.outerStrokeStyle,
         offValue: OuterStrokeStyle.off,
         canApply: (final OuterStrokeStyle style) => style == OuterStrokeStyle.solid || style == OuterStrokeStyle.relative,
@@ -414,7 +415,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   List<Widget> _innerStrokeSection({required final BuildContext context})
   {
     return <Widget>[
-      ..._sectionHeader(context: context, title: "INNER STROKE"),
+      ..._sectionHeader(context: context, title: AppLocalizations.of(context)!.innerStroke.toUpperCase()),
       _styleSelector<InnerStrokeStyle>(
         notifier: _settings.innerStrokeStyle,
         values: InnerStrokeStyle.values,
@@ -443,11 +444,11 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        const Text("Color", textAlign: TextAlign.center,),
+                        Text(AppLocalizations.of(context)!.color, textAlign: TextAlign.center,),
                         SizedBox(
                           height: _colorButtonHeight,
                           child: _colorButton(
-                            dialogTitle: "SELECT INNER STROKE COLOR",
+                            dialogTitle: AppLocalizations.of(context)!.selectInnerStrokeColor,
                             notifier: _settings.innerColorReference,
                           ),
                         ),
@@ -462,7 +463,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         const Spacer(),
-                        const Text("Darken/Brighten"),
+                        Text(AppLocalizations.of(context)!.darkenBrighten),
                         _indexedSlider(notifier: _settings.innerDarkenBrighten, values: _darkenBrightenValues),
                       ],
                     ),
@@ -492,7 +493,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                               min: _settings.constraints.bevelDistanceMin.toDouble(),
                               max: _settings.constraints.bevelDistanceMax.toDouble(),
                               textStyle: Theme.of(context).textTheme.bodyMedium!,
-                              label: "$distance px",
+                              label: "$distance ${AppLocalizations.of(context)!.pixelsAbbrev}",
                               onChanged: (final double value) {
                                 _settings.bevelDistance.value = value.round();
                               },
@@ -507,7 +508,9 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                               min: _settings.constraints.bevelStrengthMin.toDouble(),
                               max: _settings.constraints.bevelStrengthMax.toDouble(),
                               textStyle: Theme.of(context).textTheme.bodyMedium!,
-                              label: "$strength steps",
+                              label: strength == 1 ?
+                                "$strength ${AppLocalizations.of(context)!.step}" :
+                                "$strength ${AppLocalizations.of(context)!.steps}",
                               onChanged: (final double value) {
                                 _settings.bevelStrength.value = value.round();
                               },
@@ -524,7 +527,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
       ),
       const SizedBox(width: _generalPadding),
       _applyButton<InnerStrokeStyle>(
-        tooltip: "Apply Inline",
+        tooltip: AppLocalizations.of(context)!.applyInnerStroke,
         notifier: _settings.innerStrokeStyle,
         offValue: InnerStrokeStyle.off,
         canApply: (final InnerStrokeStyle style) => style != InnerStrokeStyle.off,
@@ -536,7 +539,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   List<Widget> _dropShadowSection({required final BuildContext context})
   {
     return <Widget>[
-      ..._sectionHeader(context: context, title: "DROP SHADOW"),
+      ..._sectionHeader(context: context, title: AppLocalizations.of(context)!.dropShadow.toUpperCase()),
       _styleSelector<DropShadowStyle>(
         notifier: _settings.dropShadowStyle,
         values: DropShadowStyle.values,
@@ -558,7 +561,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                   children: <Widget>[
                     _offsetRow(
                       context: context,
-                      label: "Horizontal",
+                      label: AppLocalizations.of(context)!.horizontal,
                       value: offset.x,
                       onChanged: (final int value) {
                         _settings.dropShadowOffset.value = CoordinateSetI(x: value, y: offset.y);
@@ -566,7 +569,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                     ),
                     _offsetRow(
                       context: context,
-                      label: "Vertical",
+                      label: AppLocalizations.of(context)!.vertical,
                       value: offset.y,
                       onChanged: (final int value) {
                         _settings.dropShadowOffset.value = CoordinateSetI(x: offset.x, y: value);
@@ -578,7 +581,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            const Expanded(child: Text("Darken /\nBrighten")),
+                            Expanded(child: Text(AppLocalizations.of(context)!.darkenBrightenBreak)),
                             Expanded(
                               flex: 2,
                               child: _indexedSlider(
@@ -595,11 +598,11 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                         height: _shadowRowHeight,
                         child: Row(
                           children: <Widget>[
-                            const Expanded(child: Text("Color")),
+                            Expanded(child: Text(AppLocalizations.of(context)!.color)),
                             Expanded(
                               flex: 2,
                               child: _colorButton(
-                                dialogTitle: "SELECT DROP SHADOW COLOR",
+                                dialogTitle: AppLocalizations.of(context)!.selectDropShadowColor.toUpperCase(),
                                 notifier: _settings.dropShadowColorReference,
                               ),
                             ),
@@ -615,7 +618,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
       ),
       const SizedBox(height: _generalPadding),
       _applyButton<DropShadowStyle>(
-        tooltip: "Apply Drop Shadow",
+        tooltip: AppLocalizations.of(context)!.applyDropShadow,
         notifier: _settings.dropShadowStyle,
         offValue: DropShadowStyle.off,
         canApply: (final DropShadowStyle style) => style == DropShadowStyle.solid,

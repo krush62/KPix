@@ -12,6 +12,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get close => 'Schließen';
 
   @override
+  String get color => 'Farbe';
+
+  @override
   String get createNewProject => 'Neues Projekt erstellen';
 
   @override
@@ -85,4 +88,112 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get keySpace => 'Leertaste';
+
+  @override
+  String get buttonOff => 'AUS';
+
+  @override
+  String get buttonSolid => 'SLD';
+
+  @override
+  String get buttonRelative => 'RLT';
+
+  @override
+  String get buttonGlow => 'STR';
+
+  @override
+  String get buttonShade => 'SHT';
+
+  @override
+  String get buttonBevel => 'FAS';
+
+  @override
+  String get outerStrokeOff => 'Kein Außenumriss';
+
+  @override
+  String get outerStrokeSolid => 'Solider Außenumriss';
+
+  @override
+  String get outerStrokeRelative => 'Farbrelativer Außenumriss';
+
+  @override
+  String get outerStrokeGlowing => 'Strahlender Außenumriss';
+
+  @override
+  String get outerStrokeShaded => 'Schattierender Außenumriss';
+
+  @override
+  String get innerStrokeOff => 'Kein Innenumriss';
+
+  @override
+  String get innerStrokeSolid => 'Solider Innenumriss';
+
+  @override
+  String get innerStrokeBeveled => 'Gefaster Innenumriss';
+
+  @override
+  String get innerStrokeGlowing => 'Strahlender Innenumriss';
+
+  @override
+  String get innerStrokeShaded => 'Schattierender Innenumriss';
+
+  @override
+  String get shadowOff => 'Kein Schlagschatten';
+
+  @override
+  String get shadowSolid => 'Solider Schlagschatten';
+
+  @override
+  String get shadowShaded => 'Schattierender Schlagschatten';
+
+  @override
+  String get step => 'Stufe';
+
+  @override
+  String get steps => 'Stufen';
+
+  @override
+  String get recursive => 'rekursiv';
+
+  @override
+  String get outerStroke => 'Außenumriss';
+
+  @override
+  String get innerStroke => 'Innenumriss';
+
+  @override
+  String get dropShadow => 'Schlagschatten';
+
+  @override
+  String get selectOuterStrokeColor => 'Außenumrissfarbe auswählen';
+
+  @override
+  String get darkenBrighten => 'Abdunkeln/Aufhellen';
+
+  @override
+  String get darkenBrightenBreak => 'Abdunkeln /\nAufhellen';
+
+  @override
+  String get applyOuterStroke => 'Außenumriss anwenden';
+
+  @override
+  String get selectInnerStrokeColor => 'Innenumrissfarbe auswählen';
+
+  @override
+  String get applyInnerStroke => 'Innenumriss anwenden';
+
+  @override
+  String get horizontal => 'horizontal';
+
+  @override
+  String get vertical => 'vertikal';
+
+  @override
+  String get selectDropShadowColor => 'Schlagschattenfarbe auswählen';
+
+  @override
+  String get applyDropShadow => 'Schlagschatten anwenden';
+
+  @override
+  String get pixelsAbbrev => 'px';
 }

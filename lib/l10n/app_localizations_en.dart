@@ -12,6 +12,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get close => 'Close';
 
   @override
+  String get color => 'color';
+
+  @override
   String get createNewProject => 'Create New Project';
 
   @override
@@ -80,8 +83,116 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keyAlt => 'alt';
 
   @override
-  String get keyCtrl => 'ctrldfhsh';
+  String get keyCtrl => 'ctrl';
 
   @override
   String get keySpace => 'space';
+
+  @override
+  String get buttonOff => 'OFF';
+
+  @override
+  String get buttonSolid => 'SLD';
+
+  @override
+  String get buttonRelative => 'RLT';
+
+  @override
+  String get buttonGlow => 'GLW';
+
+  @override
+  String get buttonShade => 'SHD';
+
+  @override
+  String get buttonBevel => 'BVL';
+
+  @override
+  String get outerStrokeOff => 'No outer stroke';
+
+  @override
+  String get outerStrokeSolid => 'Solid color outer stroke';
+
+  @override
+  String get outerStrokeRelative => 'Color relative outer stroke';
+
+  @override
+  String get outerStrokeGlowing => 'Glowing outer stroke';
+
+  @override
+  String get outerStrokeShaded => 'Shaded outer stroke';
+
+  @override
+  String get innerStrokeOff => 'No inner stroke';
+
+  @override
+  String get innerStrokeSolid => 'Solid color inner stroke';
+
+  @override
+  String get innerStrokeBeveled => 'Beveled inner stroke';
+
+  @override
+  String get innerStrokeGlowing => 'Glowing inner stroke';
+
+  @override
+  String get innerStrokeShaded => 'Shaded inner stroke';
+
+  @override
+  String get shadowOff => 'No drop shadow';
+
+  @override
+  String get shadowSolid => 'Solid color drop shadow';
+
+  @override
+  String get shadowShaded => 'Shaded drop shadow';
+
+  @override
+  String get step => 'step';
+
+  @override
+  String get steps => 'steps';
+
+  @override
+  String get recursive => 'recursive';
+
+  @override
+  String get outerStroke => 'Outer Stroke';
+
+  @override
+  String get innerStroke => 'Inner Stroke';
+
+  @override
+  String get dropShadow => 'Drop Shadow';
+
+  @override
+  String get selectOuterStrokeColor => 'Select outer stroke color';
+
+  @override
+  String get darkenBrighten => 'Darken/Brighten';
+
+  @override
+  String get darkenBrightenBreak => 'Darken /\nBrighten';
+
+  @override
+  String get applyOuterStroke => 'Apply Outer Stroke';
+
+  @override
+  String get selectInnerStrokeColor => 'Select inner stroke color';
+
+  @override
+  String get applyInnerStroke => 'Apply Inner Stroke';
+
+  @override
+  String get horizontal => 'horizontal';
+
+  @override
+  String get vertical => 'vertical';
+
+  @override
+  String get selectDropShadowColor => 'Select drop shadow color';
+
+  @override
+  String get applyDropShadow => 'Apply Drop Shadow';
+
+  @override
+  String get pixelsAbbrev => 'px';
 }

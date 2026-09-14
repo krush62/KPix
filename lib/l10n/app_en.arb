@@ -1,5 +1,6 @@
 {
   "close": "Close",
+  "color": "color",
 
   "createNewProject": "Create New Project",
   "width": "Width",
@@ -26,6 +27,46 @@
   "keyShift": "shift",
   "keyAlt": "alt",
   "keyCtrl": "ctrl",
-  "keySpace": "space"
+  "keySpace": "space",
+
+  "buttonOff": "OFF",
+  "buttonSolid": "SLD",
+  "buttonRelative": "RLT",
+  "buttonGlow": "GLW",
+  "buttonShade": "SHD",
+  "buttonBevel": "BVL",
+  "outerStrokeOff": "No outer stroke",
+  "outerStrokeSolid": "Solid color outer stroke",
+  "outerStrokeRelative": "Color relative outer stroke",
+  "outerStrokeGlowing": "Glowing outer stroke",
+  "outerStrokeShaded": "Shaded outer stroke",
+  "innerStrokeOff": "No inner stroke",
+  "innerStrokeSolid": "Solid color inner stroke",
+  "innerStrokeBeveled": "Beveled inner stroke",
+  "innerStrokeGlowing": "Glowing inner stroke",
+  "innerStrokeShaded": "Shaded inner stroke",
+  "shadowOff": "No drop shadow",
+  "shadowSolid": "Solid color drop shadow",
+  "shadowShaded": "Shaded drop shadow",
+  "step": "step",
+  "steps": "steps",
+  "recursive": "recursive",
+  "outerStroke": "Outer Stroke",
+  "innerStroke": "Inner Stroke",
+  "dropShadow": "Drop Shadow",
+  "selectOuterStrokeColor": "Select outer stroke color",
+  "darkenBrighten": "Darken/Brighten",
+  "darkenBrightenBreak": "Darken /\nBrighten",
+  "applyOuterStroke": "Apply Outer Stroke",
+  "selectInnerStrokeColor": "Select inner stroke color",
+  "applyInnerStroke": "Apply Inner Stroke",
+  "horizontal": "horizontal",
+  "vertical": "vertical",
+  "selectDropShadowColor": "Select drop shadow color",
+  "applyDropShadow": "Apply Drop Shadow",
+  "pixelsAbbrev": "px"
+
+
+
 
 }

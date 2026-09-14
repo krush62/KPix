@@ -104,6 +104,12 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get close;
 
+  /// No description provided for @color.
+  ///
+  /// In en, this message translates to:
+  /// **'color'**
+  String get color;
+
   /// No description provided for @createNewProject.
   ///
   /// In en, this message translates to:
@@ -239,7 +245,7 @@ abstract class AppLocalizations {
   /// No description provided for @keyCtrl.
   ///
   /// In en, this message translates to:
-  /// **'ctrldfhsh'**
+  /// **'ctrl'**
   String get keyCtrl;
 
   /// No description provided for @keySpace.
@@ -247,6 +253,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'space'**
   String get keySpace;
+
+  /// No description provided for @buttonOff.
+  ///
+  /// In en, this message translates to:
+  /// **'OFF'**
+  String get buttonOff;
+
+  /// No description provided for @buttonSolid.
+  ///
+  /// In en, this message translates to:
+  /// **'SLD'**
+  String get buttonSolid;
+
+  /// No description provided for @buttonRelative.
+  ///
+  /// In en, this message translates to:
+  /// **'RLT'**
+  String get buttonRelative;
+
+  /// No description provided for @buttonGlow.
+  ///
+  /// In en, this message translates to:
+  /// **'GLW'**
+  String get buttonGlow;
+
+  /// No description provided for @buttonShade.
+  ///
+  /// In en, this message translates to:
+  /// **'SHD'**
+  String get buttonShade;
+
+  /// No description provided for @buttonBevel.
+  ///
+  /// In en, this message translates to:
+  /// **'BVL'**
+  String get buttonBevel;
+
+  /// No description provided for @outerStrokeOff.
+  ///
+  /// In en, this message translates to:
+  /// **'No outer stroke'**
+  String get outerStrokeOff;
+
+  /// No description provided for @outerStrokeSolid.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid color outer stroke'**
+  String get outerStrokeSolid;
+
+  /// No description provided for @outerStrokeRelative.
+  ///
+  /// In en, this message translates to:
+  /// **'Color relative outer stroke'**
+  String get outerStrokeRelative;
+
+  /// No description provided for @outerStrokeGlowing.
+  ///
+  /// In en, this message translates to:
+  /// **'Glowing outer stroke'**
+  String get outerStrokeGlowing;
+
+  /// No description provided for @outerStrokeShaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Shaded outer stroke'**
+  String get outerStrokeShaded;
+
+  /// No description provided for @innerStrokeOff.
+  ///
+  /// In en, this message translates to:
+  /// **'No inner stroke'**
+  String get innerStrokeOff;
+
+  /// No description provided for @innerStrokeSolid.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid color inner stroke'**
+  String get innerStrokeSolid;
+
+  /// No description provided for @innerStrokeBeveled.
+  ///
+  /// In en, this message translates to:
+  /// **'Beveled inner stroke'**
+  String get innerStrokeBeveled;
+
+  /// No description provided for @innerStrokeGlowing.
+  ///
+  /// In en, this message translates to:
+  /// **'Glowing inner stroke'**
+  String get innerStrokeGlowing;
+
+  /// No description provided for @innerStrokeShaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Shaded inner stroke'**
+  String get innerStrokeShaded;
+
+  /// No description provided for @shadowOff.
+  ///
+  /// In en, this message translates to:
+  /// **'No drop shadow'**
+  String get shadowOff;
+
+  /// No description provided for @shadowSolid.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid color drop shadow'**
+  String get shadowSolid;
+
+  /// No description provided for @shadowShaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Shaded drop shadow'**
+  String get shadowShaded;
+
+  /// No description provided for @step.
+  ///
+  /// In en, this message translates to:
+  /// **'step'**
+  String get step;
+
+  /// No description provided for @steps.
+  ///
+  /// In en, this message translates to:
+  /// **'steps'**
+  String get steps;
+
+  /// No description provided for @recursive.
+  ///
+  /// In en, this message translates to:
+  /// **'recursive'**
+  String get recursive;
+
+  /// No description provided for @outerStroke.
+  ///
+  /// In en, this message translates to:
+  /// **'Outer Stroke'**
+  String get outerStroke;
+
+  /// No description provided for @innerStroke.
+  ///
+  /// In en, this message translates to:
+  /// **'Inner Stroke'**
+  String get innerStroke;
+
+  /// No description provided for @dropShadow.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop Shadow'**
+  String get dropShadow;
+
+  /// No description provided for @selectOuterStrokeColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Select outer stroke color'**
+  String get selectOuterStrokeColor;
+
+  /// No description provided for @darkenBrighten.
+  ///
+  /// In en, this message translates to:
+  /// **'Darken/Brighten'**
+  String get darkenBrighten;
+
+  /// No description provided for @darkenBrightenBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Darken /\nBrighten'**
+  String get darkenBrightenBreak;
+
+  /// No description provided for @applyOuterStroke.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Outer Stroke'**
+  String get applyOuterStroke;
+
+  /// No description provided for @selectInnerStrokeColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Select inner stroke color'**
+  String get selectInnerStrokeColor;
+
+  /// No description provided for @applyInnerStroke.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Inner Stroke'**
+  String get applyInnerStroke;
+
+  /// No description provided for @horizontal.
+  ///
+  /// In en, this message translates to:
+  /// **'horizontal'**
+  String get horizontal;
+
+  /// No description provided for @vertical.
+  ///
+  /// In en, this message translates to:
+  /// **'vertical'**
+  String get vertical;
+
+  /// No description provided for @selectDropShadowColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Select drop shadow color'**
+  String get selectDropShadowColor;
+
+  /// No description provided for @applyDropShadow.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Drop Shadow'**
+  String get applyDropShadow;
+
+  /// No description provided for @pixelsAbbrev.
+  ///
+  /// In en, this message translates to:
+  /// **'px'**
+  String get pixelsAbbrev;
 }
 
 class _AppLocalizationsDelegate

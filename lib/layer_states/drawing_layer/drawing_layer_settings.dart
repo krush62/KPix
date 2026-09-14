@@ -19,6 +19,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -36,26 +37,41 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 abstract interface class StyleOption
 {
   /// The short text shown on the segment.
-  String get label;
+  String label(final AppLocalizations l10n);
 
   /// The tooltip explaining what the style does.
-  String get desc;
+  String description(final AppLocalizations l10n);
 }
 
 enum OuterStrokeStyle implements StyleOption
 {
-  off(     0, "OFF", "No outer stroke"),
-  solid(   1, "SLD", "Solid color outer stroke"),
-  relative(2, "RLT", "Color relative outer stroke"),
-  glow(    3, "GLW", "Glowing outer stroke"),
-  shade(   4, "SHD", "Shaded outer stroke");
+  off(     0),
+  solid(   1),
+  relative(2),
+  glow(    3),
+  shade(   4);
 
-  const OuterStrokeStyle(this.id, this.label, this.desc);
+  const OuterStrokeStyle(this.id);
   final int id;
+
   @override
-  final String label;
+  String label(final AppLocalizations l10n) => switch (this) {
+    off => l10n.buttonOff,
+    solid => l10n.buttonSolid,
+    relative => l10n.buttonRelative,
+    glow => l10n.buttonGlow,
+    shade => l10n.buttonShade,
+  };
+
   @override
-  final String desc;
+  String description(final AppLocalizations l10n) => switch (this) {
+    off => l10n.outerStrokeOff,
+    solid => l10n.outerStrokeSolid,
+    relative => l10n.outerStrokeRelative,
+    glow => l10n.outerStrokeGlowing,
+    shade => l10n.outerStrokeShaded,
+  };
+
 
   static OuterStrokeStyle fromId(final int id) {
     return OuterStrokeStyle.values.firstWhere((final OuterStrokeStyle oss) => oss.id == id);
@@ -64,18 +80,33 @@ enum OuterStrokeStyle implements StyleOption
 
 enum InnerStrokeStyle implements StyleOption
 {
-  off(0, "OFF", "No inner stroke"),
-  solid(1, "SLD", "Solid color inner stroke"),
-  bevel(2, "BVL", "Beveled inner stroke"),
-  glow(3, "GLW", "Glowing inner stroke"),
-  shade(4, "SHD", "Shaded inner stroke");
+  off(0),
+  solid(1),
+  bevel(2),
+  glow(3),
+  shade(4);
 
-  const InnerStrokeStyle(this.id, this.label, this.desc);
+  const InnerStrokeStyle(this.id);
   final int id;
+
   @override
-  final String label;
+  String label(final AppLocalizations l10n) => switch (this) {
+    off => l10n.buttonOff,
+    solid => l10n.buttonSolid,
+    bevel => l10n.buttonBevel,
+    glow => l10n.buttonGlow,
+    shade => l10n.buttonShade,
+  };
+
   @override
-  final String desc;
+  String description(final AppLocalizations l10n) => switch (this) {
+    off => l10n.innerStrokeOff,
+    solid => l10n.innerStrokeSolid,
+    bevel => l10n.innerStrokeBeveled,
+    glow => l10n.innerStrokeGlowing,
+    shade => l10n.innerStrokeShaded,
+  };
+
 
   static InnerStrokeStyle fromId(final int id) {
     return InnerStrokeStyle.values.firstWhere((final InnerStrokeStyle iss) => iss.id == id);
@@ -84,16 +115,26 @@ enum InnerStrokeStyle implements StyleOption
 
 enum DropShadowStyle implements StyleOption
 {
-  off(0, "OFF", "No drop shadow"),
-  solid(1, "SLD", "Solid color drop shadow"),
-  shade(2, "SHD", "Shaded drop shadow");
+  off(0),
+  solid(1),
+  shade(2);
 
-  const DropShadowStyle(this.id, this.label, this.desc);
+  const DropShadowStyle(this.id);
   final int id;
+
   @override
-  final String label;
+  String label(final AppLocalizations l10n) => switch (this) {
+    off => l10n.buttonOff,
+    solid => l10n.buttonSolid,
+    shade => l10n.buttonShade,
+  };
+
   @override
-  final String desc;
+  String description(final AppLocalizations l10n) => switch (this) {
+    off => l10n.shadowOff,
+    solid => l10n.shadowSolid,
+    shade => l10n.shadowShaded,
+  };
 
   static DropShadowStyle fromId(final int id) {
     return DropShadowStyle.values.firstWhere((final DropShadowStyle dss) => dss.id == id);

@@ -330,4 +330,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get couldNotConvertImageData => 'Could not convert image data!';
+
+  @override
+  String get couldNotCrop => 'Could not crop!';
 }

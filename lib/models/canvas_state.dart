@@ -30,7 +30,13 @@ import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/messages.dart';
+
+/// The outcome of a canvas action, turned into a message by the widgets.
+enum CanvasActionResult
+{
+  success,
+  cropFailed,
+}
 
 /// The size of the drawing area, and the operations that change it.
 ///
@@ -87,7 +93,7 @@ class CanvasState
 
   }
 
-  void cropToSelection()
+  CanvasActionResult cropToSelection()
   {
     CoordinateSetI? topLeft;
     CoordinateSetI? bottomRight;
@@ -96,11 +102,12 @@ class CanvasState
     {
       final CoordinateSetI newSize = CoordinateSetI(x: bottomRight.x - topLeft.x + 1, y: bottomRight.y - topLeft.y + 1);
       changeCanvasSize(newSize: newSize, offset: CoordinateSetI(x: -topLeft.x, y: -topLeft.y));
+      return CanvasActionResult.success;
     }
     else
     {
       //This should never happen
-      showMessage(text: "Could not crop!", toastType: ToastType.error);
+      return CanvasActionResult.cropFailed;
     }
   }
 

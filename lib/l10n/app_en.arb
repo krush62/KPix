@@ -141,6 +141,8 @@
     }
   },
   "imageImportSuccessful": "Image imported successfully!",
-  "couldNotConvertImageData": "Could not convert image data!"
+  "couldNotConvertImageData": "Could not convert image data!",
+
+  "couldNotCrop": "Could not crop!"
 
 }

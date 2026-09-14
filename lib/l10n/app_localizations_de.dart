@@ -347,4 +347,7 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get couldNotConvertImageData =>
       'Die Bilddaten konnten nicht konvertiert werden!';
+
+  @override
+  String get couldNotCrop => 'Zuschneiden nicht möglich!';
 }

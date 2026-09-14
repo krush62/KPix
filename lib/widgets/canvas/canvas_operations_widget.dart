@@ -18,11 +18,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/canvas_transformation.dart';
 import 'package:kpix/models/constraints/canvas_size_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/widgets/canvas_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// Layout options for the [CanvasOperationsWidget].
@@ -75,7 +77,8 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 
   void _crop()
   {
-    _canvasState.cropToSelection();
+    final CanvasActionResult result = _canvasState.cropToSelection();
+    showMessageForCanvasResult(result: result, l10n: AppLocalizations.of(context)!);
   }
 
   void _setSize()

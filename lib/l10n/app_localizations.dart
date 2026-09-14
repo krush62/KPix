@@ -673,6 +673,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not convert image data!'**
   String get couldNotConvertImageData;
+
+  /// No description provided for @couldNotCrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not crop!'**
+  String get couldNotCrop;
 }
 
 class _AppLocalizationsDelegate

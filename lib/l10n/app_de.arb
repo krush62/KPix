@@ -103,6 +103,8 @@
   "loadingFailed": "Laden fehlgeschlagen ({status})",
   "fileSavedAt": "Datei gespeichert unter: {path}",
   "imageImportSuccessful": "Bild erfolgreich importiert!",
-  "couldNotConvertImageData": "Die Bilddaten konnten nicht konvertiert werden!"
+  "couldNotConvertImageData": "Die Bilddaten konnten nicht konvertiert werden!",
+
+  "couldNotCrop": "Zuschneiden nicht möglich!"
 
 }

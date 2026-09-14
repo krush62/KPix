@@ -30,7 +30,6 @@ import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
-import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
 
 /// Every operation that adds, removes, reorders or re-rasters a layer.
@@ -51,9 +50,8 @@ class LayerManager
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     hotkeyManager.addListener(func: () {changeLayerVisibility(layerState: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());}, action: HotkeyAction.layersSwitchVisibility);
     hotkeyManager.addListener(func: () {changeLayerLockState(layerState: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());}, action: HotkeyAction.layersSwitchLock);
-    //adding, duplicating and merging report a LayerActionResult that needs a
-    //localized message, so their hotkeys are handled by the RightBarWidget
-    hotkeyManager.addListener(func: () {layerDeletedSelected(deleteLayer: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());}, action: HotkeyAction.layersDelete);
+    //adding, duplicating, deleting and merging report a LayerActionResult that
+    //needs a localized message, so their hotkeys are handled by the RightBarWidget
     hotkeyManager.addListener(func: () {moveUpLayer(layerState: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());}, action: HotkeyAction.layersMoveUp);
     hotkeyManager.addListener(func: () {moveDownLayer(layerState: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());}, action: HotkeyAction.layersMoveDown);
     hotkeyManager.addListener(func: selectLayerAbove, action: HotkeyAction.layersSelectAbove);
@@ -325,13 +323,15 @@ class LayerManager
     }
   }
 
-  void layerDeletedSelected({required final LayerState? deleteLayer, final bool addToHistoryStack = true})
+  LayerActionResult layerDeletedSelected({required final LayerState? deleteLayer, final bool addToHistoryStack = true})
   {
+    LayerActionResult result = LayerActionResult.unknownError;
     if (deleteLayer != null && GetIt.I.get<DocumentState>().timeline.selectedFrame != null)
     {
       GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
       if (GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.deleteLayer(deleteLayer: deleteLayer))
       {
+        result = LayerActionResult.success;
         if (addToHistoryStack)
         {
           GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerDelete);
@@ -339,11 +339,12 @@ class LayerManager
       }
       else
       {
-        showMessage(text: "Cannot delete the layer!", toastType: ToastType.error);
+        result = LayerActionResult.lastLayerDelete;
       }
       rasterLayersAll();
       GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
     }
+    return result;
   }
 
   LayerActionResult layerMerged({required final LayerState? mergeLayer, final bool addToHistoryStack = true})

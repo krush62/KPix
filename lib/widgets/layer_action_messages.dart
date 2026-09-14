@@ -48,6 +48,8 @@ void showMessageForResult({required final LayerActionResult result, required fin
       showMessage(text: l10n.canOnlyMergeWithDrawingLayer, toastType: ToastType.warning);
     case LayerActionResult.effectLayerMerge:
       showMessage(text: l10n.cannotMergeWithActiveEffects, toastType: ToastType.warning);
+    case LayerActionResult.lastLayerDelete:
+      showMessage(text: l10n.cannotDeleteLastLayer, toastType: ToastType.error);
     case LayerActionResult.unknownError:
       showMessage(text: l10n.unknownError, toastType: ToastType.warning);
     case LayerActionResult.success:

@@ -94,6 +94,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
     _hotkeyManager.addListener(func: _newShadingLayerHotkey, action: HotkeyAction.layersNewShading);
     _hotkeyManager.addListener(func: _newGridLayerHotkey, action: HotkeyAction.layersNewGrid);
     _hotkeyManager.addListener(func: _duplicateLayerHotkey, action: HotkeyAction.layersDuplicate);
+    _hotkeyManager.addListener(func: _deleteLayerHotkey, action: HotkeyAction.layersDelete);
     _hotkeyManager.addListener(func: _mergeLayerHotkey, action: HotkeyAction.layersMerge);
   }
 
@@ -105,6 +106,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
     _hotkeyManager.removeListener(func: _newShadingLayerHotkey, action: HotkeyAction.layersNewShading);
     _hotkeyManager.removeListener(func: _newGridLayerHotkey, action: HotkeyAction.layersNewGrid);
     _hotkeyManager.removeListener(func: _duplicateLayerHotkey, action: HotkeyAction.layersDuplicate);
+    _hotkeyManager.removeListener(func: _deleteLayerHotkey, action: HotkeyAction.layersDelete);
     _hotkeyManager.removeListener(func: _mergeLayerHotkey, action: HotkeyAction.layersMerge);
     super.dispose();
   }
@@ -131,6 +133,16 @@ class _RightBarWidgetState extends State<RightBarWidget>
     {
       final (LayerActionResult, LayerState?) result = _layerManager.layerDuplicateSelected(duplicateLayer: currentLayer);
       showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
+    }
+  }
+
+  void _deleteLayerHotkey()
+  {
+    final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
+    if (currentLayer != null)
+    {
+      final LayerActionResult result = _layerManager.layerDeletedSelected(deleteLayer: currentLayer);
+      showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
     }
   }
 

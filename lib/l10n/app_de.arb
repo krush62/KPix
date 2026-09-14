@@ -80,6 +80,7 @@
   "canOnlyMergeWithDrawingLayer": "Kann nur mit Zeichenebenen zusammengeführt werden!",
   "cannotMergeToInvisibleLayer": "Mit einer ausgeblendeten Ebene kann nicht zusammengeführt werden!",
   "cannotMergeFromInvisibleLayer": "Von einer ausgeblendeten Ebene kann nicht zusammengeführt werden!",
+  "cannotDeleteLastLayer": "Die letzte Ebene kann nicht gelöscht werden!",
 
   "cannotDeleteFromHiddenLayer": "Aus einer ausgeblendeten Ebene kann nicht gelöscht werden!",
   "cannotDeleteFromLockedLayer": "Aus einer gesperrten Ebene kann nicht gelöscht werden!",

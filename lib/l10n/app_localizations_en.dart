@@ -251,6 +251,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Cannot merge layers with active effects!';
 
   @override
+  String get cannotDeleteLastLayer => 'Cannot delete the last layer!';
+
+  @override
   String get cannotDeleteFromHiddenLayer => 'Cannot delete from hidden layer!';
 
   @override

@@ -554,6 +554,12 @@ abstract class AppLocalizations {
   /// **'Cannot merge layers with active effects!'**
   String get cannotMergeWithActiveEffects;
 
+  /// No description provided for @cannotDeleteLastLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot delete the last layer!'**
+  String get cannotDeleteLastLayer;
+
   /// No description provided for @cannotDeleteFromHiddenLayer.
   ///
   /// In en, this message translates to:

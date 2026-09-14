@@ -87,6 +87,7 @@
   "cannotMergeToLockedLayer": "Cannot merge to a locked layer!",
   "canOnlyMergeWithDrawingLayer": "Can only merge with drawing layers!",
   "cannotMergeWithActiveEffects": "Cannot merge layers with active effects!",
+  "cannotDeleteLastLayer": "Cannot delete the last layer!",
 
   "cannotDeleteFromHiddenLayer": "Cannot delete from hidden layer!",
   "cannotDeleteFromLockedLayer": "Cannot delete from locked layer!",

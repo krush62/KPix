@@ -55,6 +55,7 @@ enum LayerActionResult {
   lockedLayerMergeTo,
   onlyMergeDrawingLayers,
   effectLayerMerge,
+  lastLayerDelete,
 
   unknownError,
 }

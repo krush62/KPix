@@ -260,6 +260,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ebenen mit aktiven Effekten können nicht zusammengeführt werden!';
 
   @override
+  String get cannotDeleteLastLayer =>
+      'Die letzte Ebene kann nicht gelöscht werden!';
+
+  @override
   String get cannotDeleteFromHiddenLayer =>
       'Aus einer ausgeblendeten Ebene kann nicht gelöscht werden!';
 

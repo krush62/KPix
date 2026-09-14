@@ -96,7 +96,8 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _deletePressed()
   {
-    _layerManager.layerDeletedSelected(deleteLayer: widget.layerState);
+    final LayerActionResult result = _layerManager.layerDeletedSelected(deleteLayer: widget.layerState);
+    showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
     _closeActionsMenus();
   }
 

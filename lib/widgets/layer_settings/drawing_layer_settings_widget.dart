@@ -97,8 +97,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   String _getStepSliderLabel({required final int value})
   {
     final String prefix = value > 0 ? "+" : "";
-    final String suffix = value == 1 || value == -1 ? AppLocalizations.of(context)!.step : AppLocalizations.of(context)!.steps;
-    return "$prefix$value $suffix";
+    return AppLocalizations.of(context)!.stepCount(value.abs(), "$prefix$value");
   }
 
 
@@ -508,9 +507,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                               min: _settings.constraints.bevelStrengthMin.toDouble(),
                               max: _settings.constraints.bevelStrengthMax.toDouble(),
                               textStyle: Theme.of(context).textTheme.bodyMedium!,
-                              label: strength == 1 ?
-                                "$strength ${AppLocalizations.of(context)!.step}" :
-                                "$strength ${AppLocalizations.of(context)!.steps}",
+                              label: AppLocalizations.of(context)!.stepCount(strength.abs(), "$strength"),
                               onChanged: (final double value) {
                                 _settings.bevelStrength.value = value.round();
                               },

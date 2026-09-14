@@ -48,8 +48,14 @@
   "shadowOff": "No drop shadow",
   "shadowSolid": "Solid color drop shadow",
   "shadowShaded": "Shaded drop shadow",
-  "step": "step",
-  "steps": "steps",
+  "stepCount": "{count, plural, =1{{value} step} other{{value} steps}}",
+  "@stepCount": {
+    "description": "A number of steps; count picks the plural form, value is the number as shown (it may carry a sign)",
+    "placeholders": {
+      "count": {"type": "int"},
+      "value": {"type": "String"}
+    }
+  },
   "recursive": "recursive",
   "outerStroke": "Outer Stroke",
   "innerStroke": "Inner Stroke",

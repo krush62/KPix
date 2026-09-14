@@ -368,17 +368,11 @@ abstract class AppLocalizations {
   /// **'Shaded drop shadow'**
   String get shadowShaded;
 
-  /// No description provided for @step.
+  /// A number of steps; count picks the plural form, value is the number as shown (it may carry a sign)
   ///
   /// In en, this message translates to:
-  /// **'step'**
-  String get step;
-
-  /// No description provided for @steps.
-  ///
-  /// In en, this message translates to:
-  /// **'steps'**
-  String get steps;
+  /// **'{count, plural, =1{{value} step} other{{value} steps}}'**
+  String stepCount(int count, String value);
 
   /// No description provided for @recursive.
   ///

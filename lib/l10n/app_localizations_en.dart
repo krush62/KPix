@@ -146,10 +146,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shadowShaded => 'Shaded drop shadow';
 
   @override
-  String get step => 'step';
-
-  @override
-  String get steps => 'steps';
+  String stepCount(int count, String value) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$value steps',
+      one: '$value step',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get recursive => 'recursive';

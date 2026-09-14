@@ -296,4 +296,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loadingPaletteFailed => 'Loading palette failed!';
+
+  @override
+  String undoStep(String description) {
+    return 'Undo: $description';
+  }
+
+  @override
+  String redoStep(String description) {
+    return 'Redo: $description';
+  }
+
+  @override
+  String get historyRestoreFailed => 'History restore failed!';
 }

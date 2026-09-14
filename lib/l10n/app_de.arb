@@ -95,6 +95,10 @@
 
   "needAtLeastColorRamps": "{count, plural, =1{Es wird mindestens eine Farbrampe benötigt!} other{Es werden mindestens {count} Farbrampen benötigt!}}",
   "notMoreThanColorRampsAllowed": "Es sind nicht mehr als {count} Farbrampen erlaubt!",
-  "loadingPaletteFailed": "Laden der Palette fehlgeschlagen!"
+  "loadingPaletteFailed": "Laden der Palette fehlgeschlagen!",
+
+  "undoStep": "Rückgängig: {description}",
+  "redoStep": "Wiederholen: {description}",
+  "historyRestoreFailed": "Wiederherstellen aus dem Verlauf fehlgeschlagen!"
 
 }

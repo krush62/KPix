@@ -311,4 +311,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get loadingPaletteFailed => 'Laden der Palette fehlgeschlagen!';
+
+  @override
+  String undoStep(String description) {
+    return 'Rückgängig: $description';
+  }
+
+  @override
+  String redoStep(String description) {
+    return 'Wiederholen: $description';
+  }
+
+  @override
+  String get historyRestoreFailed =>
+      'Wiederherstellen aus dem Verlauf fehlgeschlagen!';
 }

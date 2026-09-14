@@ -61,6 +61,7 @@ import 'package:kpix/util/helpers/update_helper.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/canvas/canvas_widget.dart';
 import 'package:kpix/widgets/controls/kpix_splitter.dart';
+import 'package:kpix/widgets/history_action_messages.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/main/right_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
@@ -555,9 +556,13 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       );
       if (lfs.path != null && lfs.historyState != null)
       {
-        await projectSession.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
+        final HistoryRestoreResult? restoreResult = await projectSession.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
         projectSession.hasProjectNotifier.value = true;
         _newProjectDialog.hide();
+        if (restoreResult != null && mounted)
+        {
+          showMessageForHistoryResult(result: restoreResult, l10n: AppLocalizations.of(context)!);
+        }
         showMessage(text: "work recovered", toastType: ToastType.info);
       }
       else

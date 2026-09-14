@@ -63,6 +63,7 @@ import 'package:kpix/models/history/history_state.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/history/history_timeline.dart';
 import 'package:kpix/models/history/ramp_resolver.dart';
+import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/palette_manager_data.dart';
@@ -231,7 +232,9 @@ Future<(String?, Uint8List?)> getPathAndDataForImage() async
   }
 }
 
-void loadFilePressed({final Function()? finishCallback, final Function()? loadStartCallback})
+/// [finishCallback] receives the result of restoring the loaded file, or null if
+/// it held nothing to restore.
+void loadFilePressed({final void Function(HistoryRestoreResult? result)? finishCallback, final Function()? loadStartCallback})
 {
   final String exportDir = GetIt.I.get<AppPaths>().exportDir;
   if (isDesktop(includingWeb: true))
@@ -256,7 +259,7 @@ void loadFilePressed({final Function()? finishCallback, final Function()? loadSt
   }
 }
 
-void _loadFileChosen({final FilePickerResult? result, required final Function()? finishCallback, required final Function()? loadStartCallback,})
+void _loadFileChosen({final FilePickerResult? result, required final void Function(HistoryRestoreResult? result)? finishCallback, required final Function()? loadStartCallback,})
 {
   if (result != null && result.files.isNotEmpty) 
   {
@@ -279,11 +282,17 @@ void _loadFileChosen({final FilePickerResult? result, required final Function()?
   }
 }
 
-void fileLoaded({required final LoadFileSet loadFileSet, required final Function()? finishCallback,})
+/// [finishCallback] receives the result of restoring [loadFileSet], or null if it
+/// held nothing to restore; it is called even if loading throws.
+void fileLoaded({required final LoadFileSet loadFileSet, required final void Function(HistoryRestoreResult? result)? finishCallback,})
 {
-  GetIt.I.get<ProjectSession>().restoreFromFile(loadFileSet: loadFileSet).whenComplete(()
+  HistoryRestoreResult? restoreResult;
+  GetIt.I.get<ProjectSession>().restoreFromFile(loadFileSet: loadFileSet).then((final HistoryRestoreResult? result)
   {
-    finishCallback?.call();
+    restoreResult = result;
+  }).whenComplete(()
+  {
+    finishCallback?.call(restoreResult);
   });
 }
 

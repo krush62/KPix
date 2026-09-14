@@ -23,6 +23,7 @@ import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
+import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/models/project_session.dart';
@@ -31,6 +32,7 @@ import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
+import 'package:kpix/widgets/history_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// Layout options for [ProjectManagerWidget].
@@ -141,13 +143,25 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       return;
     }
     _loadingDialog.show(context: context);
+    //taken now: this widget is dismissed long before the file has loaded
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     loadKPixFile(
       fileData: null,
       path: selectedPath,
       drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
       shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
       frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
-    ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: _loadingDialog.hide);});
+    ).then((final LoadFileSet loadFileSet)
+    {
+      fileLoaded(loadFileSet: loadFileSet, finishCallback: (final HistoryRestoreResult? result)
+      {
+        _loadingDialog.hide();
+        if (result != null)
+        {
+          showMessageForHistoryResult(result: result, l10n: l10n);
+        }
+      },);
+    });
     _closeSaveBeforeLoadWarning();
     //report the load before dismissing, so the dismiss handler can drop any
     //pending callback without discarding one that is still owed a call

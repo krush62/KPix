@@ -24,6 +24,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/kpix_theme.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/document_state.dart';
@@ -42,6 +43,7 @@ import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/util/messages.dart';
+import 'package:kpix/widgets/history_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:logger/logger.dart';
@@ -297,9 +299,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _loadFileWithLoadingDialog({final Function()? callback})
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     loadFilePressed(
-      finishCallback: () {
+      finishCallback: (final HistoryRestoreResult? result) {
         _openLoadingDialog.hide();
+        if (result != null)
+        {
+          showMessageForHistoryResult(result: result, l10n: l10n);
+        }
         callback?.call();
       },
       loadStartCallback: () {
@@ -388,12 +395,20 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _undoPressed()
   {
-    GetIt.I.get<HistoryController>().undoPressed();
+    final HistoryStep? step = GetIt.I.get<HistoryController>().undoPressed();
+    if (step != null)
+    {
+      showMessagesForUndo(step: step, l10n: AppLocalizations.of(context)!);
+    }
   }
 
   void _redoPressed()
   {
-    GetIt.I.get<HistoryController>().redoPressed();
+    final HistoryStep? step = GetIt.I.get<HistoryController>().redoPressed();
+    if (step != null)
+    {
+      showMessagesForRedo(step: step, l10n: AppLocalizations.of(context)!);
+    }
   }
 
   void _savePreferencesPressed()

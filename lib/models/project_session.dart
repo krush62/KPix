@@ -100,11 +100,13 @@ class ProjectSession
     return "KPix ${projectName.value ?? ""}${hasChanges.value ? "*" : ""}";
   }
 
-  Future<void> restoreFromFile({required final LoadFileSet loadFileSet, final bool setHasChanges = false}) async
+  /// Returns the result of restoring the loaded state, or null if the file held
+  /// nothing to restore.
+  Future<HistoryRestoreResult?> restoreFromFile({required final LoadFileSet loadFileSet, final bool setHasChanges = false}) async
   {
     if (loadFileSet.historyState != null && loadFileSet.path != null)
     {
-      await GetIt.I.get<HistoryController>().restoreState(historyState: loadFileSet.historyState, typeGroup: HistoryStateTypeGroup.full);
+      final HistoryRestoreResult result = await GetIt.I.get<HistoryController>().restoreState(historyState: loadFileSet.historyState, typeGroup: HistoryStateTypeGroup.full);
       //copied colors belong to the previous palette
       GetIt.I.get<DocumentState>().selectionState.clearClipboard();
       final String projectNameExtracted = extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
@@ -121,10 +123,12 @@ class ProjectSession
       {
         showMessage(text: loadFileSet.status, toastType: ToastType.error);
       }
+      return result;
     }
     else
     {
       showMessage(text: "Loading failed (${loadFileSet.status})", toastType: ToastType.error);
+      return null;
     }
   }
 

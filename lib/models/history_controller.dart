@@ -40,8 +40,18 @@ import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/messages.dart';
 import 'package:logger/logger.dart';
+
+/// The outcome of putting a [HistoryState] back, turned into a message by the widgets.
+enum HistoryRestoreResult
+{
+  success,
+  failed,
+}
+
+/// An undo or redo that was carried out: the description of the step and the
+/// restore it started, which finishes later.
+typedef HistoryStep = ({String description, Future<HistoryRestoreResult> restore});
 
 /// Undo, redo, and putting a [HistoryState] back onto the live document.
 ///
@@ -54,35 +64,40 @@ class HistoryController
   //before undo/redo so freshly drawn content cannot be lost to the poll timer
   VoidCallback? flushHistoryData;
 
-  void undoPressed()
+  /// Returns null if there was nothing to undo.
+  HistoryStep? undoPressed()
   {
     flushHistoryData?.call();
     if (GetIt.I.get<HistoryManager>().hasUndo.value && !GetIt.I.get<DocumentState>().timeline.isPlaying.value)
     {
-      showMessage(text: "Undo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}", toastType: ToastType.undo);
+      final String description = GetIt.I.get<HistoryManager>().getCurrentDescription();
       //the state being undone describes what changed (and on which layer);
       //the target state provides the data to restore
       final HistoryState? currentState = GetIt.I.get<HistoryManager>().getCurrentState();
       final HistoryStateTypeGroup typeGroup = currentState != null ? currentState.type.group : HistoryStateTypeGroup.full;
-      restoreState(historyState: GetIt.I.get<HistoryManager>().undo(), typeGroup: typeGroup, restoreLayerIndices: currentState?.restoreLayerIndices);
+      final Future<HistoryRestoreResult> restore = restoreState(historyState: GetIt.I.get<HistoryManager>().undo(), typeGroup: typeGroup, restoreLayerIndices: currentState?.restoreLayerIndices);
       GetIt.I.get<ProjectSession>().hasChanges.value = !GetIt.I.get<HistoryManager>().isAtSavedState;
+      return (description: description, restore: restore);
     }
+    return null;
   }
 
-  void redoPressed()
+  /// Returns null if there was nothing to redo.
+  HistoryStep? redoPressed()
   {
     flushHistoryData?.call();
     if (GetIt.I.get<HistoryManager>().hasRedo.value && !GetIt.I.get<DocumentState>().timeline.isPlaying.value)
     {
       final HistoryState? switchState = GetIt.I.get<HistoryManager>().redo();
       final HistoryStateTypeGroup typeGroup = switchState != null ? switchState.type.group : HistoryStateTypeGroup.full;
-      restoreState(historyState: switchState, typeGroup: typeGroup, restoreLayerIndices: switchState?.restoreLayerIndices);
+      final Future<HistoryRestoreResult> restore = restoreState(historyState: switchState, typeGroup: typeGroup, restoreLayerIndices: switchState?.restoreLayerIndices);
       GetIt.I.get<ProjectSession>().hasChanges.value = !GetIt.I.get<HistoryManager>().isAtSavedState;
-      showMessage(text: "Redo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}", toastType: ToastType.redo);
+      return (description: GetIt.I.get<HistoryManager>().getCurrentDescription(), restore: restore);
     }
+    return null;
   }
 
-  Future<void> restoreState({required final HistoryState? historyState, required final HistoryStateTypeGroup typeGroup, final Set<int>? restoreLayerIndices}) async
+  Future<HistoryRestoreResult> restoreState({required final HistoryState? historyState, required final HistoryStateTypeGroup typeGroup, final Set<int>? restoreLayerIndices}) async
   {
     final Set<int> restoreIndices = restoreLayerIndices ?? const <int>{};
     const String failMessage = "History restore failed!";
@@ -242,14 +257,15 @@ class HistoryController
       }
       catch (e, s)
       {
-        showMessage(text: failMessage, toastType: ToastType.error);
         GetIt.I.get<Logger>().w(failMessage, error: e, stackTrace: s);
+        return HistoryRestoreResult.failed;
       }
     }
     else
     {
-      showMessage(text: failMessage, toastType: ToastType.error);
       GetIt.I.get<Logger>().w(failMessage);
+      return HistoryRestoreResult.failed;
     }
+    return HistoryRestoreResult.success;
   }
 }

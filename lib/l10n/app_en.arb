@@ -105,6 +105,20 @@
       "count": {"type": "int"}
     }
   },
-  "loadingPaletteFailed": "Loading palette failed!"
+  "loadingPaletteFailed": "Loading palette failed!",
+
+  "undoStep": "Undo: {description}",
+  "@undoStep": {
+    "placeholders": {
+      "description": {"type": "String"}
+    }
+  },
+  "redoStep": "Redo: {description}",
+  "@redoStep": {
+    "placeholders": {
+      "description": {"type": "String"}
+    }
+  },
+  "historyRestoreFailed": "History restore failed!"
 
 }

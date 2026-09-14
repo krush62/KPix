@@ -637,6 +637,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading palette failed!'**
   String get loadingPaletteFailed;
+
+  /// No description provided for @undoStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo: {description}'**
+  String undoStep(String description);
+
+  /// No description provided for @redoStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Redo: {description}'**
+  String redoStep(String description);
+
+  /// No description provided for @historyRestoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'History restore failed!'**
+  String get historyRestoreFailed;
 }
 
 class _AppLocalizationsDelegate

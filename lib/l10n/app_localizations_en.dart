@@ -314,4 +314,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyRestoreFailed => 'History restore failed!';
+
+  @override
+  String loadingFailed(String status) {
+    return 'Loading failed ($status)';
+  }
+
+  @override
+  String fileSavedAt(String path) {
+    return 'File saved at: $path';
+  }
+
+  @override
+  String get imageImportSuccessful => 'Image imported successfully!';
+
+  @override
+  String get couldNotConvertImageData => 'Could not convert image data!';
 }

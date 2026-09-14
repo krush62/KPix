@@ -98,6 +98,11 @@
 
   "undoStep": "Rückgängig: {description}",
   "redoStep": "Wiederholen: {description}",
-  "historyRestoreFailed": "Wiederherstellen aus dem Verlauf fehlgeschlagen!"
+  "historyRestoreFailed": "Wiederherstellen aus dem Verlauf fehlgeschlagen!",
+
+  "loadingFailed": "Laden fehlgeschlagen ({status})",
+  "fileSavedAt": "Datei gespeichert unter: {path}",
+  "imageImportSuccessful": "Bild erfolgreich importiert!",
+  "couldNotConvertImageData": "Die Bilddaten konnten nicht konvertiert werden!"
 
 }

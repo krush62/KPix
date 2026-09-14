@@ -39,11 +39,13 @@ class LoadFileSet
   final String? path;
   LoadFileSet({required this.status, this.historyState, this.path});
 }
+/// The outcome of importing an image, turned into a message by the widgets.
+enum ImageImportResult { success, conversionFailed }
 class ImportResult
 {
   final ImportDataSet? data;
-  final String message;
-  ImportResult({this.data, required this.message});
+  final ImageImportResult result;
+  ImportResult({this.data, required this.result});
 }
 
 class ImportDataSet

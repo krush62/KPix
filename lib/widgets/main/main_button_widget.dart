@@ -46,6 +46,7 @@ import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/history_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:kpix/widgets/project_action_messages.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
 
@@ -149,7 +150,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         onDismiss: _closeAllMenus,
         onAccept: ({required final Function()? callback, required final String fileName}) {
           _closeAllMenus();
-          saveFilePressed(fileName: fileName, finishCallback: callback);
+          saveFilePressed(fileName: fileName, finishCallback: callback, savedCallback: _fileSaved);
         },
     );
     _importDialog = getImportDialog(
@@ -301,11 +302,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     loadFilePressed(
-      finishCallback: (final HistoryRestoreResult? result) {
+      finishCallback: (final ProjectLoadResult? result) {
         _openLoadingDialog.hide();
         if (result != null)
         {
-          showMessageForHistoryResult(result: result, l10n: l10n);
+          showMessagesForProjectLoad(result: result, l10n: l10n);
         }
         callback?.call();
       },
@@ -334,6 +335,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _saveMenu.show(context: context);
   }
 
+  void _fileSaved(final String displayPath)
+  {
+    if (mounted)
+    {
+      showMessageForFileSaved(displayPath: displayPath, l10n: AppLocalizations.of(context)!);
+    }
+  }
+
   void _saveFile({final Function()? callback})
   {
     if (_projectSession.projectName.value == null)
@@ -342,7 +351,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
     else
     {
-      saveFilePressed(fileName: _projectSession.projectName.value!, finishCallback: callback);
+      saveFilePressed(fileName: _projectSession.projectName.value!, finishCallback: callback, savedCallback: _fileSaved);
       _closeAllMenus();
     }
   }
@@ -353,7 +362,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         onDismiss: _closeAllMenus,
         onAccept: ({required final Function()? callback, required final String fileName}) {
           _closeAllMenus();
-          saveFilePressed(fileName: fileName, finishCallback: callback);
+          saveFilePressed(fileName: fileName, finishCallback: callback, savedCallback: _fileSaved);
         },
         callback: callback,
     );
@@ -505,9 +514,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _importLoadingDialog.show(context: context);
     try
     {
+      final AppLocalizations l10n = AppLocalizations.of(context)!;
       import(importData: importData, currentRamps: GetIt.I.get<PaletteState>().colorRamps).then((final ImportResult result)
       {
         _projectSession.importFile(importResult: result);
+        showMessageForImageImport(result: result.result, l10n: l10n);
         GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
         GetIt.I.get<LayerManager>().rasterLayersFrame();
         _documentState.timeline.layerChangeNotifier.reportChange();

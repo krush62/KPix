@@ -63,7 +63,6 @@ import 'package:kpix/models/history/history_state.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/history/history_timeline.dart';
 import 'package:kpix/models/history/ramp_resolver.dart';
-import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/palette_manager_data.dart';
@@ -232,9 +231,9 @@ Future<(String?, Uint8List?)> getPathAndDataForImage() async
   }
 }
 
-/// [finishCallback] receives the result of restoring the loaded file, or null if
-/// it held nothing to restore.
-void loadFilePressed({final void Function(HistoryRestoreResult? result)? finishCallback, final Function()? loadStartCallback})
+/// [finishCallback] receives what loading the file came to, or null if loading
+/// threw.
+void loadFilePressed({final void Function(ProjectLoadResult? result)? finishCallback, final Function()? loadStartCallback})
 {
   final String exportDir = GetIt.I.get<AppPaths>().exportDir;
   if (isDesktop(includingWeb: true))
@@ -259,7 +258,7 @@ void loadFilePressed({final void Function(HistoryRestoreResult? result)? finishC
   }
 }
 
-void _loadFileChosen({final FilePickerResult? result, required final void Function(HistoryRestoreResult? result)? finishCallback, required final Function()? loadStartCallback,})
+void _loadFileChosen({final FilePickerResult? result, required final void Function(ProjectLoadResult? result)? finishCallback, required final Function()? loadStartCallback,})
 {
   if (result != null && result.files.isNotEmpty) 
   {
@@ -282,31 +281,33 @@ void _loadFileChosen({final FilePickerResult? result, required final void Functi
   }
 }
 
-/// [finishCallback] receives the result of restoring [loadFileSet], or null if it
-/// held nothing to restore; it is called even if loading throws.
-void fileLoaded({required final LoadFileSet loadFileSet, required final void Function(HistoryRestoreResult? result)? finishCallback,})
+/// [finishCallback] receives what loading [loadFileSet] came to, or null if
+/// loading threw; it is called either way.
+void fileLoaded({required final LoadFileSet loadFileSet, required final void Function(ProjectLoadResult? result)? finishCallback,})
 {
-  HistoryRestoreResult? restoreResult;
-  GetIt.I.get<ProjectSession>().restoreFromFile(loadFileSet: loadFileSet).then((final HistoryRestoreResult? result)
+  ProjectLoadResult? loadResult;
+  GetIt.I.get<ProjectSession>().restoreFromFile(loadFileSet: loadFileSet).then((final ProjectLoadResult result)
   {
-    restoreResult = result;
+    loadResult = result;
   }).whenComplete(()
   {
-    finishCallback?.call(restoreResult);
+    finishCallback?.call(loadResult);
   });
 }
 
-Future<void> saveFilePressed({required final String fileName, final Function()? finishCallback, final bool forceSaveAs = false,}) async
+/// [savedCallback] receives the path to show the user once the file is saved;
+/// [finishCallback] is called afterwards, and also if saving failed.
+Future<void> saveFilePressed({required final String fileName, final Function()? finishCallback, final void Function(String displayPath)? savedCallback, final bool forceSaveAs = false,}) async
 {
   if (!kIsWeb)
   {
     final String finalPath = p.join(GetIt.I.get<AppPaths>().projectsDir, "$fileName.$fileExtensionKpix");
     saveKPixFile(path: finalPath).then((final String? path)
     {
-      if (path != null) 
+      if (path != null)
       {
-        _projectFileSaved(fileName: fileName, path: path,finishCallback: finishCallback,);
-      } 
+        _projectFileSaved(fileName: fileName, path: path,finishCallback: finishCallback, savedCallback: savedCallback,);
+      }
       else if (finishCallback != null) 
       {
         finishCallback();
@@ -323,6 +324,7 @@ Future<void> saveFilePressed({required final String fileName, final Function()? 
           fileName: fileName,
           path: path,
           finishCallback: finishCallback,
+          savedCallback: savedCallback,
         );
       } 
       else if (finishCallback != null) 
@@ -333,7 +335,7 @@ Future<void> saveFilePressed({required final String fileName, final Function()? 
   }
 }
 
-Future<void> _projectFileSaved({required final String fileName, required final String path, required final Function()? finishCallback,}) async
+Future<void> _projectFileSaved({required final String fileName, required final String path, required final Function()? finishCallback, required final void Function(String displayPath)? savedCallback,}) async
 {
   final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
   final DocumentState documentState = GetIt.I.get<DocumentState>();
@@ -370,8 +372,9 @@ Future<void> _projectFileSaved({required final String fileName, required final S
     notifyProjectFileChanged(path: path);
   }
 
-  projectSession.fileSaved(saveName: fileName, path: path, addKPixExtension: kIsWeb);
-  if (finishCallback != null) 
+  final String displayPath = projectSession.fileSaved(saveName: fileName, path: path, addKPixExtension: kIsWeb);
+  savedCallback?.call(displayPath);
+  if (finishCallback != null)
   {
     finishCallback();
   }

@@ -330,4 +330,21 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get historyRestoreFailed =>
       'Wiederherstellen aus dem Verlauf fehlgeschlagen!';
+
+  @override
+  String loadingFailed(String status) {
+    return 'Laden fehlgeschlagen ($status)';
+  }
+
+  @override
+  String fileSavedAt(String path) {
+    return 'Datei gespeichert unter: $path';
+  }
+
+  @override
+  String get imageImportSuccessful => 'Bild erfolgreich importiert!';
+
+  @override
+  String get couldNotConvertImageData =>
+      'Die Bilddaten konnten nicht konvertiert werden!';
 }

@@ -649,6 +649,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'History restore failed!'**
   String get historyRestoreFailed;
+
+  /// status is the file reader's report and is not translated
+  ///
+  /// In en, this message translates to:
+  /// **'Loading failed ({status})'**
+  String loadingFailed(String status);
+
+  /// No description provided for @fileSavedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'File saved at: {path}'**
+  String fileSavedAt(String path);
+
+  /// No description provided for @imageImportSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Image imported successfully!'**
+  String get imageImportSuccessful;
+
+  /// No description provided for @couldNotConvertImageData.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not convert image data!'**
+  String get couldNotConvertImageData;
 }
 
 class _AppLocalizationsDelegate

@@ -38,10 +38,16 @@ import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
-import 'package:kpix/util/messages.dart';
 import 'package:logger/logger.dart';
 
 
+
+/// What loading a project file came to, turned into messages by the widgets.
+///
+/// [restore] is null if the file held nothing to restore, which means loading
+/// failed; [status] is the file reader's report either way - why it failed, or
+/// the problems it worked around.
+typedef ProjectLoadResult = ({HistoryRestoreResult? restore, String status});
 
 class ProjectSession
 {
@@ -100,9 +106,7 @@ class ProjectSession
     return "KPix ${projectName.value ?? ""}${hasChanges.value ? "*" : ""}";
   }
 
-  /// Returns the result of restoring the loaded state, or null if the file held
-  /// nothing to restore.
-  Future<HistoryRestoreResult?> restoreFromFile({required final LoadFileSet loadFileSet, final bool setHasChanges = false}) async
+  Future<ProjectLoadResult> restoreFromFile({required final LoadFileSet loadFileSet, final bool setHasChanges = false}) async
   {
     if (loadFileSet.historyState != null && loadFileSet.path != null)
     {
@@ -119,22 +123,18 @@ class ProjectSession
       GetIt.I.get<CanvasState>().setCanvasDimensions(width: loadFileSet.historyState!.canvasSize.x , height: loadFileSet.historyState!.canvasSize.y, addToHistoryStack: false);
       GetIt.I.get<SymmetryState>().reset();
       GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
-      if (loadFileSet.status.isNotEmpty)
-      {
-        showMessage(text: loadFileSet.status, toastType: ToastType.error);
-      }
-      return result;
+      return (restore: result, status: loadFileSet.status);
     }
     else
     {
-      showMessage(text: "Loading failed (${loadFileSet.status})", toastType: ToastType.error);
-      return null;
+      return (restore: null, status: loadFileSet.status);
     }
   }
 
 
 
-  void fileSaved({required final String saveName, required final String path, final bool addKPixExtension = false})
+  /// Returns the path to show the user for the saved file.
+  String fileSaved({required final String saveName, required final String path, final bool addKPixExtension = false})
   {
     projectName.value = saveName;
     GetIt.I.get<HistoryManager>().markSaved();
@@ -145,7 +145,7 @@ class ProjectSession
     {
       displayPath += ".$fileExtensionKpix";
     }
-    showMessage(text: "File saved at: $displayPath", toastType: ToastType.success);
+    return displayPath;
   }
 
 
@@ -177,7 +177,6 @@ class ProjectSession
       hasProjectNotifier.value = true;
       GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
     }
-    showMessage(text: importResult.message, toastType: ToastType.info);
   }
 
 }

@@ -46,7 +46,7 @@ Future<ImportResult> import({required final ImportData importData, required fina
   final ByteData? imageData = await importData.scaledImage.toByteData();
   if (imageData == null)
   {
-    return ImportResult(message: "Could not convert image data!");
+    return ImportResult(result: ImageImportResult.conversionFailed);
   }
   else
   {
@@ -94,7 +94,7 @@ Future<ImportResult> import({required final ImportData importData, required fina
     }
 
     final ImportDataSet importDataSet = ImportDataSet(rampDataList: ramps, drawingLayer: drawingLayer, referenceLayer: referenceLayer, canvasSize: CoordinateSetI(x: importData.scaledImage.width, y: importData.scaledImage.height));
-    return ImportResult(message: "SUCCESS", data: importDataSet);
+    return ImportResult(result: ImageImportResult.success, data: importDataSet);
 
   }
 

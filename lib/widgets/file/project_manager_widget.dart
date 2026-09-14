@@ -23,7 +23,6 @@ import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
-import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/models/project_session.dart';
@@ -32,8 +31,8 @@ import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
-import 'package:kpix/widgets/history_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:kpix/widgets/project_action_messages.dart';
 
 /// Layout options for [ProjectManagerWidget].
 abstract final class _ProjectManagerOptions
@@ -153,12 +152,12 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
     ).then((final LoadFileSet loadFileSet)
     {
-      fileLoaded(loadFileSet: loadFileSet, finishCallback: (final HistoryRestoreResult? result)
+      fileLoaded(loadFileSet: loadFileSet, finishCallback: (final ProjectLoadResult? result)
       {
         _loadingDialog.hide();
         if (result != null)
         {
-          showMessageForHistoryResult(result: result, l10n: l10n);
+          showMessagesForProjectLoad(result: result, l10n: l10n);
         }
       },);
     });

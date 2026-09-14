@@ -125,6 +125,22 @@
       "description": {"type": "String"}
     }
   },
-  "historyRestoreFailed": "History restore failed!"
+  "historyRestoreFailed": "History restore failed!",
+
+  "loadingFailed": "Loading failed ({status})",
+  "@loadingFailed": {
+    "description": "status is the file reader's report and is not translated",
+    "placeholders": {
+      "status": {"type": "String"}
+    }
+  },
+  "fileSavedAt": "File saved at: {path}",
+  "@fileSavedAt": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "imageImportSuccessful": "Image imported successfully!",
+  "couldNotConvertImageData": "Could not convert image data!"
 
 }

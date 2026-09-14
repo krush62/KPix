@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/canvas_size_constraints.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
@@ -200,11 +201,11 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text("Create New Project", style: Theme.of(context).textTheme.titleLarge),
+          Text(AppLocalizations.of(context)!.createNewProject, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
           Divider(height: OverlayEntryAlertDialogOptions.padding / 4, thickness: OverlayEntryAlertDialogOptions.padding / 4, color: Theme.of(context).primaryColorLight,),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
-          Text("Presets", style: Theme.of(context).textTheme.titleMedium),
+          Text(AppLocalizations.of(context)!.presets, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
           _getSizeRow(
               sizes: <CoordinateSetI>[
@@ -250,7 +251,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Divider(height: OverlayEntryAlertDialogOptions.padding / 4, thickness: OverlayEntryAlertDialogOptions.padding / 4, color: Theme.of(context).primaryColorLight,),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
-          Text("Custom", style: Theme.of(context).textTheme.titleMedium),
+          Text(AppLocalizations.of(context)!.custom, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -263,8 +264,8 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      _getInputRow(title: "Width", notifier: _width, controller: _textWidthController, focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectWidthTextFocus), changeFunc: _changeWidth),
-                      _getInputRow(title: "Height", notifier: _height, controller: _textHeightController, focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectHeightTextFocus), changeFunc: _changeHeight),
+                      _getInputRow(title: AppLocalizations.of(context)!.width, notifier: _width, controller: _textWidthController, focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectWidthTextFocus), changeFunc: _changeWidth),
+                      _getInputRow(title: AppLocalizations.of(context)!.height, notifier: _height, controller: _textHeightController, focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectHeightTextFocus), changeFunc: _changeHeight),
                     ],
                   ),
                 ),

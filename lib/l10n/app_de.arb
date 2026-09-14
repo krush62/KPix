@@ -1,0 +1,25 @@
+{
+  "close": "Schließen",
+
+  "createNewProject": "Neues Projekt erstellen",
+  "width": "Breite",
+  "height": "Höhe",
+  "presets": "Vorlagen",
+  "custom": "Benutzerdefiniert",
+
+  "projectManager": "Projektverwaltung",
+  "filter": "Filter",
+  "sortFileNameAsc": "Nach Dateinamen sortieren (aufsteigend)",
+  "sortFileNameDesc": "Nach Dateinamen sortieren (absteigend)",
+  "sortDateAsc": "Nach Änderungsdatum sortieren (aufsteigend)",
+  "sortDateDesc": "Nach Änderungsdatum sortieren (absteigend)",
+  "importProject": "Projekt importieren",
+  "deleteSelectedProject": "Ausgewähltes Projekt löschen",
+  "loadSelectedProject": "Ausgewähltes Projekt laden",
+  "unsavedChangesSaveFirst": "Es gibt ungespeicherte Änderungen. Vorher speichern?",
+  "openingImage": "Öffne Projekt...",
+  "doYouReallyWantToDeleteProject":  "Soll das Projekt wirklich gelöscht werden?",
+  "projectImportSuccessful": "Projekt erfolgreich importiert!",
+  "couldNotReadProjectDir": "Projektverzeichnis konnte nicht gelesen werden!",
+  "noFilesFound": "Keine Dateien gefunden!"
+}

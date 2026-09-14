@@ -21,11 +21,13 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'  as flutter_localizations;
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/kpix_logger.dart';
 import 'package:kpix/kpix_theme.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
@@ -107,6 +109,8 @@ void main(final List<String> args)
                 return getToastificationWrapper(
                   child: MaterialApp(
                     debugShowCheckedModeBanner: false,
+                    localizationsDelegates: const <LocalizationsDelegate<dynamic>>[AppLocalizations.delegate, ...flutter_localizations.GlobalMaterialLocalizations.delegates],
+                    supportedLocales: [Locale("de")],
                     home: const KPixApp(),
                     theme: monochromeTheme,
                     darkTheme: monochromeThemeDark,

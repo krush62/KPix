@@ -35,11 +35,14 @@ dependencies:
   file_saver: ^0.4.0
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   flutter_markdown_plus: ^1.0.5
   flutter_tabler_icons: ^1.43.0
   get_it: ^9.0.5
   http: ^1.2.2
   image: ^4.9.1
+  intl: any
   logger: ^2.6.2
   package_info_plus: ^9.0.0
   path: ^1.9.1
@@ -66,6 +69,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
   fonts:
     - family: KPixIcons
       fonts:

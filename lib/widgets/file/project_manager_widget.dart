@@ -20,6 +20,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/models/io_types.dart';
@@ -96,11 +97,11 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
         onNo: _saveBeforeLoadWarningNo,
         onCancel: _closeSaveBeforeLoadWarning,
         outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?",
+        message: AppLocalizations.of(context)!.unsavedChangesSaveFirst,
     );
-    _loadingDialog = getLoadingDialog(message: "Opening Image...");
+    _loadingDialog = getLoadingDialog(message: AppLocalizations.of(context)!.openingImage);
     _deleteWarningDialog = getTwoButtonDialog(
-      message: "Do you really want to delete this project?",
+      message: AppLocalizations.of(context)!.doYouReallyWantToDeleteProject,
       onNo: _deleteWarningNo,
       onYes: _deleteWarningYes,
       outsideCancelable: false,
@@ -210,7 +211,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     if (success)
     {
       //the imported file is picked up by the cache on its own
-      showMessage(text: "Project imported successfully!", toastType: ToastType.success);
+      showMessage(text: AppLocalizations.of(context)!.projectImportSuccessful, toastType: ToastType.success);
     }
   }
 
@@ -272,7 +273,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                "Could not read the project directory!",
+                AppLocalizations.of(context)!.couldNotReadProjectDir,
                 style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
@@ -293,7 +294,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       return SizedBox.expand(
         child: Center(
           child: Text(
-            "No files found!",
+            AppLocalizations.of(context)!.noFilesFound,
             style: Theme.of(context).textTheme.headlineMedium,
           ),
         ),
@@ -337,7 +338,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text("PROJECT MANAGER", style: Theme.of(context).textTheme.titleLarge),
+              Text(AppLocalizations.of(context)!.projectManager, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
               //an unobtrusive hint that the cache is catching up, used instead of
               //the full spinner whenever there are already entries on screen
@@ -368,7 +369,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   child: Row(
                     children: <Widget>[
                       Text(
-                        "Filter",
+                        AppLocalizations.of(context)!.filter,
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
                       const SizedBox(
@@ -399,45 +400,37 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                     valueListenable: _projectViewOrder,
                     builder: (final BuildContext context, final ProjectViewOrder viewOrder, final Widget? child) {
                       return SegmentedButton<ProjectViewOrder>(
-                        segments: const <ButtonSegment<ProjectViewOrder>>[
+                        segments: <ButtonSegment<ProjectViewOrder>>[
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.nameAsc,
                             label: Tooltip(
-                              message: "Order by file name (ascending)",
+                              message: AppLocalizations.of(context)!.sortFileNameAsc,
                               waitDuration: toolTipDuration,
-                              child: Icon(
-                                  TablerIcons.sort_ascending_letters,
-                              ),
+                              child: const Icon(TablerIcons.sort_ascending_letters),
                             ),
                           ),
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.nameDesc,
                             label: Tooltip(
-                              message: "Order by file name (descending)",
+                              message: AppLocalizations.of(context)!.sortFileNameDesc,
                               waitDuration: toolTipDuration,
-                              child: Icon(
-                                  TablerIcons.sort_descending_letters,
-                              ),
+                              child: const Icon(TablerIcons.sort_descending_letters),
                             ),
                           ),
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.lastModifiedAsc,
                             label: Tooltip(
-                              message: "Order by last modification (ascending)",
+                              message: AppLocalizations.of(context)!.sortDateAsc,
                               waitDuration: toolTipDuration,
-                              child: Icon(
-                                  TablerIcons.sort_ascending_numbers,
-                              ),
+                              child: const Icon(TablerIcons.sort_ascending_numbers),
                             ),
                           ),
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.lastModifiedDesc,
                             label: Tooltip(
-                              message: "Order by last modification (descending)",
+                              message: AppLocalizations.of(context)!.sortDateDesc,
                               waitDuration: toolTipDuration,
-                              child: Icon(
-                                  TablerIcons.sort_descending_numbers,
-                              ),
+                              child: const Icon(TablerIcons.sort_descending_numbers),
                             ),
                           ),
                         ],
@@ -474,7 +467,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
             children: <Widget>[
               Expanded(
                 child: Tooltip(
-                  message: "Close",
+                  message: AppLocalizations.of(context)!.close,
                   waitDuration: toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
@@ -489,7 +482,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
               ),
               Expanded(
                 child: Tooltip(
-                  message: "Import Project",
+                  message: AppLocalizations.of(context)!.importProject,
                   waitDuration: toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
@@ -504,7 +497,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
               ),
               Expanded(
                 child: Tooltip(
-                  message: "Delete Selected Project",
+                  message: AppLocalizations.of(context)!.deleteSelectedProject,
                   waitDuration: toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
@@ -524,7 +517,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
               ),
               Expanded(
                 child: Tooltip(
-                  message: "Load Selected Project",
+                  message: AppLocalizations.of(context)!.loadSelectedProject,
                   waitDuration: toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),

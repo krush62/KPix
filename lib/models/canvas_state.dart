@@ -100,7 +100,7 @@ class CanvasState
     else
     {
       //This should never happen
-      showMessage(text: "Could not crop!");
+      showMessage(text: "Could not crop!", toastType: ToastType.error);
     }
   }
 

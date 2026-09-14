@@ -333,7 +333,7 @@ class LayerManager
       }
       else
       {
-        showMessage(text: "Cannot delete the layer!");
+        showMessage(text: "Cannot delete the layer!", toastType: ToastType.error);
       }
       rasterLayersAll();
       GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
@@ -359,7 +359,7 @@ class LayerManager
       }
       else
       {
-        showMessage(text: message);
+        showMessage(text: message, toastType: ToastType.warning);
       }
     }
   }

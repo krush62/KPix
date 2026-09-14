@@ -59,7 +59,7 @@ class HistoryController
     flushHistoryData?.call();
     if (GetIt.I.get<HistoryManager>().hasUndo.value && !GetIt.I.get<DocumentState>().timeline.isPlaying.value)
     {
-      showMessage(text: "Undo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
+      showMessage(text: "Undo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}", toastType: ToastType.undo);
       //the state being undone describes what changed (and on which layer);
       //the target state provides the data to restore
       final HistoryState? currentState = GetIt.I.get<HistoryManager>().getCurrentState();
@@ -78,7 +78,7 @@ class HistoryController
       final HistoryStateTypeGroup typeGroup = switchState != null ? switchState.type.group : HistoryStateTypeGroup.full;
       restoreState(historyState: switchState, typeGroup: typeGroup, restoreLayerIndices: switchState?.restoreLayerIndices);
       GetIt.I.get<ProjectSession>().hasChanges.value = !GetIt.I.get<HistoryManager>().isAtSavedState;
-      showMessage(text: "Redo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
+      showMessage(text: "Redo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}", toastType: ToastType.redo);
     }
   }
 
@@ -242,13 +242,13 @@ class HistoryController
       }
       catch (e, s)
       {
-        showMessage(text: failMessage);
+        showMessage(text: failMessage, toastType: ToastType.error);
         GetIt.I.get<Logger>().w(failMessage, error: e, stackTrace: s);
       }
     }
     else
     {
-      showMessage(text: failMessage);
+      showMessage(text: failMessage, toastType: ToastType.error);
       GetIt.I.get<Logger>().w(failMessage);
     }
   }

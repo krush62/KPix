@@ -119,12 +119,12 @@ class ProjectSession
       GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
       if (loadFileSet.status.isNotEmpty)
       {
-        showMessage(text: loadFileSet.status);
+        showMessage(text: loadFileSet.status, toastType: ToastType.error);
       }
     }
     else
     {
-      showMessage(text: "Loading failed (${loadFileSet.status})");
+      showMessage(text: "Loading failed (${loadFileSet.status})", toastType: ToastType.error);
     }
   }
 
@@ -141,7 +141,7 @@ class ProjectSession
     {
       displayPath += ".$fileExtensionKpix";
     }
-    showMessage(text: "File saved at: $displayPath");
+    showMessage(text: "File saved at: $displayPath", toastType: ToastType.success);
   }
 
 
@@ -173,7 +173,7 @@ class ProjectSession
       hasProjectNotifier.value = true;
       GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
     }
-    showMessage(text: importResult.message);
+    showMessage(text: importResult.message, toastType: ToastType.info);
   }
 
 }

@@ -93,11 +93,11 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
       if (fileName == null)
       {
-        showMessage(text: "Error saving palette!");
+        showMessage(text: "Error saving palette!", toastType: ToastType.error);
       }
       else
       {
-        showMessage(text: "Palette saved successfully at $fileName.");
+        showMessage(text: "Palette saved successfully at $fileName.", toastType: ToastType.success);
         _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
           _paletteEntries.value = pList;
         });
@@ -234,12 +234,12 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
         }
         else
         {
-          showMessage(text: "A palette with the same name already exists!");
+          showMessage(text: "A palette with the same name already exists!", toastType: ToastType.error);
         }
       }
       else
       {
-        showMessage(text: "Please select a KPal file!");
+        showMessage(text: "Please select a KPal file!", toastType: ToastType.warning);
       }
     }
   }
@@ -251,11 +251,11 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
       _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
         _paletteEntries.value = pList;
       });
-      showMessage(text: "Import successful!");
+      showMessage(text: "Import successful!", toastType: ToastType.success);
     }
     else
     {
-      showMessage(text: "Import failed!");
+      showMessage(text: "Import failed!", toastType: ToastType.error);
     }
   }
 

@@ -488,11 +488,11 @@ class SelectionState with ChangeNotifier
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        showMessage(text: "Cannot delete from hidden layer!");
+        showMessage(text: "Cannot delete from hidden layer!", toastType: ToastType.warning);
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        showMessage(text: "Cannot delete from locked layer!");
+        showMessage(text: "Cannot delete from locked layer!", toastType: ToastType.warning);
       }
       else
       {
@@ -521,11 +521,11 @@ class SelectionState with ChangeNotifier
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        showMessage(text: "Cannot cut from hidden layer!");
+        showMessage(text: "Cannot cut from hidden layer!", toastType: ToastType.warning);
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        showMessage(text: "Cannot cut from locked layer!");
+        showMessage(text: "Cannot cut from locked layer!", toastType: ToastType.warning);
       }
       else if (copy(notify: false, keepSelection: true))
       {
@@ -562,7 +562,7 @@ class SelectionState with ChangeNotifier
     }
     else
     {
-      showMessage(text: "Nothing to copy!");
+      showMessage(text: "Nothing to copy!", toastType: ToastType.warning);
     }
     return hasCopied;
   }
@@ -631,7 +631,7 @@ class SelectionState with ChangeNotifier
       }
       else
       {
-        showMessage(text: "Nothing to copy!");
+        showMessage(text: "Nothing to copy!", toastType: ToastType.warning);
       }
     }
   }
@@ -660,7 +660,7 @@ class SelectionState with ChangeNotifier
     final ResolvedClipboard? content = _clipboard?.resolve(ramps: _documentState.palette.colorRamps);
     if (_clipboard != null && content == null)
     {
-      showMessage(text: "Nothing to paste: the copied colors are no longer in the palette!");
+      showMessage(text: "Nothing to paste: the copied colors are no longer in the palette!", toastType: ToastType.warning);
     }
     return content;
   }
@@ -672,11 +672,11 @@ class SelectionState with ChangeNotifier
     {
       if (layer.lockState.value == LayerLockState.locked)
       {
-        showMessage(text: "Cannot paste to a locked layer!");
+        showMessage(text: "Cannot paste to a locked layer!", toastType: ToastType.warning);
       }
       else if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        showMessage(text: "Cannot paste to a hidden layer!");
+        showMessage(text: "Cannot paste to a hidden layer!", toastType: ToastType.warning);
       }
       else
       {
@@ -719,11 +719,11 @@ class SelectionState with ChangeNotifier
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        showMessage(text: "Cannot transform on a hidden layer!");
+        showMessage(text: "Cannot transform on a hidden layer!", toastType: ToastType.warning);
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        showMessage(text: "Cannot transform on a locked layer!");
+        showMessage(text: "Cannot transform on a locked layer!", toastType: ToastType.warning);
       }
       else
       {
@@ -750,11 +750,11 @@ class SelectionState with ChangeNotifier
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        showMessage(text: "Cannot transform on a hidden layer!");
+        showMessage(text: "Cannot transform on a hidden layer!", toastType: ToastType.warning);
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        showMessage(text: "Cannot transform on a locked layer!");
+        showMessage(text: "Cannot transform on a locked layer!", toastType: ToastType.warning);
       }
       else
       {
@@ -781,11 +781,11 @@ class SelectionState with ChangeNotifier
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        showMessage(text: "Cannot transform on a hidden layer!");
+        showMessage(text: "Cannot transform on a hidden layer!", toastType: ToastType.warning);
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        showMessage(text: "Cannot transform on a locked layer!");
+        showMessage(text: "Cannot transform on a locked layer!", toastType: ToastType.warning);
       }
       else
       {

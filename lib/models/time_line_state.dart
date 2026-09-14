@@ -336,7 +336,7 @@ class Timeline
   {
     if (frames.value.length >= maxFrames)
     {
-      showMessage(text: "Cannot add more frames.");
+      showMessage(text: "Cannot add more frames.", toastType: ToastType.warning);
       return;
     }
     else

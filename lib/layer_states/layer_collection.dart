@@ -137,7 +137,7 @@ class LayerCollection with ChangeNotifier {
     }
     if (!couldAddAllLayers)
     {
-      showMessage(text: "Could not add all layers.");
+      showMessage(text: "Could not add all layers.", toastType: ToastType.error);
     }
     updateIndividualLayerSelection();
   }
@@ -183,12 +183,12 @@ class LayerCollection with ChangeNotifier {
   {
     if (_layers.length >= maxLayers)
     {
-      showMessage(text: "Could not add more layers.");
+      showMessage(text: "Could not add more layers.", toastType: ToastType.warning);
       return null;
     }
     else if (position < 0 || position > _layers.length)
     {
-      showMessage(text: "Invalid layer insert index.");
+      showMessage(text: "Invalid layer insert index.", toastType: ToastType.error);
       return null;
     }
     else
@@ -206,15 +206,15 @@ class LayerCollection with ChangeNotifier {
   {
     if (_layers.length >= maxLayers)
     {
-      showMessage(text: "Could not add more layers.");
+      showMessage(text: "Could not add more layers.", toastType: ToastType.warning);
     }
     else if (position < 0 || position > _layers.length)
     {
-      showMessage(text: "Invalid layer insert index.");
+      showMessage(text: "Invalid layer insert index.", toastType: ToastType.error);
     }
     else if (_layers.contains(layer))
     {
-      showMessage(text: "Layer already exists on that frame.",);
+      showMessage(text: "Layer already exists on that frame.", toastType: ToastType.warning);
     }
     else
     {
@@ -318,7 +318,7 @@ class LayerCollection with ChangeNotifier {
   {
     if (_layers.length >= maxLayers)
     {
-      showMessage(text: "Could not add more layers.");
+      showMessage(text: "Could not add more layers.", toastType: ToastType.warning);
       return false;
     }
     else
@@ -533,7 +533,7 @@ class LayerCollection with ChangeNotifier {
   {
     if (_layers.length >= maxLayers)
     {
-      showMessage(text: "Could not add more layers.");
+      showMessage(text: "Could not add more layers.", toastType: ToastType.warning);
       return null;
     }
     else

@@ -210,7 +210,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     if (success)
     {
       //the imported file is picked up by the cache on its own
-      showMessage(text: "Project imported successfully!");
+      showMessage(text: "Project imported successfully!", toastType: ToastType.success);
     }
   }
 

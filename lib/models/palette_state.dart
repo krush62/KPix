@@ -168,7 +168,7 @@ class PaletteState
     }
     else
     {
-      showMessage(text: "Need at least ${KPalConstraints.rampCountMin} color ramp(s)!");
+      showMessage(text: "Need at least ${KPalConstraints.rampCountMin} color ramp(s)!", toastType: ToastType.warning);
     }
   }
 
@@ -221,7 +221,7 @@ class PaletteState
     }
     else
     {
-      showMessage(text: "Not more than ${KPalConstraints.rampCountMax} color ramps allowed!");
+      showMessage(text: "Not more than ${KPalConstraints.rampCountMax} color ramps allowed!", toastType: ToastType.warning);
       return null;
     }
   }
@@ -308,13 +308,13 @@ class PaletteState
       else
       {
         logger.w(failMessage);
-        showMessage(text: failMessage);
+        showMessage(text: failMessage, toastType: ToastType.error);
       }
     }
     catch (e, s)
     {
       logger.w(failMessage, error: e, stackTrace: s);
-      showMessage(text: failMessage);
+      showMessage(text: failMessage, toastType: ToastType.error);
     }
   }
 
@@ -334,7 +334,7 @@ class PaletteState
     {
       final String failMessage = "Loading palette failed (${loadPaletteSet.status})";
       GetIt.I.get<Logger>().w(failMessage);
-      showMessage(text: failMessage);
+      showMessage(text: failMessage, toastType: ToastType.error);
     }
   }
 

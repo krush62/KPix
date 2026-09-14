@@ -73,7 +73,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
         }
         else
         {
-          showMessage(text: "Insufficient permissions for the selected directory!");
+          showMessage(text: "Insufficient permissions for the selected directory!", toastType: ToastType.error);
         }
       }
     });

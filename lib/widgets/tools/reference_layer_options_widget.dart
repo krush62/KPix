@@ -84,7 +84,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
         }
         else
         {
-          showMessage(text: "Could not load image from $loadPath");
+          showMessage(text: "Could not load image from $loadPath", toastType: ToastType.error);
         }
       });
     }

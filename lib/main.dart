@@ -69,7 +69,6 @@ import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:toastification/toastification.dart';
 import 'package:version/version.dart';
 
 /// Default size of the desktop application.
@@ -98,14 +97,14 @@ void main(final List<String> args)
         return CallbackShortcuts(
           bindings: callbacks,
           child: KeyboardListener(
-
             focusNode: focusNode,
             autofocus: true,
             onKeyEvent: hotkeyManager.handleRawKeyboardEvent,
             child: AnimatedBuilder(
               animation: themeSettings,
-              builder: (final BuildContext context, final Widget? child) {
-                return ToastificationWrapper(
+              builder: (final BuildContext context, final Widget? child)
+              {
+                return getToastificationWrapper(
                   child: MaterialApp(
                     debugShowCheckedModeBanner: false,
                     home: const KPixApp(),
@@ -417,7 +416,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
           final PreferenceManager preferenceManager = GetIt.I.get<PreferenceManager>();
           preferenceManager.behaviorPreferenceContent.useCustomProjectDirectory.value = false;
           preferenceManager.behaviorPreferenceContent.customProjectDirectory.value = "";
-          showMessage(text: "Custom Project directory invalid. Switching to default directory.");
+          showMessage(text: "Custom Project directory invalid. Switching to default directory.", toastType: ToastType.warning);
         }
 
 
@@ -555,7 +554,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         await projectSession.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
         projectSession.hasProjectNotifier.value = true;
         _newProjectDialog.hide();
-        showMessage(text: "work recovered");
+        showMessage(text: "work recovered", toastType: ToastType.info);
       }
       else
       {

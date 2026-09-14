@@ -189,7 +189,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     if (fileName != null && fileName.isNotEmpty)
     {
-      showMessage(text: "Exported to: $fileName");
+      showMessage(text: "Exported to: $fileName", toastType: ToastType.success);
       if (!kIsWeb && Platform.isAndroid)
       {
         const MethodChannel channel = MethodChannel('media_scanner');
@@ -198,7 +198,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
     else
     {
-      showMessage(text: "Error exporting file");
+      showMessage(text: "Error exporting file", toastType: ToastType.error);
     }
     _closeAllMenus();
   }
@@ -365,11 +365,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     {
       if (path != null)
       {
-        showMessage(text: "Exported palette to: $path.");
+        showMessage(text: "Exported palette to: $path.", toastType: ToastType.success);
       }
       else
       {
-        showMessage(text: "Error exporting palette file.");
+        showMessage(text: "Error exporting palette file.", toastType: ToastType.error);
       }
       _closeAllMenus();
     },);
@@ -430,7 +430,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     if (moveResult.success)
     {
       GetIt.I.get<AppPaths>().projectsDir = targetDir;
-      showMessage(text: "Changed project directory to $targetDir (moved ${moveResult.projectCount} project file(s)).");
+      showMessage(text: "Changed project directory to $targetDir (moved ${moveResult.projectCount} project file(s)).", toastType: ToastType.info);
       await _handleAllFilesAccessPermission(switchedToCustomDir: useCustom);
     }
     else
@@ -501,7 +501,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     catch (e, s)
     {
       const String failMsg = "Error importing image.";
-      showMessage(text: failMsg);
+      showMessage(text: failMsg, toastType: ToastType.error);
       GetIt.I.get<Logger>().w(failMsg, error: e, stackTrace: s);
     }
     _closeAllMenus();

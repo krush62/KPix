@@ -1092,7 +1092,7 @@ Future<bool> importProject({required final String? path, final bool showMessages
             {
               if (showMessages)
               {
-                showMessage(text: "Could not open file!");
+                showMessage(text: "Could not open file!", toastType: ToastType.error);
               }
             }
           }
@@ -1100,18 +1100,18 @@ Future<bool> importProject({required final String? path, final bool showMessages
           {
             if (showMessages)
             {
-              showMessage(text: "Project with the same name already exists!",);
+              showMessage(text: "Project with the same name already exists!", toastType: ToastType.error);
             }
           }
         }
         else
         {
-          if (showMessages) showMessage(text: "Could not open file!");
+          if (showMessages) showMessage(text: "Could not open file!", toastType: ToastType.error);
         }
       }
       else
       {
-        showMessage(text: "Please select a KPix file!");
+        showMessage(text: "Please select a KPix file!", toastType: ToastType.warning);
       }
     }
   }

@@ -80,6 +80,17 @@
   "cannotMergeFromLockedLayer": "Cannot merge from a locked layer!",
   "cannotMergeToLockedLayer": "Cannot merge to a locked layer!",
   "canOnlyMergeWithDrawingLayer": "Can only merge with drawing layers!",
-  "cannotMergeWithActiveEffects": "Cannot merge layers with active effects!"
+  "cannotMergeWithActiveEffects": "Cannot merge layers with active effects!",
+
+  "cannotDeleteFromHiddenLayer": "Cannot delete from hidden layer!",
+  "cannotDeleteFromLockedLayer": "Cannot delete from locked layer!",
+  "cannotCutFromHiddenLayer": "Cannot cut from hidden layer!",
+  "cannotCutFromLockedLayer": "Cannot cut from locked layer!",
+  "nothingToCopy": "Nothing to copy!",
+  "nothingToPasteColorsNotInPalette": "Nothing to paste: the copied colors are no longer in the palette!",
+  "cannotPasteToHiddenLayer": "Cannot paste to a hidden layer!",
+  "cannotPasteToLockedLayer": "Cannot paste to a locked layer!",
+  "cannotTransformOnHiddenLayer": "Cannot transform on a hidden layer!",
+  "cannotTransformOnLockedLayer": "Cannot transform on a locked layer!"
 
 }

@@ -559,6 +559,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cannot merge layers with active effects!'**
   String get cannotMergeWithActiveEffects;
+
+  /// No description provided for @cannotDeleteFromHiddenLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot delete from hidden layer!'**
+  String get cannotDeleteFromHiddenLayer;
+
+  /// No description provided for @cannotDeleteFromLockedLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot delete from locked layer!'**
+  String get cannotDeleteFromLockedLayer;
+
+  /// No description provided for @cannotCutFromHiddenLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot cut from hidden layer!'**
+  String get cannotCutFromHiddenLayer;
+
+  /// No description provided for @cannotCutFromLockedLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot cut from locked layer!'**
+  String get cannotCutFromLockedLayer;
+
+  /// No description provided for @nothingToCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to copy!'**
+  String get nothingToCopy;
+
+  /// No description provided for @nothingToPasteColorsNotInPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to paste: the copied colors are no longer in the palette!'**
+  String get nothingToPasteColorsNotInPalette;
+
+  /// No description provided for @cannotPasteToHiddenLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot paste to a hidden layer!'**
+  String get cannotPasteToHiddenLayer;
+
+  /// No description provided for @cannotPasteToLockedLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot paste to a locked layer!'**
+  String get cannotPasteToLockedLayer;
+
+  /// No description provided for @cannotTransformOnHiddenLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot transform on a hidden layer!'**
+  String get cannotTransformOnHiddenLayer;
+
+  /// No description provided for @cannotTransformOnLockedLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot transform on a locked layer!'**
+  String get cannotTransformOnLockedLayer;
 }
 
 class _AppLocalizationsDelegate

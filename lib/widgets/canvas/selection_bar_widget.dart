@@ -27,6 +27,7 @@ import 'package:kpix/widgets/layer_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/overlays/overlay_selection_align_menu.dart';
+import 'package:kpix/widgets/selection_action_messages.dart';
 
 /// Layout options for the [SelectionBarWidget].
 abstract final class _SelectionBarWidgetOptions
@@ -52,35 +53,62 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
   final GlobalKey _alignAnchorKey = GlobalKey();
   final OverlayPortalController _alignmentController = OverlayPortalController();
 
+  //kept so the very same callbacks can be removed again in dispose
+  late final Map<HotkeyAction, VoidCallback> _hotkeyCallbacks = <HotkeyAction, VoidCallback>{
+    HotkeyAction.selectionCopy: () {if (!_selectionState.selection.isEmpty) _copyPressed();},
+    HotkeyAction.selectionCopyMerged: () {if (!_selectionState.selection.isEmpty) _copyMergedPressed();},
+    HotkeyAction.selectionCut: () {if (!_selectionState.selection.isEmpty) _cutPressed();},
+    HotkeyAction.selectionPaste: () {if (_selectionState.hasClipboard) _pastePressed();},
+    HotkeyAction.selectionPasteAsNewLayer: () {if (_selectionState.hasClipboard) _pasteAsNewLayerPressed();},
+    HotkeyAction.selectionDelete: () {if (!_selectionState.selection.isEmpty) _deletePressed();},
+    HotkeyAction.selectionFlipH: () {if (!_selectionState.selection.isEmpty) _flipHPressed();},
+    HotkeyAction.selectionFlipV: () {if (!_selectionState.selection.isEmpty) _flipVPressed();},
+    HotkeyAction.selectionRotate: () {if (!_selectionState.selection.isEmpty) _rotatePressed();},
+  };
+
 
   @override
   void initState()
   {
     super.initState();
-    _hotkeyManager.addListener(func: _pasteAsNewLayerHotkey, action: HotkeyAction.selectionPasteAsNewLayer);
+    for (final MapEntry<HotkeyAction, VoidCallback> hotkey in _hotkeyCallbacks.entries)
+    {
+      _hotkeyManager.addListener(func: hotkey.value, action: hotkey.key);
+    }
   }
 
   @override
   void dispose()
   {
-    _hotkeyManager.removeListener(func: _pasteAsNewLayerHotkey, action: HotkeyAction.selectionPasteAsNewLayer);
+    for (final MapEntry<HotkeyAction, VoidCallback> hotkey in _hotkeyCallbacks.entries)
+    {
+      _hotkeyManager.removeListener(func: hotkey.value, action: hotkey.key);
+    }
     super.dispose();
   }
 
-  void _pasteAsNewLayerHotkey()
+  void _showSelectionResult({required final SelectionActionResult result})
   {
-    if (_selectionState.hasClipboard)
-    {
-      _pasteAsNewLayerPressed();
-    }
+    showMessageForSelectionResult(result: result, l10n: AppLocalizations.of(context)!);
   }
+
+  void _copyPressed() => _showSelectionResult(result: _selectionState.copy());
+  void _copyMergedPressed() => _showSelectionResult(result: _selectionState.copyMerged());
+  void _cutPressed() => _showSelectionResult(result: _selectionState.cut());
+  void _pastePressed() => _showSelectionResult(result: _selectionState.paste());
+  void _deletePressed() => _showSelectionResult(result: _selectionState.delete());
+  void _flipHPressed() => _showSelectionResult(result: _selectionState.flipH());
+  void _flipVPressed() => _showSelectionResult(result: _selectionState.flipV());
+  void _rotatePressed() => _showSelectionResult(result: _selectionState.rotate());
 
   void _pasteAsNewLayerPressed()
   {
-    final LayerActionResult? result = _selectionState.pasteAsNewLayer();
-    if (result != null)
+    final (SelectionActionResult, LayerActionResult?) result = _selectionState.pasteAsNewLayer();
+    _showSelectionResult(result: result.$1);
+    final LayerActionResult? layerResult = result.$2;
+    if (layerResult != null)
     {
-      showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
+      showMessageForResult(result: layerResult, l10n: AppLocalizations.of(context)!);
     }
   }
 
@@ -165,25 +193,25 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               _createBarButton(
                 tooltip: "Copy${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopy, context: context)}",
                 icon: TablerIcons.copy,
-                onPressedFunc: _selectionState.copy,
+                onPressedFunc: _copyPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
                 tooltip: "Copy Merged${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopyMerged, context: context)}",
                 icon: TablerIcons.copy_plus,
-                onPressedFunc: _selectionState.copyMerged,
+                onPressedFunc: _copyMergedPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
                 tooltip: "Cut${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCut, context: context)}",
                 icon: TablerIcons.scissors,
-                onPressedFunc: _selectionState.cut,
+                onPressedFunc: _cutPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
                 tooltip: "Paste${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPaste, context: context)}",
                 icon: TablerIcons.clipboard,
-                onPressedFunc: _selectionState.paste,
+                onPressedFunc: _pastePressed,
                 isEnabled: _selectionState.hasClipboard,
               ),
               _createBarButton(
@@ -195,19 +223,19 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               _createBarButton(
                 tooltip: "Horizontal Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipH, context: context)}",
                 icon: TablerIcons.flip_vertical,
-                onPressedFunc: _selectionState.flipH,
+                onPressedFunc: _flipHPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
                 tooltip: "Vertical Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipV, context: context)}",
                 icon: TablerIcons.flip_horizontal,
-                onPressedFunc: _selectionState.flipV,
+                onPressedFunc: _flipVPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
                 tooltip: "Rotate 90° Clockwise${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionRotate, context: context)}",
                 icon: TablerIcons.rotate_clockwise_2,
-                onPressedFunc: _selectionState.rotate,
+                onPressedFunc: _rotatePressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               Padding(
@@ -256,7 +284,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   message: "Delete${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDelete, context: context)}",
                   waitDuration: toolTipDuration,
                   child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.delete,
+                    onPressed: _selectionState.selection.isEmpty ? null : _deletePressed,
                     icon: const Icon(
                       TablerIcons.trash,
                       size: _SelectionBarWidgetOptions.iconHeight,

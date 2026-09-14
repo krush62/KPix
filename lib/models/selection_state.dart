@@ -43,7 +43,6 @@ import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/selection_buffer.dart';
-import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:logger/logger.dart';
 
@@ -63,6 +62,24 @@ class SelectionLine
   CoordinateSetI endLoc;
 
   SelectionLine({required this.selectDir, required this.startLoc, required this.endLoc});
+}
+
+/// The outcome of a selection action, turned into a message by the widgets.
+enum SelectionActionResult
+{
+  success,
+  //there was nothing to act on (no drawing layer, no clipboard); shows no message
+  notApplicable,
+  hiddenLayerDelete,
+  lockedLayerDelete,
+  hiddenLayerCut,
+  lockedLayerCut,
+  nothingToCopy,
+  clipboardColorsMissing,
+  hiddenLayerPaste,
+  lockedLayerPaste,
+  hiddenLayerTransform,
+  lockedLayerTransform,
 }
 
 
@@ -85,16 +102,8 @@ class SelectionState with ChangeNotifier
   void _setHotkeys()
   {
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
-    hotkeyManager.addListener(func: () {if (!selection.isEmpty) copy();}, action: HotkeyAction.selectionCopy);
-    hotkeyManager.addListener(func: () {if (!selection.isEmpty) copyMerged();}, action: HotkeyAction.selectionCopyMerged);
-    hotkeyManager.addListener(func: () {if (!selection.isEmpty) cut();}, action: HotkeyAction.selectionCut);
-    hotkeyManager.addListener(func: () {if (_clipboard != null) paste();}, action: HotkeyAction.selectionPaste);
-    //pasting as a new layer reports a LayerActionResult that needs a localized
-    //message, so its hotkey is handled by the SelectionBarWidget
-    hotkeyManager.addListener(func: () {if (!selection.isEmpty) delete();}, action: HotkeyAction.selectionDelete);
-    hotkeyManager.addListener(func: () {if (!selection.isEmpty) flipH();}, action: HotkeyAction.selectionFlipH);
-    hotkeyManager.addListener(func: () {if (!selection.isEmpty) flipV();}, action: HotkeyAction.selectionFlipV);
-    hotkeyManager.addListener(func: () {if (!selection.isEmpty) rotate();}, action: HotkeyAction.selectionRotate);
+    //copying, cutting, pasting, deleting and transforming report a result that
+    //needs a localized message, so their hotkeys are handled by the SelectionBarWidget
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) inverse();}, action: HotkeyAction.selectionInvert);
     hotkeyManager.addListener(func: selectAll, action: HotkeyAction.selectionSelectAll);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) deselect(addToHistoryStack: true);}, action: HotkeyAction.selectionDeselect);
@@ -483,21 +492,23 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  void delete({final bool notify = true, final bool keepSelection = true, final bool addToHistoryStack = true})
+  SelectionActionResult delete({final bool notify = true, final bool keepSelection = true, final bool addToHistoryStack = true})
   {
+    SelectionActionResult result = SelectionActionResult.notApplicable;
     final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        showMessage(text: "Cannot delete from hidden layer!", toastType: ToastType.warning);
+        result = SelectionActionResult.hiddenLayerDelete;
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        showMessage(text: "Cannot delete from locked layer!", toastType: ToastType.warning);
+        result = SelectionActionResult.lockedLayerDelete;
       }
       else
       {
+        result = SelectionActionResult.success;
         selection.delete(keepSelection: keepSelection);
         if (addToHistoryStack)
         {
@@ -514,40 +525,47 @@ class SelectionState with ChangeNotifier
         layer.doManualRaster = true;
       }
     }
+    return result;
   }
 
-  void cut({final bool notify = true, final bool keepSelection = false, final bool addToHistoryStack = true})
+  SelectionActionResult cut({final bool notify = true, final bool keepSelection = false, final bool addToHistoryStack = true})
   {
+    SelectionActionResult result = SelectionActionResult.notApplicable;
     final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        showMessage(text: "Cannot cut from hidden layer!", toastType: ToastType.warning);
+        result = SelectionActionResult.hiddenLayerCut;
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        showMessage(text: "Cannot cut from locked layer!", toastType: ToastType.warning);
+        result = SelectionActionResult.lockedLayerCut;
       }
-      else if (copy(notify: false, keepSelection: true))
+      else
       {
-        delete(notify: false);
-        if (addToHistoryStack)
+        result = copy(notify: false, keepSelection: true);
+        if (result == SelectionActionResult.success)
         {
-          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionCut, originLayer: _documentState.timeline.getCurrentLayer());
-        }
-        if (notify)
-        {
-          notifyRepaint();
-          layer.doManualRaster = true;
+          delete(notify: false);
+          if (addToHistoryStack)
+          {
+            GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionCut, originLayer: _documentState.timeline.getCurrentLayer());
+          }
+          if (notify)
+          {
+            notifyRepaint();
+            layer.doManualRaster = true;
+          }
         }
       }
     }
+    return result;
   }
 
-  bool copy({final bool notify = true, final bool keepSelection = false})
+  SelectionActionResult copy({final bool notify = true, final bool keepSelection = false})
   {
-    bool hasCopied = false;
+    SelectionActionResult result = SelectionActionResult.nothingToCopy;
     if (selection.hasValues())
     {
       //the copy shares its tiles with the selection until either side changes
@@ -556,21 +574,18 @@ class SelectionState with ChangeNotifier
       {
         deselect(notify: false, addToHistoryStack: false);
       }
-      hasCopied = true;
+      result = SelectionActionResult.success;
       if (notify)
       {
         notifyRepaint();
       }
     }
-    else
-    {
-      showMessage(text: "Nothing to copy!", toastType: ToastType.warning);
-    }
-    return hasCopied;
+    return result;
   }
 
-  void copyMerged({final bool notify = true, final bool keepSelection = false})
+  SelectionActionResult copyMerged({final bool notify = true, final bool keepSelection = false})
   {
+    SelectionActionResult result = SelectionActionResult.notApplicable;
     final Frame? frame = _documentState.timeline.selectedFrame;
     if (frame != null)
     {
@@ -620,6 +635,7 @@ class SelectionState with ChangeNotifier
 
       if (hasValues)
       {
+        result = SelectionActionResult.success;
         _clipboard = ClipboardContent(pixels: merged.snapshot()!, codec: codec);
         if (!keepSelection)
         {
@@ -633,9 +649,10 @@ class SelectionState with ChangeNotifier
       }
       else
       {
-        showMessage(text: "Nothing to copy!", toastType: ToastType.warning);
+        result = SelectionActionResult.nothingToCopy;
       }
     }
+    return result;
   }
 
   bool get hasClipboard => _clipboard != null;
@@ -655,36 +672,37 @@ class SelectionState with ChangeNotifier
     return _clipboard?.getPixelCountForRamp(ramp: ramp) ?? 0;
   }
 
-  /// The clipboard matched against the current palette, or null (with a message)
-  /// if none of the copied colors is left.
+  /// The clipboard matched against the current palette, or null if there is no
+  /// clipboard or none of the copied colors is left.
   ResolvedClipboard? _resolveClipboard()
   {
-    final ResolvedClipboard? content = _clipboard?.resolve(ramps: _documentState.palette.colorRamps);
-    if (_clipboard != null && content == null)
-    {
-      showMessage(text: "Nothing to paste: the copied colors are no longer in the palette!", toastType: ToastType.warning);
-    }
-    return content;
+    return _clipboard?.resolve(ramps: _documentState.palette.colorRamps);
   }
 
-  void paste({final bool notify = true, final bool addToHistoryStack = true})
+  SelectionActionResult paste({final bool notify = true, final bool addToHistoryStack = true})
   {
+    SelectionActionResult result = SelectionActionResult.notApplicable;
     final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (_clipboard != null && layer != null && layer is DrawingLayerState) //should always be the case
     {
       if (layer.lockState.value == LayerLockState.locked)
       {
-        showMessage(text: "Cannot paste to a locked layer!", toastType: ToastType.warning);
+        result = SelectionActionResult.lockedLayerPaste;
       }
       else if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        showMessage(text: "Cannot paste to a hidden layer!", toastType: ToastType.warning);
+        result = SelectionActionResult.hiddenLayerPaste;
       }
       else
       {
         final ResolvedClipboard? content = _resolveClipboard();
-        if (content != null)
+        if (content == null)
         {
+          result = SelectionActionResult.clipboardColorsMissing;
+        }
+        else
+        {
+          result = SelectionActionResult.success;
           deselect(notify: false, addToHistoryStack: false);
           selection.replaceContent(pixels: content.pixels, codec: content.codec);
           createSelectionLines();
@@ -701,39 +719,47 @@ class SelectionState with ChangeNotifier
         }
       }
     }
+    return result;
   }
 
   /// Adds the clipboard as a new drawing layer.
   ///
-  /// Returns null if there was nothing to paste, otherwise the result of adding
-  /// the layer.
-  LayerActionResult? pasteAsNewLayer()
+  /// The layer result is null if nothing was pasted, which the selection result
+  /// explains; otherwise it is the result of adding the layer.
+  (SelectionActionResult, LayerActionResult?) pasteAsNewLayer()
   {
-    final ResolvedClipboard? content = _resolveClipboard();
-    if (content != null)
+    if (_clipboard == null)
     {
-      final CoordinateColorMapNullable colors = HashMap<CoordinateSetI, ColorReference?>();
-      content.pixels.forEach(action: (final int x, final int y, final int code) => colors[CoordinateSetI(x: x, y: y)] = content.codec.decode(code: code));
-      return GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: colors).$1;
+      return (SelectionActionResult.notApplicable, null);
     }
-    return null;
+    final ResolvedClipboard? content = _resolveClipboard();
+    if (content == null)
+    {
+      return (SelectionActionResult.clipboardColorsMissing, null);
+    }
+    final CoordinateColorMapNullable colors = HashMap<CoordinateSetI, ColorReference?>();
+    content.pixels.forEach(action: (final int x, final int y, final int code) => colors[CoordinateSetI(x: x, y: y)] = content.codec.decode(code: code));
+    final (LayerActionResult, LayerState?) layerResult = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: colors);
+    return (SelectionActionResult.success, layerResult.$1);
   }
 
-  void flipH({final bool notify = true, final bool addToHistoryStack = true})
+  SelectionActionResult flipH({final bool notify = true, final bool addToHistoryStack = true})
   {
+    SelectionActionResult result = SelectionActionResult.notApplicable;
     final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        showMessage(text: "Cannot transform on a hidden layer!", toastType: ToastType.warning);
+        result = SelectionActionResult.hiddenLayerTransform;
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        showMessage(text: "Cannot transform on a locked layer!", toastType: ToastType.warning);
+        result = SelectionActionResult.lockedLayerTransform;
       }
       else
       {
+        result = SelectionActionResult.success;
         selection.flipH();
         createSelectionLines();
         if (addToHistoryStack)
@@ -748,23 +774,26 @@ class SelectionState with ChangeNotifier
         }
       }
     }
+    return result;
   }
 
-  void flipV({final bool notify = true, final bool addToHistoryStack = true})
+  SelectionActionResult flipV({final bool notify = true, final bool addToHistoryStack = true})
   {
+    SelectionActionResult result = SelectionActionResult.notApplicable;
     final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        showMessage(text: "Cannot transform on a hidden layer!", toastType: ToastType.warning);
+        result = SelectionActionResult.hiddenLayerTransform;
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        showMessage(text: "Cannot transform on a locked layer!", toastType: ToastType.warning);
+        result = SelectionActionResult.lockedLayerTransform;
       }
       else
       {
+        result = SelectionActionResult.success;
         selection.flipV();
         createSelectionLines();
         if (addToHistoryStack)
@@ -779,23 +808,26 @@ class SelectionState with ChangeNotifier
         }
       }
     }
+    return result;
   }
 
-  void rotate({final bool notify = true, final bool addToHistoryStack = true})
+  SelectionActionResult rotate({final bool notify = true, final bool addToHistoryStack = true})
   {
+    SelectionActionResult result = SelectionActionResult.notApplicable;
     final LayerState? layer = _documentState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
       if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        showMessage(text: "Cannot transform on a hidden layer!", toastType: ToastType.warning);
+        result = SelectionActionResult.hiddenLayerTransform;
       }
       else if (layer.lockState.value == LayerLockState.locked)
       {
-        showMessage(text: "Cannot transform on a locked layer!", toastType: ToastType.warning);
+        result = SelectionActionResult.lockedLayerTransform;
       }
       else
       {
+        result = SelectionActionResult.success;
         selection.rotate90cw();
         createSelectionLines();
         if (addToHistoryStack)
@@ -810,6 +842,7 @@ class SelectionState with ChangeNotifier
         }
       }
     }
+    return result;
   }
 
   void _moveSelection({required final CoordinateSetI offset, required final bool withContent})

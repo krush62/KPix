@@ -253,4 +253,43 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get cannotMergeWithActiveEffects =>
       'Ebenen mit aktiven Effekten können nicht zusammengeführt werden!';
+
+  @override
+  String get cannotDeleteFromHiddenLayer =>
+      'Aus einer ausgeblendeten Ebene kann nicht gelöscht werden!';
+
+  @override
+  String get cannotDeleteFromLockedLayer =>
+      'Aus einer gesperrten Ebene kann nicht gelöscht werden!';
+
+  @override
+  String get cannotCutFromHiddenLayer =>
+      'Aus einer ausgeblendeten Ebene kann nicht ausgeschnitten werden!';
+
+  @override
+  String get cannotCutFromLockedLayer =>
+      'Aus einer gesperrten Ebene kann nicht ausgeschnitten werden!';
+
+  @override
+  String get nothingToCopy => 'Nichts zum Kopieren!';
+
+  @override
+  String get nothingToPasteColorsNotInPalette =>
+      'Nichts zum Einfügen: Die kopierten Farben sind nicht mehr in der Palette!';
+
+  @override
+  String get cannotPasteToHiddenLayer =>
+      'In eine ausgeblendete Ebene kann nicht eingefügt werden!';
+
+  @override
+  String get cannotPasteToLockedLayer =>
+      'In eine gesperrte Ebene kann nicht eingefügt werden!';
+
+  @override
+  String get cannotTransformOnHiddenLayer =>
+      'Auf einer ausgeblendeten Ebene kann nicht transformiert werden!';
+
+  @override
+  String get cannotTransformOnLockedLayer =>
+      'Auf einer gesperrten Ebene kann nicht transformiert werden!';
 }

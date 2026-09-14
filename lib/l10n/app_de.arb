@@ -79,7 +79,18 @@
   "cannotMergeToLockedLayer": "Mit einer gesperrten Ebene kann nicht zusammengeführt werden!",
   "noLayerBelow": "Keine Ebene darunter!",
   "canOnlyMergeWithDrawingLayer": "Kann nur mit Zeichenebenen zusammengeführt werden!",
-  "cannotMergeToInvisibleLayer": "Mit einer unsichtbaren Ebene kann nicht zusammengeführt werden!",
-  "cannotMergeFromInvisibleLayer": "Von einer unsichtbaren Ebene kann nicht zusammengeführt werden!"
+  "cannotMergeToInvisibleLayer": "Mit einer ausgeblendeten Ebene kann nicht zusammengeführt werden!",
+  "cannotMergeFromInvisibleLayer": "Von einer ausgeblendeten Ebene kann nicht zusammengeführt werden!",
+
+  "cannotDeleteFromHiddenLayer": "Aus einer ausgeblendeten Ebene kann nicht gelöscht werden!",
+  "cannotDeleteFromLockedLayer": "Aus einer gesperrten Ebene kann nicht gelöscht werden!",
+  "cannotCutFromHiddenLayer": "Aus einer ausgeblendeten Ebene kann nicht ausgeschnitten werden!",
+  "cannotCutFromLockedLayer": "Aus einer gesperrten Ebene kann nicht ausgeschnitten werden!",
+  "nothingToCopy": "Nichts zum Kopieren!",
+  "nothingToPasteColorsNotInPalette": "Nichts zum Einfügen: Die kopierten Farben sind nicht mehr in der Palette!",
+  "cannotPasteToHiddenLayer": "In eine ausgeblendete Ebene kann nicht eingefügt werden!",
+  "cannotPasteToLockedLayer": "In eine gesperrte Ebene kann nicht eingefügt werden!",
+  "cannotTransformOnHiddenLayer": "Auf einer ausgeblendeten Ebene kann nicht transformiert werden!",
+  "cannotTransformOnLockedLayer": "Auf einer gesperrten Ebene kann nicht transformiert werden!"
 
 }

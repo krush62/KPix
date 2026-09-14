@@ -244,4 +244,37 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cannotMergeWithActiveEffects =>
       'Cannot merge layers with active effects!';
+
+  @override
+  String get cannotDeleteFromHiddenLayer => 'Cannot delete from hidden layer!';
+
+  @override
+  String get cannotDeleteFromLockedLayer => 'Cannot delete from locked layer!';
+
+  @override
+  String get cannotCutFromHiddenLayer => 'Cannot cut from hidden layer!';
+
+  @override
+  String get cannotCutFromLockedLayer => 'Cannot cut from locked layer!';
+
+  @override
+  String get nothingToCopy => 'Nothing to copy!';
+
+  @override
+  String get nothingToPasteColorsNotInPalette =>
+      'Nothing to paste: the copied colors are no longer in the palette!';
+
+  @override
+  String get cannotPasteToHiddenLayer => 'Cannot paste to a hidden layer!';
+
+  @override
+  String get cannotPasteToLockedLayer => 'Cannot paste to a locked layer!';
+
+  @override
+  String get cannotTransformOnHiddenLayer =>
+      'Cannot transform on a hidden layer!';
+
+  @override
+  String get cannotTransformOnLockedLayer =>
+      'Cannot transform on a locked layer!';
 }

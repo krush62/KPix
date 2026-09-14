@@ -110,7 +110,7 @@ void main(final List<String> args)
                   child: MaterialApp(
                     debugShowCheckedModeBanner: false,
                     localizationsDelegates: const <LocalizationsDelegate<dynamic>>[AppLocalizations.delegate, ...flutter_localizations.GlobalMaterialLocalizations.delegates],
-                    supportedLocales: [Locale("de")],
+                    supportedLocales: AppLocalizations.supportedLocales,
                     home: const KPixApp(),
                     theme: monochromeTheme,
                     darkTheme: monochromeThemeDark,

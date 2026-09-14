@@ -106,8 +106,8 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              _createMenuButton(tooltip: "New Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalNew)}", icon: TablerIcons.file, onPressedFunc: widget.onNewFile),
-              _createMenuButton(tooltip: "Open Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalOpen)}", icon: TablerIcons.folder_open, onPressedFunc: widget.onLoadFile),
+              _createMenuButton(tooltip: "New Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalNew, context: context)}", icon: TablerIcons.file, onPressedFunc: widget.onNewFile),
+              _createMenuButton(tooltip: "Open Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalOpen, context: context)}", icon: TablerIcons.folder_open, onPressedFunc: widget.onLoadFile),
               _createMenuButton(tooltip: "Import Image", icon: TablerIcons.file_import, onPressedFunc: widget.onImportFile),
             ],
           ),

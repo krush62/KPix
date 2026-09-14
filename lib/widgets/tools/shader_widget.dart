@@ -112,7 +112,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
                       Expanded(
                         child: Tooltip(
                           waitDuration: toolTipDuration,
-                          message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingToggle, precededNewLine: false),
+                          message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingToggle, context: context, precededNewLine: false),
                           child: Switch(
                             onChanged: (!isShadingLayer && !isForbiddenLayerType) ? (final bool newState) {
                               _shaderOptions.isEnabled.value = newState;
@@ -141,7 +141,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
                           {
                             return Tooltip(
                               waitDuration: toolTipDuration,
-                              message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingCurrentRampOnly, precededNewLine: false),
+                              message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingCurrentRampOnly, context: context, precededNewLine: false),
                               child: Switch(
                                 onChanged: shouldBeEnabled && !isShadingLayer
                                     ? (final bool newState) { _shaderOptions.onlyCurrentRampEnabled.value = newState;}
@@ -168,7 +168,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
                           {
                             return Tooltip(
                               waitDuration: toolTipDuration,
-                              message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingDirection, precededNewLine: false),
+                              message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingDirection, context: context, precededNewLine: false),
                               child: Switch(
                                 onChanged: shouldBeEnabled
                                     ? (final bool newState) {_shaderOptions.shaderDirection.value = newState ? ShaderDirection.right : ShaderDirection.left;}

@@ -223,6 +223,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No files found!'**
   String get noFilesFound;
+
+  /// No description provided for @keyShift.
+  ///
+  /// In en, this message translates to:
+  /// **'shift'**
+  String get keyShift;
+
+  /// No description provided for @keyAlt.
+  ///
+  /// In en, this message translates to:
+  /// **'alt'**
+  String get keyAlt;
+
+  /// No description provided for @keyCtrl.
+  ///
+  /// In en, this message translates to:
+  /// **'ctrldfhsh'**
+  String get keyCtrl;
+
+  /// No description provided for @keySpace.
+  ///
+  /// In en, this message translates to:
+  /// **'space'**
+  String get keySpace;
 }
 
 class _AppLocalizationsDelegate

@@ -65,19 +65,19 @@ class _ToolsWidgetState extends State<ToolsWidget>
     super.initState();
     _documentState.timeline.layerChangeNotifier.addListener(currentLayerTypeChanged);
     toolDataRow1 =  <SegmentButtonData>[
-      SegmentButtonData(toolType: ToolType.pencil, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolPencil)),
-      SegmentButtonData(toolType: ToolType.erase, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolEraser)),
-      SegmentButtonData(toolType: ToolType.select, isDisabledDuringShading: true, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectRectangle) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectCircle) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectWand)),
-      SegmentButtonData(toolType: ToolType.fill, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolFill)),
+      SegmentButtonData(toolType: ToolType.pencil, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolPencil, context: context)),
+      SegmentButtonData(toolType: ToolType.erase, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolEraser, context: context)),
+      SegmentButtonData(toolType: ToolType.select, isDisabledDuringShading: true, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectRectangle, context: context) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectCircle, context: context) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectWand, context: context)),
+      SegmentButtonData(toolType: ToolType.fill, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolFill, context: context)),
       SegmentButtonData(toolType: ToolType.pick, isDisabledDuringShading: true),
       ];
 
     toolDataRow2 = <SegmentButtonData>[
-      SegmentButtonData(toolType: ToolType.line, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolLine)),
-      SegmentButtonData(toolType: ToolType.shape, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolShape)),
-      SegmentButtonData(toolType: ToolType.font, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolText)),
-      SegmentButtonData(toolType: ToolType.spraycan, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSprayCan)),
-      SegmentButtonData(toolType: ToolType.stamp, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolStamp)),
+      SegmentButtonData(toolType: ToolType.line, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolLine, context: context)),
+      SegmentButtonData(toolType: ToolType.shape, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolShape, context: context)),
+      SegmentButtonData(toolType: ToolType.font, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolText, context: context)),
+      SegmentButtonData(toolType: ToolType.spraycan, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSprayCan, context: context)),
+      SegmentButtonData(toolType: ToolType.stamp, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolStamp, context: context)),
     ];
   }
 

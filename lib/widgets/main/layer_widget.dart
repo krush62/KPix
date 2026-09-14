@@ -252,8 +252,9 @@ class _LayerWidgetState extends State<LayerWidget> {
                                           message:
                                               visibility.desc +
                                                   _hotkeyManager.getShortcutString(
-                                                      action: HotkeyAction
-                                                          .layersSwitchVisibility,),
+                                                      action: HotkeyAction.layersSwitchVisibility,
+                                                      context: context,
+                                                  ),
                                           waitDuration: toolTipDuration,
                                           child: IconButton.outlined(
                                             padding: EdgeInsets.zero,
@@ -315,8 +316,9 @@ class _LayerWidgetState extends State<LayerWidget> {
                                         return Tooltip(
                                           message: lock.desc +
                                               _hotkeyManager.getShortcutString(
-                                                  action: HotkeyAction
-                                                      .layersSwitchLock,),
+                                                action: HotkeyAction.layersSwitchLock,
+                                                context: context,
+                                              ),
                                           waitDuration: toolTipDuration,
                                           child: IconButton.outlined(
                                             padding: EdgeInsets.zero,

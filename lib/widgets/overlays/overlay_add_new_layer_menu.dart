@@ -123,12 +123,12 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               _createMenuButton(
-                toolTip: "Add New Drawing Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewDrawing)}",
+                toolTip: "Add New Drawing Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewDrawing, context: context)}",
                 icon: TablerIcons.brush,
                 onPressedFunc: widget.onNewDrawingLayer,
               ),
               _createMenuButton(
-                toolTip: "Add New Shading Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewShading)}",
+                toolTip: "Add New Shading Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewShading, context: context)}",
                 icon: TablerIcons.exposure,
                 onPressedFunc: widget.onNewShadingLayer,
               ),
@@ -138,12 +138,12 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                 onPressedFunc: widget.onNewDitherLayer,
               ),
               _createMenuButton(
-                toolTip: "Add New Reference Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewReference)}",
+                toolTip: "Add New Reference Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewReference, context: context)}",
                 icon: Icons.photo,
                 onPressedFunc: widget.onNewReferenceLayer,
               ),
               _createMenuButton(
-                toolTip: "Add New Grid Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewGrid)}",
+                toolTip: "Add New Grid Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewGrid, context: context)}",
                 icon: Icons.grid_4x4,
                 onPressedFunc: widget.onNewGridLayer,
               ),

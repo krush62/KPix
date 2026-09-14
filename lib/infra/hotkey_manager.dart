@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/util/helpers/platform_helper.dart';
 
 enum HotkeyAction
@@ -271,7 +272,7 @@ class HotkeyManager
   }
 
 
-  String getShortcutString({required final HotkeyAction action, final bool precededNewLine = true, final bool showSquareBrackets = true})
+  String getShortcutString({required final HotkeyAction action, required final BuildContext context, final bool precededNewLine = true, final bool showSquareBrackets = true})
   {
     String result = "";
     if (isDesktop())
@@ -292,19 +293,19 @@ class HotkeyManager
           final SingleActivator activator = activators.elementAt(i);
           if (activator.shift)
           {
-            result += "${LogicalKeyboardKey.shift.keyLabel} + ";
+            result += "${AppLocalizations.of(context)!.keyShift} + ";
           }
           if (activator.control)
           {
-            result += "${LogicalKeyboardKey.control.keyLabel} + ";
+            result += "${AppLocalizations.of(context)!.keyCtrl} + ";
           }
           if (activator.alt)
           {
-            result += "${LogicalKeyboardKey.alt.keyLabel} + ";
+            result += "${AppLocalizations.of(context)!.keyAlt} + ";
           }
           if (activator.trigger == LogicalKeyboardKey.space)
           {
-            result += "space";
+            result += AppLocalizations.of(context)!.keySpace;
           }
           else
           {

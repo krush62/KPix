@@ -115,9 +115,9 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              _createMenuButton(tooltip: "Save Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSave)}", icon: Icons.save, onPressedFunc: widget.onSaveFile),
-              _createMenuButton(tooltip: "Save Project As${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSaveAs)}", icon: Icons.save_as, onPressedFunc: widget.onSaveAsFile),
-              _createMenuButton(tooltip: "Export Project/Palette${_hotkeyManager.getShortcutString(action: HotkeyAction.generalExport)}", icon: Icons.share, onPressedFunc: widget.onExportFile),
+              _createMenuButton(tooltip: "Save Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSave, context: context)}", icon: Icons.save, onPressedFunc: widget.onSaveFile),
+              _createMenuButton(tooltip: "Save Project As${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSaveAs, context: context)}", icon: Icons.save_as, onPressedFunc: widget.onSaveAsFile),
+              _createMenuButton(tooltip: "Export Project/Palette${_hotkeyManager.getShortcutString(action: HotkeyAction.generalExport, context: context)}", icon: Icons.share, onPressedFunc: widget.onExportFile),
             ],
           ),
         ),

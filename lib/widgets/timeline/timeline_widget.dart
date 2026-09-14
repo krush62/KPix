@@ -349,7 +349,7 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
                       valueListenable: widget.timeline.isPlaying,
                       builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                         return Tooltip(
-                          message: "${isPlaying ? "Pause" : "Play"}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay)}",
+                          message: "${isPlaying ? "Pause" : "Play"}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay, context: context)}",
                           waitDuration: toolTipDuration,
                           child: SizedBox(
                             width: widget.buttonWidth,
@@ -880,7 +880,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                               valueListenable: widget.timeline.isPlaying,
                               builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                                 return Tooltip(
-                                  message: "${isPlaying ? "Pause" : "Play"}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay)}",
+                                  message: "${isPlaying ? "Pause" : "Play"}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay, context: context)}",
                                   waitDuration: toolTipDuration,
                                   child: SizedBox(
                                     height: _cellHeight,
@@ -913,7 +913,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                     valueListenable: widget.timeline.isPlaying,
                                     builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                                       return Tooltip(
-                                        message: "Move Frame Left${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameLeft)}",
+                                        message: "Move Frame Left${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameLeft, context: context)}",
                                         waitDuration: toolTipDuration,
                                         child: SizedBox(
                                           height: _cellHeight,
@@ -956,7 +956,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                     valueListenable: widget.timeline.isPlaying,
                                     builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                                       return Tooltip(
-                                        message: "Move Frame Right${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameRight)}",
+                                        message: "Move Frame Right${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameRight, context: context)}",
                                         waitDuration: toolTipDuration,
                                         child: SizedBox(
                                           height: _cellHeight,
@@ -1174,7 +1174,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                           valueListenable: widget.timeline.isPlaying,
                           builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                             return Tooltip(
-                              message: "Frame Blending\nToggle: ${GetIt.I.get<HotkeyManager>().getShortcutString(action: HotkeyAction.timelineToggleFrameBlending, precededNewLine: false)}",
+                              message: "Frame Blending\nToggle: ${GetIt.I.get<HotkeyManager>().getShortcutString(action: HotkeyAction.timelineToggleFrameBlending, precededNewLine: false, context: context)}",
                               waitDuration: toolTipDuration,
                               child: SizedBox(
                                 height: _cellHeight,

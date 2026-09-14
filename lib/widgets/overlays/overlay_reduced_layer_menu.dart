@@ -124,8 +124,8 @@ class _OverlayReducedLayerMenuState extends State<OverlayReducedLayerMenu> with 
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              _createMenuButton(tooltip: "Delete Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}", icon: TablerIcons.trash, onPressedFunc: widget.onDelete),
-              _createMenuButton(tooltip: "Duplicate Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}", icon: TablerIcons.squares, onPressedFunc: widget.onDuplicate),
+              _createMenuButton(tooltip: "Delete Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete, context: context)}", icon: TablerIcons.trash, onPressedFunc: widget.onDelete),
+              _createMenuButton(tooltip: "Duplicate Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate, context: context)}", icon: TablerIcons.squares, onPressedFunc: widget.onDuplicate),
             ],
           ),
         ),

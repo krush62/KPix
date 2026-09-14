@@ -72,4 +72,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noFilesFound => 'No files found!';
+
+  @override
+  String get keyShift => 'shift';
+
+  @override
+  String get keyAlt => 'alt';
+
+  @override
+  String get keyCtrl => 'ctrldfhsh';
+
+  @override
+  String get keySpace => 'space';
 }

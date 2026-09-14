@@ -21,6 +21,11 @@
   "doYouReallyWantToDeleteProject":  "Do you really want to delete this project?",
   "projectImportSuccessful": "Project imported successfully!",
   "couldNotReadProjectDir": "Could not read the project directory!",
-  "noFilesFound": "No files found!"
+  "noFilesFound": "No files found!",
+
+  "keyShift": "shift",
+  "keyAlt": "alt",
+  "keyCtrl": "ctrl",
+  "keySpace": "space"
 
 }

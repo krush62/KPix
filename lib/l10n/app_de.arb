@@ -21,5 +21,10 @@
   "doYouReallyWantToDeleteProject":  "Soll das Projekt wirklich gelöscht werden?",
   "projectImportSuccessful": "Projekt erfolgreich importiert!",
   "couldNotReadProjectDir": "Projektverzeichnis konnte nicht gelesen werden!",
-  "noFilesFound": "Keine Dateien gefunden!"
+  "noFilesFound": "Keine Dateien gefunden!",
+
+  "keyShift": "Umschalt",
+  "keyAlt": "Alt",
+  "keyCtrl": "Strg",
+  "keySpace": "Leertaste"
 }

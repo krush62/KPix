@@ -624,7 +624,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     valueListenable: _historyManager.hasUndo,
                     builder: (final BuildContext context, final bool hasUndo, final Widget? child) {
                       return Tooltip(
-                        message: "Undo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo)}",
+                        message: "Undo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo, context: context)}",
                         waitDuration: toolTipDuration,
                         child: IconButton.outlined(
                           icon: const Icon(
@@ -645,7 +645,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     valueListenable: _historyManager.hasRedo,
                     builder: (final BuildContext context, final bool hasRedo, final Widget? child) {
                       return Tooltip(
-                        message: "Redo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo)}",
+                        message: "Redo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo, context: context)}",
                         waitDuration: toolTipDuration,
                         child: IconButton.outlined(
                           icon: const Icon(

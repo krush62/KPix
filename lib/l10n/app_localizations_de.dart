@@ -73,4 +73,16 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get noFilesFound => 'Keine Dateien gefunden!';
+
+  @override
+  String get keyShift => 'Umschalt';
+
+  @override
+  String get keyAlt => 'Alt';
+
+  @override
+  String get keyCtrl => 'Strg';
+
+  @override
+  String get keySpace => 'Leertaste';
 }

@@ -34,6 +34,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
@@ -94,31 +95,36 @@ class _RightBarWidgetState extends State<RightBarWidget>
 
   void _newDrawingLayerPressed()
   {
-    _layerManager.addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    final (LayerActionResult, LayerState?) result = _layerManager.addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeLayerMenu();
   }
 
   void _newReferenceLayerPressed()
   {
-    _layerManager.addNewLayer(layerType: ReferenceLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    final (LayerActionResult, LayerState?) result = _layerManager.addNewLayer(layerType: ReferenceLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeLayerMenu();
   }
 
   void _newGridLayerPressed()
   {
-    _layerManager.addNewLayer(layerType: GridLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    final (LayerActionResult, LayerState?) result = _layerManager.addNewLayer(layerType: GridLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeLayerMenu();
   }
 
   void _newShadingLayerPressed()
   {
-    _layerManager.addNewLayer(layerType: ShadingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    final (LayerActionResult, LayerState?) result = _layerManager.addNewLayer(layerType: ShadingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeLayerMenu();
   }
 
   void _newDitherLayerPressed()
   {
-    _layerManager.addNewLayer(layerType: DitherLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    final (LayerActionResult, LayerState?) result = _layerManager.addNewLayer(layerType: DitherLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeLayerMenu();
   }
 

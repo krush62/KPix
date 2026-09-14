@@ -64,9 +64,22 @@
   "vertical": "vertical",
   "selectDropShadowColor": "Select drop shadow color",
   "applyDropShadow": "Apply Drop Shadow",
-  "pixelsAbbrev": "px"
+  "pixelsAbbrev": "px",
 
-
-
+  "couldNotAddAllLayers": "Could not add all layers.",
+  "invalidLayerIndex": "Invalid layer insert index.",
+  "couldNotAddMoreLayers": "Could not add more layers.",
+  "layerAlreadyExistsOnFrame": "Layer already exists on that frame.",
+  "cannotAddMoreFrames": "Cannot add more frames.",
+  "unknownError": "Unknown error",
+  "noLayerBelow": "No layer below!",
+  "cannotMergeFromLinkedLayer": "Cannot merge from a linked layer!",
+  "cannotMergeToLinkedLayer": "Cannot merge to a linked layer!",
+  "cannotMergeFromInvisibleLayer": "Cannot merge from an invisible layer!",
+  "cannotMergeToInvisibleLayer": "Cannot merge to an invisible layer!",
+  "cannotMergeFromLockedLayer": "Cannot merge from a locked layer!",
+  "cannotMergeToLockedLayer": "Cannot merge to a locked layer!",
+  "canOnlyMergeWithDrawingLayer": "Can only merge with drawing layers!",
+  "cannotMergeWithActiveEffects": "Cannot merge layers with active effects!"
 
 }

@@ -164,7 +164,7 @@ void main()
       final ColorReference second = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
       final DrawingLayerState lower = layerAt(projectSession: projectSession, index: 0);
       lower.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: first}));
-      final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+      final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
       upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{CoordinateSetI(x: 2, y: 3): second}));
       await settle();
 

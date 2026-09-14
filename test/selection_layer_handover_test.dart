@@ -42,7 +42,7 @@ Future<(DrawingLayerState, DrawingLayerState)> _twoLayersWithFloatingPixel({
 {
   final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
   final DrawingLayerState lower = layerAt(projectSession: projectSession, index: 0);
-  final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+  final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
   upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
   await settle();
 

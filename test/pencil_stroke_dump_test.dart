@@ -312,7 +312,7 @@ Future<Map<String, String>> _drawStroke({required final WidgetTester tester, req
         await settle();
         expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isFalse, reason: "setup: the selection floats");
       case _Target.shadingLayer:
-        target = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, select: true, addToHistoryStack: false)! as ShadingLayerState;
+        target = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, select: true, addToHistoryStack: false).$2! as ShadingLayerState;
         await settle();
     }
 

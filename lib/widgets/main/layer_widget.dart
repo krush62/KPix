@@ -21,7 +21,9 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
@@ -99,20 +101,23 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _mergeDownPressed()
   {
-    _layerManager.layerMerged(mergeLayer: widget.layerState);
+    final LayerActionResult result =_layerManager.layerMerged(mergeLayer: widget.layerState);
+    showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
     _closeActionsMenus();
   }
 
   void _duplicatePressed()
   {
-    _layerManager.layerDuplicateSelected(duplicateLayer: widget.layerState);
+    final (LayerActionResult, LayerState?) result = _layerManager.layerDuplicateSelected(duplicateLayer: widget.layerState);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeActionsMenus();
   }
 
   void _unlinkPressed()
   {
-    final LayerState? duplicatedLayer = _layerManager.layerDuplicateSelected(duplicateLayer: widget.layerState, addToHistoryStack: false);
-    if (duplicatedLayer != null)
+    final (LayerActionResult, LayerState?) result = _layerManager.layerDuplicateSelected(duplicateLayer: widget.layerState, addToHistoryStack: false);
+    final LayerState? duplicatedLayer = result.$2;
+    if (duplicatedLayer != null && result.$1 == LayerActionResult.success)
     {
       _layerManager.layerDeletedSelected(deleteLayer: widget.layerState, addToHistoryStack: false);
       _layerManager.selectLayer(newLayer: duplicatedLayer);

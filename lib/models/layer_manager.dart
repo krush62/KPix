@@ -19,6 +19,7 @@ import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
@@ -63,37 +64,38 @@ class LayerManager
     hotkeyManager.addListener(func: selectLayerBelow, action: HotkeyAction.layersSelectBelow);
   }
 
-  LayerState? addNewLayer({required final Type layerType, final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
+  (LayerActionResult, LayerState?) addNewLayer({required final Type layerType, final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
   {
-    LayerState? layerState;
     HistoryStateTypeIdentifier? identifier;
+    (LayerActionResult, LayerState?) tuple = (LayerActionResult.unknownError, null);
     if (GetIt.I.get<DocumentState>().timeline.selectedFrame != null)
     {
 
       GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
+
       switch (layerType) {
         case const(ReferenceLayerState):
-          layerState = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewReferenceLayer(select: select);
+          tuple = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewReferenceLayer(select: select);
           identifier = HistoryStateTypeIdentifier.layerNewReference;
         case const(DitherLayerState):
-          layerState = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewDitherLayer(select: select);
+          tuple = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewDitherLayer(select: select);
           identifier = HistoryStateTypeIdentifier.layerNewDither;
         case const(ShadingLayerState):
-          layerState = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewShadingLayer(select: select);
+          tuple = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewShadingLayer(select: select);
           identifier = HistoryStateTypeIdentifier.layerNewShading;
         case const(GridLayerState):
-          layerState = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewGridLayer(select: select);
+          tuple = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewGridLayer(select: select);
           identifier = HistoryStateTypeIdentifier.layerNewGrid;
         case const(DrawingLayerState):
           final bool setSelectionStateLayer = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.isEmpty;
-          layerState = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewDrawingLayer(canvasSize: GetIt.I.get<CanvasState>().canvasSize, select: select, content: content, ramps: GetIt.I.get<PaletteState>().colorRamps);
+          tuple = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewDrawingLayer(canvasSize: GetIt.I.get<CanvasState>().canvasSize, select: select, content: content, ramps: GetIt.I.get<PaletteState>().colorRamps);
           identifier = HistoryStateTypeIdentifier.layerNewDrawing;
-          if (layerState != null && setSelectionStateLayer)
+          if (tuple.$2 != null && setSelectionStateLayer)
           {
-            GetIt.I.get<DocumentState>().selectionState.selection.changeLayer(oldLayer: null, newLayer: layerState);
+            GetIt.I.get<DocumentState>().selectionState.selection.changeLayer(oldLayer: null, newLayer: tuple.$2!);
           }
       }
-      if (layerState != null && identifier != null)
+      if (tuple.$2 != null && identifier != null)
       {
         if (addToHistoryStack)
         {
@@ -102,7 +104,7 @@ class LayerManager
         GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
       }
     }
-    return layerState;
+    return tuple;
   }
 
   void moveUpLayer({required final LayerState? layerState})
@@ -156,11 +158,13 @@ class LayerManager
     }
   }
 
-  void copyLayerToOtherFrame({required final LayerState sourceLayer, required final Frame targetFrame, required final int position, final bool addToHistoryStack = true})
+  LayerActionResult copyLayerToOtherFrame({required final LayerState sourceLayer, required final Frame targetFrame, required final int position, final bool addToHistoryStack = true})
   {
     GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
-    final LayerState? addLayer = targetFrame.layerList.addLayerWithData(layer: sourceLayer, position: position);
-    if (addLayer != null)
+    final (LayerActionResult, LayerState?) addLayerResult = targetFrame.layerList.addLayerWithData(layer: sourceLayer, position: position);
+    final LayerActionResult result = addLayerResult.$1;
+    final LayerState? addLayer = addLayerResult.$2;
+    if (addLayer != null && result == LayerActionResult.success)
     {
       if (addToHistoryStack)
       {
@@ -170,20 +174,26 @@ class LayerManager
       GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
       GetIt.I.get<DocumentState>().timeline.selectFrame(frame: targetFrame, layerIndex: position);
     }
+    return result;
   }
 
-  void linkLayerToOtherFrame({required final LayerState sourceLayer, required final Frame targetFrame, required final int position, final bool addToHistoryStack = true})
+  LayerActionResult linkLayerToOtherFrame({required final LayerState sourceLayer, required final Frame targetFrame, required final int position, final bool addToHistoryStack = true})
   {
     GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
-    targetFrame.layerList.addLinkLayer(layer: sourceLayer, position: position);
+    final LayerActionResult result = targetFrame.layerList.addLinkLayer(layer: sourceLayer, position: position);
 
-    if (addToHistoryStack)
+    if (result == LayerActionResult.success)
     {
-      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerDuplicate);
+      if (addToHistoryStack)
+      {
+        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerDuplicate);
+      }
+      newRasterData(layer: sourceLayer);
+      GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
+      GetIt.I.get<DocumentState>().timeline.selectFrame(frame: targetFrame, layerIndex: position);
     }
-    newRasterData(layer: sourceLayer);
-    GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
-    GetIt.I.get<DocumentState>().timeline.selectFrame(frame: targetFrame, layerIndex: position);
+    return result;
+
   }
 
 
@@ -340,13 +350,14 @@ class LayerManager
     }
   }
 
-  void layerMerged({required final LayerState? mergeLayer, final bool addToHistoryStack = true})
+  LayerActionResult layerMerged({required final LayerState? mergeLayer, final bool addToHistoryStack = true})
   {
+    LayerActionResult checkResult = LayerActionResult.unknownError;
     final Frame? frame = GetIt.I.get<DocumentState>().timeline.selectedFrame;
     if (mergeLayer != null && frame != null)
     {
-      final String? message = frame.layerList.layerIsMergeable(mergeLayer: mergeLayer);
-      if (message == null)
+      checkResult = frame.layerList.layerIsMergeable(mergeLayer: mergeLayer);
+      if (checkResult == LayerActionResult.success)
       {
         GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
         frame.layerList.mergeLayer(mergeLayer: mergeLayer, canvasSize: GetIt.I.get<CanvasState>().canvasSize);
@@ -357,21 +368,18 @@ class LayerManager
         rasterLayersFrame();
         GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
       }
-      else
-      {
-        showMessage(text: message, toastType: ToastType.warning);
-      }
     }
+    return checkResult;
   }
 
-  LayerState? layerDuplicateSelected({required final LayerState? duplicateLayer, final bool addToHistoryStack = true})
+  (LayerActionResult, LayerState?) layerDuplicateSelected({required final LayerState? duplicateLayer, final bool addToHistoryStack = true})
   {
-    LayerState? generatedLayer;
+    (LayerActionResult, LayerState?) result = (LayerActionResult.unknownError, null);
     final Frame? frame = GetIt.I.get<DocumentState>().timeline.selectedFrame;
     if (duplicateLayer != null && frame != null)
     {
       GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
-      generatedLayer = frame.layerList.duplicateLayer(duplicateLayer: duplicateLayer);
+      result = frame.layerList.duplicateLayer(duplicateLayer: duplicateLayer);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerDuplicate);
@@ -379,7 +387,7 @@ class LayerManager
       newRasterData(layer: duplicateLayer);
       GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
     }
-    return generatedLayer;
+    return result;
   }
 
   void layerRasterPressed({required final LayerState rasterLayer, final bool addToHistoryStack = true})

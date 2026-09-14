@@ -53,7 +53,7 @@ void main()
         final DrawingLayerState below = layerAt(projectSession: projectSession, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
-        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         await settle();
 
@@ -74,7 +74,7 @@ void main()
         final DrawingLayerState below = layerAt(projectSession: projectSession, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
-        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         await settle();
 
@@ -92,7 +92,7 @@ void main()
         final DrawingLayerState below = layerAt(projectSession: projectSession, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
-        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         await settle();
 
@@ -111,7 +111,7 @@ void main()
         final DrawingLayerState below = layerAt(projectSession: projectSession, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: first));
 
-        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: first}));
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.shade;
         await settle();
@@ -133,7 +133,7 @@ void main()
         final DrawingLayerState below = layerAt(projectSession: projectSession, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
-        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.solid;
         await settle();
@@ -150,7 +150,7 @@ void main()
         final DrawingLayerState below = layerAt(projectSession: projectSession, index: 0);
         below.setDataAll(list: _fill(canvasSize: canvasSize, color: color));
 
-        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         above.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: color}));
         above.settings.outerStrokeStyle.value = OuterStrokeStyle.shade;
         await settle();

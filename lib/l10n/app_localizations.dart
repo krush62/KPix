@@ -469,6 +469,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'px'**
   String get pixelsAbbrev;
+
+  /// No description provided for @couldNotAddAllLayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add all layers.'**
+  String get couldNotAddAllLayers;
+
+  /// No description provided for @invalidLayerIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid layer insert index.'**
+  String get invalidLayerIndex;
+
+  /// No description provided for @couldNotAddMoreLayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add more layers.'**
+  String get couldNotAddMoreLayers;
+
+  /// No description provided for @layerAlreadyExistsOnFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Layer already exists on that frame.'**
+  String get layerAlreadyExistsOnFrame;
+
+  /// No description provided for @cannotAddMoreFrames.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot add more frames.'**
+  String get cannotAddMoreFrames;
+
+  /// No description provided for @unknownError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown error'**
+  String get unknownError;
+
+  /// No description provided for @noLayerBelow.
+  ///
+  /// In en, this message translates to:
+  /// **'No layer below!'**
+  String get noLayerBelow;
+
+  /// No description provided for @cannotMergeFromLinkedLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot merge from a linked layer!'**
+  String get cannotMergeFromLinkedLayer;
+
+  /// No description provided for @cannotMergeToLinkedLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot merge to a linked layer!'**
+  String get cannotMergeToLinkedLayer;
+
+  /// No description provided for @cannotMergeFromInvisibleLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot merge from an invisible layer!'**
+  String get cannotMergeFromInvisibleLayer;
+
+  /// No description provided for @cannotMergeToInvisibleLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot merge to an invisible layer!'**
+  String get cannotMergeToInvisibleLayer;
+
+  /// No description provided for @cannotMergeFromLockedLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot merge from a locked layer!'**
+  String get cannotMergeFromLockedLayer;
+
+  /// No description provided for @cannotMergeToLockedLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot merge to a locked layer!'**
+  String get cannotMergeToLockedLayer;
+
+  /// No description provided for @canOnlyMergeWithDrawingLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Can only merge with drawing layers!'**
+  String get canOnlyMergeWithDrawingLayer;
+
+  /// No description provided for @cannotMergeWithActiveEffects.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot merge layers with active effects!'**
+  String get cannotMergeWithActiveEffects;
 }
 
 class _AppLocalizationsDelegate

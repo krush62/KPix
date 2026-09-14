@@ -196,4 +196,61 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get pixelsAbbrev => 'px';
+
+  @override
+  String get couldNotAddAllLayers =>
+      'Nicht alle Ebenen konnten hinzugefügt werden.';
+
+  @override
+  String get invalidLayerIndex => 'Ungültiger Ebenenindex.';
+
+  @override
+  String get couldNotAddMoreLayers =>
+      'Es konnten keine weiteren Ebenen hinzugefügt werden.';
+
+  @override
+  String get layerAlreadyExistsOnFrame =>
+      'Die Ebene existiert bereits in diesem Frame.';
+
+  @override
+  String get cannotAddMoreFrames =>
+      'Es können keine weiteren Frames hinzugefügt werden.';
+
+  @override
+  String get unknownError => 'Unbekannter Fehler';
+
+  @override
+  String get noLayerBelow => 'Keine Ebene darunter!';
+
+  @override
+  String get cannotMergeFromLinkedLayer =>
+      'Von einer verknüpften Ebene kann nicht zusammengeführt werden!';
+
+  @override
+  String get cannotMergeToLinkedLayer =>
+      'Mit einer verknüpften Ebene kann nicht zusammengeführt werden!';
+
+  @override
+  String get cannotMergeFromInvisibleLayer =>
+      'Von einer unsichtbaren Ebene kann nicht zusammengeführt werden!';
+
+  @override
+  String get cannotMergeToInvisibleLayer =>
+      'Mit einer unsichtbaren Ebene kann nicht zusammengeführt werden!';
+
+  @override
+  String get cannotMergeFromLockedLayer =>
+      'Von einer gesperrten Ebene kann nicht zusammengeführt werden!';
+
+  @override
+  String get cannotMergeToLockedLayer =>
+      'Mit einer gesperrten Ebene kann nicht zusammengeführt werden!';
+
+  @override
+  String get canOnlyMergeWithDrawingLayer =>
+      'Kann nur mit Zeichenebenen zusammengeführt werden!';
+
+  @override
+  String get cannotMergeWithActiveEffects =>
+      'Ebenen mit aktiven Effekten können nicht zusammengeführt werden!';
 }

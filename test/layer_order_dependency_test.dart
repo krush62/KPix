@@ -82,7 +82,7 @@ void main()
         a.settings.outerStrokeStyle.value = style;
         await settle();
 
-        final DrawingLayerState b = layerManager.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState b = layerManager.addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         await settle();
         expect(_layers().getLayerPosition(state: b), 0, reason: "setup: the new layer went on top");
 
@@ -115,7 +115,7 @@ void main()
       final DrawingLayerState a = layerAt(projectSession: projectSession, index: 0);
       a.setDataAll(list: _square(from: 6, to: 9, color: colors[1]));
       a.settings.outerStrokeStyle.value = OuterStrokeStyle.glow;
-      final DrawingLayerState b = layerManager.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+      final DrawingLayerState b = layerManager.addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
       layerManager.changeLayerOrder(state: b, newPosition: 2);
       await settle();
       b.setDataAll(list: _square(from: 0, to: _canvasSize.x - 1, color: colors[3]));
@@ -137,9 +137,9 @@ void main()
       final LayerManager layerManager = GetIt.I.get<LayerManager>();
       final DrawingLayerState bottom = layerAt(projectSession: projectSession, index: 0);
       bottom.setDataAll(list: _square(from: 0, to: 3, color: colors[2]));
-      final DrawingLayerState middle = layerManager.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+      final DrawingLayerState middle = layerManager.addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
       middle.setDataAll(list: _square(from: 4, to: 7, color: colors[2]));
-      final DrawingLayerState top = layerManager.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+      final DrawingLayerState top = layerManager.addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
       top.setDataAll(list: _square(from: 8, to: 11, color: colors[1]));
       top.settings.outerStrokeStyle.value = OuterStrokeStyle.glow;
       await settle();

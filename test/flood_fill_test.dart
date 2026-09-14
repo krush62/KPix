@@ -138,7 +138,7 @@ void main()
   {
     await withProject(tester: tester, canvasSize: _canvasSize, body: (final ProjectSession projectSession) async
     {
-      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, select: true)! as ShadingLayerState;
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, select: true).$2! as ShadingLayerState;
       await settle();
       final HashMap<CoordinateSetI, int> wallValues = HashMap<CoordinateSetI, int>();
       for (int x = 0; x < _canvasSize.x; x++)

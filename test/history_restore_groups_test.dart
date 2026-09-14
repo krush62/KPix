@@ -51,7 +51,7 @@ void main()
       {
         final LayerManager layers = GetIt.I.get<LayerManager>();
         final DrawingLayerState lower = GetIt.I.get<DocumentState>().timeline.getCurrentLayer()! as DrawingLayerState;
-        final DrawingLayerState upper = layers.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState upper = layers.addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         await settle();
 
         layers.selectLayer(newLayer: lower);
@@ -76,7 +76,7 @@ void main()
       {
         final LayerManager layers = GetIt.I.get<LayerManager>();
         final DrawingLayerState lower = GetIt.I.get<DocumentState>().timeline.getCurrentLayer()! as DrawingLayerState;
-        final DrawingLayerState upper = layers.addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState upper = layers.addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         await settle();
 
         layers.selectLayer(newLayer: lower);

@@ -210,7 +210,7 @@ Future<List<Map<String, int>>> _previewsOfStroke({required final WidgetTester te
     RasterableLayerState target = layer;
     if (scenario.layersAbove)
     {
-      final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, addToHistoryStack: false)! as DrawingLayerState;
+      final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, addToHistoryStack: false).$2! as DrawingLayerState;
       final CoordinateColorMapNullable cover = CoordinateColorMapNullable();
       for (int x = 120; x < 200; x += 3)
       {
@@ -220,7 +220,7 @@ Future<List<Map<String, int>>> _previewsOfStroke({required final WidgetTester te
         }
       }
       above.setDataAll(list: cover);
-      final ShadingLayerState shadingAbove = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, addToHistoryStack: false)! as ShadingLayerState;
+      final ShadingLayerState shadingAbove = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, addToHistoryStack: false).$2! as ShadingLayerState;
       final HashMap<CoordinateSetI, int> shades = HashMap<CoordinateSetI, int>();
       for (int x = 180; x < 260; x++)
       {
@@ -235,7 +235,7 @@ Future<List<Map<String, int>>> _previewsOfStroke({required final WidgetTester te
     }
     if (scenario.target == _Target.shadingLayer)
     {
-      target = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, select: true, addToHistoryStack: false)! as ShadingLayerState;
+      target = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, select: true, addToHistoryStack: false).$2! as ShadingLayerState;
       await settle();
     }
 

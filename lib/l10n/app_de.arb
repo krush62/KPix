@@ -64,6 +64,22 @@
   "vertical": "vertikal",
   "selectDropShadowColor": "Schlagschattenfarbe auswählen",
   "applyDropShadow": "Schlagschatten anwenden",
-  "pixelsAbbrev": "px"
+  "pixelsAbbrev": "px",
+
+  "couldNotAddAllLayers": "Nicht alle Ebenen konnten hinzugefügt werden.",
+  "couldNotAddMoreLayers": "Es konnten keine weiteren Ebenen hinzugefügt werden.",
+  "invalidLayerIndex": "Ungültiger Ebenenindex.",
+  "layerAlreadyExistsOnFrame": "Die Ebene existiert bereits in diesem Frame.",
+  "cannotAddMoreFrames": "Es können keine weiteren Frames hinzugefügt werden.",
+  "unknownError": "Unbekannter Fehler",
+  "cannotMergeWithActiveEffects": "Ebenen mit aktiven Effekten können nicht zusammengeführt werden!",
+  "cannotMergeFromLinkedLayer": "Von einer verknüpften Ebene kann nicht zusammengeführt werden!",
+  "cannotMergeToLinkedLayer": "Mit einer verknüpften Ebene kann nicht zusammengeführt werden!",
+  "cannotMergeFromLockedLayer": "Von einer gesperrten Ebene kann nicht zusammengeführt werden!",
+  "cannotMergeToLockedLayer": "Mit einer gesperrten Ebene kann nicht zusammengeführt werden!",
+  "noLayerBelow": "Keine Ebene darunter!",
+  "canOnlyMergeWithDrawingLayer": "Kann nur mit Zeichenebenen zusammengeführt werden!",
+  "cannotMergeToInvisibleLayer": "Mit einer unsichtbaren Ebene kann nicht zusammengeführt werden!",
+  "cannotMergeFromInvisibleLayer": "Von einer unsichtbaren Ebene kann nicht zusammengeführt werden!"
 
 }

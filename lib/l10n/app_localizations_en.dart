@@ -195,4 +195,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pixelsAbbrev => 'px';
+
+  @override
+  String get couldNotAddAllLayers => 'Could not add all layers.';
+
+  @override
+  String get invalidLayerIndex => 'Invalid layer insert index.';
+
+  @override
+  String get couldNotAddMoreLayers => 'Could not add more layers.';
+
+  @override
+  String get layerAlreadyExistsOnFrame => 'Layer already exists on that frame.';
+
+  @override
+  String get cannotAddMoreFrames => 'Cannot add more frames.';
+
+  @override
+  String get unknownError => 'Unknown error';
+
+  @override
+  String get noLayerBelow => 'No layer below!';
+
+  @override
+  String get cannotMergeFromLinkedLayer => 'Cannot merge from a linked layer!';
+
+  @override
+  String get cannotMergeToLinkedLayer => 'Cannot merge to a linked layer!';
+
+  @override
+  String get cannotMergeFromInvisibleLayer =>
+      'Cannot merge from an invisible layer!';
+
+  @override
+  String get cannotMergeToInvisibleLayer =>
+      'Cannot merge to an invisible layer!';
+
+  @override
+  String get cannotMergeFromLockedLayer => 'Cannot merge from a locked layer!';
+
+  @override
+  String get cannotMergeToLockedLayer => 'Cannot merge to a locked layer!';
+
+  @override
+  String get canOnlyMergeWithDrawingLayer =>
+      'Can only merge with drawing layers!';
+
+  @override
+  String get cannotMergeWithActiveEffects =>
+      'Cannot merge layers with active effects!';
 }

@@ -24,6 +24,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/document_state.dart';
@@ -834,14 +835,16 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
   void _copyLayerToOtherFrame(final Frame targetFrame, final LayerState sourceLayer, final int position)
   {
-    GetIt.I.get<LayerManager>().copyLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
+    final LayerActionResult result = GetIt.I.get<LayerManager>().copyLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
+    showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
+
   }
 
   void _linkLayerToOtherFrame(final Frame targetFrame, final LayerState sourceLayer, final int position)
   {
-    GetIt.I.get<LayerManager>().linkLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
+    final LayerActionResult result = GetIt.I.get<LayerManager>().linkLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
+    showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
   }
-
 
 
   @override
@@ -988,7 +991,10 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
-                                    onPressed: isPlaying ? null : () {widget.timeline.addNewFrameLeft();},
+                                    onPressed: isPlaying ? null : () {
+                                      final LayerActionResult result = widget.timeline.addNewFrameLeft();
+                                      showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
+                                      },
                                     icon: const Icon(TablerIcons.chevron_left),
                                   ),
                                 ),
@@ -1021,7 +1027,10 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
-                                    onPressed: isPlaying ? null : () {widget.timeline.addNewFrameRight();},
+                                    onPressed: isPlaying ? null : () {
+                                      final LayerActionResult result = widget.timeline.addNewFrameRight();
+                                      showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
+                                      },
                                     icon: const Icon(TablerIcons.chevron_right),
                                   ),
                                 ),
@@ -1044,7 +1053,10 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
-                                      onPressed: isPlaying ? null : () {widget.timeline.copyFrameLeft();},
+                                      onPressed: isPlaying ? null : () {
+                                        final LayerActionResult result =  widget.timeline.copyFrameLeft();
+                                        showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
+                                        },
                                       icon: const Icon(TablerIcons.chevron_left),
                                   ),
                                 ),
@@ -1077,7 +1089,10 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
-                                    onPressed: isPlaying ? null : () {widget.timeline.copyFrameRight();},
+                                    onPressed: isPlaying ? null : () {
+                                      final LayerActionResult result = widget.timeline.copyFrameRight();
+                                      showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
+                                      },
                                     icon: const Icon(TablerIcons.chevron_right),
                                   ),
                                 ),
@@ -1100,7 +1115,10 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
-                                    onPressed: isPlaying ? null : () {widget.timeline.linkFrameLeft();},
+                                    onPressed: isPlaying ? null : () {
+                                      final LayerActionResult result = widget.timeline.linkFrameLeft();
+                                      showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
+                                      },
                                     icon: const Icon(TablerIcons.chevron_left),
                                   ),
                                 ),
@@ -1133,7 +1151,10 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
-                                    onPressed: isPlaying ? null : () {widget.timeline.linkFrameRight();},
+                                    onPressed: isPlaying ? null : () {
+                                      final LayerActionResult result = widget.timeline.linkFrameRight();
+                                      showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
+                                      },
                                     icon: const Icon(TablerIcons.chevron_right),
                                   ),
                                 ),

@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/export_types.dart';
@@ -34,6 +35,7 @@ import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
+import 'package:kpix/widgets/palette_action_messages.dart';
 import 'package:path/path.dart' as p;
 
 abstract final class _PaletteManagerOptions
@@ -119,14 +121,16 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _paletteWarningYes()
   {
-    GetIt.I.get<PaletteState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.remap);
+    final PaletteActionResult result = GetIt.I.get<PaletteState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.remap);
+    showMessageForPaletteResult(result: result, l10n: AppLocalizations.of(context)!);
     _closeWarning();
     widget.dismiss();
   }
 
   void _paletteWarningNo()
   {
-    GetIt.I.get<PaletteState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.replace);
+    final PaletteActionResult result = GetIt.I.get<PaletteState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.replace);
+    showMessageForPaletteResult(result: result, l10n: AppLocalizations.of(context)!);
     _closeWarning();
     widget.dismiss();
   }
@@ -169,7 +173,8 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _appendPalette()
   {
-    GetIt.I.get<PaletteState>().appendPalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList));
+    final PaletteActionResult result = GetIt.I.get<PaletteState>().appendPalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList));
+    showMessageForPaletteResult(result: result, l10n: AppLocalizations.of(context)!);
     _closeWarning();
     widget.dismiss();
   }

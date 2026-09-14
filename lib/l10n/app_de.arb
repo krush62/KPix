@@ -91,6 +91,10 @@
   "cannotPasteToHiddenLayer": "In eine ausgeblendete Ebene kann nicht eingefügt werden!",
   "cannotPasteToLockedLayer": "In eine gesperrte Ebene kann nicht eingefügt werden!",
   "cannotTransformOnHiddenLayer": "Auf einer ausgeblendeten Ebene kann nicht transformiert werden!",
-  "cannotTransformOnLockedLayer": "Auf einer gesperrten Ebene kann nicht transformiert werden!"
+  "cannotTransformOnLockedLayer": "Auf einer gesperrten Ebene kann nicht transformiert werden!",
+
+  "needAtLeastColorRamps": "{count, plural, =1{Es wird mindestens eine Farbrampe benötigt!} other{Es werden mindestens {count} Farbrampen benötigt!}}",
+  "notMoreThanColorRampsAllowed": "Es sind nicht mehr als {count} Farbrampen erlaubt!",
+  "loadingPaletteFailed": "Laden der Palette fehlgeschlagen!"
 
 }

@@ -36,7 +36,6 @@ import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/messages.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
@@ -44,6 +43,15 @@ import 'package:uuid/uuid.dart';
 /// in the clipboard. The first two are part of the image, the clipboard only
 /// holds copied pixels.
 typedef RampPixelUsage = ({int layers, int selection, int clipboard});
+
+/// The outcome of a palette action, turned into a message by the widgets.
+enum PaletteActionResult
+{
+  success,
+  rampCountMinReached,
+  rampCountMaxReached,
+  loadingFailed,
+}
 
 /// The project's color ramps and the color currently being drawn with.
 ///
@@ -144,7 +152,7 @@ class PaletteState
     );
   }
 
-  void deleteRamp({required final KPalRampData ramp, final bool addToHistoryStack = true})
+  PaletteActionResult deleteRamp({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
     if (colorRamps.length > KPalConstraints.rampCountMin)
     {
@@ -165,10 +173,11 @@ class PaletteState
       {
         GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalDelete);
       }
+      return PaletteActionResult.success;
     }
     else
     {
-      showMessage(text: "Need at least ${KPalConstraints.rampCountMin} color ramp(s)!", toastType: ToastType.warning);
+      return PaletteActionResult.rampCountMinReached;
     }
   }
 
@@ -200,7 +209,7 @@ class PaletteState
     }
   }
 
-  Future<KPalRampData?> addNewRamp({final bool addToHistoryStack = true}) async
+  Future<(PaletteActionResult, KPalRampData?)> addNewRamp({final bool addToHistoryStack = true}) async
   {
     if (colorRamps.length < KPalConstraints.rampCountMax)
     {
@@ -217,12 +226,11 @@ class PaletteState
       {
         GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalAdd);
       }
-      return newRamp;
+      return (PaletteActionResult.success, newRamp);
     }
     else
     {
-      showMessage(text: "Not more than ${KPalConstraints.rampCountMax} color ramps allowed!", toastType: ToastType.warning);
-      return null;
+      return (PaletteActionResult.rampCountMaxReached, null);
     }
   }
 
@@ -251,7 +259,7 @@ class PaletteState
     }
   }
 
-  void replacePalette({required final LoadPaletteSet loadPaletteSet, required final PaletteReplaceBehavior paletteReplaceBehavior})
+  PaletteActionResult replacePalette({required final LoadPaletteSet loadPaletteSet, required final PaletteReplaceBehavior paletteReplaceBehavior})
   {
     final String failMessage = "Loading palette failed (${loadPaletteSet.status})";
     final Logger logger = GetIt.I.get<Logger>();
@@ -304,21 +312,22 @@ class PaletteState
         _selectedColor.value = loadPaletteSet.rampData![0].references[0];
         _colorRamps.value = loadPaletteSet.rampData!;
         GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalAdd);
+        return PaletteActionResult.success;
       }
       else
       {
         logger.w(failMessage);
-        showMessage(text: failMessage, toastType: ToastType.error);
+        return PaletteActionResult.loadingFailed;
       }
     }
     catch (e, s)
     {
       logger.w(failMessage, error: e, stackTrace: s);
-      showMessage(text: failMessage, toastType: ToastType.error);
+      return PaletteActionResult.loadingFailed;
     }
   }
 
-  void appendPalette({required final LoadPaletteSet loadPaletteSet})
+  PaletteActionResult appendPalette({required final LoadPaletteSet loadPaletteSet})
   {
     if (loadPaletteSet.rampData != null && loadPaletteSet.rampData!.isNotEmpty)
     {
@@ -329,12 +338,12 @@ class PaletteState
       }
       _colorRamps.value = rampDataList;
       GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalAdd);
+      return PaletteActionResult.success;
     }
     else
     {
-      final String failMessage = "Loading palette failed (${loadPaletteSet.status})";
-      GetIt.I.get<Logger>().w(failMessage);
-      showMessage(text: failMessage, toastType: ToastType.error);
+      GetIt.I.get<Logger>().w("Loading palette failed (${loadPaletteSet.status})");
+      return PaletteActionResult.loadingFailed;
     }
   }
 

@@ -619,6 +619,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cannot transform on a locked layer!'**
   String get cannotTransformOnLockedLayer;
+
+  /// No description provided for @needAtLeastColorRamps.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Need at least 1 color ramp!} other{Need at least {count} color ramps!}}'**
+  String needAtLeastColorRamps(int count);
+
+  /// No description provided for @notMoreThanColorRampsAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not more than {count} color ramps allowed!'**
+  String notMoreThanColorRampsAllowed(int count);
+
+  /// No description provided for @loadingPaletteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading palette failed!'**
+  String get loadingPaletteFailed;
 }
 
 class _AppLocalizationsDelegate

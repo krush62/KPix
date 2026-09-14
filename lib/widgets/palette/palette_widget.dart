@@ -34,10 +34,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_ramp_row_widget.dart';
+import 'package:kpix/widgets/palette_action_messages.dart';
 
 abstract final class _PaletteWidgetOptions
 {
@@ -95,7 +97,8 @@ class _PaletteWidgetState extends State<PaletteWidget>
   void _colorRampDelete({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
     _kPal.hide();
-    _paletteState.deleteRamp(ramp: ramp, addToHistoryStack: addToHistoryStack);
+    final PaletteActionResult result = _paletteState.deleteRamp(ramp: ramp, addToHistoryStack: addToHistoryStack);
+    showMessageForPaletteResult(result: result, l10n: AppLocalizations.of(context)!);
   }
 
   void _createKPal({required final KPalRampData ramp, final bool addToHistoryStack = true})
@@ -197,10 +200,15 @@ class _PaletteWidgetState extends State<PaletteWidget>
                     child: IconButton.outlined(
                       onPressed: () {
                         _paletteState.addNewRamp().then
-                          ((final KPalRampData? ramp) {
-                            if (ramp != null)
+                          ((final (PaletteActionResult, KPalRampData?) result) {
+                            if (context.mounted)
                             {
-                              _createKPal(ramp: ramp);
+                              showMessageForPaletteResult(result: result.$1, l10n: AppLocalizations.of(context)!);
+                              final KPalRampData? ramp = result.$2;
+                              if (ramp != null)
+                              {
+                                _createKPal(ramp: ramp);
+                              }
                             }
                         }
                         );

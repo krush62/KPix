@@ -277,4 +277,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cannotTransformOnLockedLayer =>
       'Cannot transform on a locked layer!';
+
+  @override
+  String needAtLeastColorRamps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Need at least $count color ramps!',
+      one: 'Need at least 1 color ramp!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notMoreThanColorRampsAllowed(int count) {
+    return 'Not more than $count color ramps allowed!';
+  }
+
+  @override
+  String get loadingPaletteFailed => 'Loading palette failed!';
 }

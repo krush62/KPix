@@ -232,11 +232,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get cannotMergeFromInvisibleLayer =>
-      'Von einer unsichtbaren Ebene kann nicht zusammengeführt werden!';
+      'Von einer ausgeblendeten Ebene kann nicht zusammengeführt werden!';
 
   @override
   String get cannotMergeToInvisibleLayer =>
-      'Mit einer unsichtbaren Ebene kann nicht zusammengeführt werden!';
+      'Mit einer ausgeblendeten Ebene kann nicht zusammengeführt werden!';
 
   @override
   String get cannotMergeFromLockedLayer =>
@@ -292,4 +292,23 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get cannotTransformOnLockedLayer =>
       'Auf einer gesperrten Ebene kann nicht transformiert werden!';
+
+  @override
+  String needAtLeastColorRamps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Es werden mindestens $count Farbrampen benötigt!',
+      one: 'Es wird mindestens eine Farbrampe benötigt!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notMoreThanColorRampsAllowed(int count) {
+    return 'Es sind nicht mehr als $count Farbrampen erlaubt!';
+  }
+
+  @override
+  String get loadingPaletteFailed => 'Laden der Palette fehlgeschlagen!';
 }

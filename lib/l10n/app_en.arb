@@ -91,6 +91,20 @@
   "cannotPasteToHiddenLayer": "Cannot paste to a hidden layer!",
   "cannotPasteToLockedLayer": "Cannot paste to a locked layer!",
   "cannotTransformOnHiddenLayer": "Cannot transform on a hidden layer!",
-  "cannotTransformOnLockedLayer": "Cannot transform on a locked layer!"
+  "cannotTransformOnLockedLayer": "Cannot transform on a locked layer!",
+
+  "needAtLeastColorRamps": "{count, plural, =1{Need at least 1 color ramp!} other{Need at least {count} color ramps!}}",
+  "@needAtLeastColorRamps": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "notMoreThanColorRampsAllowed": "Not more than {count} color ramps allowed!",
+  "@notMoreThanColorRampsAllowed": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "loadingPaletteFailed": "Loading palette failed!"
 
 }

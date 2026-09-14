@@ -19,7 +19,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
@@ -59,44 +58,6 @@ enum LayerActionResult {
   effectLayerMerge,
 
   unknownError,
-}
-
-void showMessageForResult({required final LayerActionResult result, required final AppLocalizations l10n})
-{
-  switch (result)
-  {
-    case LayerActionResult.invalidIndex:
-      showMessage(text: l10n.invalidLayerIndex, toastType: ToastType.error);
-    case LayerActionResult.layerLimitReached:
-      showMessage(text: l10n.couldNotAddMoreLayers, toastType: ToastType.warning);
-    case LayerActionResult.frameLimitReached:
-      showMessage(text: l10n.cannotAddMoreFrames, toastType: ToastType.warning);
-    case LayerActionResult.alreadyExists:
-      showMessage(text: l10n.layerAlreadyExistsOnFrame, toastType: ToastType.warning);
-    case LayerActionResult.noLayerBelow:
-      showMessage(text: l10n.noLayerBelow, toastType: ToastType.warning);
-    case LayerActionResult.linkedLayerMergeFrom:
-      showMessage(text: l10n.cannotMergeFromLinkedLayer, toastType: ToastType.warning);
-    case LayerActionResult.linkedLayerMergeTo:
-      showMessage(text: l10n.cannotMergeToLinkedLayer, toastType: ToastType.warning);
-    case LayerActionResult.invisibleLayerMergeFrom:
-      showMessage(text: l10n.cannotMergeFromInvisibleLayer, toastType: ToastType.warning);
-    case LayerActionResult.invisibleLayerMergeTo:
-      showMessage(text: l10n.cannotMergeToInvisibleLayer, toastType: ToastType.warning);
-    case LayerActionResult.lockedLayerMergeFrom:
-      showMessage(text: l10n.cannotMergeFromLockedLayer, toastType: ToastType.warning);
-    case LayerActionResult.lockedLayerMergeTo:
-      showMessage(text: l10n.cannotMergeToLockedLayer, toastType: ToastType.warning);
-    case LayerActionResult.onlyMergeDrawingLayers:
-      showMessage(text: l10n.canOnlyMergeWithDrawingLayer, toastType: ToastType.warning);
-    case LayerActionResult.effectLayerMerge:
-      showMessage(text: l10n.cannotMergeWithActiveEffects, toastType: ToastType.warning);
-    case LayerActionResult.unknownError:
-      showMessage(text: l10n.unknownError, toastType: ToastType.warning);
-    case LayerActionResult.success:
-      break;
-  }
-
 }
 
 class LayerCollection with ChangeNotifier {

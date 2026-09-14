@@ -54,6 +54,7 @@ import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
+import 'package:kpix/widgets/layer_action_messages.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_add_new_layer_menu.dart';

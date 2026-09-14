@@ -36,6 +36,7 @@ const List<List<String>> _layers = <List<String>>[
     "lib/util/layer_color_supplier.dart", "lib/util/messages.dart",
     "lib/kpix_constants.dart", "lib/kpix_theme.dart", "lib/kpix_icons.dart",
     "lib/kpix_logger.dart", "lib/oss_licenses.dart", "lib/layer_widget_options.dart",
+    "lib/l10n/",
   ],
   <String>["lib/infra/"],                                   //1 infra
   <String>["lib/models/", "lib/layer_states/"],             //2 state

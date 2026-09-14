@@ -32,6 +32,7 @@ import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
+import 'package:kpix/widgets/layer_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 

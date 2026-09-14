@@ -51,13 +51,9 @@ class LayerManager
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     hotkeyManager.addListener(func: () {changeLayerVisibility(layerState: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());}, action: HotkeyAction.layersSwitchVisibility);
     hotkeyManager.addListener(func: () {changeLayerLockState(layerState: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());}, action: HotkeyAction.layersSwitchLock);
-    hotkeyManager.addListener(func: () {addNewLayer(layerType: DrawingLayerState);}, action: HotkeyAction.layersNewDrawing);
-    hotkeyManager.addListener(func: () {addNewLayer(layerType: ReferenceLayerState);}, action: HotkeyAction.layersNewReference);
-    hotkeyManager.addListener(func: () {addNewLayer(layerType: ShadingLayerState);}, action: HotkeyAction.layersNewShading);
-    hotkeyManager.addListener(func: () {addNewLayer(layerType: GridLayerState);}, action: HotkeyAction.layersNewGrid);
-    hotkeyManager.addListener(func: () {layerDuplicateSelected(duplicateLayer: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());}, action: HotkeyAction.layersDuplicate);
+    //adding, duplicating and merging report a LayerActionResult that needs a
+    //localized message, so their hotkeys are handled by the RightBarWidget
     hotkeyManager.addListener(func: () {layerDeletedSelected(deleteLayer: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());}, action: HotkeyAction.layersDelete);
-    hotkeyManager.addListener(func: () {layerMerged(mergeLayer: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());}, action: HotkeyAction.layersMerge);
     hotkeyManager.addListener(func: () {moveUpLayer(layerState: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());}, action: HotkeyAction.layersMoveUp);
     hotkeyManager.addListener(func: () {moveDownLayer(layerState: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());}, action: HotkeyAction.layersMoveDown);
     hotkeyManager.addListener(func: selectLayerAbove, action: HotkeyAction.layersSelectAbove);

@@ -37,7 +37,6 @@ import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:logger/logger.dart';
 
@@ -156,7 +155,9 @@ class LayerCollection with ChangeNotifier {
     }
     if (!couldAddAllLayers)
     {
-      showMessage(text: "Could not add all layers.", toastType: ToastType.error);
+      //no caller hands over more than maxLayers (a frame in a kpix file holds at
+      //most 255), so this guards an invariant rather than a user action
+      GetIt.I.get<Logger>().w("Dropped ${layers.length - maxLayers} layer(s): a frame holds at most $maxLayers.");
     }
     updateIndividualLayerSelection();
   }

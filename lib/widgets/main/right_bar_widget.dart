@@ -33,6 +33,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
@@ -77,6 +78,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
   final ProjectSession _projectSession = GetIt.I.get<ProjectSession>();
   final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final LayerManager _layerManager = GetIt.I.get<LayerManager>();
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
 
   final OverlayPortalController _addLayerPortalController = OverlayPortalController();
@@ -87,6 +89,59 @@ class _RightBarWidgetState extends State<RightBarWidget>
   void initState()
   {
     super.initState();
+    _hotkeyManager.addListener(func: _newDrawingLayerHotkey, action: HotkeyAction.layersNewDrawing);
+    _hotkeyManager.addListener(func: _newReferenceLayerHotkey, action: HotkeyAction.layersNewReference);
+    _hotkeyManager.addListener(func: _newShadingLayerHotkey, action: HotkeyAction.layersNewShading);
+    _hotkeyManager.addListener(func: _newGridLayerHotkey, action: HotkeyAction.layersNewGrid);
+    _hotkeyManager.addListener(func: _duplicateLayerHotkey, action: HotkeyAction.layersDuplicate);
+    _hotkeyManager.addListener(func: _mergeLayerHotkey, action: HotkeyAction.layersMerge);
+  }
+
+  @override
+  void dispose()
+  {
+    _hotkeyManager.removeListener(func: _newDrawingLayerHotkey, action: HotkeyAction.layersNewDrawing);
+    _hotkeyManager.removeListener(func: _newReferenceLayerHotkey, action: HotkeyAction.layersNewReference);
+    _hotkeyManager.removeListener(func: _newShadingLayerHotkey, action: HotkeyAction.layersNewShading);
+    _hotkeyManager.removeListener(func: _newGridLayerHotkey, action: HotkeyAction.layersNewGrid);
+    _hotkeyManager.removeListener(func: _duplicateLayerHotkey, action: HotkeyAction.layersDuplicate);
+    _hotkeyManager.removeListener(func: _mergeLayerHotkey, action: HotkeyAction.layersMerge);
+    super.dispose();
+  }
+
+  void _newDrawingLayerHotkey() => _addLayerHotkey(layerType: DrawingLayerState);
+  void _newReferenceLayerHotkey() => _addLayerHotkey(layerType: ReferenceLayerState);
+  void _newShadingLayerHotkey() => _addLayerHotkey(layerType: ShadingLayerState);
+  void _newGridLayerHotkey() => _addLayerHotkey(layerType: GridLayerState);
+
+  //without a frame there is nothing to act on, and the hotkeys stay silent
+  void _addLayerHotkey({required final Type layerType})
+  {
+    if (_documentState.timeline.selectedFrame != null)
+    {
+      final (LayerActionResult, LayerState?) result = _layerManager.addNewLayer(layerType: layerType);
+      showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
+    }
+  }
+
+  void _duplicateLayerHotkey()
+  {
+    final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
+    if (currentLayer != null)
+    {
+      final (LayerActionResult, LayerState?) result = _layerManager.layerDuplicateSelected(duplicateLayer: currentLayer);
+      showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
+    }
+  }
+
+  void _mergeLayerHotkey()
+  {
+    final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
+    if (currentLayer != null)
+    {
+      final LayerActionResult result = _layerManager.layerMerged(mergeLayer: currentLayer);
+      showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
+    }
   }
 
   void _closeLayerMenu()

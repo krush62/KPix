@@ -144,6 +144,7 @@ class _ExportWidgetState extends State<ExportWidget>
 
   @override
   Widget build(final BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -162,10 +163,10 @@ class _ExportWidgetState extends State<ExportWidget>
               builder: (final BuildContext context, final ExportSectionType section, final Widget? child) {
                 return SegmentedButton<ExportSectionType>(
                   segments:  <ButtonSegment<ExportSectionType>>[
-                    _createExportSection(type: ExportSectionType.image, tooltip: "Image", icon: TablerIcons.photo),
-                    _createExportSection(type: ExportSectionType.animation, tooltip: "Animation", icon: TablerIcons.movie, isEnabled: _documentState.timeline.frames.value.length > 1),
-                    _createExportSection(type: ExportSectionType.palette, tooltip: "Palette", icon: Icons.palette),
-                    _createExportSection(type: ExportSectionType.kpix, tooltip: "KPix project", icon: TablerIcons.file_export),
+                    _createExportSection(type: ExportSectionType.image, tooltip: l10n.image, icon: TablerIcons.photo),
+                    _createExportSection(type: ExportSectionType.animation, tooltip: l10n.animation, icon: TablerIcons.movie, isEnabled: _documentState.timeline.frames.value.length > 1),
+                    _createExportSection(type: ExportSectionType.palette, tooltip: l10n.palette, icon: Icons.palette),
+                    _createExportSection(type: ExportSectionType.kpix, tooltip: l10n.kpixProject, icon: TablerIcons.file_export),
                   ],
                   selected: <ExportSectionType>{section},
                   showSelectedIcon: false,
@@ -183,23 +184,25 @@ class _ExportWidgetState extends State<ExportWidget>
             ),
             ValueListenableBuilder<ExportSectionType>(
               valueListenable: _selectedSection,
-              builder: (final BuildContext context, final ExportSectionType section, final Widget? child) {
-                String title = "EXPORT";
+              builder: (final BuildContext context, final ExportSectionType section, final Widget? child)
+              {
+                final AppLocalizations l10n = AppLocalizations.of(context)!;
+                String title = l10n.export.toUpperCase();
                 if (section == ExportSectionType.image)
                 {
-                  title += " IMAGE";
+                  title += " ${l10n.image.toUpperCase()}";
                 }
                 else if (section == ExportSectionType.palette)
                 {
-                  title += " PALETTE";
+                  title += " ${l10n.palette.toUpperCase()}";
                 }
                 else if (section == ExportSectionType.animation)
                 {
-                  title += " ANIMATION";
+                  title += " ${l10n.animation.toUpperCase()}";
                 }
                 else if (section == ExportSectionType.kpix)
                 {
-                  title += " PROJECT";
+                  title += " ${l10n.kpixProject.toUpperCase()}";
                 }
                 return Column(
                   children: <Widget>[
@@ -210,7 +213,7 @@ class _ExportWidgetState extends State<ExportWidget>
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         Expanded(
-                          child: Text("Format", style: Theme.of(context).textTheme.titleMedium),
+                          child: Text(l10n.format, style: Theme.of(context).textTheme.titleMedium),
                         ),
                         Expanded(
                           flex: 6,
@@ -301,15 +304,14 @@ class _ExportWidgetState extends State<ExportWidget>
                                             break;
                                           }
                                         }
-
                                         return SegmentedButton<KPixExportType>(
                                           selected: <KPixExportType>{exportTypeEnum},
                                           showSelectedIcon: false,
                                           onSelectionChanged: (final Set<KPixExportType> types) {_kpixExportType.value = types.first; _updateFileNameStatus();},
                                           segments: <ButtonSegment<KPixExportType>>[
-                                            ButtonSegment<KPixExportType>(value: KPixExportType.kpix, label: Text("KPIX PROJECT", style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.kpix ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
-                                            ButtonSegment<KPixExportType>(enabled: isValidTexturePack, value: KPixExportType.texturePack, label: Text("TEXTURE PACK", style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.texturePack ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
-                                            ButtonSegment<KPixExportType>(enabled: isValidTexturePackAnimation, value: KPixExportType.texturePackAnimated, label: Text("TEXTURE PACK ANIMATION", style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.texturePackAnimated ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
+                                            ButtonSegment<KPixExportType>(value: KPixExportType.kpix, label: Text(l10n.kpixProject.toUpperCase(), style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.kpix ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
+                                            ButtonSegment<KPixExportType>(enabled: isValidTexturePack, value: KPixExportType.texturePack, label: Text(l10n.texturePack.toUpperCase(), style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.texturePack ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
+                                            ButtonSegment<KPixExportType>(enabled: isValidTexturePackAnimation, value: KPixExportType.texturePackAnimated, label: Text(l10n.texturePackAnimation.toUpperCase(), style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.texturePackAnimated ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
                                           ],
                                         );
                                       },
@@ -329,7 +331,7 @@ class _ExportWidgetState extends State<ExportWidget>
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
                           Expanded(
-                            child: Text("Scaling", style: Theme.of(context).textTheme.titleMedium),
+                            child: Text(l10n.scaling, style: Theme.of(context).textTheme.titleMedium),
                           ),
                           Expanded(
                             flex: 4,
@@ -394,7 +396,7 @@ class _ExportWidgetState extends State<ExportWidget>
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
                               Expanded(
-                                child: Text("Selection Only", style: Theme.of(context).textTheme.titleMedium),
+                                child: Text(l10n.selectionOnly, style: Theme.of(context).textTheme.titleMedium),
                               ),
                               Expanded(
                                 flex: 4,
@@ -417,7 +419,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                   builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
                                     final int animationLengthMs = _documentState.timeline.calculateTotalFrameTime(sectionOnly: animationSectionOnly);
                                     final int frameCount = animationSectionOnly ? _documentState.timeline.loopEndIndex.value - _documentState.timeline.loopStartIndex.value + 1 : _documentState.timeline.frames.value.length;
-                                    final String animationLength = "$frameCount frames (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
+                                    final String animationLength = "${l10n.nFrames(frameCount)} (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
                                     return Text(animationLength, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium);
                                   },
                                 ),
@@ -432,7 +434,7 @@ class _ExportWidgetState extends State<ExportWidget>
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         Expanded(
-                          child: Text("Directory", style: Theme.of(context).textTheme.titleMedium),
+                          child: Text(l10n.directory, style: Theme.of(context).textTheme.titleMedium),
                         ),
                         Expanded(
                           flex: 4,
@@ -446,7 +448,7 @@ class _ExportWidgetState extends State<ExportWidget>
                         Expanded(
                           flex: 2,
                           child: Tooltip(
-                            message: "Change Directory",
+                            message: l10n.changeDirectory,
                             waitDuration: toolTipDuration,
                             child: IconButton.outlined(
                               constraints: const BoxConstraints(),
@@ -466,7 +468,7 @@ class _ExportWidgetState extends State<ExportWidget>
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         Expanded(
-                            child: Text("File Name", style: Theme.of(context).textTheme.titleMedium),
+                            child: Text(l10n.fileName, style: Theme.of(context).textTheme.titleMedium),
                         ),
                         Expanded(
                             flex: 3,
@@ -541,7 +543,7 @@ class _ExportWidgetState extends State<ExportWidget>
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: Tooltip(
                       waitDuration: toolTipDuration,
-                      message: "Close",
+                      message: l10n.close,
                       child: IconButton.outlined(
                         icon: const Icon(
                           TablerIcons.x,
@@ -564,7 +566,7 @@ class _ExportWidgetState extends State<ExportWidget>
                           builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                             return Tooltip(
                               waitDuration: toolTipDuration,
-                              message: "Export File",
+                              message: l10n.exportFile,
                               child: IconButton.outlined(
                                 icon: const Icon(
                                   TablerIcons.check,

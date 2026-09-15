@@ -699,20 +699,119 @@ class AppLocalizationsDe extends AppLocalizations {
   String get controlsShortcuts => 'Tastenkürzel';
 
   @override
-  String get textToolContent => 'Inhalt für Textwerkzeug ';
+  String get textToolContent => 'Inhalt für Textwerkzeug';
 
   @override
   String get gui => 'GUI';
 
   @override
-  String get behavior => 'Behavior';
+  String get behavior => 'Verhalten';
 
   @override
-  String get controlsPC => 'Controls PC';
+  String get controlsPC => 'Steuerung PC';
 
   @override
-  String get controlsStylus => 'Controls Stylus';
+  String get controlsStylus => 'Steuerung Stylus';
 
   @override
-  String get controlsTouch => 'Controls Touch';
+  String get controlsTouch => 'Steuerung Touch';
+
+  @override
+  String get image => 'Bild';
+
+  @override
+  String get animation => 'Animation';
+
+  @override
+  String get palette => 'Palette';
+
+  @override
+  String get kpixProject => 'KPix-Projekt';
+
+  @override
+  String get export => 'Export';
+
+  @override
+  String get format => 'Format';
+
+  @override
+  String get texturePack => 'Textur-Bündel';
+
+  @override
+  String get texturePackAnimation => 'Textur-Animations-Bündel';
+
+  @override
+  String get scaling => 'Skalierung';
+
+  @override
+  String get selectionOnly => 'Nur die Auswahl';
+
+  @override
+  String nFrames(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Frames',
+      one: '1 Frame',
+      zero: '0 Frames',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get directory => 'Verzeichnis';
+
+  @override
+  String get changeDirectory => 'Verzeichnis wechseln';
+
+  @override
+  String get fileName => 'Dateiname';
+
+  @override
+  String get exportFile => 'Datei Exportieren';
+
+  @override
+  String imageDimensionsExceed(Object height, Object width) {
+    return 'Bildmaße dürfen ${width}x$height nicht überschreiten!';
+  }
+
+  @override
+  String get couldNotDecodeImage => 'Bild konnte nicht dekodiert werden!';
+
+  @override
+  String get couldNotLoadFile => 'Datei konnte nicht geladen werden!';
+
+  @override
+  String get importImage => 'Bild importieren';
+
+  @override
+  String get file => 'Datei';
+
+  @override
+  String get noFileSelected => 'Keine Datei ausgewählt';
+
+  @override
+  String get chooseImage => 'Bild wählen';
+
+  @override
+  String get scaleDown => 'Runterskalieren';
+
+  @override
+  String get createNewPaletteFromImage => 'Neue Palette aus Bild erstellen';
+
+  @override
+  String get maxColorRamps => 'Max. Farbrampen';
+
+  @override
+  String get maxColorsPerRamp => 'Max. Farben pro Rampe';
+
+  @override
+  String get includeImageAsReferenceLayer =>
+      'Bild als Referenzebene hinzufügen';
+
+  @override
+  String get import => 'Importieren';
+
+  @override
+  String get saveProjectAs => 'Projekt speichern als';
 }

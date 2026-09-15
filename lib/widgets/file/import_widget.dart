@@ -19,6 +19,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/canvas_size_constraints.dart';
 import 'package:kpix/models/constraints/kpal_constraints.dart';
 import 'package:kpix/models/io_types.dart';
@@ -77,11 +78,11 @@ class _ImportWidgetState extends State<ImportWidget>
   void _chooseImagePressed()
   {
     getPathAndDataForImage().then((final (String?, Uint8List?) loadData) {
-      _prepareImageData(loadData: loadData);
+      _prepareImageData(loadData: loadData, l10n: AppLocalizations.of(context)!);
     });
   }
 
-  void _prepareImageData({required final (String?, Uint8List?) loadData})
+  void _prepareImageData({required final (String?, Uint8List?) loadData, required final AppLocalizations l10n})
   {
     if (loadData.$1 != null || loadData.$2 != null)
     {
@@ -96,7 +97,7 @@ class _ImportWidgetState extends State<ImportWidget>
             _scaleDownNotifier.value = 1;
             _fileNameNotifier.value = null;
             _imageNotifier.value = null;
-            _messageNotifier.value = "Image dimensions cannot exceed ${CanvasSizeConstraints.sizeMax * _maximumScale}x${CanvasSizeConstraints.sizeMax * _maximumScale}!";
+            _messageNotifier.value = l10n.imageDimensionsExceed(CanvasSizeConstraints.sizeMax * _maximumScale, CanvasSizeConstraints.sizeMax * _maximumScale);
           }
           else
           {
@@ -132,7 +133,7 @@ class _ImportWidgetState extends State<ImportWidget>
           _currentMinScale = 1;
           _currentMaxScale = 1;
           _scaleDownNotifier.value = 1;
-          _messageNotifier.value = "Could not decode image!";
+          _messageNotifier.value = l10n.couldNotDecodeImage;
           _imageNotifier.value = null;
           _fileNameNotifier.value = null;
         }
@@ -143,7 +144,7 @@ class _ImportWidgetState extends State<ImportWidget>
       _currentMinScale = 1;
       _currentMaxScale = 1;
       _scaleDownNotifier.value = 1;
-      _messageNotifier.value = "Could not load file!";
+      _messageNotifier.value = l10n.couldNotLoadFile;
       _imageNotifier.value = null;
       _fileNameNotifier.value = null;
     }
@@ -191,6 +192,7 @@ class _ImportWidgetState extends State<ImportWidget>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -204,7 +206,7 @@ class _ImportWidgetState extends State<ImportWidget>
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Text("IMPORT IMAGE", style: Theme.of(context).textTheme.titleLarge),
+            Text(l10n.importImage.toUpperCase(), style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
             Row(
               children: <Widget>[
@@ -218,9 +220,9 @@ class _ImportWidgetState extends State<ImportWidget>
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
-                          const Expanded(
+                          Expanded(
                             flex: 2,
-                            child: Text("File"),
+                            child: Text(l10n.file),
                           ),
                           Expanded(
                             flex: 5,
@@ -228,7 +230,7 @@ class _ImportWidgetState extends State<ImportWidget>
                               valueListenable: _fileNameNotifier,
                               builder: (final BuildContext context, final String? path, final Widget? child) {
                                 return Text(
-                                  path == null ? "<NO FILE SELECTED>" : extractFilenameFromPath(path: path),
+                                  path == null ? "<${l10n.noFileSelected.toUpperCase()}>" : extractFilenameFromPath(path: path),
                                   textAlign: TextAlign.center,
                                 );
                               },
@@ -236,7 +238,7 @@ class _ImportWidgetState extends State<ImportWidget>
                           ),
                           Expanded(
                             child: Tooltip(
-                              message: "Choose Image",
+                              message: l10n.chooseImage,
                               waitDuration: toolTipDuration,
                               child: IconButton.outlined(
                                 constraints: const BoxConstraints(),
@@ -255,9 +257,9 @@ class _ImportWidgetState extends State<ImportWidget>
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
-                          const Expanded(
+                          Expanded(
                             flex: 2,
-                            child: Text("Scale Down"),
+                            child: Text(l10n.scaleDown),
                           ),
                           Expanded(
                             flex: 4,
@@ -298,9 +300,9 @@ class _ImportWidgetState extends State<ImportWidget>
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
-                          const Expanded(
+                          Expanded(
                             flex: 7,
-                            child: Text("Create a New Palette From Image"),
+                            child: Text(l10n.createNewPaletteFromImage),
                           ),
                           Expanded(
                             child: ValueListenableBuilder<bool>(
@@ -321,9 +323,9 @@ class _ImportWidgetState extends State<ImportWidget>
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
-                          const Expanded(
+                          Expanded(
                             flex: 3,
-                            child: Text("Max Color Ramps"),
+                            child: Text(l10n.maxColorRamps),
                           ),
                           Expanded(
                             flex: 4,
@@ -356,9 +358,9 @@ class _ImportWidgetState extends State<ImportWidget>
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
-                          const Expanded(
+                          Expanded(
                             flex: 3,
-                            child: Text("Max Colors per Ramp"),
+                            child: Text(l10n.maxColorsPerRamp),
                           ),
                           Expanded(
                             flex: 4,
@@ -395,9 +397,9 @@ class _ImportWidgetState extends State<ImportWidget>
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
-                          const Expanded(
+                          Expanded(
                             flex: 7,
-                            child: Text("Include Image as Reference Layer"),
+                            child: Text(l10n.includeImageAsReferenceLayer),
                           ),
                           Expanded(
                             child: ValueListenableBuilder<bool>(
@@ -457,7 +459,7 @@ class _ImportWidgetState extends State<ImportWidget>
                 Expanded(
                   child: Tooltip(
                     waitDuration: toolTipDuration,
-                    message: "Close",
+                    message: l10n.close,
                     child: IconButton.outlined(
                       icon: const Icon(
                         TablerIcons.x,
@@ -472,7 +474,7 @@ class _ImportWidgetState extends State<ImportWidget>
                 Expanded(
                   child: Tooltip(
                     waitDuration: toolTipDuration,
-                    message: "Import",
+                    message: l10n.import,
                     child: ValueListenableBuilder<String?>(
                       valueListenable: _fileNameNotifier,
                       builder: (final BuildContext context, final String? fileNameValue, final Widget? child) {

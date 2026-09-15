@@ -65,6 +65,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -76,7 +77,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Text("SAVE PROJECT AS", style: Theme.of(context).textTheme.titleLarge),
+          Text(l10n.saveProjectAs.toUpperCase(), style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Padding(
             padding:  const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
@@ -85,7 +86,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 Expanded(
-                  child: Text("File Name", style: Theme.of(context).textTheme.titleMedium),
+                  child: Text(l10n.fileName, style: Theme.of(context).textTheme.titleMedium),
                 ),
                 Expanded(
                   flex: 3,

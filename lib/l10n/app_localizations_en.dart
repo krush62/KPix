@@ -697,4 +697,102 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get controlsTouch => 'Controls Touch';
+
+  @override
+  String get image => 'Image';
+
+  @override
+  String get animation => 'Animation';
+
+  @override
+  String get palette => 'Palette';
+
+  @override
+  String get kpixProject => 'KPix Project';
+
+  @override
+  String get export => 'Export';
+
+  @override
+  String get format => 'Format';
+
+  @override
+  String get texturePack => 'Texture Pack';
+
+  @override
+  String get texturePackAnimation => 'Texture Pack Animation';
+
+  @override
+  String get scaling => 'Scaling';
+
+  @override
+  String get selectionOnly => 'Selection Only';
+
+  @override
+  String nFrames(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count frames',
+      one: '1 frame',
+      zero: '0 frames',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get directory => 'Directory';
+
+  @override
+  String get changeDirectory => 'Change Directory';
+
+  @override
+  String get fileName => 'File Name';
+
+  @override
+  String get exportFile => 'Export File';
+
+  @override
+  String imageDimensionsExceed(Object height, Object width) {
+    return 'Image dimensions cannot exceed ${width}x$height!';
+  }
+
+  @override
+  String get couldNotDecodeImage => 'Could not decode image!';
+
+  @override
+  String get couldNotLoadFile => 'Could not load file!';
+
+  @override
+  String get importImage => 'Import Image';
+
+  @override
+  String get file => 'File';
+
+  @override
+  String get noFileSelected => 'No File Selected';
+
+  @override
+  String get chooseImage => 'Choose Image';
+
+  @override
+  String get scaleDown => 'Scale Down';
+
+  @override
+  String get createNewPaletteFromImage => 'Create a New Palette From Image';
+
+  @override
+  String get maxColorRamps => 'Max Color Ramps';
+
+  @override
+  String get maxColorsPerRamp => 'Max Colors per Ramp';
+
+  @override
+  String get includeImageAsReferenceLayer => 'Include Image as Reference Layer';
+
+  @override
+  String get import => 'Import';
+
+  @override
+  String get saveProjectAs => 'Save Project as';
 }

@@ -290,7 +290,55 @@
   "behavior": "Behavior",
   "controlsPC": "Controls PC",
   "controlsStylus": "Controls Stylus",
-  "controlsTouch": "Controls Touch"
+  "controlsTouch": "Controls Touch",
+
+  "image": "Image",
+  "animation": "Animation",
+  "palette": "Palette",
+  "kpixProject": "KPix Project",
+  "export": "Export",
+  "format": "Format",
+  "texturePack": "Texture Pack",
+  "texturePackAnimation": "Texture Pack Animation",
+  "scaling": "Scaling",
+  "selectionOnly": "Selection Only",
+
+  "nFrames": "{count, plural, =0{0 frames} =1{1 frame} other{{count} frames}}",
+  "@nFrames": {
+    "description": "frame plural",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "directory": "Directory",
+  "changeDirectory": "Change Directory",
+  "fileName": "File Name",
+  "exportFile": "Export File",
+
+  "imageDimensionsExceed": "Image dimensions cannot exceed {width}x{height}!",
+  "@hello": {
+    "description": "message during import regarding image dimensions",
+    "placeholders": {
+      "width": {"type": "int"},
+      "height": {"type": "int"}
+    }
+  },
+  "couldNotDecodeImage": "Could not decode image!",
+  "couldNotLoadFile": "Could not load file!",
+  "importImage": "Import Image",
+  "file": "File",
+  "noFileSelected": "No File Selected",
+  "chooseImage": "Choose Image",
+  "scaleDown": "Scale Down",
+  "createNewPaletteFromImage": "Create a New Palette From Image",
+  "maxColorRamps": "Max Color Ramps",
+  "maxColorsPerRamp": "Max Colors per Ramp",
+  "includeImageAsReferenceLayer": "Include Image as Reference Layer",
+  "import": "Import",
+
+  "saveProjectAs": "Save Project as"
+
+
 
 
 }

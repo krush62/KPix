@@ -1399,6 +1399,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Controls Touch'**
   String get controlsTouch;
+
+  /// No description provided for @image.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get image;
+
+  /// No description provided for @animation.
+  ///
+  /// In en, this message translates to:
+  /// **'Animation'**
+  String get animation;
+
+  /// No description provided for @palette.
+  ///
+  /// In en, this message translates to:
+  /// **'Palette'**
+  String get palette;
+
+  /// No description provided for @kpixProject.
+  ///
+  /// In en, this message translates to:
+  /// **'KPix Project'**
+  String get kpixProject;
+
+  /// No description provided for @export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get export;
+
+  /// No description provided for @format.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get format;
+
+  /// No description provided for @texturePack.
+  ///
+  /// In en, this message translates to:
+  /// **'Texture Pack'**
+  String get texturePack;
+
+  /// No description provided for @texturePackAnimation.
+  ///
+  /// In en, this message translates to:
+  /// **'Texture Pack Animation'**
+  String get texturePackAnimation;
+
+  /// No description provided for @scaling.
+  ///
+  /// In en, this message translates to:
+  /// **'Scaling'**
+  String get scaling;
+
+  /// No description provided for @selectionOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Selection Only'**
+  String get selectionOnly;
+
+  /// frame plural
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{0 frames} =1{1 frame} other{{count} frames}}'**
+  String nFrames(int count);
+
+  /// No description provided for @directory.
+  ///
+  /// In en, this message translates to:
+  /// **'Directory'**
+  String get directory;
+
+  /// No description provided for @changeDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Directory'**
+  String get changeDirectory;
+
+  /// No description provided for @fileName.
+  ///
+  /// In en, this message translates to:
+  /// **'File Name'**
+  String get fileName;
+
+  /// No description provided for @exportFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Export File'**
+  String get exportFile;
+
+  /// No description provided for @imageDimensionsExceed.
+  ///
+  /// In en, this message translates to:
+  /// **'Image dimensions cannot exceed {width}x{height}!'**
+  String imageDimensionsExceed(Object height, Object width);
+
+  /// No description provided for @couldNotDecodeImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not decode image!'**
+  String get couldNotDecodeImage;
+
+  /// No description provided for @couldNotLoadFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load file!'**
+  String get couldNotLoadFile;
+
+  /// No description provided for @importImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Image'**
+  String get importImage;
+
+  /// No description provided for @file.
+  ///
+  /// In en, this message translates to:
+  /// **'File'**
+  String get file;
+
+  /// No description provided for @noFileSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No File Selected'**
+  String get noFileSelected;
+
+  /// No description provided for @chooseImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Image'**
+  String get chooseImage;
+
+  /// No description provided for @scaleDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale Down'**
+  String get scaleDown;
+
+  /// No description provided for @createNewPaletteFromImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a New Palette From Image'**
+  String get createNewPaletteFromImage;
+
+  /// No description provided for @maxColorRamps.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Color Ramps'**
+  String get maxColorRamps;
+
+  /// No description provided for @maxColorsPerRamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Colors per Ramp'**
+  String get maxColorsPerRamp;
+
+  /// No description provided for @includeImageAsReferenceLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Include Image as Reference Layer'**
+  String get includeImageAsReferenceLayer;
+
+  /// No description provided for @import.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get import;
+
+  /// No description provided for @saveProjectAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Project as'**
+  String get saveProjectAs;
 }
 
 class _AppLocalizationsDelegate

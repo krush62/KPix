@@ -245,8 +245,45 @@
   "licenses": "Lizenzen",
   "controlsShortcuts": "Tastenkürzel",
 
-  "textToolContent": "Inhalt für Textwerkzeug "
+  "textToolContent": "Inhalt für Textwerkzeug",
 
+  "gui": "GUI",
+  "behavior": "Verhalten",
+  "controlsPC": "Steuerung PC",
+  "controlsStylus": "Steuerung Stylus",
+  "controlsTouch": "Steuerung Touch",
+
+  "image": "Bild",
+  "animation": "Animation",
+  "palette": "Palette",
+  "kpixProject": "KPix-Projekt",
+  "export": "Export",
+  "format": "Format",
+  "texturePack": "Textur-Bündel",
+  "texturePackAnimation": "Textur-Animations-Bündel",
+  "scaling": "Skalierung",
+  "selectionOnly": "Nur die Auswahl",
+  "nFrames": "{count, plural, =0{0 Frames} =1{1 Frame} other{{count} Frames}}",
+  "directory": "Verzeichnis",
+  "changeDirectory": "Verzeichnis wechseln",
+  "fileName": "Dateiname",
+  "exportFile": "Datei Exportieren",
+
+  "imageDimensionsExceed": "Bildmaße dürfen {width}x{height} nicht überschreiten!",
+  "couldNotDecodeImage": "Bild konnte nicht dekodiert werden!",
+  "couldNotLoadFile": "Datei konnte nicht geladen werden!",
+  "importImage": "Bild importieren",
+  "file": "Datei",
+  "noFileSelected": "Keine Datei ausgewählt",
+  "chooseImage": "Bild wählen",
+  "scaleDown": "Runterskalieren",
+  "createNewPaletteFromImage": "Neue Palette aus Bild erstellen",
+  "maxColorRamps": "Max. Farbrampen",
+  "maxColorsPerRamp": "Max. Farben pro Rampe",
+  "includeImageAsReferenceLayer": "Bild als Referenzebene hinzufügen",
+  "import": "Importieren",
+
+  "saveProjectAs": "Projekt speichern als"
 
 
 

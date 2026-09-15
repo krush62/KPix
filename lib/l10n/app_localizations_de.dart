@@ -814,4 +814,55 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get saveProjectAs => 'Projekt speichern als';
+
+  @override
+  String get hueAbb => 'farb';
+
+  @override
+  String get satAbb => 'sätt';
+
+  @override
+  String get valAbb => 'hell';
+
+  @override
+  String get pressToReset => 'Drücken zum Zurücksetzen';
+
+  @override
+  String get colorCount => 'Farbanzahl';
+
+  @override
+  String get baseHue => 'Basis-Farbwert';
+
+  @override
+  String get hueShift => 'Wertverschiebung';
+
+  @override
+  String get exponent => 'Exponent';
+
+  @override
+  String get baseSat => 'Base Sättigung';
+
+  @override
+  String get satShift => 'Sättigungsverschiebung';
+
+  @override
+  String get satCurve => 'Sättigungskurve';
+
+  @override
+  String get valueRange => 'Helligkeitsbereich';
+
+  @override
+  String deleteColorRampQuestion(int amount) {
+    return 'Soll diese Farbrampe wirklich entfernt werden?\n$amount Pixel werden gelöscht.';
+  }
+
+  @override
+  String ofThemInSelection(int amount) {
+    return '($amount davon in der Auswahl)';
+  }
+
+  @override
+  String pixelsInClipboard(int amount) {
+    return '$amount pixel(s) in the clipboard will no longer be pasted';
+  }
 }

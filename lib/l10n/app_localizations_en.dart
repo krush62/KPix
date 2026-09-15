@@ -795,4 +795,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saveProjectAs => 'Save Project as';
+
+  @override
+  String get hueAbb => 'hue';
+
+  @override
+  String get satAbb => 'sat';
+
+  @override
+  String get valAbb => 'val';
+
+  @override
+  String get pressToReset => 'Press to Reset';
+
+  @override
+  String get colorCount => 'Color Count';
+
+  @override
+  String get baseHue => 'Base Hue';
+
+  @override
+  String get hueShift => 'Hue Shift';
+
+  @override
+  String get exponent => 'Exponent';
+
+  @override
+  String get baseSat => 'Base Sat';
+
+  @override
+  String get satShift => 'Sat Shift';
+
+  @override
+  String get satCurve => 'Sat Curve';
+
+  @override
+  String get valueRange => 'Value Range';
+
+  @override
+  String deleteColorRampQuestion(int amount) {
+    return 'Do you really want to delete this color ramp?\n$amount pixel(s) will be deleted';
+  }
+
+  @override
+  String ofThemInSelection(int amount) {
+    return '($amount of them in the selection)';
+  }
+
+  @override
+  String pixelsInClipboard(int amount) {
+    return '$amount pixel(s) in the clipboard will no longer be pasted';
+  }
 }

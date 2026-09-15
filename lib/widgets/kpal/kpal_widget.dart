@@ -41,6 +41,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/kpix_icons.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
@@ -104,25 +105,20 @@ class _KPalState extends State<KPal>
   void initState() {
     super.initState();
     _originalData = KPalRampData.from(other: widget._colorRamp);
-    _alertDialog = getTwoButtonDialog(
-        onNo: _dismissAlertDialog,
-        onYes: _acceptDeletion,
-        outsideCancelable: false,
-        message: _deleteMessage(usage: widget._usage),
-      );
   }
 
   String _deleteMessage({required final RampPixelUsage usage})
   {
-    final StringBuffer message = StringBuffer("Do you really want to delete this color ramp?\n${usage.layers + usage.selection} pixel(s) will be deleted");
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final StringBuffer message = StringBuffer(l10n.deleteColorRampQuestion(usage.layers + usage.selection));
     if (usage.selection > 0)
     {
-      message.write(" (${usage.selection} of them in the selection)");
+      message.write("  ${l10n.ofThemInSelection(usage.selection)}");
     }
     message.write(".");
     if (usage.clipboard > 0)
     {
-      message.write("\n${usage.clipboard} pixel(s) in the clipboard will no longer be pasted.");
+      message.write("\n${l10n.pixelsInClipboard(usage.clipboard)}.");
     }
     return message.toString();
   }
@@ -151,6 +147,12 @@ class _KPalState extends State<KPal>
 
   void _showDeleteDialog()
   {
+    _alertDialog = getTwoButtonDialog(
+      onNo: _dismissAlertDialog,
+      onYes: _acceptDeletion,
+      outsideCancelable: false,
+      message: _deleteMessage(usage: widget._usage),
+    );
     _alertDialog.show(context: context);
   }
 

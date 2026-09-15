@@ -336,9 +336,39 @@
   "includeImageAsReferenceLayer": "Include Image as Reference Layer",
   "import": "Import",
 
-  "saveProjectAs": "Save Project as"
+  "saveProjectAs": "Save Project as",
 
-
-
-
+  "hueAbb": "hue",
+  "satAbb": "sat",
+  "valAbb": "val",
+  "pressToReset": "Press to Reset",
+  "colorCount": "Color Count",
+  "baseHue": "Base Hue",
+  "hueShift": "Hue Shift",
+  "exponent": "Exponent",
+  "baseSat": "Base Sat",
+  "satShift": "Sat Shift",
+  "satCurve": "Sat Curve",
+  "valueRange": "Value Range",
+  "deleteColorRampQuestion": "Do you really want to delete this color ramp?\n{amount} pixel(s) will be deleted",
+  "@deleteColorRampQuestion": {
+    "description": "message when deleting ramp",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "ofThemInSelection": "({amount} of them in the selection)",
+  "@ofThemInSelection": {
+    "description": "message when deleting ramp",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "pixelsInClipboard": "{amount} pixel(s) in the clipboard will no longer be pasted",
+  "@pixelsInClipboard": {
+    "description": "message when deleting ramp",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  }
 }

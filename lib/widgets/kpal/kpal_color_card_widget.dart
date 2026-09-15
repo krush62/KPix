@@ -69,9 +69,9 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
 {
   final ColorNames _colorNames = GetIt.I.get<PreferenceManager>().colorNames;
   final ValueNotifier<bool> _shouldShowSliders = ValueNotifier<bool>(false);
-  late KPalVerticalSliderWidget _hueSlider;
-  late KPalVerticalSliderWidget _satSlider;
-  late KPalVerticalSliderWidget _valSlider;
+  KPalVerticalSliderWidget? _hueSlider;
+  KPalVerticalSliderWidget? _satSlider;
+  KPalVerticalSliderWidget? _valSlider;
   Timer? pressTimer;
   bool _isInside = false;
 
@@ -79,12 +79,6 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
   void initState()
   {
     super.initState();
-    _hueSlider = KPalVerticalSliderWidget(name: "hue", minVal: KPalSliderConstraints.minHue, maxVal: KPalSliderConstraints.maxHue, valueNotifier: widget.shiftSet.hueShiftNotifier);
-    _satSlider = KPalVerticalSliderWidget(name: "sat", minVal: KPalSliderConstraints.minSat, maxVal: KPalSliderConstraints.maxSat, valueNotifier: widget.shiftSet.satShiftNotifier);
-    _valSlider = KPalVerticalSliderWidget(name: "val", minVal: KPalSliderConstraints.minVal, maxVal: KPalSliderConstraints.maxVal, valueNotifier: widget.shiftSet.valShiftNotifier);
-    _hueSlider.valueNotifier.addListener(_showSliders);
-    _satSlider.valueNotifier.addListener(_showSliders);
-    _valSlider.valueNotifier.addListener(_showSliders);
   }
 
   void _showSliders()
@@ -107,6 +101,26 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
 
   @override
   Widget build(final BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    if (_hueSlider == null)
+    {
+      _hueSlider = KPalVerticalSliderWidget(name: l10n.hueAbb, minVal: KPalSliderConstraints.minHue, maxVal: KPalSliderConstraints.maxHue, valueNotifier: widget.shiftSet.hueShiftNotifier);
+      _hueSlider!.valueNotifier.addListener(_showSliders);
+
+    }
+    if (_satSlider == null)
+    {
+      _satSlider = KPalVerticalSliderWidget(name: l10n.satAbb, minVal: KPalSliderConstraints.minSat, maxVal: KPalSliderConstraints.maxSat, valueNotifier: widget.shiftSet.satShiftNotifier);
+      _satSlider!.valueNotifier.addListener(_showSliders);
+    }
+    if (_valSlider == null)
+    {
+      _valSlider = KPalVerticalSliderWidget(name: l10n.valAbb, minVal: KPalSliderConstraints.minVal, maxVal: KPalSliderConstraints.maxVal, valueNotifier: widget.shiftSet.valShiftNotifier);
+      _valSlider!.valueNotifier.addListener(_showSliders);
+    }
+
+
+
    return Expanded(
      child: Padding(
        padding: EdgeInsets.only(
@@ -182,9 +196,9 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                                    child: Row(
                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                      children: <Widget>[
-                                       _hueSlider,
-                                       _satSlider,
-                                       _valSlider,
+                                       _hueSlider!,
+                                       _satSlider!,
+                                       _valSlider!,
                                      ],
                                    ),
                                  ),

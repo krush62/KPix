@@ -283,7 +283,22 @@
   "includeImageAsReferenceLayer": "Bild als Referenzebene hinzufügen",
   "import": "Importieren",
 
-  "saveProjectAs": "Projekt speichern als"
+  "saveProjectAs": "Projekt speichern als",
+
+  "hueAbb": "farb",
+  "satAbb": "sätt",
+  "valAbb": "hell",
+  "pressToReset": "Drücken zum Zurücksetzen",
+  "colorCount": "Farbanzahl",
+  "baseHue": "Basis-Farbwert",
+  "hueShift": "Wertverschiebung",
+  "exponent": "Exponent",
+  "baseSat": "Base Sättigung",
+  "satShift": "Sättigungsverschiebung",
+  "satCurve": "Sättigungskurve",
+  "valueRange": "Helligkeitsbereich",
+  "deleteColorRampQuestion": "Soll diese Farbrampe wirklich entfernt werden?\n{amount} Pixel werden gelöscht.",
+  "ofThemInSelection": "({amount} davon in der Auswahl)"
 
 
 

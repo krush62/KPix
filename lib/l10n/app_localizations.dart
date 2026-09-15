@@ -1573,6 +1573,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save Project as'**
   String get saveProjectAs;
+
+  /// No description provided for @hueAbb.
+  ///
+  /// In en, this message translates to:
+  /// **'hue'**
+  String get hueAbb;
+
+  /// No description provided for @satAbb.
+  ///
+  /// In en, this message translates to:
+  /// **'sat'**
+  String get satAbb;
+
+  /// No description provided for @valAbb.
+  ///
+  /// In en, this message translates to:
+  /// **'val'**
+  String get valAbb;
+
+  /// No description provided for @pressToReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Press to Reset'**
+  String get pressToReset;
+
+  /// No description provided for @colorCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Count'**
+  String get colorCount;
+
+  /// No description provided for @baseHue.
+  ///
+  /// In en, this message translates to:
+  /// **'Base Hue'**
+  String get baseHue;
+
+  /// No description provided for @hueShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Hue Shift'**
+  String get hueShift;
+
+  /// No description provided for @exponent.
+  ///
+  /// In en, this message translates to:
+  /// **'Exponent'**
+  String get exponent;
+
+  /// No description provided for @baseSat.
+  ///
+  /// In en, this message translates to:
+  /// **'Base Sat'**
+  String get baseSat;
+
+  /// No description provided for @satShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Sat Shift'**
+  String get satShift;
+
+  /// No description provided for @satCurve.
+  ///
+  /// In en, this message translates to:
+  /// **'Sat Curve'**
+  String get satCurve;
+
+  /// No description provided for @valueRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Value Range'**
+  String get valueRange;
+
+  /// message when deleting ramp
+  ///
+  /// In en, this message translates to:
+  /// **'Do you really want to delete this color ramp?\n{amount} pixel(s) will be deleted'**
+  String deleteColorRampQuestion(int amount);
+
+  /// message when deleting ramp
+  ///
+  /// In en, this message translates to:
+  /// **'({amount} of them in the selection)'**
+  String ofThemInSelection(int amount);
+
+  /// message when deleting ramp
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} pixel(s) in the clipboard will no longer be pasted'**
+  String pixelsInClipboard(int amount);
 }
 
 class _AppLocalizationsDelegate

@@ -651,4 +651,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get delete => 'Delete';
+
+  @override
+  String get selectAColor => 'Select a Color';
+
+  @override
+  String get newVersionAvailable => 'New version available';
+
+  @override
+  String get downloadFromGithub => 'Download from GitHub';
+
+  @override
+  String get aPixelArtCreationTool => 'A Pixel Art Creation Tool';
+
+  @override
+  String get thisIsFreeSoftwareLicensed =>
+      'This is free software licensed under';
+
+  @override
+  String get gnuAGPLv3 => 'GNU AGPLv3';
+
+  @override
+  String get credits => 'Credits';
+
+  @override
+  String get licenses => 'Licenses';
+
+  @override
+  String get controlsShortcuts => 'Controls/Shortcuts';
+
+  @override
+  String get textToolContent => 'Text Tool Content';
+
+  @override
+  String get gui => 'GUI';
+
+  @override
+  String get behavior => 'Behavior';
+
+  @override
+  String get controlsPC => 'Controls PC';
+
+  @override
+  String get controlsStylus => 'Controls Stylus';
+
+  @override
+  String get controlsTouch => 'Controls Touch';
 }

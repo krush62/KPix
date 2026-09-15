@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -45,16 +46,35 @@ class PreferenceSection
   const PreferenceSection({required this.title, required this.icon});
 }
 
-/// Preference section dictionary.
-const Map<PreferenceSectionType, PreferenceSection> preferenceMap =
-<PreferenceSectionType, PreferenceSection>{
-  PreferenceSectionType.gui: PreferenceSection(title: "GUI", icon: TablerIcons.app_window),
-  PreferenceSectionType.behavior: PreferenceSection(title: "Behavior", icon: TablerIcons.tools),
-  PreferenceSectionType.controlsPC: PreferenceSection(title: "Controls PC", icon: TablerIcons.device_desktop),
-  PreferenceSectionType.controlsStylus: PreferenceSection(title: "Controls Stylus", icon: TablerIcons.pencil_bolt),
-  PreferenceSectionType.controlsTouch: PreferenceSection(title: "Controls Touch", icon: TablerIcons.hand_click),
-};
+String preferenceTitle({required final AppLocalizations l10n, required final PreferenceSectionType type})
+{
+  switch(type)
+  {
+    case PreferenceSectionType.gui:
+      return l10n.gui;
+    case PreferenceSectionType.behavior:
+      return l10n.behavior;
+    case PreferenceSectionType.controlsPC:
+      return l10n.controlsPC;
+    case PreferenceSectionType.controlsStylus:
+      return l10n.controlsStylus;
+    case PreferenceSectionType.controlsTouch:
+      return l10n.controlsTouch;
+  }
+}
 
+/// Preference section dictionary.
+///
+Map<PreferenceSectionType, PreferenceSection> getPreferenceMap(final AppLocalizations l10n)
+{
+  return <PreferenceSectionType, PreferenceSection>{
+    PreferenceSectionType.gui: PreferenceSection(title: preferenceTitle(l10n: l10n, type: PreferenceSectionType.gui), icon: TablerIcons.app_window),
+    PreferenceSectionType.behavior: PreferenceSection(title: preferenceTitle(l10n: l10n, type: PreferenceSectionType.behavior), icon: TablerIcons.tools),
+    PreferenceSectionType.controlsPC: PreferenceSection(title: preferenceTitle(l10n: l10n, type: PreferenceSectionType.controlsPC), icon: TablerIcons.device_desktop),
+    PreferenceSectionType.controlsStylus: PreferenceSection(title: preferenceTitle(l10n: l10n, type: PreferenceSectionType.controlsStylus), icon: TablerIcons.pencil_bolt),
+    PreferenceSectionType.controlsTouch: PreferenceSection(title: preferenceTitle(l10n: l10n, type: PreferenceSectionType.controlsTouch), icon: TablerIcons.hand_click),
+  };
+}
 
 /// The preference screen widget.
 class PreferencesWidget extends StatefulWidget
@@ -71,15 +91,16 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
 {
   final ValueNotifier<PreferenceSectionType> _prefSection = ValueNotifier<PreferenceSectionType>(PreferenceSectionType.gui);
 
-  ButtonSegment<PreferenceSectionType> _createSegment({required final PreferenceSectionType section})
+  ButtonSegment<PreferenceSectionType> _createSegment({required final PreferenceSectionType section, required final AppLocalizations l10n})
   {
+    final Map<PreferenceSectionType, PreferenceSection> prefMap = getPreferenceMap(l10n);
     return ButtonSegment<PreferenceSectionType>(
       value: section,
       label: Tooltip(
-        message: preferenceMap[section]!.title,
+        message: prefMap[section]!.title,
         waitDuration: toolTipDuration,
         child: Icon(
-          preferenceMap[section]!.icon,
+          prefMap[section]!.icon,
         ),
       ),
     );
@@ -102,13 +123,14 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
           ValueListenableBuilder<PreferenceSectionType>(
             valueListenable: _prefSection,
             builder: (final BuildContext context, final PreferenceSectionType pref, final Widget? child) {
+              final AppLocalizations l10n = AppLocalizations.of(context)!;
               return SegmentedButton<PreferenceSectionType>(
                 segments: <ButtonSegment<PreferenceSectionType>>[
-                  _createSegment(section: PreferenceSectionType.gui),
-                  _createSegment(section: PreferenceSectionType.behavior),
-                  _createSegment(section: PreferenceSectionType.controlsPC),
-                  _createSegment(section: PreferenceSectionType.controlsStylus),
-                  _createSegment(section: PreferenceSectionType.controlsTouch),
+                  _createSegment(section: PreferenceSectionType.gui, l10n: l10n),
+                  _createSegment(section: PreferenceSectionType.behavior, l10n: l10n),
+                  _createSegment(section: PreferenceSectionType.controlsPC, l10n: l10n),
+                  _createSegment(section: PreferenceSectionType.controlsStylus, l10n: l10n),
+                  _createSegment(section: PreferenceSectionType.controlsTouch, l10n: l10n),
                 ],
                 selected: <PreferenceSectionType>{pref},
                 showSelectedIcon: false,

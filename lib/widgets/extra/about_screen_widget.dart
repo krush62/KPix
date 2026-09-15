@@ -21,6 +21,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/kpix_theme.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/update_state.dart';
 import 'package:kpix/util/helpers/update_helper.dart';
@@ -108,6 +109,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -144,11 +146,11 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                             return RichText(
                               textAlign: TextAlign.right,
                               text: TextSpan(
-                                text: "New version available (${updateInfo.version}).\n",
+                                text: "${l10n.newVersionAvailable} (${updateInfo.version}).\n",
                                 style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen),
                                 children: <InlineSpan>[
                                   TextSpan(
-                                    text: "Download from GitHub.",
+                                    text: l10n.downloadFromGithub,
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
                                         if (GetIt.I.get<UpdateState>().updatePackage != null)
@@ -171,16 +173,16 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                     ],
                   ),
 
-                  Text("A Pixel Art Creation Tool", style: Theme.of(context).textTheme.labelMedium),
+                  Text(l10n.aPixelArtCreationTool, style: Theme.of(context).textTheme.labelMedium),
                   //Text("This is free software licensed under GNU AGPLv3", style: Theme.of(context).textTheme.labelMedium),
                   RichText(
                     textAlign: TextAlign.right,
                     text: TextSpan(
-                      text: "This is free software licensed under ",
+                      text: "${l10n.thisIsFreeSoftwareLicensed} ",
                       style: Theme.of(context).textTheme.labelMedium,
                       children: <InlineSpan>[
                         TextSpan(
-                          text: "GNU AGPLv3.",
+                          text: "${l10n.gnuAGPLv3}.",
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
                                 launchURL(url: "https://www.gnu.org/licenses/agpl-3.0.html");
@@ -195,13 +197,13 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      _createButton(tooltip: "Credits", icon: TablerIcons.users, onPressedFunc: _creditsPressed),
+                      _createButton(tooltip: l10n.credits, icon: TablerIcons.users, onPressedFunc: _creditsPressed),
                       const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
-                      _createButton(tooltip: "Licenses", icon: TablerIcons.license, onPressedFunc: _licensesPressed),
+                      _createButton(tooltip: l10n.licenses, icon: TablerIcons.license, onPressedFunc: _licensesPressed),
                       const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
-                      _createButton(tooltip: "Controls/Shortcuts", icon: TablerIcons.keyboard, onPressedFunc: _controlsPressed),
+                      _createButton(tooltip: l10n.controlsShortcuts, icon: TablerIcons.keyboard, onPressedFunc: _controlsPressed),
                       const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
-                      _createButton(tooltip: "Close", icon: TablerIcons.x, onPressedFunc: _dismissPressed),
+                      _createButton(tooltip: l10n.close, icon: TablerIcons.x, onPressedFunc: _dismissPressed),
                     ],
                   ),
                 ],

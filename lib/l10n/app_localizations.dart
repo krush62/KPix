@@ -1309,6 +1309,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete'**
   String get delete;
+
+  /// No description provided for @selectAColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a Color'**
+  String get selectAColor;
+
+  /// No description provided for @newVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'New version available'**
+  String get newVersionAvailable;
+
+  /// No description provided for @downloadFromGithub.
+  ///
+  /// In en, this message translates to:
+  /// **'Download from GitHub'**
+  String get downloadFromGithub;
+
+  /// No description provided for @aPixelArtCreationTool.
+  ///
+  /// In en, this message translates to:
+  /// **'A Pixel Art Creation Tool'**
+  String get aPixelArtCreationTool;
+
+  /// No description provided for @thisIsFreeSoftwareLicensed.
+  ///
+  /// In en, this message translates to:
+  /// **'This is free software licensed under'**
+  String get thisIsFreeSoftwareLicensed;
+
+  /// No description provided for @gnuAGPLv3.
+  ///
+  /// In en, this message translates to:
+  /// **'GNU AGPLv3'**
+  String get gnuAGPLv3;
+
+  /// No description provided for @credits.
+  ///
+  /// In en, this message translates to:
+  /// **'Credits'**
+  String get credits;
+
+  /// No description provided for @licenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Licenses'**
+  String get licenses;
+
+  /// No description provided for @controlsShortcuts.
+  ///
+  /// In en, this message translates to:
+  /// **'Controls/Shortcuts'**
+  String get controlsShortcuts;
+
+  /// No description provided for @textToolContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Text Tool Content'**
+  String get textToolContent;
+
+  /// No description provided for @gui.
+  ///
+  /// In en, this message translates to:
+  /// **'GUI'**
+  String get gui;
+
+  /// No description provided for @behavior.
+  ///
+  /// In en, this message translates to:
+  /// **'Behavior'**
+  String get behavior;
+
+  /// No description provided for @controlsPC.
+  ///
+  /// In en, this message translates to:
+  /// **'Controls PC'**
+  String get controlsPC;
+
+  /// No description provided for @controlsStylus.
+  ///
+  /// In en, this message translates to:
+  /// **'Controls Stylus'**
+  String get controlsStylus;
+
+  /// No description provided for @controlsTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'Controls Touch'**
+  String get controlsTouch;
 }
 
 class _AppLocalizationsDelegate

@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -64,7 +65,7 @@ class _ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Text("TEXT TOOL CONTENT", style: Theme.of(context).textTheme.titleLarge),
+          Text(AppLocalizations.of(context)!.textToolContent, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Padding(
             padding:  const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
@@ -73,7 +74,7 @@ class _ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 Expanded(
-                  child: Text("Text", style: Theme.of(context).textTheme.titleMedium),
+                  child: Text(AppLocalizations.of(context)!.text, style: Theme.of(context).textTheme.titleMedium),
                 ),
                 Expanded(
                   flex: 3,

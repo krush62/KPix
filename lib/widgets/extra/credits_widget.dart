@@ -19,6 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -79,7 +80,7 @@ class _CreditsWidgetState extends State<CreditsWidget>
             children: <Widget>[
               Expanded(
                 child: Tooltip(
-                  message: "Close",
+                  message: AppLocalizations.of(context)!.close,
                   waitDuration: toolTipDuration,
                   child: IconButton.outlined(
                     icon: const Icon(

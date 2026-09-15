@@ -271,6 +271,26 @@
   "verticalFlip": "VerticalFlip",
   "rotate90Clockwise": "Rotate 90° Clockwise",
   "alignDot": "Align...",
-  "delete": "Delete"
+  "delete": "Delete",
+
+  "selectAColor": "Select a Color",
+
+  "newVersionAvailable": "New version available",
+  "downloadFromGithub": "Download from GitHub",
+  "aPixelArtCreationTool": "A Pixel Art Creation Tool",
+  "thisIsFreeSoftwareLicensed": "This is free software licensed under",
+  "gnuAGPLv3": "GNU AGPLv3",
+  "credits": "Credits",
+  "licenses": "Licenses",
+  "controlsShortcuts": "Controls/Shortcuts",
+
+  "textToolContent": "Text Tool Content",
+
+  "gui": "GUI",
+  "behavior": "Behavior",
+  "controlsPC": "Controls PC",
+  "controlsStylus": "Controls Stylus",
+  "controlsTouch": "Controls Touch"
+
 
 }

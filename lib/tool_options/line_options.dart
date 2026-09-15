@@ -99,7 +99,7 @@ class LineOptions extends IToolOptions
       children: <Widget>[
         ToolSliderRow<int>(
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
-          label: "Width",
+          label: AppLocalizations.of(context)!.width,
           notifier: lineOptions.width,
           minVal: LineConstraints.widthMin.toDouble(),
           maxVal: LineConstraints.widthMax.toDouble(),
@@ -109,7 +109,7 @@ class LineOptions extends IToolOptions
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: lineOptions.integerAspectRatio,
           unmodifiedNotifier: lineOptions.unmodifiedIntegerAspectRatio,
-          label: "Integer Aspect Ratio",
+          label: AppLocalizations.of(context)!.integerAspectRatio,
           defaultState: LineConstraints.integerAspectRatioDefault,
           modifierNotifier: hotkeyManager.controlNotifier,
         ),
@@ -119,7 +119,7 @@ class LineOptions extends IToolOptions
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Segment Sorting",
+                  AppLocalizations.of(context)!.segmentSorting,
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),

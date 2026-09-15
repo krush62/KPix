@@ -527,4 +527,80 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get cursorArrow => 'Pfeil';
+
+  @override
+  String get rawModeExplanation =>
+      'Der Rohmodus verwendet keine Werte aus Schattierungsebenen oder Ebeneneinstellungen, die Schattierungen verwenden.';
+
+  @override
+  String get rawMode => 'Rohmodus';
+
+  @override
+  String get size => 'Größe';
+
+  @override
+  String get fillAdjacent => 'Benachbart füllen';
+
+  @override
+  String get fillWholeRamp => 'Gesamte Rampe füllen';
+
+  @override
+  String get integerAspectRatio => 'Ganzzahliges Seitenverhältnis';
+
+  @override
+  String get segmentSorting => 'Segment-Sortierung';
+
+  @override
+  String get smooth => 'Geglättet';
+
+  @override
+  String get mode => 'Modus';
+
+  @override
+  String get continuous => 'Kontinuierlich';
+
+  @override
+  String get keep1to1 => '1:1 beibehalten';
+
+  @override
+  String get wholeRamp => 'Gesamte Rampe';
+
+  @override
+  String get strokeOnly => 'Nur Umriss';
+
+  @override
+  String get cornerRadius => 'Eckenradius';
+
+  @override
+  String get angle => 'Winkel';
+
+  @override
+  String get cornerCount => 'Anzahl der Ecken';
+
+  @override
+  String get radius => 'Radius';
+
+  @override
+  String get blobSize => 'Blob-Größe';
+
+  @override
+  String get intensity => 'Intensität';
+
+  @override
+  String get noStamp => 'kein Stempel';
+
+  @override
+  String get scale => 'Skalierung';
+
+  @override
+  String get gridAlign => 'Rasterausrichtung';
+
+  @override
+  String get offsetX => 'Versatz X';
+
+  @override
+  String get offsetY => 'Versatz Y';
+
+  @override
+  String get font => 'Schriftart';
 }

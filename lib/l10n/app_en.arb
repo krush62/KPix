@@ -210,7 +210,45 @@
 
   "cursorNone": "None",
   "cursorCrosshair": "Crosshair",
-  "cursorArrow": "Arrow"
+  "cursorArrow": "Arrow",
+
+  "rawModeExplanation": "Raw Mode does not use any values from shading layers or layer settings that use shading.",
+  "rawMode": "Raw Mode",
+
+  "size": "Size",
+
+  "fillAdjacent": "Fill Adjacent",
+  "fillWholeRamp": "Fill Whole Ramp",
+
+  "integerAspectRatio": "Integer Aspect Ratio",
+  "segmentSorting": "Segment Sorting",
+
+  "smooth": "Smooth",
+
+  "mode": "Mode",
+
+  "continuous": "Continuous",
+  "keep1to1": "Keep 1:1",
+  "wholeRamp": "Whole Ramp",
+
+  "strokeOnly": "Stroke Only",
+  "cornerRadius": "Corner Radius",
+  "angle": "Angle",
+  "cornerCount": "Corner Count",
+
+  "radius": "Radius",
+  "blobSize": "Blob Size",
+  "intensity": "Intensity",
+
+  "noStamp": "No Stamp",
+  "scale": "Scale",
+  "gridAlign": "Grid Align",
+  "offsetX": "Offset X",
+  "offsetY": "Offset Y",
+
+  "font": "Font"
+
+
 
 
 

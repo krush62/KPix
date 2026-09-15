@@ -53,7 +53,7 @@ class SelectOptions extends IToolOptions
                 child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      "Mode",
+                      AppLocalizations.of(context)!.mode,
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                 ),
@@ -134,7 +134,7 @@ class SelectOptions extends IToolOptions
           padding: const EdgeInsets.only(bottom: ToolSettingsWidgetOptions.padding, top: ToolSettingsWidgetOptions.padding),
           child: ToolSegmentedIconButtonRow<SelectShape>(
             iconData: SelectShape.getLabelIconMap(AppLocalizations.of(context)!),
-            label: "Shape",
+            label: AppLocalizations.of(context)!.shape,
             notifier: selectOptions.shape,
             //flex: ToolSettingsWidgetOptions.columnWidthRatio,
             iconSize: ToolSettingsWidgetOptions.smallIconSize,
@@ -152,7 +152,7 @@ class SelectOptions extends IToolOptions
                     child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          (shape == SelectShape.wand) ? "Continuous" : "Keep 1:1",
+                          (shape == SelectShape.wand) ? AppLocalizations.of(context)!.continuous : AppLocalizations.of(context)!.keep1to1,
                           style: Theme.of(context).textTheme.labelLarge,
                         ),
                     ),
@@ -203,7 +203,7 @@ class SelectOptions extends IToolOptions
               visible: shape == SelectShape.wand,
               child: ToolSwitchRow(
                 notifier: selectOptions.wandWholeRamp,
-                label: "Whole Ramp",
+                label: AppLocalizations.of(context)!.wholeRamp,
                 flex: ToolSettingsWidgetOptions.columnWidthRatio,
               ),
             );

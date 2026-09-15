@@ -172,6 +172,45 @@
 
   "cursorNone": "Aus",
   "cursorCrosshair": "Fadenkreuz",
-  "cursorArrow": "Pfeil"
+  "cursorArrow": "Pfeil",
+
+  "rawModeExplanation": "Der Rohmodus verwendet keine Werte aus Schattierungsebenen oder Ebeneneinstellungen, die Schattierungen verwenden.",
+  "rawMode": "Rohmodus",
+
+  "size": "Größe",
+
+  "fillAdjacent": "Benachbart füllen",
+  "fillWholeRamp": "Gesamte Rampe füllen",
+
+  "integerAspectRatio": "Ganzzahliges Seitenverhältnis",
+  "segmentSorting": "Segment-Sortierung",
+
+  "smooth": "Geglättet",
+
+  "continuous": "Kontinuierlich",
+  "keep1to1": "1:1 beibehalten",
+  "mode": "Modus",
+  "wholeRamp": "Gesamte Rampe",
+
+  "strokeOnly": "Nur Umriss",
+  "cornerRadius": "Eckenradius",
+  "angle": "Winkel",
+  "cornerCount": "Anzahl der Ecken",
+
+  "radius": "Radius",
+  "blobSize": "Blob-Größe",
+  "intensity": "Intensität",
+
+  "noStamp": "kein Stempel",
+  "offsetX": "Versatz X",
+  "offsetY": "Versatz Y",
+  "gridAlign": "Rasterausrichtung",
+  "scale": "Skalierung",
+
+  "font": "Schriftart"
+
+
+
+
 
 }

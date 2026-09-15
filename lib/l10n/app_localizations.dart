@@ -1027,6 +1027,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Arrow'**
   String get cursorArrow;
+
+  /// No description provided for @rawModeExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw Mode does not use any values from shading layers or layer settings that use shading.'**
+  String get rawModeExplanation;
+
+  /// No description provided for @rawMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw Mode'**
+  String get rawMode;
+
+  /// No description provided for @size.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get size;
+
+  /// No description provided for @fillAdjacent.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill Adjacent'**
+  String get fillAdjacent;
+
+  /// No description provided for @fillWholeRamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill Whole Ramp'**
+  String get fillWholeRamp;
+
+  /// No description provided for @integerAspectRatio.
+  ///
+  /// In en, this message translates to:
+  /// **'Integer Aspect Ratio'**
+  String get integerAspectRatio;
+
+  /// No description provided for @segmentSorting.
+  ///
+  /// In en, this message translates to:
+  /// **'Segment Sorting'**
+  String get segmentSorting;
+
+  /// No description provided for @smooth.
+  ///
+  /// In en, this message translates to:
+  /// **'Smooth'**
+  String get smooth;
+
+  /// No description provided for @mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode'**
+  String get mode;
+
+  /// No description provided for @continuous.
+  ///
+  /// In en, this message translates to:
+  /// **'Continuous'**
+  String get continuous;
+
+  /// No description provided for @keep1to1.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep 1:1'**
+  String get keep1to1;
+
+  /// No description provided for @wholeRamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole Ramp'**
+  String get wholeRamp;
+
+  /// No description provided for @strokeOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Stroke Only'**
+  String get strokeOnly;
+
+  /// No description provided for @cornerRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Corner Radius'**
+  String get cornerRadius;
+
+  /// No description provided for @angle.
+  ///
+  /// In en, this message translates to:
+  /// **'Angle'**
+  String get angle;
+
+  /// No description provided for @cornerCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Corner Count'**
+  String get cornerCount;
+
+  /// No description provided for @radius.
+  ///
+  /// In en, this message translates to:
+  /// **'Radius'**
+  String get radius;
+
+  /// No description provided for @blobSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Blob Size'**
+  String get blobSize;
+
+  /// No description provided for @intensity.
+  ///
+  /// In en, this message translates to:
+  /// **'Intensity'**
+  String get intensity;
+
+  /// No description provided for @noStamp.
+  ///
+  /// In en, this message translates to:
+  /// **'No Stamp'**
+  String get noStamp;
+
+  /// No description provided for @scale.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale'**
+  String get scale;
+
+  /// No description provided for @gridAlign.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid Align'**
+  String get gridAlign;
+
+  /// No description provided for @offsetX.
+  ///
+  /// In en, this message translates to:
+  /// **'Offset X'**
+  String get offsetX;
+
+  /// No description provided for @offsetY.
+  ///
+  /// In en, this message translates to:
+  /// **'Offset Y'**
+  String get offsetY;
+
+  /// No description provided for @font.
+  ///
+  /// In en, this message translates to:
+  /// **'Font'**
+  String get font;
 }
 
 class _AppLocalizationsDelegate

@@ -509,4 +509,80 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cursorArrow => 'Arrow';
+
+  @override
+  String get rawModeExplanation =>
+      'Raw Mode does not use any values from shading layers or layer settings that use shading.';
+
+  @override
+  String get rawMode => 'Raw Mode';
+
+  @override
+  String get size => 'Size';
+
+  @override
+  String get fillAdjacent => 'Fill Adjacent';
+
+  @override
+  String get fillWholeRamp => 'Fill Whole Ramp';
+
+  @override
+  String get integerAspectRatio => 'Integer Aspect Ratio';
+
+  @override
+  String get segmentSorting => 'Segment Sorting';
+
+  @override
+  String get smooth => 'Smooth';
+
+  @override
+  String get mode => 'Mode';
+
+  @override
+  String get continuous => 'Continuous';
+
+  @override
+  String get keep1to1 => 'Keep 1:1';
+
+  @override
+  String get wholeRamp => 'Whole Ramp';
+
+  @override
+  String get strokeOnly => 'Stroke Only';
+
+  @override
+  String get cornerRadius => 'Corner Radius';
+
+  @override
+  String get angle => 'Angle';
+
+  @override
+  String get cornerCount => 'Corner Count';
+
+  @override
+  String get radius => 'Radius';
+
+  @override
+  String get blobSize => 'Blob Size';
+
+  @override
+  String get intensity => 'Intensity';
+
+  @override
+  String get noStamp => 'No Stamp';
+
+  @override
+  String get scale => 'Scale';
+
+  @override
+  String get gridAlign => 'Grid Align';
+
+  @override
+  String get offsetX => 'Offset X';
+
+  @override
+  String get offsetY => 'Offset Y';
+
+  @override
+  String get font => 'Font';
 }

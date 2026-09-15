@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/models/constraints/tool_text_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
@@ -65,7 +66,7 @@ class TextOptions extends IToolOptions
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    "Font",
+                    AppLocalizations.of(context)!.font,
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
                 ),
@@ -97,7 +98,7 @@ class TextOptions extends IToolOptions
         ),
         ExcludeFocus(
           child: ToolSliderRow<int>(
-            label: "Scale",
+            label: AppLocalizations.of(context)!.scale,
             notifier: textOptions.size,
             flex: ToolSettingsWidgetOptions.columnWidthRatio,
             minVal: TextConstraints.sizeMin.toDouble(),
@@ -112,7 +113,7 @@ class TextOptions extends IToolOptions
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Text",
+                  AppLocalizations.of(context)!.text,
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),

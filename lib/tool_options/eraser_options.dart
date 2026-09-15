@@ -38,14 +38,14 @@ class EraserOptions extends IToolOptions
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         ToolSliderRow<int>(
-          label: "Size",
+          label: AppLocalizations.of(context)!.size,
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: eraserOptions.size,
           minVal: EraserConstraints.sizeMin.toDouble(),
           maxVal: EraserConstraints.sizeMax.toDouble(),
         ),
         ToolDropdownRow<PencilShape>(
-          label: "Shape",
+          label: AppLocalizations.of(context)!.shape,
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: eraserOptions.shape,
           valueMap: PencilShape.getLabelMap(AppLocalizations.of(context)!),

@@ -42,7 +42,7 @@ class PencilOptions extends IToolOptions
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         ToolSliderRow<int>(
-          label: "Size",
+          label: AppLocalizations.of(context)!.size,
           notifier: pencilOptions.size,
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           minVal: PencilConstraints.sizeMin.toDouble(),
@@ -50,7 +50,7 @@ class PencilOptions extends IToolOptions
           //divisions: pencilOptions.sizeMax - pencilOptions.sizeMin,
         ),
         ToolDropdownRow<PencilShape>(
-          label: "Shape",
+          label: AppLocalizations.of(context)!.shape,
           notifier: pencilOptions.shape,
           valueMap: PencilShape.getLabelMap(AppLocalizations.of(context)!),
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
@@ -59,7 +59,7 @@ class PencilOptions extends IToolOptions
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: pencilOptions.pixelPerfect,
           unmodifiedNotifier: pencilOptions.unmodifiedPixelPerfect,
-          label: "Smooth",
+          label: AppLocalizations.of(context)!.smooth,
           defaultState: PencilConstraints.pixelPerfectDefault,
           modifierNotifier: hotkeyManager.controlNotifier,
         ),

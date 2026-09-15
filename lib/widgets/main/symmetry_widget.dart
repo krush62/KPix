@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
@@ -92,6 +93,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
 
   @override
   Widget build(final BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Material(
       color: Theme.of(context).primaryColor,
       child: Padding(
@@ -101,7 +103,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
           mainAxisSize: MainAxisSize.min, // Important for Column containing SizeTransition
           children: <Widget>[
             Tooltip(
-              message: "Symmetry Options",
+              message: l10n.symmetryOptions,
               waitDuration: toolTipDuration,
               child: GestureDetector(
                 onTap: _toggleExpand,
@@ -172,7 +174,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                       Padding(
                                         padding:  const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
                                         child: Tooltip(
-                                          message: "Center Horizontal Ruler",
+                                          message: l10n.centerHorizontalRuler,
                                           waitDuration: toolTipDuration,
                                           child: SizedBox(
                                             width: _SymmetryWidgetOptions.buttonWidth,
@@ -249,7 +251,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                       Padding(
                                         padding: const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
                                         child: Tooltip(
-                                          message: "Center Vertical Ruler",
+                                          message: l10n.centerVerticalRuler,
                                           waitDuration: toolTipDuration,
                                           child: SizedBox(
                                             width: _SymmetryWidgetOptions.buttonWidth,

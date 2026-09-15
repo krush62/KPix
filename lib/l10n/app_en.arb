@@ -376,7 +376,15 @@
   "maxBrighten": "Max Brighten",
 
   "layerActionsDot": "Layer Actions...",
-  "settings": "Settings"
+  "settings": "Settings",
+
+  "addNewLayerDot": "Add New Layer...",
+  "layerSettings": "Layer Settings",
+
+  "symmetryOptions": "Symmetry Options",
+  "centerHorizontalRuler": "Center Horizontal Ruler",
+  "centerVerticalRuler": "Center Vertical Ruler"
+
 
 
 

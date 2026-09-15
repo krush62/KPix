@@ -1693,6 +1693,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get settings;
+
+  /// No description provided for @addNewLayerDot.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Layer...'**
+  String get addNewLayerDot;
+
+  /// No description provided for @layerSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Layer Settings'**
+  String get layerSettings;
+
+  /// No description provided for @symmetryOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Symmetry Options'**
+  String get symmetryOptions;
+
+  /// No description provided for @centerHorizontalRuler.
+  ///
+  /// In en, this message translates to:
+  /// **'Center Horizontal Ruler'**
+  String get centerHorizontalRuler;
+
+  /// No description provided for @centerVerticalRuler.
+  ///
+  /// In en, this message translates to:
+  /// **'Center Vertical Ruler'**
+  String get centerVerticalRuler;
 }
 
 class _AppLocalizationsDelegate

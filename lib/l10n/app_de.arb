@@ -305,7 +305,14 @@
   "maxBrighten": "Max. Aufhellen",
 
   "layerActionsDot": "Ebenenaktionen...",
-  "settings": "Einstellungen"
+  "settings": "Einstellungen",
+
+  "addNewLayerDot": "Neue Ebene hinzufügen...",
+  "layerSettings": "Ebeneneinstellungen",
+
+  "symmetryOptions": "Symmetrieoptionen",
+  "centerHorizontalRuler": "Horizontale Linie zentrieren",
+  "centerVerticalRuler": "Vertikale Linie zentrieren"
 
 
 

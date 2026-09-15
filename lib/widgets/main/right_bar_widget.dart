@@ -246,6 +246,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
 
   @override
   Widget build(final BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Material(
       color: Theme.of(context).primaryColor,
 
@@ -274,7 +275,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                               child: OverlayAnchor(
                                 anchorKey: _addLayerAnchorKey,
                                 child: Tooltip(
-                                  message: "Add New Layer...",
+                                  message: l10n.addNewLayerDot,
                                   waitDuration: toolTipDuration,
                                   child: OverlayPortal(
                                     controller: _addLayerPortalController,
@@ -397,7 +398,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                   children: <Widget>[
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text("LAYER SETTINGS", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
+                                      child: Text(l10n.layerSettings.toUpperCase(), style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
                                     ),
                                     const SizedBox(height: 8.0),
                                     Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
@@ -408,7 +409,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                     ),
                                     Tooltip(
                                       waitDuration: toolTipDuration,
-                                      message: "Close",
+                                      message: l10n.close,
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: IconButton.outlined(

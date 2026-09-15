@@ -861,4 +861,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settings => 'Settings';
+
+  @override
+  String get addNewLayerDot => 'Add New Layer...';
+
+  @override
+  String get layerSettings => 'Layer Settings';
+
+  @override
+  String get symmetryOptions => 'Symmetry Options';
+
+  @override
+  String get centerHorizontalRuler => 'Center Horizontal Ruler';
+
+  @override
+  String get centerVerticalRuler => 'Center Vertical Ruler';
 }

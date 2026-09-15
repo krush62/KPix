@@ -880,4 +880,19 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settings => 'Einstellungen';
+
+  @override
+  String get addNewLayerDot => 'Neue Ebene hinzufügen...';
+
+  @override
+  String get layerSettings => 'Ebeneneinstellungen';
+
+  @override
+  String get symmetryOptions => 'Symmetrieoptionen';
+
+  @override
+  String get centerHorizontalRuler => 'Horizontale Linie zentrieren';
+
+  @override
+  String get centerVerticalRuler => 'Vertikale Linie zentrieren';
 }

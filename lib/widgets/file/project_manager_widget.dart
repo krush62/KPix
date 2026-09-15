@@ -93,20 +93,9 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       _projectViewOrder,
       _filterText,
     ],);
-    _saveBeforeLoadWarningDialog = getThreeButtonDialog(
-        onYes: _saveBeforeLoadWarningYes,
-        onNo: _saveBeforeLoadWarningNo,
-        onCancel: _closeSaveBeforeLoadWarning,
-        outsideCancelable: false,
-        message: AppLocalizations.of(context)!.unsavedChangesSaveFirst,
-    );
-    _loadingDialog = getLoadingDialog(message: AppLocalizations.of(context)!.openingImage);
-    _deleteWarningDialog = getTwoButtonDialog(
-      message: AppLocalizations.of(context)!.doYouReallyWantToDeleteProject,
-      onNo: _deleteWarningNo,
-      onYes: _deleteWarningYes,
-      outsideCancelable: false,
-    );
+
+
+
 
     //keeps the cache fresh while this view is open and re-scans once now, since
     //a directory watch can miss what other applications did to the directory
@@ -141,6 +130,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       _closeSaveBeforeLoadWarning();
       return;
     }
+    _loadingDialog = getLoadingDialog(message: AppLocalizations.of(context)!.openingImage);
     _loadingDialog.show(context: context);
     //taken now: this widget is dismissed long before the file has loaded
     final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -177,6 +167,13 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   {
     if (GetIt.I.get<ProjectSession>().hasChanges.value)
     {
+      _saveBeforeLoadWarningDialog = getThreeButtonDialog(
+        onYes: _saveBeforeLoadWarningYes,
+        onNo: _saveBeforeLoadWarningNo,
+        onCancel: _closeSaveBeforeLoadWarning,
+        outsideCancelable: false,
+        message: AppLocalizations.of(context)!.unsavedChangesSaveFirst,
+      );
       _saveBeforeLoadWarningDialog.show(context: context);
     }
     else
@@ -187,6 +184,12 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   void _deleteProjectPressed()
   {
+    _deleteWarningDialog = getTwoButtonDialog(
+      message: AppLocalizations.of(context)!.doYouReallyWantToDeleteProject,
+      onNo: _deleteWarningNo,
+      onYes: _deleteWarningYes,
+      outsideCancelable: false,
+    );
     _deleteWarningDialog.show(context: context);
   }
 

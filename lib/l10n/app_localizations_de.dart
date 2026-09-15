@@ -834,7 +834,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get baseHue => 'Basis-Farbwert';
 
   @override
-  String get hueShift => 'Wertverschiebung';
+  String get hueShift => 'Farbwert-\nverschiebung';
 
   @override
   String get exponent => 'Exponent';
@@ -843,17 +843,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get baseSat => 'Base Sättigung';
 
   @override
-  String get satShift => 'Sättigungsverschiebung';
+  String get satShift => 'Sättigungs-\nverschiebung';
 
   @override
   String get satCurve => 'Sättigungskurve';
 
   @override
-  String get valueRange => 'Helligkeitsbereich';
+  String get valueRange => 'Helligkeits-\nbereich';
 
   @override
   String deleteColorRampQuestion(int amount) {
-    return 'Soll diese Farbrampe wirklich entfernt werden?\n$amount Pixel werden gelöscht.';
+    return 'Soll diese Farbrampe wirklich entfernt werden?\n$amount Pixel werden gelöscht';
   }
 
   @override
@@ -863,7 +863,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String pixelsInClipboard(int amount) {
-    return '$amount Pixel in der Zwischenablage sind nicht mehr verfügbar.';
+    return '$amount Pixel in der Zwischenablage sind nicht mehr verfügbar';
   }
 
   @override

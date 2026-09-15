@@ -18,36 +18,46 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 
 enum DrawingShape
 {
-  triangle(0, "Triangle", TablerIcons.triangle),
-  rectangle(1, "Rectangle", TablerIcons.square),
-  diamond(2, "Mid-Angle Rectangle", TablerIcons.diamonds),
-  ellipse(3, "Ellipse", TablerIcons.circle),
-  ngon(4, "Regular Polygon", TablerIcons.pentagon),
-  star(5, "Star", TablerIcons.star);
+  triangle(0, TablerIcons.triangle),
+  rectangle(1, TablerIcons.square),
+  diamond(2, TablerIcons.diamonds),
+  ellipse(3, TablerIcons.circle),
+  ngon(4, TablerIcons.pentagon),
+  star(5, TablerIcons.star);
 
-  const DrawingShape(this.id, this.label, this.icon);
+  const DrawingShape(this.id, this.icon);
 
   final int id;
-  final String label;
   final IconData icon;
 
-  static Map<DrawingShape, String> getLabelMap()
+  String label(final AppLocalizations l10n) => switch(this)
+  {
+    triangle => l10n.triangle,
+    rectangle => l10n.rectangle,
+    diamond => l10n.midAngleRectangle,
+    ellipse => l10n.ellipse,
+    ngon => l10n.regularPolygon,
+    star => l10n.star,
+  };
+
+  static Map<DrawingShape, String> getLabelMap(final AppLocalizations l10n)
   {
     final Map<DrawingShape, String> map = <DrawingShape, String>{};
     for (final DrawingShape shape in DrawingShape.values) {
-      map[shape] = shape.name;
+      map[shape] = shape.label(l10n);
     }
     return map;
   }
 
-  static Map<DrawingShape, ({String label, IconData icon})> getLabelIconMap()
+  static Map<DrawingShape, ({String label, IconData icon})> getLabelIconMap(final AppLocalizations l10n)
   {
     final Map<DrawingShape, ({String label, IconData icon})> map = <DrawingShape, ({String label, IconData icon})>{};
     for (final DrawingShape shape in DrawingShape.values) {
-      map[shape] = (label: shape.label, icon: shape.icon);
+      map[shape] = (label: shape.label(l10n), icon: shape.icon);
     }
     return map;
   }

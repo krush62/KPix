@@ -112,6 +112,47 @@
   "visible": "Sichtbar",
   "transparencyLocked": "Transparenz gesperrt",
   "unlocked": "Entsperrt",
-  "locked": "Gesperrt"
+  "locked": "Gesperrt",
+
+  "buttonRec": "ORT",
+  "buttonDia": "DIA",
+  "buttonIso": "ISO",
+  "buttonHex": "HEX",
+  "buttonTri": "DRK",
+  "buttonBrk": "ZIG",
+  "button1Point": "1-Punkt",
+  "button2Point": "2-Punkt",
+  "button3Point": "3-Punkt",
+  "rectangularGrid": "Orthogonales Gitter",
+  "diagonalGrid": "Diagonalgitter",
+  "isometricGrid": "Isometrisches Gitter",
+  "hexagonalGrid": "Hexagonales Gitter",
+  "triangularGrid": "Dreiecksgitter",
+  "bricks": "Ziegel",
+  "onePointPerspective": "1-Punkt-Perspektive",
+  "twoPointPerspective": "2-Punkt-Perspektive",
+  "threePointPerspective": "3-Punkt-Perspektive",
+
+  "ascendingSegmentOrder": "Absteigende Segmentlänge",
+  "ascendingDescendingSegmentOrder": "Aufsteigende/Absteigende Segmentlänge",
+  "descendingAscendingSegmentOrder": "Absteigende/Aufsteigende Segmentlänge",
+  "descendingSegmentOrder": "Absteigende Segmentlänge",
+
+  "round": "Rund",
+  "square": "Quadratisch",
+
+  "rectangle": "Rechteck",
+  "ellipse": "Ellipse",
+  "polygon": "Polygon",
+  "wand": "Zauberstab",
+  "triangle": "Dreieck",
+  "midAngleRectangle": "Gedrehtes Rechteck",
+  "regularPolygon": "Regelmäßiges Polygon",
+  "star": "Stern",
+
+  "replaceSelection": "Auswahl ersetzen",
+  "addToSelection": "Zur Auswahl hinzufügen",
+  "subtractFromSelection": "Von Auswahl subtrahieren",
+  "intersectWithSelection": "Mit Auswahl überschneiden"
 
 }

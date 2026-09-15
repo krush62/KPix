@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/models/constraints/grid_layer_constraints.dart';
 import 'package:kpix/models/history/history_manager.dart';
@@ -114,7 +115,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         if (isPerspectiveGridType(gridType: g) == isPerspective)
                           ButtonSegment<GridType>(
                             value: g,
-                            label: Tooltip(waitDuration: toolTipDuration, message: g.name, child: Text(g.label, style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                            label: Tooltip(waitDuration: toolTipDuration, message: g.desc(AppLocalizations.of(context)!), child: Text(g.label(AppLocalizations.of(context)!), style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                           ),
                     ],
                     selected: <GridType>{gridType},

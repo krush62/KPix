@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_line_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -138,7 +139,7 @@ class LineOptions extends IToolOptions
                         ButtonSegment<SegmentSortStyle>(
                           value: sortStyle,
                           label: Tooltip(
-                            message: sortStyle.label,
+                            message: sortStyle.label(AppLocalizations.of(context)!),
                             waitDuration: toolTipDuration,
                             child: Text(sortStyle.iconText),
                           ),

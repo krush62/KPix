@@ -16,22 +16,46 @@
  *
  */
 
+import 'package:kpix/l10n/app_localizations.dart';
+
 enum GridType
 {
-  rectangular(0, "Rectangular Grid", "REC"),
-  diagonal(1, "Diagonal Grid", "DIA"),
-  isometric(2, "Isometric Grid", "ISO"),
-  hexagonal(3, "Hexagonal Grid", "HEX"),
-  triangular(4, "Triangular Grid", "TRI"),
-  brick(5, "Bricks", "BRK"),
-  onePointPerspective(6, "1-Point Perspective", "1-Point"),
-  twoPointPerspective(7, "2-Point Perspective", "2-Point"),
-  threePointPerspective(8, "3-Point Perspective", "3-Point");
+  rectangular(0),
+  diagonal(1),
+  isometric(2),
+  hexagonal(3),
+  triangular(4),
+  brick(5),
+  onePointPerspective(6),
+  twoPointPerspective(7),
+  threePointPerspective(8);
 
-  const GridType(this.id, this.name, this.label);
+  const GridType(this.id);
   final int id;
-  final String name;
-  final String label;
+  String label(final AppLocalizations l10n) => switch (this) {
+    rectangular => l10n.buttonRec,
+    diagonal => l10n.buttonDia,
+    isometric => l10n.buttonIso,
+    hexagonal => l10n.buttonHex,
+    triangular => l10n.buttonTri,
+    brick => l10n.buttonBrk,
+    onePointPerspective => l10n.button1Point,
+    twoPointPerspective => l10n.button2Point,
+    threePointPerspective => l10n.button3Point
+  };
+
+  String desc(final AppLocalizations l10n) => switch (this) {
+  rectangular => l10n.rectangularGrid,
+  diagonal => l10n.diagonalGrid,
+  isometric => l10n.isometricGrid,
+  hexagonal => l10n.hexagonalGrid,
+  triangular => l10n.triangularGrid,
+  brick => l10n.bricks,
+  onePointPerspective => l10n.onePointPerspective,
+  twoPointPerspective => l10n.twoPointPerspective,
+  threePointPerspective => l10n.threePointPerspective,
+  };
+
 
   static GridType fromId(final int id)
   {

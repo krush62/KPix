@@ -369,4 +369,114 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get locked => 'Gesperrt';
+
+  @override
+  String get buttonRec => 'ORT';
+
+  @override
+  String get buttonDia => 'DIA';
+
+  @override
+  String get buttonIso => 'ISO';
+
+  @override
+  String get buttonHex => 'HEX';
+
+  @override
+  String get buttonTri => 'DRK';
+
+  @override
+  String get buttonBrk => 'ZIG';
+
+  @override
+  String get button1Point => '1-Punkt';
+
+  @override
+  String get button2Point => '2-Punkt';
+
+  @override
+  String get button3Point => '3-Punkt';
+
+  @override
+  String get rectangularGrid => 'Orthogonales Gitter';
+
+  @override
+  String get diagonalGrid => 'Diagonalgitter';
+
+  @override
+  String get isometricGrid => 'Isometrisches Gitter';
+
+  @override
+  String get hexagonalGrid => 'Hexagonales Gitter';
+
+  @override
+  String get triangularGrid => 'Dreiecksgitter';
+
+  @override
+  String get bricks => 'Ziegel';
+
+  @override
+  String get onePointPerspective => '1-Punkt-Perspektive';
+
+  @override
+  String get twoPointPerspective => '2-Punkt-Perspektive';
+
+  @override
+  String get threePointPerspective => '3-Punkt-Perspektive';
+
+  @override
+  String get ascendingSegmentOrder => 'Absteigende Segmentlänge';
+
+  @override
+  String get ascendingDescendingSegmentOrder =>
+      'Aufsteigende/Absteigende Segmentlänge';
+
+  @override
+  String get descendingAscendingSegmentOrder =>
+      'Absteigende/Aufsteigende Segmentlänge';
+
+  @override
+  String get descendingSegmentOrder => 'Absteigende Segmentlänge';
+
+  @override
+  String get round => 'Rund';
+
+  @override
+  String get square => 'Quadratisch';
+
+  @override
+  String get rectangle => 'Rechteck';
+
+  @override
+  String get ellipse => 'Ellipse';
+
+  @override
+  String get polygon => 'Polygon';
+
+  @override
+  String get wand => 'Zauberstab';
+
+  @override
+  String get triangle => 'Dreieck';
+
+  @override
+  String get midAngleRectangle => 'Gedrehtes Rechteck';
+
+  @override
+  String get regularPolygon => 'Regelmäßiges Polygon';
+
+  @override
+  String get star => 'Stern';
+
+  @override
+  String get replaceSelection => 'Auswahl ersetzen';
+
+  @override
+  String get addToSelection => 'Zur Auswahl hinzufügen';
+
+  @override
+  String get subtractFromSelection => 'Von Auswahl subtrahieren';
+
+  @override
+  String get intersectWithSelection => 'Mit Auswahl überschneiden';
 }

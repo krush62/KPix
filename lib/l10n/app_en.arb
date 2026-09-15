@@ -150,6 +150,48 @@
   "visible": "Visible",
   "unlocked": "Unlocked",
   "transparencyLocked": "Transparency locked",
-  "locked": "Locked"
+  "locked": "Locked",
+
+  "buttonRec": "REC",
+  "buttonDia": "DIA",
+  "buttonIso": "ISO",
+  "buttonHex": "HEX",
+  "buttonTri": "TRI",
+  "buttonBrk": "BRK",
+  "button1Point": "1-Point",
+  "button2Point": "2-Point",
+  "button3Point": "3-Point",
+  "rectangularGrid": "Rectangular Grid",
+  "diagonalGrid": "Diagonal Grid",
+  "isometricGrid": "Isometric Grid",
+  "hexagonalGrid": "Hexagonal Grid",
+  "triangularGrid": "Triangular Grid",
+  "bricks": "Bricks",
+  "onePointPerspective": "1-Point Perspective",
+  "twoPointPerspective": "2-Point Perspective",
+  "threePointPerspective": "3-Point Perspective",
+
+  "ascendingSegmentOrder": "Ascending segment order",
+  "ascendingDescendingSegmentOrder": "Ascending/Descending segment order",
+  "descendingAscendingSegmentOrder": "Descending/Ascending segment order",
+  "descendingSegmentOrder": "Descending segment order",
+
+  "round": "Round",
+  "square": "Square",
+
+  "rectangle": "Rectangle",
+  "ellipse": "Ellipse",
+  "polygon": "Polygon",
+  "wand": "Wand",
+  "triangle": "Triangle",
+  "midAngleRectangle": "Mid-Angle Rectangle",
+  "regularPolygon": "Regular Polygon",
+  "star": "Star",
+
+  "replaceSelection": "Replace Selection",
+  "addToSelection": "Add to Selection",
+  "subtractFromSelection": "Subtract from Selection",
+  "intersectWithSelection": "IntersectWithSelection"
+
 
 }

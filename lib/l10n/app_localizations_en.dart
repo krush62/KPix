@@ -351,4 +351,114 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get locked => 'Locked';
+
+  @override
+  String get buttonRec => 'REC';
+
+  @override
+  String get buttonDia => 'DIA';
+
+  @override
+  String get buttonIso => 'ISO';
+
+  @override
+  String get buttonHex => 'HEX';
+
+  @override
+  String get buttonTri => 'TRI';
+
+  @override
+  String get buttonBrk => 'BRK';
+
+  @override
+  String get button1Point => '1-Point';
+
+  @override
+  String get button2Point => '2-Point';
+
+  @override
+  String get button3Point => '3-Point';
+
+  @override
+  String get rectangularGrid => 'Rectangular Grid';
+
+  @override
+  String get diagonalGrid => 'Diagonal Grid';
+
+  @override
+  String get isometricGrid => 'Isometric Grid';
+
+  @override
+  String get hexagonalGrid => 'Hexagonal Grid';
+
+  @override
+  String get triangularGrid => 'Triangular Grid';
+
+  @override
+  String get bricks => 'Bricks';
+
+  @override
+  String get onePointPerspective => '1-Point Perspective';
+
+  @override
+  String get twoPointPerspective => '2-Point Perspective';
+
+  @override
+  String get threePointPerspective => '3-Point Perspective';
+
+  @override
+  String get ascendingSegmentOrder => 'Ascending segment order';
+
+  @override
+  String get ascendingDescendingSegmentOrder =>
+      'Ascending/Descending segment order';
+
+  @override
+  String get descendingAscendingSegmentOrder =>
+      'Descending/Ascending segment order';
+
+  @override
+  String get descendingSegmentOrder => 'Descending segment order';
+
+  @override
+  String get round => 'Round';
+
+  @override
+  String get square => 'Square';
+
+  @override
+  String get rectangle => 'Rectangle';
+
+  @override
+  String get ellipse => 'Ellipse';
+
+  @override
+  String get polygon => 'Polygon';
+
+  @override
+  String get wand => 'Wand';
+
+  @override
+  String get triangle => 'Triangle';
+
+  @override
+  String get midAngleRectangle => 'Mid-Angle Rectangle';
+
+  @override
+  String get regularPolygon => 'Regular Polygon';
+
+  @override
+  String get star => 'Star';
+
+  @override
+  String get replaceSelection => 'Replace Selection';
+
+  @override
+  String get addToSelection => 'Add to Selection';
+
+  @override
+  String get subtractFromSelection => 'Subtract from Selection';
+
+  @override
+  String get intersectWithSelection => 'IntersectWithSelection';
 }

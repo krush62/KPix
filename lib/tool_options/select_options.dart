@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_select_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -94,7 +95,7 @@ class SelectOptions extends IToolOptions
                                         value: sMode,
                                         label: Tooltip(
                                           showDuration: toolTipDuration,
-                                          message: sMode.label,
+                                          message: sMode.label(AppLocalizations.of(context)!),
                                           child: Icon(
                                               sMode.icon,
                                               size: ToolSettingsWidgetOptions.smallIconSize,
@@ -132,7 +133,7 @@ class SelectOptions extends IToolOptions
         Padding(
           padding: const EdgeInsets.only(bottom: ToolSettingsWidgetOptions.padding, top: ToolSettingsWidgetOptions.padding),
           child: ToolSegmentedIconButtonRow<SelectShape>(
-            iconData: SelectShape.getLabelIconMap(),
+            iconData: SelectShape.getLabelIconMap(AppLocalizations.of(context)!),
             label: "Shape",
             notifier: selectOptions.shape,
             //flex: ToolSettingsWidgetOptions.columnWidthRatio,

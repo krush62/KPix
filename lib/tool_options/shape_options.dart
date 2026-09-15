@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_shape_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -49,7 +50,7 @@ class ShapeOptions extends IToolOptions
         ToolSegmentedIconButtonRow<DrawingShape>(
           label: "Shape",
           notifier: shapeOptions.shape,
-          iconData: DrawingShape.getLabelIconMap(),
+          iconData: DrawingShape.getLabelIconMap(AppLocalizations.of(context)!),
           iconSize: ToolSettingsWidgetOptions.smallIconSize,
           hideLabel: true,
         ),

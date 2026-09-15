@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_eraser_constraints.dart';
 import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
@@ -47,7 +48,7 @@ class EraserOptions extends IToolOptions
           label: "Shape",
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: eraserOptions.shape,
-          valueMap: PencilShape.getLabelMap(),
+          valueMap: PencilShape.getLabelMap(AppLocalizations.of(context)!),
         ),
       ],
     );

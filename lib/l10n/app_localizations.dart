@@ -715,6 +715,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Locked'**
   String get locked;
+
+  /// No description provided for @buttonRec.
+  ///
+  /// In en, this message translates to:
+  /// **'REC'**
+  String get buttonRec;
+
+  /// No description provided for @buttonDia.
+  ///
+  /// In en, this message translates to:
+  /// **'DIA'**
+  String get buttonDia;
+
+  /// No description provided for @buttonIso.
+  ///
+  /// In en, this message translates to:
+  /// **'ISO'**
+  String get buttonIso;
+
+  /// No description provided for @buttonHex.
+  ///
+  /// In en, this message translates to:
+  /// **'HEX'**
+  String get buttonHex;
+
+  /// No description provided for @buttonTri.
+  ///
+  /// In en, this message translates to:
+  /// **'TRI'**
+  String get buttonTri;
+
+  /// No description provided for @buttonBrk.
+  ///
+  /// In en, this message translates to:
+  /// **'BRK'**
+  String get buttonBrk;
+
+  /// No description provided for @button1Point.
+  ///
+  /// In en, this message translates to:
+  /// **'1-Point'**
+  String get button1Point;
+
+  /// No description provided for @button2Point.
+  ///
+  /// In en, this message translates to:
+  /// **'2-Point'**
+  String get button2Point;
+
+  /// No description provided for @button3Point.
+  ///
+  /// In en, this message translates to:
+  /// **'3-Point'**
+  String get button3Point;
+
+  /// No description provided for @rectangularGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Rectangular Grid'**
+  String get rectangularGrid;
+
+  /// No description provided for @diagonalGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagonal Grid'**
+  String get diagonalGrid;
+
+  /// No description provided for @isometricGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Isometric Grid'**
+  String get isometricGrid;
+
+  /// No description provided for @hexagonalGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Hexagonal Grid'**
+  String get hexagonalGrid;
+
+  /// No description provided for @triangularGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Triangular Grid'**
+  String get triangularGrid;
+
+  /// No description provided for @bricks.
+  ///
+  /// In en, this message translates to:
+  /// **'Bricks'**
+  String get bricks;
+
+  /// No description provided for @onePointPerspective.
+  ///
+  /// In en, this message translates to:
+  /// **'1-Point Perspective'**
+  String get onePointPerspective;
+
+  /// No description provided for @twoPointPerspective.
+  ///
+  /// In en, this message translates to:
+  /// **'2-Point Perspective'**
+  String get twoPointPerspective;
+
+  /// No description provided for @threePointPerspective.
+  ///
+  /// In en, this message translates to:
+  /// **'3-Point Perspective'**
+  String get threePointPerspective;
+
+  /// No description provided for @ascendingSegmentOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending segment order'**
+  String get ascendingSegmentOrder;
+
+  /// No description provided for @ascendingDescendingSegmentOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending/Descending segment order'**
+  String get ascendingDescendingSegmentOrder;
+
+  /// No description provided for @descendingAscendingSegmentOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Descending/Ascending segment order'**
+  String get descendingAscendingSegmentOrder;
+
+  /// No description provided for @descendingSegmentOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Descending segment order'**
+  String get descendingSegmentOrder;
+
+  /// No description provided for @round.
+  ///
+  /// In en, this message translates to:
+  /// **'Round'**
+  String get round;
+
+  /// No description provided for @square.
+  ///
+  /// In en, this message translates to:
+  /// **'Square'**
+  String get square;
+
+  /// No description provided for @rectangle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rectangle'**
+  String get rectangle;
+
+  /// No description provided for @ellipse.
+  ///
+  /// In en, this message translates to:
+  /// **'Ellipse'**
+  String get ellipse;
+
+  /// No description provided for @polygon.
+  ///
+  /// In en, this message translates to:
+  /// **'Polygon'**
+  String get polygon;
+
+  /// No description provided for @wand.
+  ///
+  /// In en, this message translates to:
+  /// **'Wand'**
+  String get wand;
+
+  /// No description provided for @triangle.
+  ///
+  /// In en, this message translates to:
+  /// **'Triangle'**
+  String get triangle;
+
+  /// No description provided for @midAngleRectangle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mid-Angle Rectangle'**
+  String get midAngleRectangle;
+
+  /// No description provided for @regularPolygon.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular Polygon'**
+  String get regularPolygon;
+
+  /// No description provided for @star.
+  ///
+  /// In en, this message translates to:
+  /// **'Star'**
+  String get star;
+
+  /// No description provided for @replaceSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace Selection'**
+  String get replaceSelection;
+
+  /// No description provided for @addToSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Selection'**
+  String get addToSelection;
+
+  /// No description provided for @subtractFromSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtract from Selection'**
+  String get subtractFromSelection;
+
+  /// No description provided for @intersectWithSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'IntersectWithSelection'**
+  String get intersectWithSelection;
 }
 
 class _AppLocalizationsDelegate

@@ -1663,6 +1663,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{amount} pixel(s) in the clipboard will no longer be pasted'**
   String pixelsInClipboard(int amount);
+
+  /// No description provided for @shadingRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Shading Range'**
+  String get shadingRange;
+
+  /// No description provided for @maxDarken.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Darken'**
+  String get maxDarken;
+
+  /// No description provided for @maxBrighten.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Brighten'**
+  String get maxBrighten;
+
+  /// No description provided for @layerActionsDot.
+  ///
+  /// In en, this message translates to:
+  /// **'Layer Actions...'**
+  String get layerActionsDot;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
 }
 
 class _AppLocalizationsDelegate

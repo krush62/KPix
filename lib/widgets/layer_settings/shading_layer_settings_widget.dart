@@ -15,6 +15,7 @@
  */
  
 import 'package:flutter/material.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
@@ -34,20 +35,21 @@ class _ShadingLayerSettingsWidgetState extends State<ShadingLayerSettingsWidget>
 
   @override
   Widget build(final BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.all(generalPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Text("SHADING RANGE", style: Theme
+          Text(l10n.shadingRange.toUpperCase(), style: Theme
               .of(context)
               .textTheme
               .titleMedium, textAlign: TextAlign.center,),
           SizedBox(height: generalPadding),
           Row(
             children: <Widget>[
-              const Expanded(child: Text("Max Darken")),
+              Expanded(child: Text(l10n.maxDarken)),
               Expanded(
                 child: ValueListenableBuilder<int>(
                   valueListenable: widget.settings.shadingStepsMinus,
@@ -69,7 +71,7 @@ class _ShadingLayerSettingsWidgetState extends State<ShadingLayerSettingsWidget>
           ),
           Row(
             children: <Widget>[
-              const Expanded(child: Text("Max Brighten")),
+              Expanded(child: Text(l10n.maxBrighten)),
               Expanded(
                 child: ValueListenableBuilder<int>(
                   valueListenable: widget.settings.shadingStepsPlus,
@@ -89,13 +91,6 @@ class _ShadingLayerSettingsWidgetState extends State<ShadingLayerSettingsWidget>
               ),
             ],
           ),
-
-
-
-
-
-
-
         ],
       ),
     );

@@ -846,4 +846,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String pixelsInClipboard(int amount) {
     return '$amount pixel(s) in the clipboard will no longer be pasted';
   }
+
+  @override
+  String get shadingRange => 'Shading Range';
+
+  @override
+  String get maxDarken => 'Max Darken';
+
+  @override
+  String get maxBrighten => 'Max Brighten';
+
+  @override
+  String get layerActionsDot => 'Layer Actions...';
+
+  @override
+  String get settings => 'Settings';
 }

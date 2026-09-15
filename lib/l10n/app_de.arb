@@ -298,7 +298,14 @@
   "satCurve": "Sättigungskurve",
   "valueRange": "Helligkeitsbereich",
   "deleteColorRampQuestion": "Soll diese Farbrampe wirklich entfernt werden?\n{amount} Pixel werden gelöscht.",
-  "ofThemInSelection": "({amount} davon in der Auswahl)"
+  "ofThemInSelection": "({amount} davon in der Auswahl)",
+  "pixelsInClipboard": "{amount} Pixel in der Zwischenablage sind nicht mehr verfügbar.",
+  "shadingRange": "Schattierungsumfang",
+  "maxDarken": "Max. Absunkeln",
+  "maxBrighten": "Max. Aufhellen",
+
+  "layerActionsDot": "Ebenenaktionen...",
+  "settings": "Einstellungen"
 
 
 

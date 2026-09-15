@@ -418,6 +418,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                           ),
                           child: Builder(
                             builder: (final BuildContext context) {
+                              final AppLocalizations l10n = AppLocalizations.of(context)!;
                               final Column rightColumn = Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -426,7 +427,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                     child: OverlayAnchor(
                                       anchorKey: actionsAnchorKey,
                                       child: Tooltip(
-                                        message: "Layer Actions...",
+                                        message: l10n.layerActionsDot,
                                         waitDuration: toolTipDuration,
                                         child: Builder(
                                           builder: (final BuildContext context) {
@@ -484,7 +485,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                 rightColumn.children.add(
                                   Expanded(
                                     child: Tooltip(
-                                      message: "Settings",
+                                      message: l10n.settings,
                                       waitDuration: toolTipDuration,
                                       child: Builder(
                                         builder: (final BuildContext context) {

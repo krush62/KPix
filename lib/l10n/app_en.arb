@@ -370,5 +370,15 @@
     "placeholders": {
       "amount": {"type": "int"}
     }
-  }
+  },
+  "shadingRange": "Shading Range",
+  "maxDarken": "Max Darken",
+  "maxBrighten": "Max Brighten",
+
+  "layerActionsDot": "Layer Actions...",
+  "settings": "Settings"
+
+
+
+
 }

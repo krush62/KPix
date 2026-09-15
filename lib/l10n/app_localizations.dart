@@ -931,6 +931,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'IntersectWithSelection'**
   String get intersectWithSelection;
+
+  /// No description provided for @pencil.
+  ///
+  /// In en, this message translates to:
+  /// **'Pencil'**
+  String get pencil;
+
+  /// No description provided for @shape.
+  ///
+  /// In en, this message translates to:
+  /// **'Shape'**
+  String get shape;
+
+  /// No description provided for @fill.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill'**
+  String get fill;
+
+  /// No description provided for @select.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get select;
+
+  /// No description provided for @colorPicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Picker'**
+  String get colorPicker;
+
+  /// No description provided for @eraser.
+  ///
+  /// In en, this message translates to:
+  /// **'Eraser'**
+  String get eraser;
+
+  /// No description provided for @text.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get text;
+
+  /// No description provided for @sprayCan.
+  ///
+  /// In en, this message translates to:
+  /// **'Spray Can'**
+  String get sprayCan;
+
+  /// No description provided for @line.
+  ///
+  /// In en, this message translates to:
+  /// **'Line'**
+  String get line;
+
+  /// No description provided for @stamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Stamp'**
+  String get stamp;
 }
 
 class _AppLocalizationsDelegate

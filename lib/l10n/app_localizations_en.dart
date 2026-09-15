@@ -461,4 +461,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get intersectWithSelection => 'IntersectWithSelection';
+
+  @override
+  String get pencil => 'Pencil';
+
+  @override
+  String get shape => 'Shape';
+
+  @override
+  String get fill => 'Fill';
+
+  @override
+  String get select => 'Select';
+
+  @override
+  String get colorPicker => 'Color Picker';
+
+  @override
+  String get eraser => 'Eraser';
+
+  @override
+  String get text => 'Text';
+
+  @override
+  String get sprayCan => 'Spray Can';
+
+  @override
+  String get line => 'Line';
+
+  @override
+  String get stamp => 'Stamp';
 }

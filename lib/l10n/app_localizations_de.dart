@@ -479,4 +479,34 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get intersectWithSelection => 'Mit Auswahl überschneiden';
+
+  @override
+  String get pencil => 'Stift';
+
+  @override
+  String get shape => 'Form';
+
+  @override
+  String get fill => 'Füllen';
+
+  @override
+  String get select => 'Auswahl';
+
+  @override
+  String get colorPicker => 'Pipette';
+
+  @override
+  String get eraser => 'Radierer';
+
+  @override
+  String get text => 'Text';
+
+  @override
+  String get sprayCan => 'Sprühdose';
+
+  @override
+  String get line => 'Linie';
+
+  @override
+  String get stamp => 'Stempel';
 }

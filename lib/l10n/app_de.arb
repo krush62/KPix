@@ -153,6 +153,17 @@
   "replaceSelection": "Auswahl ersetzen",
   "addToSelection": "Zur Auswahl hinzufügen",
   "subtractFromSelection": "Von Auswahl subtrahieren",
-  "intersectWithSelection": "Mit Auswahl überschneiden"
+  "intersectWithSelection": "Mit Auswahl überschneiden",
+
+  "pencil": "Stift",
+  "shape": "Form",
+  "fill": "Füllen",
+  "select": "Auswahl",
+  "colorPicker": "Pipette",
+  "eraser": "Radierer",
+  "text": "Text",
+  "sprayCan": "Sprühdose",
+  "line": "Linie",
+  "stamp": "Stempel"
 
 }

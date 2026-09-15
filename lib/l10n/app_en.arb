@@ -191,7 +191,18 @@
   "replaceSelection": "Replace Selection",
   "addToSelection": "Add to Selection",
   "subtractFromSelection": "Subtract from Selection",
-  "intersectWithSelection": "IntersectWithSelection"
+  "intersectWithSelection": "IntersectWithSelection",
+
+  "pencil": "Pencil",
+  "shape": "Shape",
+  "fill": "Fill",
+  "select": "Select",
+  "colorPicker": "Color Picker",
+  "eraser": "Eraser",
+  "text": "Text",
+  "sprayCan": "Spray Can",
+  "line": "Line",
+  "stamp": "Stamp"
 
 
 }

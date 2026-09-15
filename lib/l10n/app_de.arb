@@ -207,7 +207,12 @@
   "gridAlign": "Rasterausrichtung",
   "scale": "Skalierung",
 
-  "font": "Schriftart"
+  "font": "Schriftart",
+
+  "overwritingExistingFile": "Vorhandene Datei wird überschrieben",
+  "invalidFileName": "Ungültiger Dateiname",
+  "insufficientPermissions": "Unzureichende Berechtigungen",
+  "available": "Verfügbar"
 
 
 

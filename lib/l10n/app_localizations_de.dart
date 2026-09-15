@@ -603,4 +603,16 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get font => 'Schriftart';
+
+  @override
+  String get available => 'Verfügbar';
+
+  @override
+  String get invalidFileName => 'Ungültiger Dateiname';
+
+  @override
+  String get insufficientPermissions => 'Unzureichende Berechtigungen';
+
+  @override
+  String get overwritingExistingFile => 'Vorhandene Datei wird überschrieben';
 }

@@ -585,4 +585,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get font => 'Font';
+
+  @override
+  String get available => 'Available';
+
+  @override
+  String get invalidFileName => 'Invalid File Name';
+
+  @override
+  String get insufficientPermissions => 'Insufficient Permissions';
+
+  @override
+  String get overwritingExistingFile => 'Overwriting Existing File';
 }

@@ -1177,6 +1177,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Font'**
   String get font;
+
+  /// No description provided for @available.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get available;
+
+  /// No description provided for @invalidFileName.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid File Name'**
+  String get invalidFileName;
+
+  /// No description provided for @insufficientPermissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient Permissions'**
+  String get insufficientPermissions;
+
+  /// No description provided for @overwritingExistingFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwriting Existing File'**
+  String get overwritingExistingFile;
 }
 
 class _AppLocalizationsDelegate

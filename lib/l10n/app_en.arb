@@ -246,9 +246,12 @@
   "offsetX": "Offset X",
   "offsetY": "Offset Y",
 
-  "font": "Font"
+  "font": "Font",
 
-
+  "available": "Available",
+  "invalidFileName": "Invalid File Name",
+  "insufficientPermissions": "Insufficient Permissions",
+  "overwritingExistingFile": "Overwriting Existing File"
 
 
 

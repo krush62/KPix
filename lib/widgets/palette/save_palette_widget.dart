@@ -19,6 +19,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/export_types.dart';
 import 'package:kpix/models/file_constants.dart';
@@ -103,7 +104,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                     valueListenable: _fileNameStatus,
                     builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                       return Tooltip(
-                        message: status.label,
+                        message: status.label(AppLocalizations.of(context)!),
                         waitDuration: toolTipDuration,
                         child: Icon(
                           status.icon,

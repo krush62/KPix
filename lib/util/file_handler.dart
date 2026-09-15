@@ -28,6 +28,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -104,13 +105,20 @@ class LoadProjectFileSet
 
 enum FileNameStatus
 {
-  available("Available", TablerIcons.check),
-  forbidden("Invalid File Name", TablerIcons.x),
-  noRights("Insufficient Permissions", TablerIcons.ban),
-  overwrite("Overwriting Existing File", TablerIcons.exclamation_mark);
+  available(TablerIcons.check),
+  forbidden(TablerIcons.x),
+  noRights(TablerIcons.ban),
+  overwrite(TablerIcons.exclamation_mark);
 
-  const FileNameStatus(this.label, this.icon);
-  final String label;
+  String label(final AppLocalizations l10n) => switch(this)
+  {
+    available => l10n.available,
+    forbidden => l10n.invalidFileName,
+    noRights => l10n.insufficientPermissions,
+    overwrite => l10n.overwritingExistingFile,
+  };
+
+  const FileNameStatus(this.icon);
   final IconData icon;
 }
 

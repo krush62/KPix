@@ -685,6 +685,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not crop!'**
   String get couldNotCrop;
+
+  /// No description provided for @hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get hidden;
+
+  /// No description provided for @visible.
+  ///
+  /// In en, this message translates to:
+  /// **'Visible'**
+  String get visible;
+
+  /// No description provided for @unlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked'**
+  String get unlocked;
+
+  /// No description provided for @transparencyLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Transparency locked'**
+  String get transparencyLocked;
+
+  /// No description provided for @locked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get locked;
 }
 
 class _AppLocalizationsDelegate

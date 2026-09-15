@@ -336,4 +336,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get couldNotCrop => 'Could not crop!';
+
+  @override
+  String get hidden => 'Hidden';
+
+  @override
+  String get visible => 'Visible';
+
+  @override
+  String get unlocked => 'Unlocked';
+
+  @override
+  String get transparencyLocked => 'Transparency locked';
+
+  @override
+  String get locked => 'Locked';
 }

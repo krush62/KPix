@@ -106,6 +106,12 @@
   "imageImportSuccessful": "Bild erfolgreich importiert!",
   "couldNotConvertImageData": "Die Bilddaten konnten nicht konvertiert werden!",
 
-  "couldNotCrop": "Zuschneiden nicht möglich!"
+  "couldNotCrop": "Zuschneiden nicht möglich!",
+
+  "hidden": "Ausgeblendet",
+  "visible": "Sichtbar",
+  "transparencyLocked": "Transparenz gesperrt",
+  "unlocked": "Entsperrt",
+  "locked": "Gesperrt"
 
 }

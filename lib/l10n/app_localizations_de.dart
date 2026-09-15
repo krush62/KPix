@@ -354,4 +354,19 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get couldNotCrop => 'Zuschneiden nicht möglich!';
+
+  @override
+  String get hidden => 'Ausgeblendet';
+
+  @override
+  String get visible => 'Sichtbar';
+
+  @override
+  String get unlocked => 'Entsperrt';
+
+  @override
+  String get transparencyLocked => 'Transparenz gesperrt';
+
+  @override
+  String get locked => 'Gesperrt';
 }

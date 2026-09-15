@@ -257,7 +257,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                           final Widget? child,) {
                                         return Tooltip(
                                           message:
-                                              visibility.desc +
+                                              visibility.label(AppLocalizations.of(context)!) +
                                                   _hotkeyManager.getShortcutString(
                                                       action: HotkeyAction.layersSwitchVisibility,
                                                       context: context,
@@ -321,7 +321,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                           final LayerLockState lock,
                                           final Widget? child,) {
                                         return Tooltip(
-                                          message: lock.desc +
+                                          message: lock.label(AppLocalizations.of(context)!) +
                                               _hotkeyManager.getShortcutString(
                                                 action: HotkeyAction.layersSwitchLock,
                                                 context: context,

@@ -19,6 +19,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/models/history/history_layer.dart';
@@ -26,14 +27,18 @@ import 'package:kpix/models/history/history_ramp_data.dart';
 
 enum LayerVisibilityState
 {
-  visible(0, "Visible", TablerIcons.eye),
-  hidden(1, "Hidden", TablerIcons.eye_closed);
+  visible(0, TablerIcons.eye),
+  hidden(1, TablerIcons.eye_closed);
 
-  const LayerVisibilityState(this.id, this.desc, this.icon);
+  const LayerVisibilityState(this.id, this.icon);
 
   final int id;
-  final String desc;
   final IconData icon;
+
+  String label(final AppLocalizations l10n) => switch (this) {
+    visible => l10n.visible,
+    hidden => l10n.hidden,
+  } ;
 
   static LayerVisibilityState fromId(final int id) {
     return LayerVisibilityState.values.firstWhere((final LayerVisibilityState lvs) => lvs.id == id);
@@ -42,14 +47,19 @@ enum LayerVisibilityState
 
 enum LayerLockState
 {
-  unlocked(0, "Unlocked", TablerIcons.lock_open_2),
-  transparency(1, "Transparency locked", TablerIcons.lock_open),
-  locked(2, "Locked", TablerIcons.lock);
+  unlocked(0, TablerIcons.lock_open_2),
+  transparency(1, TablerIcons.lock_open),
+  locked(2, TablerIcons.lock);
 
-  const LayerLockState(this.id, this.desc, this.icon);
+  const LayerLockState(this.id, this.icon);
   final int id;
-  final String desc;
   final IconData icon;
+
+  String label(final AppLocalizations l10n) => switch (this) {
+    unlocked => l10n.unlocked,
+    transparency => l10n.transparencyLocked,
+    locked => l10n.locked
+  } ;
 
   static LayerLockState fromId(final int id) {
     return LayerLockState.values.firstWhere((final LayerLockState lls) => lls.id == id);

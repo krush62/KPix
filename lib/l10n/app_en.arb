@@ -144,6 +144,12 @@
   "imageImportSuccessful": "Image imported successfully!",
   "couldNotConvertImageData": "Could not convert image data!",
 
-  "couldNotCrop": "Could not crop!"
+  "couldNotCrop": "Could not crop!",
+
+  "hidden": "Hidden",
+  "visible": "Visible",
+  "unlocked": "Unlocked",
+  "transparencyLocked": "Transparency locked",
+  "locked": "Locked"
 
 }

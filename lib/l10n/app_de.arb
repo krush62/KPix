@@ -164,6 +164,14 @@
   "text": "Text",
   "sprayCan": "Sprühdose",
   "line": "Linie",
-  "stamp": "Stempel"
+  "stamp": "Stempel",
+
+  "themeSystem": "System",
+  "themeLight": "Hell",
+  "themeDark": "Dunkel",
+
+  "cursorNone": "Aus",
+  "cursorCrosshair": "Fadenkreuz",
+  "cursorArrow": "Pfeil"
 
 }

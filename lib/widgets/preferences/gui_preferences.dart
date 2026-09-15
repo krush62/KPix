@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/widgets/preferences/preference_gui.dart';
@@ -43,7 +44,7 @@ class _GuiPreferencesState extends State<GuiPreferences>
           PrefSegmentedButtonRow<ThemeMode>(
               label: "Theme",
               notifier: widget.prefs.themeType,
-              labels: themeTypeStringMap,
+              labels: themeTypeStringMap(AppLocalizations.of(context)!),
           ),
 
           SizedBox(height: widget.itemPadding),

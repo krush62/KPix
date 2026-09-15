@@ -20,6 +20,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/frame_constraints.dart';
 import 'package:kpix/models/constraints/shading_layer_settings_constraints.dart';
 import 'package:kpix/util/color_names.dart';
@@ -171,12 +172,25 @@ const Map<int, ThemeMode> themeTypeIndexMap =
   1:ThemeMode.light,
   2:ThemeMode.dark,
 };
-const Map<ThemeMode, String> themeTypeStringMap =
-<ThemeMode, String>{
-  ThemeMode.system:"System",
-  ThemeMode.light:"Light",
-  ThemeMode.dark:"Dark",
-};
+
+extension ThemeModeLocalization on ThemeMode {
+  String themeName(final AppLocalizations l10n) => switch (this) {
+    ThemeMode.system => l10n.themeSystem,
+    ThemeMode.light => l10n.themeLight,
+    ThemeMode.dark => l10n.themeDark,
+  };
+}
+
+Map<ThemeMode, String> themeTypeStringMap(final AppLocalizations l10n)
+{
+  final Map<ThemeMode, String> map = <ThemeMode, String>{};
+  for (final ThemeMode mode in ThemeMode.values)
+  {
+    map[mode] = mode.themeName(l10n);
+  }
+  return map;
+}
+
 
 //RASTER SIZE
 const List<int> rasterSizes = <int>[2, 4, 8, 12, 16, 24, 36, 48, 64];
@@ -240,21 +254,27 @@ class GuiPreferenceContent
 
 enum CursorType
 {
-  none(0, "None", SystemMouseCursors.none),
-  crossHair(1, "CrossHair", SystemMouseCursors.precise),
-  arrow(2, "Arrow", SystemMouseCursors.basic);
+  none(0, SystemMouseCursors.none),
+  crossHair(1, SystemMouseCursors.precise),
+  arrow(2, SystemMouseCursors.basic);
 
   final int id;
-  final String name;
   final SystemMouseCursor systemCursor;
 
-  const CursorType(this.id, this.name, this.systemCursor);
+  const CursorType(this.id, this.systemCursor);
 
-  static Map<CursorType, String> getNameMap()
+  String label(final AppLocalizations l10n) => switch(this)
+  {
+    none => l10n.cursorNone,
+    crossHair => l10n.cursorCrosshair,
+    arrow => l10n.cursorArrow,
+  };
+
+  static Map<CursorType, String> getNameMap(final AppLocalizations l10n)
   {
     final Map<CursorType, String> map = <CursorType, String>{};
     for (final CursorType curs in CursorType.values) {
-      map[curs] = curs.name;
+      map[curs] = curs.label(l10n);
     }
     return map;
   }

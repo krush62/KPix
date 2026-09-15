@@ -202,7 +202,16 @@
   "text": "Text",
   "sprayCan": "Spray Can",
   "line": "Line",
-  "stamp": "Stamp"
+  "stamp": "Stamp",
+
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+
+  "cursorNone": "None",
+  "cursorCrosshair": "Crosshair",
+  "cursorArrow": "Arrow"
+
 
 
 }

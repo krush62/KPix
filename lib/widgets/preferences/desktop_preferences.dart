@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/preferences/preference_gui.dart';
 
@@ -39,7 +40,7 @@ class _DesktopPreferencesState extends State<DesktopPreferences>
         PrefSegmentedButtonRow<CursorType>(
           label: "Mouse Cursor",
           notifier: widget.prefs.cursorType,
-          labels: CursorType.getNameMap(),
+          labels: CursorType.getNameMap(AppLocalizations.of(context)!),
         ),
       ],
     );

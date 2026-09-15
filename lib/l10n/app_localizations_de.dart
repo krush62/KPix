@@ -509,4 +509,22 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get stamp => 'Stempel';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themeLight => 'Hell';
+
+  @override
+  String get themeDark => 'Dunkel';
+
+  @override
+  String get cursorNone => 'Aus';
+
+  @override
+  String get cursorCrosshair => 'Fadenkreuz';
+
+  @override
+  String get cursorArrow => 'Pfeil';
 }

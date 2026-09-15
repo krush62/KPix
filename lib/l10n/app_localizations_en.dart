@@ -491,4 +491,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stamp => 'Stamp';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get cursorNone => 'None';
+
+  @override
+  String get cursorCrosshair => 'Crosshair';
+
+  @override
+  String get cursorArrow => 'Arrow';
 }

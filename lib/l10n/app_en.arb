@@ -251,8 +251,26 @@
   "available": "Available",
   "invalidFileName": "Invalid File Name",
   "insufficientPermissions": "Insufficient Permissions",
-  "overwritingExistingFile": "Overwriting Existing File"
+  "overwritingExistingFile": "Overwriting Existing File",
 
+  "rotateCanvas": "Rotate Canvas",
+  "flipCanvasHorizontally": "Flip Canvas Horizontally",
+  "flipCanvasVertically": "Flip Canvas Vertically",
+  "canvasSize": "Canvas Size",
+  "offset": "Offset",
 
+  "selectAll": "Select All",
+  "deselect": "Deselect",
+  "inverseSelection": "Inverse Selection",
+  "copy": "Copy",
+  "copyMerged": "Copy Merged",
+  "cut": "Cut",
+  "paste": "Paste",
+  "pasteAsNewLayer": "Paste As New Layer",
+  "horizontalFlip": "HorizontalFlip",
+  "verticalFlip": "VerticalFlip",
+  "rotate90Clockwise": "Rotate 90° Clockwise",
+  "alignDot": "Align...",
+  "delete": "Delete"
 
 }

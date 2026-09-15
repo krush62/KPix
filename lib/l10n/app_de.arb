@@ -212,7 +212,27 @@
   "overwritingExistingFile": "Vorhandene Datei wird überschrieben",
   "invalidFileName": "Ungültiger Dateiname",
   "insufficientPermissions": "Unzureichende Berechtigungen",
-  "available": "Verfügbar"
+  "available": "Verfügbar",
+
+  "flipCanvasHorizontally": "Leinwand horizontal spiegeln",
+  "flipCanvasVertically": "Leinwand vertikal spiegeln",
+  "rotateCanvas": "Leinwand drehen",
+  "canvasSize": "Leinwandgröße",
+  "offset": "Versatz",
+
+  "deselect": "Auswahl aufheben",
+  "cut": "Ausschneiden",
+  "inverseSelection": "Auswahl umkehren",
+  "pasteAsNewLayer": "Als neue Ebene einfügen",
+  "horizontalFlip": "Horizontal spiegeln",
+  "alignDot": "Ausrichten...",
+  "rotate90Clockwise": "90° im Uhrzeigersinn drehen",
+  "selectAll": "Alles auswählen",
+  "copy": "Kopieren",
+  "delete": "Löschen",
+  "copyMerged": "Sichtbares kopieren",
+  "paste": "Einfügen",
+  "verticalFlip": "Vertikal spiegeln"
 
 
 

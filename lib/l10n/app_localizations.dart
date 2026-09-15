@@ -1201,6 +1201,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Overwriting Existing File'**
   String get overwritingExistingFile;
+
+  /// No description provided for @rotateCanvas.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate Canvas'**
+  String get rotateCanvas;
+
+  /// No description provided for @flipCanvasHorizontally.
+  ///
+  /// In en, this message translates to:
+  /// **'Flip Canvas Horizontally'**
+  String get flipCanvasHorizontally;
+
+  /// No description provided for @flipCanvasVertically.
+  ///
+  /// In en, this message translates to:
+  /// **'Flip Canvas Vertically'**
+  String get flipCanvasVertically;
+
+  /// No description provided for @canvasSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Canvas Size'**
+  String get canvasSize;
+
+  /// No description provided for @offset.
+  ///
+  /// In en, this message translates to:
+  /// **'Offset'**
+  String get offset;
+
+  /// No description provided for @selectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select All'**
+  String get selectAll;
+
+  /// No description provided for @deselect.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect'**
+  String get deselect;
+
+  /// No description provided for @inverseSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Inverse Selection'**
+  String get inverseSelection;
+
+  /// No description provided for @copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copy;
+
+  /// No description provided for @copyMerged.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Merged'**
+  String get copyMerged;
+
+  /// No description provided for @cut.
+  ///
+  /// In en, this message translates to:
+  /// **'Cut'**
+  String get cut;
+
+  /// No description provided for @paste.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get paste;
+
+  /// No description provided for @pasteAsNewLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste As New Layer'**
+  String get pasteAsNewLayer;
+
+  /// No description provided for @horizontalFlip.
+  ///
+  /// In en, this message translates to:
+  /// **'HorizontalFlip'**
+  String get horizontalFlip;
+
+  /// No description provided for @verticalFlip.
+  ///
+  /// In en, this message translates to:
+  /// **'VerticalFlip'**
+  String get verticalFlip;
+
+  /// No description provided for @rotate90Clockwise.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate 90° Clockwise'**
+  String get rotate90Clockwise;
+
+  /// No description provided for @alignDot.
+  ///
+  /// In en, this message translates to:
+  /// **'Align...'**
+  String get alignDot;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
 }
 
 class _AppLocalizationsDelegate

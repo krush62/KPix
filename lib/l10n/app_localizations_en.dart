@@ -597,4 +597,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get overwritingExistingFile => 'Overwriting Existing File';
+
+  @override
+  String get rotateCanvas => 'Rotate Canvas';
+
+  @override
+  String get flipCanvasHorizontally => 'Flip Canvas Horizontally';
+
+  @override
+  String get flipCanvasVertically => 'Flip Canvas Vertically';
+
+  @override
+  String get canvasSize => 'Canvas Size';
+
+  @override
+  String get offset => 'Offset';
+
+  @override
+  String get selectAll => 'Select All';
+
+  @override
+  String get deselect => 'Deselect';
+
+  @override
+  String get inverseSelection => 'Inverse Selection';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get copyMerged => 'Copy Merged';
+
+  @override
+  String get cut => 'Cut';
+
+  @override
+  String get paste => 'Paste';
+
+  @override
+  String get pasteAsNewLayer => 'Paste As New Layer';
+
+  @override
+  String get horizontalFlip => 'HorizontalFlip';
+
+  @override
+  String get verticalFlip => 'VerticalFlip';
+
+  @override
+  String get rotate90Clockwise => 'Rotate 90° Clockwise';
+
+  @override
+  String get alignDot => 'Align...';
+
+  @override
+  String get delete => 'Delete';
 }

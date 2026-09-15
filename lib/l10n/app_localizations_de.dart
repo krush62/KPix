@@ -615,4 +615,58 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get overwritingExistingFile => 'Vorhandene Datei wird überschrieben';
+
+  @override
+  String get rotateCanvas => 'Leinwand drehen';
+
+  @override
+  String get flipCanvasHorizontally => 'Leinwand horizontal spiegeln';
+
+  @override
+  String get flipCanvasVertically => 'Leinwand vertikal spiegeln';
+
+  @override
+  String get canvasSize => 'Leinwandgröße';
+
+  @override
+  String get offset => 'Versatz';
+
+  @override
+  String get selectAll => 'Alles auswählen';
+
+  @override
+  String get deselect => 'Auswahl aufheben';
+
+  @override
+  String get inverseSelection => 'Auswahl umkehren';
+
+  @override
+  String get copy => 'Kopieren';
+
+  @override
+  String get copyMerged => 'Sichtbares kopieren';
+
+  @override
+  String get cut => 'Ausschneiden';
+
+  @override
+  String get paste => 'Einfügen';
+
+  @override
+  String get pasteAsNewLayer => 'Als neue Ebene einfügen';
+
+  @override
+  String get horizontalFlip => 'Horizontal spiegeln';
+
+  @override
+  String get verticalFlip => 'Vertikal spiegeln';
+
+  @override
+  String get rotate90Clockwise => '90° im Uhrzeigersinn drehen';
+
+  @override
+  String get alignDot => 'Ausrichten...';
+
+  @override
+  String get delete => 'Löschen';
 }

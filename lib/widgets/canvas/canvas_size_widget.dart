@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/constraints/canvas_size_constraints.dart';
 import 'package:kpix/models/document_state.dart';
@@ -386,9 +387,9 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text("Canvas Size", style: Theme.of(context).textTheme.titleLarge),
+                      Text(AppLocalizations.of(context)!.canvasSize, style: Theme.of(context).textTheme.titleLarge),
                       _getSizeRow(
-                          title: "Width",
+                          title: AppLocalizations.of(context)!.width,
                           notifier: _width,
                           sliderFunc: _sizeXSliderChanged,
                           changeFunc: _sizeXInputChanged,
@@ -396,7 +397,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                           textController: _textControllerWidth,
                       ),
                       _getSizeRow(
-                        title: "Height",
+                        title: AppLocalizations.of(context)!.height,
                         notifier: _height,
                         sliderFunc: _sizeYSliderChanged,
                         changeFunc: _sizeYInputChanged,
@@ -404,7 +405,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                         textController: _textControllerHeight,
                       ),
                       const SizedBox(height: OverlayEntryAlertDialogOptions.padding,),
-                      Text("Offset", style: Theme.of(context).textTheme.titleLarge),
+                      Text(AppLocalizations.of(context)!.offset, style: Theme.of(context).textTheme.titleLarge),
                       _getOffsetRow(
                           title: "X",
                           notifier: _offsetX,

@@ -168,72 +168,73 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
     return ListenableBuilder(
       listenable: _selectionState,
       builder: (final BuildContext context, final Widget? child){
+        final AppLocalizations l10n = AppLocalizations.of(context)!;
         return Material(
           color: Theme.of(context).primaryColor,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               _createBarButton(
-                  tooltip: "Select All${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionSelectAll, context: context)}",
+                  tooltip: l10n.selectAll + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionSelectAll, context: context),
                   icon: TablerIcons.select_all,
                   onPressedFunc: _selectionState.selectAll,
               ),
               _createBarButton(
-                tooltip: "Deselect${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDeselect, context: context)}",
+                tooltip: l10n.deselect + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionDeselect, context: context),
                 icon: TablerIcons.deselect,
                 onPressedFunc: _selectionState.deselectWithHistory,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Inverse Selection${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionInvert, context: context)}",
+                tooltip: l10n.inverseSelection + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionInvert, context: context),
                 icon: TablerIcons.percentage_50,
                 onPressedFunc: _selectionState.inverse,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Copy${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopy, context: context)}",
+                tooltip: l10n.copy + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopy, context: context),
                 icon: TablerIcons.copy,
                 onPressedFunc: _copyPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Copy Merged${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopyMerged, context: context)}",
+                tooltip: l10n.copyMerged + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopyMerged, context: context),
                 icon: TablerIcons.copy_plus,
                 onPressedFunc: _copyMergedPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Cut${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCut, context: context)}",
+                tooltip: l10n.cut + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionCut, context: context),
                 icon: TablerIcons.scissors,
                 onPressedFunc: _cutPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Paste${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPaste, context: context)}",
+                tooltip: l10n.paste + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionPaste, context: context),
                 icon: TablerIcons.clipboard,
                 onPressedFunc: _pastePressed,
                 isEnabled: _selectionState.hasClipboard,
               ),
               _createBarButton(
-                tooltip: "Paste As New Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPasteAsNewLayer, context: context)}",
+                tooltip: l10n.pasteAsNewLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionPasteAsNewLayer, context: context),
                 icon: TablerIcons.clipboard_plus,
                 onPressedFunc: _pasteAsNewLayerPressed,
                 isEnabled: _selectionState.hasClipboard,
               ),
               _createBarButton(
-                tooltip: "Horizontal Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipH, context: context)}",
+                tooltip: l10n.horizontalFlip + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipH, context: context),
                 icon: TablerIcons.flip_vertical,
                 onPressedFunc: _flipHPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Vertical Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipV, context: context)}",
+                tooltip: l10n.verticalFlip + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipV, context: context),
                 icon: TablerIcons.flip_horizontal,
                 onPressedFunc: _flipVPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Rotate 90° Clockwise${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionRotate, context: context)}",
+                tooltip: l10n.rotate90Clockwise + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionRotate, context: context),
                 icon: TablerIcons.rotate_clockwise_2,
                 onPressedFunc: _rotatePressed,
                 isEnabled: !_selectionState.selection.isEmpty,
@@ -243,7 +244,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                 child: OverlayAnchor(
                   anchorKey: _alignAnchorKey,
                   child: Tooltip(
-                    message: "Align...",
+                    message: l10n.alignDot,
                     waitDuration: toolTipDuration,
                     child: OverlayPortal(
                       controller: _alignmentController,
@@ -281,7 +282,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: const EdgeInsets.all(_SelectionBarWidgetOptions.padding),
                 child: Tooltip(
-                  message: "Delete${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDelete, context: context)}",
+                  message: l10n.delete + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionDelete, context: context),
                   waitDuration: toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty ? null : _deletePressed,

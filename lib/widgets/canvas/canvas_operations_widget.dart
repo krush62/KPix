@@ -38,12 +38,19 @@ abstract final class _CanvasOperationsWidgetOptions
 /// Available canvas transformations.
 
 /// Descriptions for the available canvas operations.
-const Map<CanvasTransformation, String> transformationDescriptions =
-<CanvasTransformation, String>{
-  CanvasTransformation.rotate: "Rotate Canvas",
-  CanvasTransformation.flipH: "Flip Canvas Horizontally",
-  CanvasTransformation.flipV: "Flip Canvas Vertically",
-};
+String transformationDescription({required final AppLocalizations l10n, required final CanvasTransformation transformation})
+{
+  switch(transformation)
+  {
+
+    case CanvasTransformation.rotate:
+      return l10n.rotateCanvas;
+    case CanvasTransformation.flipH:
+      return l10n.flipCanvasHorizontally;
+    case CanvasTransformation.flipV:
+      return l10n.flipCanvasVertically;
+  }
+}
 
 /// Widget for applying canvas-level transformations.
 ///
@@ -107,7 +114,10 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
             children: <Widget>[
               Expanded(
                 child: Tooltip(
-                  message: transformationDescriptions[CanvasTransformation.rotate],
+                  message: transformationDescription(
+                    l10n: AppLocalizations.of(context)!,
+                    transformation: CanvasTransformation.rotate,
+                  ),
                   waitDuration: toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.rotate);},
@@ -121,7 +131,10 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
               const SizedBox(width: _CanvasOperationsWidgetOptions.padding),
               Expanded(
                 child: Tooltip(
-                  message: transformationDescriptions[CanvasTransformation.flipH],
+                  message: transformationDescription(
+                    l10n: AppLocalizations.of(context)!,
+                    transformation: CanvasTransformation.flipH,
+                  ),
                   waitDuration: toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.flipH);},
@@ -135,7 +148,10 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
               const SizedBox(width: _CanvasOperationsWidgetOptions.padding),
               Expanded(
                 child: Tooltip(
-                  message: transformationDescriptions[CanvasTransformation.flipV],
+                  message: transformationDescription(
+                    l10n: AppLocalizations.of(context)!,
+                    transformation: CanvasTransformation.flipV,
+                  ),
                   child: IconButton.outlined(
                     onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.flipV);},
                     icon: const Icon(

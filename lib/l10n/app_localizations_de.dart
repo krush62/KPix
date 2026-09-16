@@ -895,4 +895,109 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get centerVerticalRuler => 'Vertikale Linie zentrieren';
+
+  @override
+  String get addNewDrawingLayer => 'Zeichenebene hinzufügen';
+
+  @override
+  String get addNewShadingLayer => 'Schattierungsebene hinzufügen';
+
+  @override
+  String get addNewDitherLayer => 'Diffusionsebene hinzufügen';
+
+  @override
+  String get addNewReferenceLayer => 'Referenzebene hinzufügen';
+
+  @override
+  String get addNewGridLayer => 'Gitterebene hinzufügen';
+
+  @override
+  String get deleteLayer => 'Ebene löschen';
+
+  @override
+  String get duplicateLayer => 'Ebene duplizieren';
+
+  @override
+  String get mergeDownLayer => 'Ebene nach unten zusammenführen';
+
+  @override
+  String get unlinkLayer => 'Ebene entknüpfen';
+
+  @override
+  String get newProject => 'Neues Projekt';
+
+  @override
+  String get openProject => 'Projekt öffnen';
+
+  @override
+  String get rasterLayer => 'Ebene rastern';
+
+  @override
+  String get saveProject => 'Projekt speichern';
+
+  @override
+  String get exportProjectPalette => 'Projekt/Palette exportieren';
+
+  @override
+  String get centerHorizontally => 'Horizontal zentrieren';
+
+  @override
+  String get centerVertically => 'Vertikal zentrieren';
+
+  @override
+  String get left => 'Links';
+
+  @override
+  String get right => 'Rechts';
+
+  @override
+  String get top => 'Oben';
+
+  @override
+  String get bottom => 'Unten';
+
+  @override
+  String get editColorRamp => 'Farbrampe bearbeiten';
+
+  @override
+  String nColors(int amount) {
+    return '$amount Farben';
+  }
+
+  @override
+  String nRampsColors(int rampAmount, int colorAmount) {
+    return '$rampAmount Rampen | $colorAmount Farben';
+  }
+
+  @override
+  String get remapExistingColors =>
+      'Sollen existierende Farben neu zugeordnet werden (sonst werden alle Pixel gelöscht)?';
+
+  @override
+  String get wantToDeletePalette =>
+      'Soll die Palette wirklich gelöscht werden?';
+
+  @override
+  String get paletteManager => 'Palettenverwaltung';
+
+  @override
+  String get importPalette => 'Palette importieren';
+
+  @override
+  String get saveCurrentPalette => 'Aktuelle Palette speichern';
+
+  @override
+  String get deleteSelectedPalette => 'Aktuelle Palette löschen';
+
+  @override
+  String get appendToCurrentPalette => 'An aktuelle Palette anhängen';
+
+  @override
+  String get applySelectedPalette => 'Ausgewählte Palette anwenden';
+
+  @override
+  String get addNewColorRamp => 'Neue Farbrampe hinzufügen';
+
+  @override
+  String get savePalette => 'Palette speichern';
 }

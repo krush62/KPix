@@ -876,4 +876,109 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get centerVerticalRuler => 'Center Vertical Ruler';
+
+  @override
+  String get addNewDrawingLayer => 'Add New Drawing Layer';
+
+  @override
+  String get addNewShadingLayer => 'Add New Shading Layer';
+
+  @override
+  String get addNewDitherLayer => 'Add New Dither Layer';
+
+  @override
+  String get addNewReferenceLayer => 'Add New Reference Layer';
+
+  @override
+  String get addNewGridLayer => 'Add New Grid Layer';
+
+  @override
+  String get deleteLayer => 'Delete Layer';
+
+  @override
+  String get duplicateLayer => 'Duplicate Layer';
+
+  @override
+  String get mergeDownLayer => 'Merge Down Layer';
+
+  @override
+  String get unlinkLayer => 'Unlink Layer / Make Unique';
+
+  @override
+  String get newProject => 'New Project';
+
+  @override
+  String get openProject => 'Open Project';
+
+  @override
+  String get rasterLayer => 'Raster Layer';
+
+  @override
+  String get saveProject => 'Save Project';
+
+  @override
+  String get exportProjectPalette => 'Export Project/Palette';
+
+  @override
+  String get centerHorizontally => 'Center Horizontally';
+
+  @override
+  String get centerVertically => 'Center Vertically';
+
+  @override
+  String get left => 'Left';
+
+  @override
+  String get right => 'Right';
+
+  @override
+  String get top => 'Top';
+
+  @override
+  String get bottom => 'Bottom';
+
+  @override
+  String get editColorRamp => 'Edit Color Ramp';
+
+  @override
+  String nColors(int amount) {
+    return '$amount colors';
+  }
+
+  @override
+  String nRampsColors(int rampAmount, int colorAmount) {
+    return '$rampAmount ramps | $colorAmount colors';
+  }
+
+  @override
+  String get remapExistingColors =>
+      'Do you want to remap the existing colors (all pixels will be deleted otherwise)?';
+
+  @override
+  String get wantToDeletePalette =>
+      'Do you really want to delete this palette?';
+
+  @override
+  String get paletteManager => 'Palette Manager';
+
+  @override
+  String get importPalette => 'Import Palette';
+
+  @override
+  String get saveCurrentPalette => 'Save Current Palette';
+
+  @override
+  String get deleteSelectedPalette => 'Delete Selected Palette';
+
+  @override
+  String get appendToCurrentPalette => 'Append to Current Palette';
+
+  @override
+  String get applySelectedPalette => 'Apply Selected Palette';
+
+  @override
+  String get addNewColorRamp => 'Add New Color Ramp';
+
+  @override
+  String get savePalette => 'Save Palette';
 }

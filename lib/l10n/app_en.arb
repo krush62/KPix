@@ -383,7 +383,63 @@
 
   "symmetryOptions": "Symmetry Options",
   "centerHorizontalRuler": "Center Horizontal Ruler",
-  "centerVerticalRuler": "Center Vertical Ruler"
+  "centerVerticalRuler": "Center Vertical Ruler",
+
+  "addNewDrawingLayer": "Add New Drawing Layer",
+  "addNewShadingLayer": "Add New Shading Layer",
+  "addNewDitherLayer": "Add New Dither Layer",
+  "addNewReferenceLayer": "Add New Reference Layer",
+  "addNewGridLayer": "Add New Grid Layer",
+
+  "deleteLayer": "Delete Layer",
+  "duplicateLayer": "Duplicate Layer",
+  "mergeDownLayer": "Merge Down Layer",
+  "unlinkLayer": "Unlink Layer / Make Unique",
+
+  "newProject": "New Project",
+  "openProject": "Open Project",
+
+  "rasterLayer": "Raster Layer",
+
+  "saveProject": "Save Project",
+  "exportProjectPalette": "Export Project/Palette",
+
+  "centerHorizontally": "Center Horizontally",
+  "centerVertically": "Center Vertically",
+  "left": "Left",
+  "right": "Right",
+  "top": "Top",
+  "bottom": "Bottom",
+
+  "editColorRamp": "Edit Color Ramp",
+
+  "nColors": "{amount} colors",
+  "@nColors": {
+    "description": "palette manager summary",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+
+  "nRampsColors": "{rampAmount} ramps | {colorAmount} colors",
+  "@nRampsColors": {
+    "description": "palette manager summary",
+    "placeholders": {
+      "rampAmount": {"type": "int"},
+      "colorAmount": {"type": "int"}
+    }
+  },
+
+  "remapExistingColors": "Do you want to remap the existing colors (all pixels will be deleted otherwise)?",
+  "wantToDeletePalette": "Do you really want to delete this palette?",
+  "paletteManager": "Palette Manager",
+  "importPalette": "Import Palette",
+  "saveCurrentPalette": "Save Current Palette",
+  "deleteSelectedPalette": "Delete Selected Palette",
+  "appendToCurrentPalette": "Append to Current Palette",
+  "applySelectedPalette": "Apply Selected Palette",
+  "addNewColorRamp": "Add New Color Ramp",
+  "savePalette": "Save Palette"
 
 
 

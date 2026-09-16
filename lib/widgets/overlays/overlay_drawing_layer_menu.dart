@@ -21,6 +21,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -117,6 +118,7 @@ class _OverlayDrawingLayerMenuState extends State<OverlayDrawingLayerMenu> with 
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return AnchoredOverlayBox(
       anchorKey: widget.anchorKey,
       width: _width,
@@ -133,9 +135,9 @@ class _OverlayDrawingLayerMenuState extends State<OverlayDrawingLayerMenu> with 
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              _createMenuButton(tooltip: "Delete Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete, context: context)}", icon: TablerIcons.trash, onPressedFunc: widget.onDelete),
-              _createMenuButton(tooltip: "Duplicate Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate, context: context)}", icon: TablerIcons.squares, onPressedFunc: widget.onDuplicate),
-              _createMenuButton(tooltip: "Merge Down Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersMerge, context: context)}", icon: TablerIcons.arrow_merge_left, onPressedFunc: widget.onMergeDown, rotateIcon: true),
+              _createMenuButton(tooltip: l10n.deleteLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete, context: context), icon: TablerIcons.trash, onPressedFunc: widget.onDelete),
+              _createMenuButton(tooltip: l10n.duplicateLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate, context: context), icon: TablerIcons.squares, onPressedFunc: widget.onDuplicate),
+              _createMenuButton(tooltip: l10n.mergeDownLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.layersMerge, context: context), icon: TablerIcons.arrow_merge_left, onPressedFunc: widget.onMergeDown, rotateIcon: true),
             ],
           ),
         ),

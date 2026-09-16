@@ -19,6 +19,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
@@ -90,6 +91,7 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return AnchoredOverlayBox(
       anchorKey: widget.anchorKey,
       width: OverlayEntrySubMenuOptions.width / 2,
@@ -106,9 +108,9 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              _createMenuButton(tooltip: "New Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalNew, context: context)}", icon: TablerIcons.file, onPressedFunc: widget.onNewFile),
-              _createMenuButton(tooltip: "Open Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalOpen, context: context)}", icon: TablerIcons.folder_open, onPressedFunc: widget.onLoadFile),
-              _createMenuButton(tooltip: "Import Image", icon: TablerIcons.file_import, onPressedFunc: widget.onImportFile),
+              _createMenuButton(tooltip: l10n.newProject + _hotkeyManager.getShortcutString(action: HotkeyAction.generalNew, context: context), icon: TablerIcons.file, onPressedFunc: widget.onNewFile),
+              _createMenuButton(tooltip: l10n.openProject + _hotkeyManager.getShortcutString(action: HotkeyAction.generalOpen, context: context), icon: TablerIcons.folder_open, onPressedFunc: widget.onLoadFile),
+              _createMenuButton(tooltip: l10n.importImage, icon: TablerIcons.file_import, onPressedFunc: widget.onImportFile),
             ],
           ),
         ),

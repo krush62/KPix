@@ -312,7 +312,49 @@
 
   "symmetryOptions": "Symmetrieoptionen",
   "centerHorizontalRuler": "Horizontale Linie zentrieren",
-  "centerVerticalRuler": "Vertikale Linie zentrieren"
+  "centerVerticalRuler": "Vertikale Linie zentrieren",
+
+  "addNewDrawingLayer": "Zeichenebene hinzufügen",
+  "addNewShadingLayer": "Schattierungsebene hinzufügen",
+  "addNewDitherLayer": "Diffusionsebene hinzufügen",
+  "addNewReferenceLayer": "Referenzebene hinzufügen",
+  "addNewGridLayer": "Gitterebene hinzufügen",
+
+  "deleteLayer": "Ebene löschen",
+  "duplicateLayer": "Ebene duplizieren",
+  "mergeDownLayer": "Ebene nach unten zusammenführen",
+  "unlinkLayer": "Ebene entknüpfen",
+
+  "newProject": "Neues Projekt",
+  "openProject": "Projekt öffnen",
+
+  "rasterLayer": "Ebene rastern",
+
+  "saveProject": "Projekt speichern",
+  "exportProjectPalette": "Projekt/Palette exportieren",
+
+  "centerHorizontally": "Horizontal zentrieren",
+  "centerVertically": "Vertikal zentrieren",
+  "left": "Links",
+  "right": "Rechts",
+  "top": "Oben",
+  "bottom": "Unten",
+
+  "editColorRamp": "Farbrampe bearbeiten",
+
+  "nColors": "{amount} Farben",
+  "nRampsColors": "{rampAmount} Rampen | {colorAmount} Farben",
+
+  "remapExistingColors": "Sollen existierende Farben neu zugeordnet werden (sonst werden alle Pixel gelöscht)?",
+  "wantToDeletePalette": "Soll die Palette wirklich gelöscht werden?",
+  "paletteManager": "Palettenverwaltung",
+  "importPalette": "Palette importieren",
+  "saveCurrentPalette": "Aktuelle Palette speichern",
+  "deleteSelectedPalette": "Aktuelle Palette löschen",
+  "appendToCurrentPalette": "An aktuelle Palette anhängen",
+  "applySelectedPalette": "Ausgewählte Palette anwenden",
+  "addNewColorRamp": "Neue Farbrampe hinzufügen",
+  "savePalette": "Palette speichern"
 
 
 

@@ -19,6 +19,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -112,6 +113,7 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return AnchoredOverlayBox(
       anchorKey: widget.anchorKey,
       width: _width,
@@ -128,9 +130,9 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              _createMenuButton(tooltip: "Delete Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete, context: context)}", icon: TablerIcons.trash, onPressedFunc: widget.onDelete),
-              _createMenuButton(tooltip: "Duplicate Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate, context: context)}", icon: TablerIcons.squares, onPressedFunc: widget.onDuplicate),
-              _createMenuButton(tooltip: "Raster Layer", icon: TablerIcons.brush, onPressedFunc: widget.onRaster),
+              _createMenuButton(tooltip: l10n.deleteLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete, context: context), icon: TablerIcons.trash, onPressedFunc: widget.onDelete),
+              _createMenuButton(tooltip: l10n.duplicateLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate, context: context), icon: TablerIcons.squares, onPressedFunc: widget.onDuplicate),
+              _createMenuButton(tooltip: l10n.rasterLayer, icon: TablerIcons.brush, onPressedFunc: widget.onRaster),
             ],
           ),
         ),

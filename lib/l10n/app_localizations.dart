@@ -1723,6 +1723,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Center Vertical Ruler'**
   String get centerVerticalRuler;
+
+  /// No description provided for @addNewDrawingLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Drawing Layer'**
+  String get addNewDrawingLayer;
+
+  /// No description provided for @addNewShadingLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Shading Layer'**
+  String get addNewShadingLayer;
+
+  /// No description provided for @addNewDitherLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Dither Layer'**
+  String get addNewDitherLayer;
+
+  /// No description provided for @addNewReferenceLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Reference Layer'**
+  String get addNewReferenceLayer;
+
+  /// No description provided for @addNewGridLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Grid Layer'**
+  String get addNewGridLayer;
+
+  /// No description provided for @deleteLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Layer'**
+  String get deleteLayer;
+
+  /// No description provided for @duplicateLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate Layer'**
+  String get duplicateLayer;
+
+  /// No description provided for @mergeDownLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge Down Layer'**
+  String get mergeDownLayer;
+
+  /// No description provided for @unlinkLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink Layer / Make Unique'**
+  String get unlinkLayer;
+
+  /// No description provided for @newProject.
+  ///
+  /// In en, this message translates to:
+  /// **'New Project'**
+  String get newProject;
+
+  /// No description provided for @openProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Project'**
+  String get openProject;
+
+  /// No description provided for @rasterLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Raster Layer'**
+  String get rasterLayer;
+
+  /// No description provided for @saveProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Project'**
+  String get saveProject;
+
+  /// No description provided for @exportProjectPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Project/Palette'**
+  String get exportProjectPalette;
+
+  /// No description provided for @centerHorizontally.
+  ///
+  /// In en, this message translates to:
+  /// **'Center Horizontally'**
+  String get centerHorizontally;
+
+  /// No description provided for @centerVertically.
+  ///
+  /// In en, this message translates to:
+  /// **'Center Vertically'**
+  String get centerVertically;
+
+  /// No description provided for @left.
+  ///
+  /// In en, this message translates to:
+  /// **'Left'**
+  String get left;
+
+  /// No description provided for @right.
+  ///
+  /// In en, this message translates to:
+  /// **'Right'**
+  String get right;
+
+  /// No description provided for @top.
+  ///
+  /// In en, this message translates to:
+  /// **'Top'**
+  String get top;
+
+  /// No description provided for @bottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bottom'**
+  String get bottom;
+
+  /// No description provided for @editColorRamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Color Ramp'**
+  String get editColorRamp;
+
+  /// palette manager summary
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} colors'**
+  String nColors(int amount);
+
+  /// palette manager summary
+  ///
+  /// In en, this message translates to:
+  /// **'{rampAmount} ramps | {colorAmount} colors'**
+  String nRampsColors(int rampAmount, int colorAmount);
+
+  /// No description provided for @remapExistingColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to remap the existing colors (all pixels will be deleted otherwise)?'**
+  String get remapExistingColors;
+
+  /// No description provided for @wantToDeletePalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you really want to delete this palette?'**
+  String get wantToDeletePalette;
+
+  /// No description provided for @paletteManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Palette Manager'**
+  String get paletteManager;
+
+  /// No description provided for @importPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Palette'**
+  String get importPalette;
+
+  /// No description provided for @saveCurrentPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Current Palette'**
+  String get saveCurrentPalette;
+
+  /// No description provided for @deleteSelectedPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Selected Palette'**
+  String get deleteSelectedPalette;
+
+  /// No description provided for @appendToCurrentPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Append to Current Palette'**
+  String get appendToCurrentPalette;
+
+  /// No description provided for @applySelectedPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Selected Palette'**
+  String get applySelectedPalette;
+
+  /// No description provided for @addNewColorRamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Color Ramp'**
+  String get addNewColorRamp;
+
+  /// No description provided for @savePalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Palette'**
+  String get savePalette;
 }
 
 class _AppLocalizationsDelegate

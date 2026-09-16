@@ -151,6 +151,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
             );
             widgetList.add(_getDropContainer(index: dropTargetIndex++));
           }
+          final AppLocalizations l10n = AppLocalizations.of(context)!;
           return Container(
             width: double.infinity,
             height: double.infinity,
@@ -163,7 +164,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Tooltip(
-                  message: "Palette Manager",
+                  message: l10n.paletteManager,
                   waitDuration: toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.only(top: _PaletteWidgetOptions.padding, left: _PaletteWidgetOptions.padding, right: _PaletteWidgetOptions.padding),
@@ -193,7 +194,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                   ),
                 ),
                 Tooltip(
-                  message: "Add New Color Ramp",
+                  message: l10n.addNewColorRamp,
                   waitDuration: toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.all(_PaletteWidgetOptions.padding),

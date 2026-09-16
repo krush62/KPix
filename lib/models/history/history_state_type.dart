@@ -17,69 +17,70 @@
 
 const Map<HistoryStateTypeIdentifier, HistoryStateType> allStateTypeMap =
 <HistoryStateTypeIdentifier, HistoryStateType>{
-  HistoryStateTypeIdentifier.initial: HistoryStateType(identifier: HistoryStateTypeIdentifier.initial, description: "initial", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.generic: HistoryStateType(identifier: HistoryStateTypeIdentifier.generic, description: "generic", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.saveData: HistoryStateType(identifier: HistoryStateTypeIdentifier.saveData, description: "save data", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.loadData: HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.initial: HistoryStateType(identifier: HistoryStateTypeIdentifier.initial, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.generic: HistoryStateType(identifier: HistoryStateTypeIdentifier.generic, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.saveData: HistoryStateType(identifier: HistoryStateTypeIdentifier.saveData, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.loadData: HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, compressionBehavior: HistoryStateCompressionBehavior.leave),
 
-  HistoryStateTypeIdentifier.layerChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerChange, description: "select layer", compressionBehavior: HistoryStateCompressionBehavior.delete),
-  HistoryStateTypeIdentifier.layerChangeWithSelection: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerChangeWithSelection, description: "select layer (move selection)", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.layerDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerDelete, description: "delete layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.layerMerge: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerMerge, description: "merge layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.layerDuplicate: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerDuplicate, description: "duplicate layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.layerNewDrawing: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewDrawing, description: "add new drawing layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.layerNewReference: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewReference, description: "add new reference layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.layerNewGrid: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewGrid, description: "add new grid layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.layerNewShading: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewShading, description: "add new shading layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.layerNewDither: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewDither, description: "add new dither layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.layerOrderChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerOrderChange, description: "change layer order", compressionBehavior: HistoryStateCompressionBehavior.merge),
-  HistoryStateTypeIdentifier.layerVisibilityChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerVisibilityChange, description: "layer visibility changed", compressionBehavior: HistoryStateCompressionBehavior.delete),
-  HistoryStateTypeIdentifier.layerLockChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerLockChange, description: "layer lock state changed", compressionBehavior: HistoryStateCompressionBehavior.delete),
-  HistoryStateTypeIdentifier.layerChangeReferenceImage: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerChangeReferenceImage, description: "change reference image", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.layerRaster: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerRaster, description: "raster layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.layerSettingsChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerSettingsChange, description: "layer settings change", compressionBehavior: HistoryStateCompressionBehavior.merge),
-  HistoryStateTypeIdentifier.layerSettingsRaster: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerSettingsRaster, description: "layer settings raster", compressionBehavior: HistoryStateCompressionBehavior.merge),
+  HistoryStateTypeIdentifier.layerChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerChange, compressionBehavior: HistoryStateCompressionBehavior.delete),
+  HistoryStateTypeIdentifier.layerChangeWithSelection: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerChangeWithSelection, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerDelete, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerMerge: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerMerge, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerDuplicate: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerDuplicate, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerNewDrawing: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewDrawing, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerNewReference: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewReference, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerNewGrid: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewGrid, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerNewShading: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewShading, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerNewDither: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewDither, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerOrderChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerOrderChange, compressionBehavior: HistoryStateCompressionBehavior.merge),
+  HistoryStateTypeIdentifier.layerVisibilityChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerVisibilityChange, compressionBehavior: HistoryStateCompressionBehavior.delete),
+  HistoryStateTypeIdentifier.layerLockChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerLockChange, compressionBehavior: HistoryStateCompressionBehavior.delete),
+  HistoryStateTypeIdentifier.layerChangeReferenceImage: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerChangeReferenceImage, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerRaster: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerRaster, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerSettingsChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerSettingsChange, compressionBehavior: HistoryStateCompressionBehavior.merge),
+  HistoryStateTypeIdentifier.layerSettingsRaster: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerSettingsRaster, compressionBehavior: HistoryStateCompressionBehavior.merge),
 
 
-  HistoryStateTypeIdentifier.selectionNew: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionNew, description: "new selection", compressionBehavior: HistoryStateCompressionBehavior.delete),
-  HistoryStateTypeIdentifier.selectionDeselect: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionDeselect, description: "deselect", compressionBehavior: HistoryStateCompressionBehavior.delete),
-  HistoryStateTypeIdentifier.selectionSelectAll: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionSelectAll, description: "select all", compressionBehavior: HistoryStateCompressionBehavior.delete),
-  HistoryStateTypeIdentifier.selectionInverse: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionInverse, description: "inverse selection", compressionBehavior: HistoryStateCompressionBehavior.delete),
-  HistoryStateTypeIdentifier.selectionCut: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionCut, description: "cut selection", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.selectionFlipH: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionFlipH, description: "flip selection horizontally", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.selectionFlipV: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionFlipV, description: "flip selection vertically", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.selectionRotate: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionRotate, description: "rotate selection", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.selectionMove: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionMove, description: "move selection", compressionBehavior: HistoryStateCompressionBehavior.merge),
-  HistoryStateTypeIdentifier.selectionPaste: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionPaste, description: "paste selection", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.selectionNewLayer: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionNewLayer, description: "selection to new layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.selectionDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionDelete, description: "delete selection", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.selectionNew: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionNew, compressionBehavior: HistoryStateCompressionBehavior.delete),
+  HistoryStateTypeIdentifier.selectionDeselect: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionDeselect, compressionBehavior: HistoryStateCompressionBehavior.delete),
+  HistoryStateTypeIdentifier.selectionSelectAll: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionSelectAll, compressionBehavior: HistoryStateCompressionBehavior.delete),
+  HistoryStateTypeIdentifier.selectionInverse: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionInverse, compressionBehavior: HistoryStateCompressionBehavior.delete),
+  HistoryStateTypeIdentifier.selectionCut: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionCut, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.selectionFlipH: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionFlipH, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.selectionFlipV: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionFlipV, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.selectionRotate: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionRotate, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.selectionMove: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionMove, compressionBehavior: HistoryStateCompressionBehavior.merge),
+  HistoryStateTypeIdentifier.selectionPaste: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionPaste, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.selectionNewLayer: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionNewLayer, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.selectionDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionDelete, compressionBehavior: HistoryStateCompressionBehavior.leave),
 
-  HistoryStateTypeIdentifier.canvasSizeChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasSizeChange, description: "change canvas size", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.canvasFlipH: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasFlipH, description: "flip canvas horizontally", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.canvasFlipV: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasFlipV, description: "flip canvas vertically", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.canvasRotate: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasRotate, description: "rotate canvas", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.canvasSizeChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasSizeChange, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.canvasFlipH: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasFlipH, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.canvasFlipV: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasFlipV, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.canvasRotate: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasRotate, compressionBehavior: HistoryStateCompressionBehavior.leave),
 
-  HistoryStateTypeIdentifier.toolPen: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolPen, description: "pen drawing", compressionBehavior: HistoryStateCompressionBehavior.merge),
-  HistoryStateTypeIdentifier.toolStamp: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolStamp, description: "stamp drawing", compressionBehavior: HistoryStateCompressionBehavior.merge),
-  HistoryStateTypeIdentifier.toolEraser: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolEraser, description: "erase", compressionBehavior: HistoryStateCompressionBehavior.merge),
-  HistoryStateTypeIdentifier.toolText: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolText, description: "font drawing", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.toolShape: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolShape, description: "shape drawing", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.toolLine: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolLine, description: "line drawing", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.toolSprayCan: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolSprayCan, description: "spray can drawing", compressionBehavior: HistoryStateCompressionBehavior.merge),
-  HistoryStateTypeIdentifier.toolFill: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolFill, description: "fill", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.toolPen: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolPen, compressionBehavior: HistoryStateCompressionBehavior.merge),
+  HistoryStateTypeIdentifier.toolStamp: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolStamp, compressionBehavior: HistoryStateCompressionBehavior.merge),
+  HistoryStateTypeIdentifier.toolEraser: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolEraser, compressionBehavior: HistoryStateCompressionBehavior.merge),
+  HistoryStateTypeIdentifier.toolText: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolText, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.toolShape: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolShape, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.toolLine: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolLine, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.toolSprayCan: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolSprayCan, compressionBehavior: HistoryStateCompressionBehavior.merge),
+  HistoryStateTypeIdentifier.toolFill: HistoryStateType(identifier: HistoryStateTypeIdentifier.toolFill, compressionBehavior: HistoryStateCompressionBehavior.leave),
 
-  HistoryStateTypeIdentifier.colorChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.colorChange, description: "change color selection", compressionBehavior: HistoryStateCompressionBehavior.merge),
+  HistoryStateTypeIdentifier.colorChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.colorChange, compressionBehavior: HistoryStateCompressionBehavior.merge),
 
-  HistoryStateTypeIdentifier.kPalDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalDelete, description: "delete ramp", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.kPalChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalChange, description: "update ramp", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.kPalPaletteReplace: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalPaletteReplace, description: "replace palette", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.kPalAdd: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalAdd, description: "add new ramp", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.kPalDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalDelete, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.kPalChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalChange, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.kPalPaletteReplace: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalPaletteReplace, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.kPalAdd: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalAdd, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.kPalOrderChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalOrderChange, compressionBehavior: HistoryStateCompressionBehavior.leave),
 
-  HistoryStateTypeIdentifier.timelineFrameAdd: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameAdd, description: "add frame", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.timelineFrameDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameDelete, description: "delete frame", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.timelineFrameMove: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameMove, description: "move frame", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.timelineFrameTimeChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameTimeChange, description: "change frame time", compressionBehavior: HistoryStateCompressionBehavior.leave),
-  HistoryStateTypeIdentifier.timelineLoopMarkerChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange, description: "change loop marker", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.timelineFrameAdd: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameAdd, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.timelineFrameDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameDelete, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.timelineFrameMove: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameMove, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.timelineFrameTimeChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameTimeChange, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.timelineLoopMarkerChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange, compressionBehavior: HistoryStateCompressionBehavior.leave),
 
 };
 
@@ -238,16 +239,11 @@ const Map<HistoryStateTypeIdentifier, HistoryStateTypeGroup> _stateTypeGroupMap 
 
 class HistoryStateType
 {
-  final String description;
   final HistoryStateCompressionBehavior compressionBehavior;
   final HistoryStateTypeIdentifier identifier;
-  const HistoryStateType({required this.description, required this.compressionBehavior, required this.identifier});
+  const HistoryStateType({required this.identifier, required this.compressionBehavior});
 
-  @override
-  String toString()
-  {
-    return description;
-  }
+
   bool get isLeaveCompression => compressionBehavior == HistoryStateCompressionBehavior.leave;
   bool get isMergeCompression => compressionBehavior == HistoryStateCompressionBehavior.merge;
   bool get isDeleteCompression => compressionBehavior == HistoryStateCompressionBehavior.delete;

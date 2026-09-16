@@ -62,10 +62,10 @@ class HistoryManager
     hasRedo.value = false;
   }
 
-  String getCurrentDescription()
+  HistoryStateTypeIdentifier getCurrentIdentifier()
   {
-    if (_curPos < 0 || _curPos >= _states.length) return '';
-    return _states[_curPos].type.description;
+    if (_curPos < 0 || _curPos >= _states.length) return HistoryStateTypeIdentifier.generic;
+    return _states[_curPos].type.identifier;
   }
 
   void changeMaxEntries({required final int maxEntries})

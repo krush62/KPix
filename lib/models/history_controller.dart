@@ -51,7 +51,7 @@ enum HistoryRestoreResult
 
 /// An undo or redo that was carried out: the description of the step and the
 /// restore it started, which finishes later.
-typedef HistoryStep = ({String description, Future<HistoryRestoreResult> restore});
+typedef HistoryStep = ({HistoryStateTypeIdentifier identifier, Future<HistoryRestoreResult> restore});
 
 /// Undo, redo, and putting a [HistoryState] back onto the live document.
 ///
@@ -70,14 +70,14 @@ class HistoryController
     flushHistoryData?.call();
     if (GetIt.I.get<HistoryManager>().hasUndo.value && !GetIt.I.get<DocumentState>().timeline.isPlaying.value)
     {
-      final String description = GetIt.I.get<HistoryManager>().getCurrentDescription();
+      final HistoryStateTypeIdentifier identifier = GetIt.I.get<HistoryManager>().getCurrentIdentifier();
       //the state being undone describes what changed (and on which layer);
       //the target state provides the data to restore
       final HistoryState? currentState = GetIt.I.get<HistoryManager>().getCurrentState();
       final HistoryStateTypeGroup typeGroup = currentState != null ? currentState.type.group : HistoryStateTypeGroup.full;
       final Future<HistoryRestoreResult> restore = restoreState(historyState: GetIt.I.get<HistoryManager>().undo(), typeGroup: typeGroup, restoreLayerIndices: currentState?.restoreLayerIndices);
       GetIt.I.get<ProjectSession>().hasChanges.value = !GetIt.I.get<HistoryManager>().isAtSavedState;
-      return (description: description, restore: restore);
+      return (identifier: identifier, restore: restore);
     }
     return null;
   }
@@ -92,7 +92,7 @@ class HistoryController
       final HistoryStateTypeGroup typeGroup = switchState != null ? switchState.type.group : HistoryStateTypeGroup.full;
       final Future<HistoryRestoreResult> restore = restoreState(historyState: switchState, typeGroup: typeGroup, restoreLayerIndices: switchState?.restoreLayerIndices);
       GetIt.I.get<ProjectSession>().hasChanges.value = !GetIt.I.get<HistoryManager>().isAtSavedState;
-      return (description: GetIt.I.get<HistoryManager>().getCurrentDescription(), restore: restore);
+      return (identifier: GetIt.I.get<HistoryManager>().getCurrentIdentifier(), restore: restore);
     }
     return null;
   }

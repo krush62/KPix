@@ -2701,6 +2701,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The \"All files access\" permission is not needed for the default project directory.\nDo you want to open the system settings to revoke the permission?'**
   String get allFilesAccessNotNeededWarning;
+
+  /// No description provided for @initial.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial'**
+  String get initial;
+
+  /// No description provided for @generic.
+  ///
+  /// In en, this message translates to:
+  /// **'Generic'**
+  String get generic;
+
+  /// No description provided for @saveData.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Data'**
+  String get saveData;
+
+  /// No description provided for @loadData.
+  ///
+  /// In en, this message translates to:
+  /// **'Load Data'**
+  String get loadData;
+
+  /// No description provided for @selectLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Layer'**
+  String get selectLayer;
+
+  /// No description provided for @selectLayerMoveSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Layer (Move Selection)'**
+  String get selectLayerMoveSelection;
+
+  /// No description provided for @mergeLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge Layer'**
+  String get mergeLayer;
+
+  /// No description provided for @changeLayerOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Layer Order'**
+  String get changeLayerOrder;
+
+  /// No description provided for @layerVisibilityChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Layer Visibility Changed'**
+  String get layerVisibilityChanged;
+
+  /// No description provided for @layerLockStateChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Layer Lock State Changed'**
+  String get layerLockStateChanged;
+
+  /// No description provided for @changeReferenceImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Reference Image'**
+  String get changeReferenceImage;
+
+  /// No description provided for @layerSettingsChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Layer Settings Change'**
+  String get layerSettingsChange;
+
+  /// No description provided for @layerSettingsRaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Layer Settings Raster'**
+  String get layerSettingsRaster;
+
+  /// No description provided for @newSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'New Selection'**
+  String get newSelection;
+
+  /// No description provided for @cutSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Cut Selection'**
+  String get cutSelection;
+
+  /// No description provided for @flipSelectionHorizontally.
+  ///
+  /// In en, this message translates to:
+  /// **'Flip Selection Horizontally'**
+  String get flipSelectionHorizontally;
+
+  /// No description provided for @flipSelectionVertically.
+  ///
+  /// In en, this message translates to:
+  /// **'Flip Selection Vertically'**
+  String get flipSelectionVertically;
+
+  /// No description provided for @rotateSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate Selection'**
+  String get rotateSelection;
+
+  /// No description provided for @moveSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Move Selection'**
+  String get moveSelection;
+
+  /// No description provided for @pasteSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste Selection'**
+  String get pasteSelection;
+
+  /// No description provided for @selectionToNewLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Selection To New Layer'**
+  String get selectionToNewLayer;
+
+  /// No description provided for @deleteSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Selection'**
+  String get deleteSelection;
+
+  /// No description provided for @changeCanvasSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Canvas Size'**
+  String get changeCanvasSize;
+
+  /// No description provided for @penDrawing.
+  ///
+  /// In en, this message translates to:
+  /// **'Pen Drawing'**
+  String get penDrawing;
+
+  /// No description provided for @stampDrawing.
+  ///
+  /// In en, this message translates to:
+  /// **'Stamp Drawing'**
+  String get stampDrawing;
+
+  /// No description provided for @erase.
+  ///
+  /// In en, this message translates to:
+  /// **'Erase'**
+  String get erase;
+
+  /// No description provided for @fontDrawing.
+  ///
+  /// In en, this message translates to:
+  /// **'Font Drawing'**
+  String get fontDrawing;
+
+  /// No description provided for @shapeDrawing.
+  ///
+  /// In en, this message translates to:
+  /// **'Shape Drawing'**
+  String get shapeDrawing;
+
+  /// No description provided for @lineDrawing.
+  ///
+  /// In en, this message translates to:
+  /// **'Line Drawing'**
+  String get lineDrawing;
+
+  /// No description provided for @sprayCanDrawing.
+  ///
+  /// In en, this message translates to:
+  /// **'Spray Can Drawing'**
+  String get sprayCanDrawing;
+
+  /// No description provided for @changeColorSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Color Selection'**
+  String get changeColorSelection;
+
+  /// No description provided for @deleteRamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Ramp'**
+  String get deleteRamp;
+
+  /// No description provided for @updateRamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Ramp'**
+  String get updateRamp;
+
+  /// No description provided for @replacePalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace Palette'**
+  String get replacePalette;
+
+  /// No description provided for @addNewRamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Ramp'**
+  String get addNewRamp;
+
+  /// No description provided for @changeRampOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Ramp Order'**
+  String get changeRampOrder;
+
+  /// No description provided for @changeFrameTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Frame Time'**
+  String get changeFrameTime;
+
+  /// No description provided for @changeLoopMarker.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Loop Marker'**
+  String get changeLoopMarker;
 }
 
 class _AppLocalizationsDelegate

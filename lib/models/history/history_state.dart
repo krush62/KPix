@@ -62,7 +62,7 @@ class HistoryState
     };
 
     //TYPE
-    final HistoryStateType type = allStateTypeMap[identifier] ?? const HistoryStateType(compressionBehavior: HistoryStateCompressionBehavior.leave, description: "Generic", identifier: HistoryStateTypeIdentifier.generic);
+    final HistoryStateType type = allStateTypeMap[identifier] ?? const HistoryStateType(compressionBehavior: HistoryStateCompressionBehavior.leave, identifier: HistoryStateTypeIdentifier.generic);
 
     if (originLayers.isEmpty && type.group == HistoryStateTypeGroup.layerFull)
     {

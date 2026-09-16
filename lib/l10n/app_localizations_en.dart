@@ -1401,4 +1401,118 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get allFilesAccessNotNeededWarning =>
       'The \"All files access\" permission is not needed for the default project directory.\nDo you want to open the system settings to revoke the permission?';
+
+  @override
+  String get initial => 'Initial';
+
+  @override
+  String get generic => 'Generic';
+
+  @override
+  String get saveData => 'Save Data';
+
+  @override
+  String get loadData => 'Load Data';
+
+  @override
+  String get selectLayer => 'Select Layer';
+
+  @override
+  String get selectLayerMoveSelection => 'Select Layer (Move Selection)';
+
+  @override
+  String get mergeLayer => 'Merge Layer';
+
+  @override
+  String get changeLayerOrder => 'Change Layer Order';
+
+  @override
+  String get layerVisibilityChanged => 'Layer Visibility Changed';
+
+  @override
+  String get layerLockStateChanged => 'Layer Lock State Changed';
+
+  @override
+  String get changeReferenceImage => 'Change Reference Image';
+
+  @override
+  String get layerSettingsChange => 'Layer Settings Change';
+
+  @override
+  String get layerSettingsRaster => 'Layer Settings Raster';
+
+  @override
+  String get newSelection => 'New Selection';
+
+  @override
+  String get cutSelection => 'Cut Selection';
+
+  @override
+  String get flipSelectionHorizontally => 'Flip Selection Horizontally';
+
+  @override
+  String get flipSelectionVertically => 'Flip Selection Vertically';
+
+  @override
+  String get rotateSelection => 'Rotate Selection';
+
+  @override
+  String get moveSelection => 'Move Selection';
+
+  @override
+  String get pasteSelection => 'Paste Selection';
+
+  @override
+  String get selectionToNewLayer => 'Selection To New Layer';
+
+  @override
+  String get deleteSelection => 'Delete Selection';
+
+  @override
+  String get changeCanvasSize => 'Change Canvas Size';
+
+  @override
+  String get penDrawing => 'Pen Drawing';
+
+  @override
+  String get stampDrawing => 'Stamp Drawing';
+
+  @override
+  String get erase => 'Erase';
+
+  @override
+  String get fontDrawing => 'Font Drawing';
+
+  @override
+  String get shapeDrawing => 'Shape Drawing';
+
+  @override
+  String get lineDrawing => 'Line Drawing';
+
+  @override
+  String get sprayCanDrawing => 'Spray Can Drawing';
+
+  @override
+  String get changeColorSelection => 'Change Color Selection';
+
+  @override
+  String get deleteRamp => 'Delete Ramp';
+
+  @override
+  String get updateRamp => 'Update Ramp';
+
+  @override
+  String get replacePalette => 'Replace Palette';
+
+  @override
+  String get addNewRamp => 'Add New Ramp';
+
+  @override
+  String get changeRampOrder => 'Change Ramp Order';
+
+  @override
+  String get changeFrameTime => 'Change Frame Time';
+
+  @override
+  String get changeLoopMarker => 'Change Loop Marker';
 }

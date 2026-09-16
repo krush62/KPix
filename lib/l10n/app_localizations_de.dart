@@ -1334,25 +1334,26 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get thisDeviceDoesNotSupportResolution =>
-      'This device does not support the minimum logical resolution to run this application.';
+      'Dieses Gerät unterstützt nicht die minimale logische Auflösung, die zum Ausführen dieser Anwendung erforderlich ist.';
 
   @override
   String get customProjectDirectoryInvalid =>
-      'Custom Project directory invalid. Switching to default directory.';
+      'Das benutzerdefinierte Projektverzeichnis ist ungültig. Es wird auf das Standardverzeichnis zurückgegriffen.';
 
   @override
   String get couldNotCreateInternalDirectories =>
-      'Could not create internal directories.';
+      'Interne Verzeichnisse konnten nicht erstellt werden.';
 
   @override
-  String get couldNotInitializeApp => 'Could not initialize the application.';
+  String get couldNotInitializeApp =>
+      'Die Anwendung konnte nicht initialisiert werden.';
 
   @override
   String get aCustomProjectDirectoryIsUsed =>
-      'A custom project directory is used, but KPix does not have the \"All files access\" permission. Project files created by other apps (e.g. sync tools) might not be shown.\nDo you want to open the system settings to grant the permission?';
+      'Es wird ein benutzerdefiniertes Projektverzeichnis verwendet, aber KPix verfügt nicht über die Berechtigung „Zugriff auf alle Dateien“. Von anderen Apps (z. B. Synchronisierungstools) erstellte Projektdateien werden möglicherweise nicht angezeigt.\nSollen die Systemeinstellungen geöffnet werden, um die Berechtigung zu erteilen?';
 
   @override
-  String get workRecovered => 'Work Recovered';
+  String get workRecovered => 'Arbeit wiederhergestellt';
 
   @override
   String get undo => 'Rückgängig';
@@ -1421,4 +1422,119 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get allFilesAccessNotNeededWarning =>
       'Die \"Zugriff auf alle Dateien erlauben\" Erlaubnis wird für das Standardverzeichnis nicht benötigt.\nSollen die Systemeinstellungen geöffnet werden um die Berechtigung zu entfernen?';
+
+  @override
+  String get initial => 'Initial';
+
+  @override
+  String get generic => 'Allgemein';
+
+  @override
+  String get saveData => 'Daten speichern';
+
+  @override
+  String get loadData => 'Daten laden';
+
+  @override
+  String get selectLayer => 'Ebene auswählen';
+
+  @override
+  String get selectLayerMoveSelection =>
+      'Ebene auswählen (Auswahl verschieben)';
+
+  @override
+  String get mergeLayer => 'Ebene zusammenführen';
+
+  @override
+  String get changeLayerOrder => 'Ebenenreihenfolge ändern';
+
+  @override
+  String get layerVisibilityChanged => 'Ebenensichtbarkeit ändern';
+
+  @override
+  String get layerLockStateChanged => 'Ebenensperre ändern';
+
+  @override
+  String get changeReferenceImage => 'Referenzbild ändern';
+
+  @override
+  String get layerSettingsChange => 'Ebeneneinstellungen ändern';
+
+  @override
+  String get layerSettingsRaster => 'Ebeneneinstellungen rastern';
+
+  @override
+  String get newSelection => 'Neue Auswahl';
+
+  @override
+  String get cutSelection => 'Auswahl ausschneiden';
+
+  @override
+  String get flipSelectionHorizontally => 'Auswahl horizontal spiegeln';
+
+  @override
+  String get flipSelectionVertically => 'Auswahl vertikal spiegeln';
+
+  @override
+  String get rotateSelection => 'Auswahl drehen';
+
+  @override
+  String get moveSelection => 'Auswahl verschieben';
+
+  @override
+  String get pasteSelection => 'Auswahl einfügen';
+
+  @override
+  String get selectionToNewLayer => 'Auswahl in neue Ebene umwandeln';
+
+  @override
+  String get deleteSelection => 'Auswahl löschen';
+
+  @override
+  String get changeCanvasSize => 'Leinwandgröße ändern';
+
+  @override
+  String get penDrawing => 'Mit Stift zeichnen';
+
+  @override
+  String get stampDrawing => 'Mit Stempel zeichnen';
+
+  @override
+  String get erase => 'Radieren';
+
+  @override
+  String get fontDrawing => 'Text zeichnen';
+
+  @override
+  String get shapeDrawing => 'Form zeichnen';
+
+  @override
+  String get lineDrawing => 'Linie zeichnen';
+
+  @override
+  String get sprayCanDrawing => 'Mit Sprühdose zeichnen';
+
+  @override
+  String get changeColorSelection => 'Farbauswahl ändern';
+
+  @override
+  String get deleteRamp => 'Farbrampe löschen';
+
+  @override
+  String get updateRamp => 'Farbrampe aktualisieren';
+
+  @override
+  String get replacePalette => 'Palette ersetzen';
+
+  @override
+  String get addNewRamp => 'Neue Farbrampe hinzufügen';
+
+  @override
+  String get changeRampOrder => 'Reihenfolge der Farbrampen ändern';
+
+  @override
+  String get changeFrameTime => 'Framedauer ändern';
+
+  @override
+  String get changeLoopMarker => 'Loop-Markierung ändern';
 }

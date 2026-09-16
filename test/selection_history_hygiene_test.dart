@@ -69,13 +69,13 @@ void main()
         final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
         await _paintAndRecord(projectSession: projectSession, layer: layer, coord: pixel, color: color);
 
-        final String descriptionBefore = GetIt.I.get<HistoryManager>().getCurrentDescription();
+        final HistoryStateTypeIdentifier identifierBefore = GetIt.I.get<HistoryManager>().getCurrentIdentifier();
         GetIt.I.get<DocumentState>().selectionState.newSelectionFromPolygon(points: _squarePolygon());
         await settle();
 
-        expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), "new selection",
+        expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), HistoryStateTypeIdentifier.selectionNew,
             reason: "the lasso lifts pixels out of the layer, so it has to be undoable like the other select tools",);
-        expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), isNot(descriptionBefore));
+        expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), isNot(identifierBefore));
       },);
     });
 
@@ -104,7 +104,7 @@ void main()
   group("moving with nothing selected", () {
     testWidgets("does not touch the history stack", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
-        final String descriptionBefore = GetIt.I.get<HistoryManager>().getCurrentDescription();
+        final HistoryStateTypeIdentifier identifierBefore = GetIt.I.get<HistoryManager>().getCurrentIdentifier();
         final bool couldUndoBefore = GetIt.I.get<HistoryManager>().hasUndo.value;
 
         //what the arrow keys reach when no selection exists
@@ -112,7 +112,7 @@ void main()
         GetIt.I.get<DocumentState>().selectionState.finishMovement();
         await settle();
 
-        expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), descriptionBefore);
+        expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), identifierBefore);
         expect(GetIt.I.get<HistoryManager>().hasUndo.value, couldUndoBefore);
       },);
     });
@@ -153,7 +153,7 @@ void main()
         GetIt.I.get<DocumentState>().selectionState.finishMovement();
         await settle();
 
-        expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), "move selection");
+        expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), HistoryStateTypeIdentifier.selectionMove);
         expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: CoordinateSetI(x: 2, y: 1)), color,
             reason: "the content moved with the selection",);
       },);

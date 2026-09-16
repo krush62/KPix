@@ -136,7 +136,7 @@ void main()
       GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
       await settle();
 
-      expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), "select layer (move selection)",
+      expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), HistoryStateTypeIdentifier.layerChangeWithSelection,
           reason: "a switch that rewrites two layers cannot be filed as a plain selection change",);
     },);
   });
@@ -150,7 +150,7 @@ void main()
       GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
       await settle();
 
-      expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), "select layer",
+      expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), HistoryStateTypeIdentifier.selectionNew,
           reason: "with nothing floating the switch really does only move the selected index",);
     },);
   });
@@ -173,7 +173,7 @@ void main()
       timeline.togglePlaying();
       expect(GetIt.I.get<DocumentState>().selectionState.selection.isEmpty, isTrue,
           reason: "playback reselects a layer per frame and would drag the content along",);
-      expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), "deselect",
+      expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), HistoryStateTypeIdentifier.selectionDeselect,
           reason: "committing the content is an edit and has to be undoable",);
 
       timeline.togglePlaying();
@@ -192,7 +192,7 @@ void main()
       timeline.selectFrameByIndex(index: 0);
       await settle();
 
-      final String descriptionBefore = GetIt.I.get<HistoryManager>().getCurrentDescription();
+      final HistoryStateTypeIdentifier identifierBefore = GetIt.I.get<HistoryManager>().getCurrentIdentifier();
       projectSession.hasChanges.value = false;
 
       timeline.togglePlaying();
@@ -200,7 +200,7 @@ void main()
       timeline.selectFrameByIndex(index: 0);
 
       expect(projectSession.hasChanges.value, isFalse, reason: "watching an animation is not an edit");
-      expect(GetIt.I.get<HistoryManager>().getCurrentDescription(), descriptionBefore);
+      expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), identifierBefore);
 
       timeline.togglePlaying();
       await settle();

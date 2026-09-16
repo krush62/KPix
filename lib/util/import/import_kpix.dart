@@ -859,7 +859,7 @@ LoadFileSet _parseKPixFile({required final Uint8List bytes, required final Strin
     }
 
     final HistorySelectionState selectionState = HistorySelectionState.empty();
-    final HistoryState historyState = HistoryState(timeline: hTimeline, selectedColor: const HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
+    final HistoryState historyState = HistoryState(timeline: hTimeline, selectedColor: const HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, compressionBehavior: HistoryStateCompressionBehavior.leave));
 
     return LoadFileSet(status: returnString.toString(), historyState: historyState, path: path);
   }

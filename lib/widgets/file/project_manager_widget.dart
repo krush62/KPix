@@ -78,9 +78,11 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   final TextEditingController _filterController = TextEditingController();
   late final Listenable _listListenable;
 
-  late KPixOverlay _saveBeforeLoadWarningDialog;
-  late KPixOverlay _deleteWarningDialog;
-  late KPixOverlay _loadingDialog;
+  //the dialogs are built once and kept; their text is resolved while the
+  //overlay builds, so it still follows a locale change
+  late final KPixOverlay _saveBeforeLoadWarningDialog;
+  late final KPixOverlay _deleteWarningDialog;
+  late final KPixOverlay _loadingDialog;
 
   @override
   void initState()
@@ -93,8 +95,20 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       _filterText,
     ],);
 
-
-
+    _saveBeforeLoadWarningDialog = getThreeButtonDialog(
+      onYes: _saveBeforeLoadWarningYes,
+      onNo: _saveBeforeLoadWarningNo,
+      onCancel: _closeSaveBeforeLoadWarning,
+      outsideCancelable: false,
+      message: (final AppLocalizations l10n) => l10n.unsavedChangesSaveFirst,
+    );
+    _loadingDialog = getLoadingDialog(message: (final AppLocalizations l10n) => l10n.openingImageDot);
+    _deleteWarningDialog = getTwoButtonDialog(
+      message: (final AppLocalizations l10n) => l10n.doYouReallyWantToDeleteProject,
+      onNo: _deleteWarningNo,
+      onYes: _deleteWarningYes,
+      outsideCancelable: false,
+    );
 
     //keeps the cache fresh while this view is open and re-scans once now, since
     //a directory watch can miss what other applications did to the directory
@@ -129,7 +143,6 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       _closeSaveBeforeLoadWarning();
       return;
     }
-    _loadingDialog = getLoadingDialog(message: (final AppLocalizations l10n) => l10n.openingImageDot);
     _loadingDialog.show(context: context);
     //taken now: this widget is dismissed long before the file has loaded
     final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -166,13 +179,6 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   {
     if (GetIt.I.get<ProjectSession>().hasChanges.value)
     {
-      _saveBeforeLoadWarningDialog = getThreeButtonDialog(
-        onYes: _saveBeforeLoadWarningYes,
-        onNo: _saveBeforeLoadWarningNo,
-        onCancel: _closeSaveBeforeLoadWarning,
-        outsideCancelable: false,
-        message: (final AppLocalizations l10n) => l10n.unsavedChangesSaveFirst,
-      );
       _saveBeforeLoadWarningDialog.show(context: context);
     }
     else
@@ -183,12 +189,6 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   void _deleteProjectPressed()
   {
-    _deleteWarningDialog = getTwoButtonDialog(
-      message: (final AppLocalizations l10n) => l10n.doYouReallyWantToDeleteProject,
-      onNo: _deleteWarningNo,
-      onYes: _deleteWarningYes,
-      outsideCancelable: false,
-    );
     _deleteWarningDialog.show(context: context);
   }
 

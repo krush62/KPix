@@ -467,7 +467,9 @@
 
   "shading": "Schattierung",
   "currentRampOnly": "nur aktuelle Rampe",
-  "direction": "Richtung"
+  "direction": "Richtung",
+
+  "loadingDot": "Lade..."
 
 
 

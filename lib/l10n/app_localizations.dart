@@ -2521,6 +2521,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Direction'**
   String get direction;
+
+  /// No description provided for @loadingDot.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loadingDot;
 }
 
 class _AppLocalizationsDelegate

@@ -75,10 +75,10 @@ class _ImportWidgetState extends State<ImportWidget>
     _maxColorsPerRampNotifier = ValueNotifier<int>(KPalConstraints.colorCountDefault);
   }
 
-  void _chooseImagePressed()
+  void _chooseImagePressed({required final AppLocalizations l10n})
   {
     getPathAndDataForImage().then((final (String?, Uint8List?) loadData) {
-      _prepareImageData(loadData: loadData, l10n: AppLocalizations.of(context)!);
+      _prepareImageData(loadData: loadData, l10n: l10n);
     });
   }
 
@@ -243,7 +243,7 @@ class _ImportWidgetState extends State<ImportWidget>
                               child: IconButton.outlined(
                                 constraints: const BoxConstraints(),
                                 padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                                onPressed: _chooseImagePressed,
+                                onPressed: () {_chooseImagePressed(l10n: l10n);},
                                 icon: const Icon(
                                   TablerIcons.folder_open,
                                   size: OverlayEntryAlertDialogOptions.iconSize / 2,

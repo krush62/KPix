@@ -111,7 +111,7 @@ void main(final List<String> args)
                   child: MaterialApp(
                     debugShowCheckedModeBanner: false,
                     localizationsDelegates: const <LocalizationsDelegate<dynamic>>[AppLocalizations.delegate, ...flutter_localizations.GlobalMaterialLocalizations.delegates],
-                    supportedLocales: [Locale("de")],
+                    supportedLocales: AppLocalizations.supportedLocales,
                     home: const KPixApp(),
                     theme: monochromeTheme,
                     darkTheme: monochromeThemeDark,
@@ -686,6 +686,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return ValueListenableBuilder<bool>(
       valueListenable: initialized,
       builder: (final BuildContext context, final bool init, final Widget? child)
@@ -707,7 +708,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Text(
-                    "Loading...",
+                    l10n.loadingDot,
                     style: Theme.of(context).textTheme.displayLarge?.apply(color: Theme.of(context).primaryColorLight),
                   ),
                 ),

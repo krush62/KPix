@@ -109,7 +109,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Padding(
-                          padding: EdgeInsets.only(right: _padding / 2.0),
+                          padding: const EdgeInsets.only(right: _padding / 2.0),
                           child: Text(l10n.framesBefore),
                         ),
                       ),
@@ -195,7 +195,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Padding(
-                          padding: EdgeInsets.only(right: _padding / 2.0),
+                          padding: const EdgeInsets.only(right: _padding / 2.0),
                           child: Text(l10n.framesAfter),
                         ),
                       ),

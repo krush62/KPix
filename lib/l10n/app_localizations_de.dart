@@ -1316,4 +1316,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get direction => 'Richtung';
+
+  @override
+  String get loadingDot => 'Lade...';
 }

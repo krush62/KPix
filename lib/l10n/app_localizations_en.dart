@@ -1296,4 +1296,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get direction => 'Direction';
+
+  @override
+  String get loadingDot => 'Loading...';
 }

@@ -561,7 +561,9 @@
 
   "shading": "Shading",
   "currentRampOnly": "Current Ramp Only",
-  "direction": "Direction"
+  "direction": "Direction",
+
+  "loadingDot": "Loading..."
 
 
 }

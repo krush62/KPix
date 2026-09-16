@@ -76,11 +76,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   late KPixOverlay _loadMenu;
   late KPixOverlay _saveMenu;
-  late KPixOverlay _saveLoadWarningDialog;
-  late KPixOverlay _saveImportWarningDialog;
-  late KPixOverlay _exportDialog;
+  KPixOverlay? _saveLoadWarningDialog;
+  KPixOverlay? _saveImportWarningDialog;
+  KPixOverlay? _exportDialog;
   late KPixOverlay _aboutDialog;
-  late KPixOverlay _preferencesDialog;
+  KPixOverlay? _preferencesDialog;
   late KPixOverlay _saveAsDialog;
   late KPixOverlay _projectManagerDialog;
 
@@ -90,10 +90,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   /// consumed by [_fileLoaded], and dropped again if the manager is dismissed
   /// without loading anything.
   Function()? _pendingLoadCallback;
-  late KPixOverlay _importDialog;
-  late KPixOverlay _importLoadingDialog;
-  late KPixOverlay _exportLoadingDialog;
-  late KPixOverlay _openLoadingDialog;
+  KPixOverlay? _importDialog;
+  KPixOverlay? _importLoadingDialog;
+  KPixOverlay? _exportLoadingDialog;
+  KPixOverlay? _openLoadingDialog;
   final GlobalKey _loadMenuAnchorKey = GlobalKey();
   final GlobalKey _saveMenuAnchorKey = GlobalKey();
 
@@ -115,37 +115,17 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onSaveAsFile: _saveAsFile,
       onExportFile: _exportFile,
     );
-    _saveLoadWarningDialog = getThreeButtonDialog(
-      onYes: _saveLoadWarningYes,
-      onNo: _saveLoadWarningNo,
-      onCancel: _closeAllMenus,
-      outsideCancelable: false,
-      message: "There are unsaved changes, do you want to save first?",
-    );
-    _saveImportWarningDialog = getThreeButtonDialog(
-        onYes: _saveImportWarningYes,
-        onNo: _saveImportWarningNo,
-        onCancel: _closeAllMenus,
-        outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?",
-    );
+
     _projectManagerDialog = getProjectManagerDialog(
       onDismiss: _projectManagerDismissed,
       onSave: _saveFile,
       onLoad: _fileLoaded,
     );
-    _exportDialog = getExportDialog(
-      onDismiss: _closeAllMenus,
-      onAcceptImage: _exportImagePressed,
-      onAcceptAnimation: _exportAnimationPressed,
-      onAcceptPalette: _paletteSavePressed,);
+
     _aboutDialog = getAboutDialog(
       onDismiss: _closeAllMenus,
       /*canvasSize: _canvasState.canvasSize,*/);
-    _preferencesDialog = getPreferencesDialog(
-      onDismiss: _reloadPreferences,
-      onAccept: _savePreferencesPressed,
-    );
+
     _saveAsDialog = getSaveAsDialog(
         onDismiss: _closeAllMenus,
         onAccept: ({required final Function()? callback, required final String fileName}) {
@@ -153,15 +133,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
           saveFilePressed(fileName: fileName, finishCallback: callback, savedCallback: _fileSaved);
         },
     );
-    _importDialog = getImportDialog(
-      onDismiss: _closeAllMenus,
-      onAcceptImage: _importImage,
-    );
-
-    _importLoadingDialog = getLoadingDialog(message: "Importing Image...");
-    _exportLoadingDialog = getLoadingDialog(message: "Exporting...");
-    _openLoadingDialog = getLoadingDialog(message: "Opening Image...");
-
 
     _hotkeyManager.addListener(func: _loadFile, action: HotkeyAction.generalOpen);
     _hotkeyManager.addListener(func: _saveFile, action: HotkeyAction.generalSave);
@@ -176,23 +147,23 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   }
 
-  void _exportImagePressed({required final ImageExportData exportData, required final ImageExportType exportType})
+  void _exportImagePressed({required final ImageExportData exportData, required final ImageExportType exportType, required final AppLocalizations l10n})
   {
-    _exportLoadingDialog.show(context: context);
-    exportImage(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
+    _exportLoadingDialog?.show(context: context);
+    exportImage(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName, l10n: l10n);});
   }
 
-  void _exportAnimationPressed({required final AnimationExportData exportData, required final AnimationExportType exportType})
+  void _exportAnimationPressed({required final AnimationExportData exportData, required final AnimationExportType exportType, required final AppLocalizations l10n})
   {
-    _exportLoadingDialog.show(context: context);
-    exportAnimation(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
+    _exportLoadingDialog?.show(context: context);
+    exportAnimation(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName, l10n: l10n);});
   }
 
-  void _exportFinished({required final String? fileName})
+  void _exportFinished({required final String? fileName, required final AppLocalizations l10n})
   {
     if (fileName != null && fileName.isNotEmpty)
     {
-      showMessage(text: "Exported to: $fileName", toastType: ToastType.success);
+      showMessage(text: l10n.exportedTo(fileName), toastType: ToastType.success);
       if (!kIsWeb && Platform.isAndroid)
       {
         const MethodChannel channel = MethodChannel('media_scanner');
@@ -201,7 +172,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
     else
     {
-      showMessage(text: "Error exporting file", toastType: ToastType.error);
+      showMessage(text: l10n.errorExportingFile, toastType: ToastType.error);
     }
     _closeAllMenus();
   }
@@ -210,17 +181,17 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     _loadMenu.hide();
     _saveMenu.hide();
-    _saveLoadWarningDialog.hide();
-    _exportDialog.hide();
+    _saveLoadWarningDialog?.hide();
+    _exportDialog?.hide();
     _aboutDialog.hide();
-    _preferencesDialog.hide();
+    _preferencesDialog?.hide();
     _saveAsDialog.hide();
     _projectManagerDialog.hide();
-    _saveImportWarningDialog.hide();
-    _importDialog.hide();
-    _importLoadingDialog.hide();
-    _exportLoadingDialog.hide();
-    _openLoadingDialog.hide();
+    _saveImportWarningDialog?.hide();
+    _importDialog?.hide();
+    _importLoadingDialog?.hide();
+    _exportLoadingDialog?.hide();
+    _openLoadingDialog?.hide();
   }
 
   void _newFile()
@@ -240,7 +211,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     {
       if (_projectSession.hasChanges.value)
       {
-        _saveLoadWarningDialog.show(context: context);
+        _saveLoadWarningDialog?.show(context: context);
       }
       else
       {
@@ -259,7 +230,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     if (_projectSession.hasChanges.value)
     {
-      _saveImportWarningDialog.show(context: context);
+      _saveImportWarningDialog?.show(context: context);
     }
     else
     {
@@ -279,7 +250,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _saveBeforeImportFinished()
   {
-    _importDialog.show(context: context);
+    _importDialog?.show(context: context);
   }
 
   void _saveLoadWarningYes()
@@ -303,7 +274,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     loadFilePressed(
       finishCallback: (final ProjectLoadResult? result) {
-        _openLoadingDialog.hide();
+        _openLoadingDialog?.hide();
         if (result != null)
         {
           showMessagesForProjectLoad(result: result, l10n: l10n);
@@ -311,7 +282,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         callback?.call();
       },
       loadStartCallback: () {
-        _openLoadingDialog.show(context: context);
+        _openLoadingDialog?.show(context: context);
       },
     );
   }
@@ -371,21 +342,21 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _exportFile()
   {
-    _exportDialog.show(context: context);
+    _exportDialog?.show(context: context);
   }
 
 
-  void _paletteSavePressed({required final PaletteExportData saveData, required final PaletteExportType paletteType})
+  void _paletteSavePressed({required final PaletteExportData saveData, required final PaletteExportType paletteType, required final AppLocalizations l10n})
   {
     exportPalettePressed(saveData: saveData, paletteType: paletteType).then((final String? path)
     {
       if (path != null)
       {
-        showMessage(text: "Exported palette to: $path.", toastType: ToastType.success);
+        showMessage(text: l10n.exportedPaletteTo(path), toastType: ToastType.success);
       }
       else
       {
-        showMessage(text: "Error exporting palette file.", toastType: ToastType.error);
+        showMessage(text: l10n.errorExportingPaletteFile, toastType: ToastType.error);
       }
       _closeAllMenus();
     },);
@@ -394,7 +365,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
     void _settingsPressed()
   {
-    _preferencesDialog.show(context: context);
+    _preferencesDialog?.show(context: context);
   }
 
   void _questionPressed()
@@ -420,10 +391,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
   }
 
-  void _savePreferencesPressed()
+  void _savePreferencesPressed({required final AppLocalizations l10n})
   {
     GetIt.I.get<Logger>().i("Saving user preferences");
-    _applyProjectDirectoryChange().then((final void _){
+    _applyProjectDirectoryChange(l10n: l10n).then((final void _){
       GetIt.I.get<PreferenceManager>().saveUserPrefs().then((final void _){
         _reloadPreferences();
         _closeAllMenus();
@@ -431,7 +402,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     });
   }
 
-  Future<void> _applyProjectDirectoryChange() async
+  Future<void> _applyProjectDirectoryChange({required final AppLocalizations l10n}) async
   {
     if (kIsWeb)
     {
@@ -447,15 +418,15 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       return;
     }
 
-    final KPixOverlay movingDialog = getLoadingDialog(message: "Moving project files...");
+    final KPixOverlay movingDialog = getLoadingDialog(message: l10n.movingProjectFilesDot);
     movingDialog.show(context: context);
     final ProjectDirectoryMoveResult moveResult = await moveProjectFiles(sourceDir: currentDir, targetDir: targetDir);
     movingDialog.hide();
     if (moveResult.success)
     {
       GetIt.I.get<AppPaths>().projectsDir = targetDir;
-      showMessage(text: "Changed project directory to $targetDir (moved ${moveResult.projectCount} project file(s)).", toastType: ToastType.info);
-      await _handleAllFilesAccessPermission(switchedToCustomDir: useCustom);
+      showMessage(text: l10n.changedProjectDirectoryFiles(targetDir, moveResult.projectCount), toastType: ToastType.info);
+      await _handleAllFilesAccessPermission(switchedToCustomDir: useCustom,l10n: l10n);
     }
     else
     {
@@ -467,7 +438,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         behaviorPrefs.customProjectDirectory.value = currentDir;
       }
       late final KPixOverlay errorDialog;
-      errorDialog = getSingleButtonDialog(onAction: () {errorDialog.hide();}, message: "The project directory was not changed!\n${moveResult.message}");
+      errorDialog = getSingleButtonDialog(onAction: () {errorDialog.hide();}, message: l10n.projectDirWasNotChanged(moveResult.message));
       if (mounted)
       {
         errorDialog.show(context: context);
@@ -475,7 +446,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
   }
 
-  Future<void> _handleAllFilesAccessPermission({required final bool switchedToCustomDir}) async
+  Future<void> _handleAllFilesAccessPermission({required final bool switchedToCustomDir, required final AppLocalizations l10n}) async
   {
     if (kIsWeb || !Platform.isAndroid)
     {
@@ -486,13 +457,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     if (switchedToCustomDir && !allFilesAccess)
     {
       permissionDialog = getAllFilesAccessDialog(
-        message: 'Without the "All files access" permission, KPix cannot see project files that were created by other apps (e.g. sync tools) in this directory.\nDo you want to open the system settings to grant the permission?',
+        message: l10n.withoutAllFilesWarning,
       );
     }
     else if (!switchedToCustomDir && allFilesAccess)
     {
       permissionDialog = getAllFilesAccessDialog(
-        message: 'The "All files access" permission is not needed for the default project directory.\nDo you want to open the system settings to revoke the permission?',
+        message: l10n.allFilesAccessNotNeededWarning,
       );
     }
     if (permissionDialog != null && mounted)
@@ -509,9 +480,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     });
   }
 
-  void _importImage({required final ImportData importData})
+  void _importImage({required final ImportData importData, required final AppLocalizations l10n})
   {
-    _importLoadingDialog.show(context: context);
+    _importLoadingDialog?.show(context: context);
     try
     {
       final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -526,15 +497,62 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
     catch (e, s)
     {
-      const String failMsg = "Error importing image.";
+      final String failMsg = l10n.errorImportingImage;
       showMessage(text: failMsg, toastType: ToastType.error);
-      GetIt.I.get<Logger>().w(failMsg, error: e, stackTrace: s);
+      GetIt.I.get<Logger>().w("Error importing image.", error: e, stackTrace: s);
     }
     _closeAllMenus();
   }
 
   @override
   Widget build(final BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+
+    _importDialog ??= getImportDialog(
+      onDismiss: _closeAllMenus,
+      onAcceptImage: ({required final ImportData importData}) {
+        _importImage(importData: importData, l10n: l10n);
+      },
+    );
+    _preferencesDialog ??= getPreferencesDialog(
+      onDismiss: _reloadPreferences,
+      onAccept: () {
+        _savePreferencesPressed(l10n: l10n);
+      },
+    );
+
+    _saveLoadWarningDialog ??= getThreeButtonDialog(
+      onYes: _saveLoadWarningYes,
+      onNo: _saveLoadWarningNo,
+      onCancel: _closeAllMenus,
+      outsideCancelable: false,
+      message: l10n.thereAreUnsavedChanges,
+    );
+
+    _importLoadingDialog ??= getLoadingDialog(message: l10n.importingImageDot);
+    _exportLoadingDialog ??= getLoadingDialog(message: l10n.exportingDot);
+    _openLoadingDialog ??= getLoadingDialog(message: l10n.openingImageDot);
+
+    _exportDialog ??= getExportDialog(
+      onDismiss: _closeAllMenus,
+      onAcceptImage: ({required final ImageExportData exportData, required final ImageExportType exportType}) {
+        _exportImagePressed(exportData: exportData, exportType: exportType, l10n: l10n);
+      },
+      onAcceptAnimation: ({required final AnimationExportData exportData, required final AnimationExportType exportType}) {
+        _exportAnimationPressed(exportData: exportData, exportType: exportType, l10n: l10n);
+      },
+      onAcceptPalette: ({required final PaletteExportType paletteType, required final PaletteExportData saveData}) {
+        _paletteSavePressed(saveData: saveData, paletteType: paletteType, l10n: l10n);
+      },);
+
+    _saveImportWarningDialog ??= getThreeButtonDialog(
+      onYes: _saveImportWarningYes,
+      onNo: _saveImportWarningNo,
+      onCancel: _closeAllMenus,
+      outsideCancelable: false,
+      message: l10n.thereAreUnsavedChanges,
+    );
+
     return Container(
       padding: const EdgeInsets.all(_MainButtonWidgetOptions.padding),
       decoration: BoxDecoration(
@@ -550,7 +568,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 child: OverlayAnchor(
                   anchorKey: _loadMenuAnchorKey,
                   child: Tooltip(
-                    message: "New/Open...",
+                    message: l10n.newOpenDot,
                     waitDuration: toolTipDuration,
                     child: IconButton.outlined(
                       icon: const Icon(
@@ -567,7 +585,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 child: OverlayAnchor(
                   anchorKey: _saveMenuAnchorKey,
                   child: Tooltip(
-                    message: "Save...",
+                    message: l10n.saveDot,
                     waitDuration: toolTipDuration,
                     child: IconButton.outlined(
                       icon: const Icon(
@@ -582,7 +600,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
               const SizedBox(width: _MainButtonWidgetOptions.padding,),
               Expanded(
                 child: Tooltip(
-                  message: "Preferences",
+                  message: l10n.preferences,
                   waitDuration: toolTipDuration,
                   child: IconButton.outlined(
                     icon: const Icon(
@@ -596,7 +614,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
               const SizedBox(width: _MainButtonWidgetOptions.padding,),
               Expanded(
                 child: Tooltip(
-                  message: "About",
+                  message: l10n.about,
                   waitDuration: toolTipDuration,
                   child: Stack(
                     alignment: Alignment.topCenter,
@@ -650,7 +668,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     valueListenable: _historyManager.hasUndo,
                     builder: (final BuildContext context, final bool hasUndo, final Widget? child) {
                       return Tooltip(
-                        message: "Undo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo, context: context)}",
+                        message: l10n.undo + _hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo, context: context),
                         waitDuration: toolTipDuration,
                         child: IconButton.outlined(
                           icon: const Icon(
@@ -671,7 +689,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     valueListenable: _historyManager.hasRedo,
                     builder: (final BuildContext context, final bool hasRedo, final Widget? child) {
                       return Tooltip(
-                        message: "Redo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo, context: context)}",
+                        message: l10n.redo + _hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo, context: context),
                         waitDuration: toolTipDuration,
                         child: IconButton.outlined(
                           icon: const Icon(

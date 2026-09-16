@@ -200,11 +200,11 @@ abstract class AppLocalizations {
   /// **'There are unsaved changes, do you want to save first?'**
   String get unsavedChangesSaveFirst;
 
-  /// No description provided for @openingImage.
+  /// No description provided for @openingImageDot.
   ///
   /// In en, this message translates to:
   /// **'Opening Image...'**
-  String get openingImage;
+  String get openingImageDot;
 
   /// No description provided for @doYouReallyWantToDeleteProject.
   ///
@@ -2527,6 +2527,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading...'**
   String get loadingDot;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @redo.
+  ///
+  /// In en, this message translates to:
+  /// **'Redo'**
+  String get redo;
+
+  /// No description provided for @about.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
+  /// No description provided for @preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferences;
+
+  /// No description provided for @saveDot.
+  ///
+  /// In en, this message translates to:
+  /// **'Save...'**
+  String get saveDot;
+
+  /// No description provided for @newOpenDot.
+  ///
+  /// In en, this message translates to:
+  /// **'New/Open...'**
+  String get newOpenDot;
+
+  /// No description provided for @errorImportingImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error importing image.'**
+  String get errorImportingImage;
+
+  /// No description provided for @thereAreUnsavedChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'There are unsaved changes, do you want to save first?'**
+  String get thereAreUnsavedChanges;
+
+  /// No description provided for @importingImageDot.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing Image...'**
+  String get importingImageDot;
+
+  /// No description provided for @exportingDot.
+  ///
+  /// In en, this message translates to:
+  /// **'Exporting...'**
+  String get exportingDot;
+
+  /// No description provided for @movingProjectFilesDot.
+  ///
+  /// In en, this message translates to:
+  /// **'Moving project files...'**
+  String get movingProjectFilesDot;
+
+  /// project dir change
+  ///
+  /// In en, this message translates to:
+  /// **'Changed project directory to {directory} (moved {count} project file(s)).'**
+  String changedProjectDirectoryFiles(String directory, int count);
+
+  /// project dir change
+  ///
+  /// In en, this message translates to:
+  /// **'The project directory was not changed!\n{message}'**
+  String projectDirWasNotChanged(String message);
+
+  /// palette export
+  ///
+  /// In en, this message translates to:
+  /// **'Exported palette to: {path}'**
+  String exportedPaletteTo(String path);
+
+  /// No description provided for @errorExportingPaletteFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Error exporting palette file.'**
+  String get errorExportingPaletteFile;
+
+  /// export
+  ///
+  /// In en, this message translates to:
+  /// **'Exported to: {path}'**
+  String exportedTo(String path);
+
+  /// No description provided for @errorExportingFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Error exporting file!'**
+  String get errorExportingFile;
+
+  /// No description provided for @withoutAllFilesWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Without the \"All files access\" permission, KPix cannot see project files that were created by other apps (e.g. sync tools) in this directory.\nDo you want to open the system settings to grant the permission?'**
+  String get withoutAllFilesWarning;
+
+  /// No description provided for @allFilesAccessNotNeededWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'The \"All files access\" permission is not needed for the default project directory.\nDo you want to open the system settings to revoke the permission?'**
+  String get allFilesAccessNotNeededWarning;
 }
 
 class _AppLocalizationsDelegate

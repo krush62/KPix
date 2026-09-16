@@ -369,14 +369,14 @@
 
   "mouseCursor": "Mauszeiger",
 
-  "themePreferences": "Thema-Präferenzen",
+  "themePreferences": "Thema-Einstellungen",
   "theme": "Thema",
-  "checkerboardPreferences": "Schachbrett-Präferenzen",
+  "checkerboardPreferences": "Schachbrett-Einstellungen",
   "checkerboardSize": "Schachbrettgröße",
   "checkerboardContrast": "Schachbrettkontrast",
-  "palettePreferences": "Paletten-Präferenzen",
+  "palettePreferences": "Paletten-Einstellungen",
   "colorNaming": "Farbnamen",
-  "borderPreferences": "Umrandungs-Präferenzen",
+  "borderPreferences": "Umrandungs-Einstellungen",
   "toolOutlineOpacity": "Deckkraft Werkzeugumrandungen",
   "selectionOutlineOpacity": "Deckkraft Auswahlumrandungen",
   "pulsatingSelectionOutline": "Pulsierende Auswahlumrandung",
@@ -469,7 +469,27 @@
   "currentRampOnly": "nur aktuelle Rampe",
   "direction": "Richtung",
 
-  "loadingDot": "Lade..."
+  "loadingDot": "Lade...",
+
+  "undo": "Rückgängig",
+  "redo": "Wiederholen",
+  "about": "Über",
+  "preferences": "Einstellungen",
+  "saveDot": "Speichern...",
+  "newOpenDot": "Neu/Öffnen...",
+  "errorImportingImage": "Fehler beim Importieren des Bildes.",
+  "thereAreUnsavedChanges": "Es gibt ungespeicherte Änderungen, zuerst speichern?",
+  "importingImageDot": "Importiere Bild...",
+  "exportingDot": "Exportiere...",
+  "movingProjectFilesDot": "Verschiebe Projektdateien...",
+  "changedProjectDirectoryFiles": "Projektverzeichnis geändert zu {directory} ({count} Projektdatei(en) verschoben).",
+  "projectDirWasNotChanged": "Das Projektverzeichnis wurde nicht geändert!\n{message}",
+  "exportedPaletteTo": "Palette exportiert nach: {path}",
+  "errorExportingPaletteFile": "Fehler beim Exportieren der Palette",
+  "exportedTo": "Exportiert nach: {path}",
+  "errorExportingFile": "Fehler beim Exportieren der Datei!",
+  "withoutAllFilesWarning": "Ohne die \"Zugriff auf alle Dateien erlauben\" Erlaubnis, kann KPix keine Projektdateien sehen, die von anderen Programmen (wie Synchronisations-Tools) in diesem Verzeichnis sehen.\nSollen die Systemeinstellungen geöffnet werden um den Zugriff zu erlauben?",
+  "allFilesAccessNotNeededWarning": "Die \"Zugriff auf alle Dateien erlauben\" Erlaubnis wird für das Standardverzeichnis nicht benötigt.\nSollen die Systemeinstellungen geöffnet werden um die Berechtigung zu entfernen?"
 
 
 

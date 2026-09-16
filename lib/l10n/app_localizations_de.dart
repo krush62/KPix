@@ -61,7 +61,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Es gibt ungespeicherte Änderungen. Vorher speichern?';
 
   @override
-  String get openingImage => 'Öffne Projekt...';
+  String get openingImageDot => 'Opening Image...';
 
   @override
   String get doYouReallyWantToDeleteProject =>
@@ -1319,4 +1319,72 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get loadingDot => 'Lade...';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get redo => 'Redo';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get preferences => 'Preferences';
+
+  @override
+  String get saveDot => 'Save...';
+
+  @override
+  String get newOpenDot => 'New/Open...';
+
+  @override
+  String get errorImportingImage => 'Error importing image.';
+
+  @override
+  String get thereAreUnsavedChanges =>
+      'There are unsaved changes, do you want to save first?';
+
+  @override
+  String get importingImageDot => 'Importing Image...';
+
+  @override
+  String get exportingDot => 'Exporting...';
+
+  @override
+  String get movingProjectFilesDot => 'Moving project files...';
+
+  @override
+  String changedProjectDirectoryFiles(String directory, int count) {
+    return 'Changed project directory to $directory (moved $count project file(s)).';
+  }
+
+  @override
+  String projectDirWasNotChanged(String message) {
+    return 'The project directory was not changed!\n$message';
+  }
+
+  @override
+  String exportedPaletteTo(String path) {
+    return 'Exported palette to: $path';
+  }
+
+  @override
+  String get errorExportingPaletteFile => 'Error exporting palette file.';
+
+  @override
+  String exportedTo(String path) {
+    return 'Exported to: $path';
+  }
+
+  @override
+  String get errorExportingFile => 'Error exporting file!';
+
+  @override
+  String get withoutAllFilesWarning =>
+      'Without the \"All files access\" permission, KPix cannot see project files that were created by other apps (e.g. sync tools) in this directory.\nDo you want to open the system settings to grant the permission?';
+
+  @override
+  String get allFilesAccessNotNeededWarning =>
+      'The \"All files access\" permission is not needed for the default project directory.\nDo you want to open the system settings to revoke the permission?';
 }

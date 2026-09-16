@@ -130,7 +130,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       _closeSaveBeforeLoadWarning();
       return;
     }
-    _loadingDialog = getLoadingDialog(message: AppLocalizations.of(context)!.openingImage);
+    _loadingDialog = getLoadingDialog(message: AppLocalizations.of(context)!.openingImageDot);
     _loadingDialog.show(context: context);
     //taken now: this widget is dismissed long before the file has loaded
     final AppLocalizations l10n = AppLocalizations.of(context)!;

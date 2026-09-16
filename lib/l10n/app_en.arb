@@ -18,7 +18,7 @@
   "deleteSelectedProject": "Delete Selected Project",
   "loadSelectedProject": "Load Selected Project",
   "unsavedChangesSaveFirst": "There are unsaved changes, do you want to save first?",
-  "openingImage": "Opening Image...",
+  "openingImageDot": "Opening Image...",
   "doYouReallyWantToDeleteProject":  "Do you really want to delete this project?",
   "projectImportSuccessful": "Project imported successfully!",
   "couldNotReadProjectDir": "Could not read the project directory!",
@@ -563,7 +563,50 @@
   "currentRampOnly": "Current Ramp Only",
   "direction": "Direction",
 
-  "loadingDot": "Loading..."
+  "loadingDot": "Loading...",
 
-
+  "undo": "Undo",
+  "redo": "Redo",
+  "about": "About",
+  "preferences": "Preferences",
+  "saveDot": "Save...",
+  "newOpenDot": "New/Open...",
+  "errorImportingImage": "Error importing image.",
+  "thereAreUnsavedChanges": "There are unsaved changes, do you want to save first?",
+  "importingImageDot": "Importing Image...",
+  "exportingDot": "Exporting...",
+  "movingProjectFilesDot": "Moving project files...",
+  "changedProjectDirectoryFiles": "Changed project directory to {directory} (moved {count} project file(s)).",
+  "@changedProjectDirectoryFiles": {
+    "description": "project dir change",
+    "placeholders": {
+      "directory": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "projectDirWasNotChanged": "The project directory was not changed!\n{message}",
+  "@projectDirWasNotChanged": {
+    "description": "project dir change",
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "exportedPaletteTo": "Exported palette to: {path}",
+  "@exportedPaletteTo": {
+    "description": "palette export",
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "errorExportingPaletteFile": "Error exporting palette file.",
+  "exportedTo": "Exported to: {path}",
+  "@exportedTo": {
+    "description": "export",
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "errorExportingFile": "Error exporting file!",
+  "withoutAllFilesWarning": "Without the \"All files access\" permission, KPix cannot see project files that were created by other apps (e.g. sync tools) in this directory.\nDo you want to open the system settings to grant the permission?",
+  "allFilesAccessNotNeededWarning": "The \"All files access\" permission is not needed for the default project directory.\nDo you want to open the system settings to revoke the permission?"
 }

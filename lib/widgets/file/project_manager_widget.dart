@@ -130,7 +130,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       _closeSaveBeforeLoadWarning();
       return;
     }
-    _loadingDialog = getLoadingDialog(message: AppLocalizations.of(context)!.openingImageDot);
+    _loadingDialog = getLoadingDialog(message: (final AppLocalizations l10n) => l10n.openingImageDot);
     _loadingDialog.show(context: context);
     //taken now: this widget is dismissed long before the file has loaded
     final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -172,7 +172,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
         onNo: _saveBeforeLoadWarningNo,
         onCancel: _closeSaveBeforeLoadWarning,
         outsideCancelable: false,
-        message: AppLocalizations.of(context)!.unsavedChangesSaveFirst,
+        message: (final AppLocalizations l10n) => l10n.unsavedChangesSaveFirst,
       );
       _saveBeforeLoadWarningDialog.show(context: context);
     }
@@ -185,7 +185,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   void _deleteProjectPressed()
   {
     _deleteWarningDialog = getTwoButtonDialog(
-      message: AppLocalizations.of(context)!.doYouReallyWantToDeleteProject,
+      message: (final AppLocalizations l10n) => l10n.doYouReallyWantToDeleteProject,
       onNo: _deleteWarningNo,
       onYes: _deleteWarningYes,
       outsideCancelable: false,

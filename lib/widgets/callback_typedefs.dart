@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/export_types.dart';
 import 'package:kpix/models/io_types.dart';
@@ -40,3 +41,12 @@ typedef ChangeTextToolFn = void Function({required String newText});
 typedef SaveKnownFileFn = void Function({Function()? callback});
 typedef ImportImageFn = void Function({required ImportData importData});
 typedef StampEntryDataFn = void Function({required StampManagerEntryData data});
+
+/// Resolves the text of a dialog from the localizations of the context the
+/// dialog is built in.
+///
+/// Dialogs are usually created once and kept for the lifetime of their owner,
+/// so a plain [String] would freeze the text in the locale that was active when
+/// the dialog was created. Resolving the text while the overlay builds makes it
+/// follow a locale change instead.
+typedef LocalizedMessageFn = String Function(AppLocalizations l10n);

@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
@@ -186,7 +187,7 @@ class _DialogAction
 /// [onBarrierDismiss] is called when the barrier is tapped; null makes the barrier
 /// swallow taps, so one of the [actions] is the only way out.
 KPixOverlay _messageDialog({
-  required final String message,
+  required final LocalizedMessageFn message,
   required final List<_DialogAction> actions,
   final Function()? onBarrierDismiss,
 })
@@ -209,7 +210,7 @@ KPixOverlay _messageDialog({
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
+                child: Text(message(AppLocalizations.of(context)!), style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
               ),
             ),
             Row(
@@ -377,7 +378,7 @@ KPixOverlay getThreeButtonDialog({
   required final Function() onNo,
   required final Function() onCancel,
   required final bool outsideCancelable,
-  required final String message,
+  required final LocalizedMessageFn message,
 })
 {
   return _messageDialog(
@@ -399,7 +400,7 @@ KPixOverlay getTwoButtonDialog({
   required final Function() onYes,
   required final Function() onNo,
   required final bool outsideCancelable,
-  required final String message,
+  required final LocalizedMessageFn message,
 })
 {
   return _messageDialog(
@@ -418,7 +419,7 @@ KPixOverlay getTwoButtonDialog({
 /// is the only way out.
 KPixOverlay getSingleButtonDialog({
   required final Function() onAction,
-  required final String message,
+  required final LocalizedMessageFn message,
 })
 {
   return _messageDialog(
@@ -434,7 +435,7 @@ KPixOverlay getSingleButtonDialog({
 ///
 /// [message] is shown above the buttons. Unlike the other dialogs, this one
 /// closes itself, so the caller only has to show it.
-KPixOverlay getAllFilesAccessDialog({required final String message})
+KPixOverlay getAllFilesAccessDialog({required final LocalizedMessageFn message})
 {
   late final KPixOverlay dialog;
   return dialog = getTwoButtonDialog(
@@ -672,7 +673,7 @@ KPixOverlay getStampManagerDialog({required final Function() onDismiss, required
 ///
 /// Shown while long running work blocks the app, so it has to be taken down with
 /// [KPixOverlay.hide].
-KPixOverlay getLoadingDialog({required final String message, final TextStyle? textStyle})
+KPixOverlay getLoadingDialog({required final LocalizedMessageFn message, final TextStyle? textStyle})
 {
   return _barrierOverlay(
     smokeOpacity: OverlayEntryAlertDialogOptions.smokeOpacity,
@@ -686,7 +687,7 @@ KPixOverlay getLoadingDialog({required final String message, final TextStyle? te
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             Text(
-              message,
+              message(AppLocalizations.of(context)!),
               style: textStyle ?? Theme.of(context).textTheme.headlineLarge,
             ),
             CircularProgressIndicator(
@@ -701,8 +702,8 @@ KPixOverlay getLoadingDialog({required final String message, final TextStyle? te
 
 /// An overlay holding a color picker for the colors of [ramps].
 ///
-/// [title] is shown above the colors.
-KPixOverlay getColorPickerDialog({required final Function() onDismiss, required final ColorReferenceSelectedFn onColorSelected, required final List<KPalRampData> ramps, final String title = "SELECT A COLOR"})
+/// [title] is shown above the colors; null falls back to the localized default.
+KPixOverlay getColorPickerDialog({required final Function() onDismiss, required final ColorReferenceSelectedFn onColorSelected, required final List<KPalRampData> ramps, final String? title})
 {
   return _barrierOverlay(
     smokeOpacity: OverlayEntryAlertDialogOptions.smokeOpacity,

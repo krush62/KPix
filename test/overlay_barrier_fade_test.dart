@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// The alpha the smoke behind a dialog settles on.
@@ -32,12 +33,23 @@ int _barrierAlpha(final WidgetTester tester)
   return (tester.widget<ModalBarrier>(smoke).color!.a * 255.0).round();
 }
 
+/// Wraps [home] in an app that carries the localizations the dialogs resolve
+/// their text from.
+MaterialApp _app({required final Widget home})
+{
+  return MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: home,
+  );
+}
+
 /// Inserts [overlay] into a live [Overlay] without going through
 /// [KPixOverlay.show], which needs the service locator.
 Future<void> _pumpOverlay(final WidgetTester tester, final KPixOverlay overlay) async
 {
   await tester.pumpWidget(
-    MaterialApp(
+    _app(
       home: Overlay(
         initialEntries: <OverlayEntry>[
           OverlayEntry(builder: (final BuildContext context) => const SizedBox.expand()),
@@ -51,13 +63,13 @@ Future<void> _pumpOverlay(final WidgetTester tester, final KPixOverlay overlay) 
 void main()
 {
   testWidgets("the barrier smoke starts transparent", (final WidgetTester tester) async {
-    await _pumpOverlay(tester, getSingleButtonDialog(onAction: () {}, message: "hello"));
+    await _pumpOverlay(tester, getSingleButtonDialog(onAction: () {}, message: (final AppLocalizations _) => "hello"));
 
     expect(_barrierAlpha(tester), 0);
   });
 
   testWidgets("the barrier smoke fades in", (final WidgetTester tester) async {
-    await _pumpOverlay(tester, getSingleButtonDialog(onAction: () {}, message: "hello"));
+    await _pumpOverlay(tester, getSingleButtonDialog(onAction: () {}, message: (final AppLocalizations _) => "hello"));
 
     await tester.pump(const Duration(milliseconds: 75));
     final int midway = _barrierAlpha(tester);
@@ -66,7 +78,7 @@ void main()
   });
 
   testWidgets("the barrier smoke reaches full opacity", (final WidgetTester tester) async {
-    await _pumpOverlay(tester, getSingleButtonDialog(onAction: () {}, message: "hello"));
+    await _pumpOverlay(tester, getSingleButtonDialog(onAction: () {}, message: (final AppLocalizations _) => "hello"));
     await tester.pumpAndSettle();
 
     expect(_barrierAlpha(tester), _fullSmoke);
@@ -74,10 +86,10 @@ void main()
 
   testWidgets("the barrier swallows taps while it is still fading", (final WidgetTester tester) async {
     bool tappedBelow = false;
-    final KPixOverlay overlay = getSingleButtonDialog(onAction: () {}, message: "hello");
+    final KPixOverlay overlay = getSingleButtonDialog(onAction: () {}, message: (final AppLocalizations _) => "hello");
 
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         home: Overlay(
           initialEntries: <OverlayEntry>[
             OverlayEntry(

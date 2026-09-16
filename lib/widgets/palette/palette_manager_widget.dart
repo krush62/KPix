@@ -273,15 +273,17 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   Widget build(final BuildContext context)
   {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
+    //the dialogs are built once and kept, so their text is resolved while the
+    //overlay builds instead of being captured here
     _paletteWarningDialog ??= getThreeButtonDialog(
         onYes: _paletteWarningYes,
         onNo: _paletteWarningNo,
         onCancel: _closeWarning,
         outsideCancelable: false,
-        message: l10n.remapExistingColors,);
+        message: (final AppLocalizations l10n) => l10n.remapExistingColors,);
 
     _deleteWarningDialog ??= getTwoButtonDialog(
-      message: l10n.wantToDeletePalette,
+      message: (final AppLocalizations l10n) => l10n.wantToDeletePalette,
       onNo: _deleteWarningNo,
       onYes: _deleteWarningYes,
       outsideCancelable: false,

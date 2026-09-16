@@ -147,14 +147,18 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   }
 
-  void _exportImagePressed({required final ImageExportData exportData, required final ImageExportType exportType, required final AppLocalizations l10n})
+  void _exportImagePressed({required final ImageExportData exportData, required final ImageExportType exportType})
   {
+    //taken now: the export runs past the point where the context could be used
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     _exportLoadingDialog?.show(context: context);
     exportImage(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName, l10n: l10n);});
   }
 
-  void _exportAnimationPressed({required final AnimationExportData exportData, required final AnimationExportType exportType, required final AppLocalizations l10n})
+  void _exportAnimationPressed({required final AnimationExportData exportData, required final AnimationExportType exportType})
   {
+    //taken now: the export runs past the point where the context could be used
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     _exportLoadingDialog?.show(context: context);
     exportAnimation(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName, l10n: l10n);});
   }
@@ -346,8 +350,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   }
 
 
-  void _paletteSavePressed({required final PaletteExportData saveData, required final PaletteExportType paletteType, required final AppLocalizations l10n})
+  void _paletteSavePressed({required final PaletteExportData saveData, required final PaletteExportType paletteType})
   {
+    //taken now: the export runs past the point where the context could be used
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     exportPalettePressed(saveData: saveData, paletteType: paletteType).then((final String? path)
     {
       if (path != null)
@@ -391,8 +397,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
   }
 
-  void _savePreferencesPressed({required final AppLocalizations l10n})
+  void _savePreferencesPressed()
   {
+    //taken now: the directory move runs past the point where the context could be used
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     GetIt.I.get<Logger>().i("Saving user preferences");
     _applyProjectDirectoryChange(l10n: l10n).then((final void _){
       GetIt.I.get<PreferenceManager>().saveUserPrefs().then((final void _){
@@ -418,7 +426,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       return;
     }
 
-    final KPixOverlay movingDialog = getLoadingDialog(message: l10n.movingProjectFilesDot);
+    final KPixOverlay movingDialog = getLoadingDialog(message: (final AppLocalizations l10n) => l10n.movingProjectFilesDot);
     movingDialog.show(context: context);
     final ProjectDirectoryMoveResult moveResult = await moveProjectFiles(sourceDir: currentDir, targetDir: targetDir);
     movingDialog.hide();
@@ -426,7 +434,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     {
       GetIt.I.get<AppPaths>().projectsDir = targetDir;
       showMessage(text: l10n.changedProjectDirectoryFiles(targetDir, moveResult.projectCount), toastType: ToastType.info);
-      await _handleAllFilesAccessPermission(switchedToCustomDir: useCustom,l10n: l10n);
+      await _handleAllFilesAccessPermission(switchedToCustomDir: useCustom);
     }
     else
     {
@@ -438,7 +446,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         behaviorPrefs.customProjectDirectory.value = currentDir;
       }
       late final KPixOverlay errorDialog;
-      errorDialog = getSingleButtonDialog(onAction: () {errorDialog.hide();}, message: l10n.projectDirWasNotChanged(moveResult.message));
+      errorDialog = getSingleButtonDialog(onAction: () {errorDialog.hide();}, message: (final AppLocalizations l10n) => l10n.projectDirWasNotChanged(moveResult.message));
       if (mounted)
       {
         errorDialog.show(context: context);
@@ -446,7 +454,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
   }
 
-  Future<void> _handleAllFilesAccessPermission({required final bool switchedToCustomDir, required final AppLocalizations l10n}) async
+  Future<void> _handleAllFilesAccessPermission({required final bool switchedToCustomDir}) async
   {
     if (kIsWeb || !Platform.isAndroid)
     {
@@ -457,13 +465,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     if (switchedToCustomDir && !allFilesAccess)
     {
       permissionDialog = getAllFilesAccessDialog(
-        message: l10n.withoutAllFilesWarning,
+        message: (final AppLocalizations l10n) => l10n.withoutAllFilesWarning,
       );
     }
     else if (!switchedToCustomDir && allFilesAccess)
     {
       permissionDialog = getAllFilesAccessDialog(
-        message: l10n.allFilesAccessNotNeededWarning,
+        message: (final AppLocalizations l10n) => l10n.allFilesAccessNotNeededWarning,
       );
     }
     if (permissionDialog != null && mounted)
@@ -480,12 +488,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     });
   }
 
-  void _importImage({required final ImportData importData, required final AppLocalizations l10n})
+  void _importImage({required final ImportData importData})
   {
+    //taken now: the import runs past the point where the context could be used
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     _importLoadingDialog?.show(context: context);
     try
     {
-      final AppLocalizations l10n = AppLocalizations.of(context)!;
       import(importData: importData, currentRamps: GetIt.I.get<PaletteState>().colorRamps).then((final ImportResult result)
       {
         _projectSession.importFile(importResult: result);
@@ -508,17 +517,17 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   Widget build(final BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
 
+    //the dialogs are built once and kept, so neither their text nor the
+    //localizations their callbacks work with may be captured here
     _importDialog ??= getImportDialog(
       onDismiss: _closeAllMenus,
       onAcceptImage: ({required final ImportData importData}) {
-        _importImage(importData: importData, l10n: l10n);
+        _importImage(importData: importData);
       },
     );
     _preferencesDialog ??= getPreferencesDialog(
       onDismiss: _reloadPreferences,
-      onAccept: () {
-        _savePreferencesPressed(l10n: l10n);
-      },
+      onAccept: _savePreferencesPressed,
     );
 
     _saveLoadWarningDialog ??= getThreeButtonDialog(
@@ -526,23 +535,23 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onNo: _saveLoadWarningNo,
       onCancel: _closeAllMenus,
       outsideCancelable: false,
-      message: l10n.thereAreUnsavedChanges,
+      message: (final AppLocalizations l10n) => l10n.thereAreUnsavedChanges,
     );
 
-    _importLoadingDialog ??= getLoadingDialog(message: l10n.importingImageDot);
-    _exportLoadingDialog ??= getLoadingDialog(message: l10n.exportingDot);
-    _openLoadingDialog ??= getLoadingDialog(message: l10n.openingImageDot);
+    _importLoadingDialog ??= getLoadingDialog(message: (final AppLocalizations l10n) => l10n.importingImageDot);
+    _exportLoadingDialog ??= getLoadingDialog(message: (final AppLocalizations l10n) => l10n.exportingDot);
+    _openLoadingDialog ??= getLoadingDialog(message: (final AppLocalizations l10n) => l10n.openingImageDot);
 
     _exportDialog ??= getExportDialog(
       onDismiss: _closeAllMenus,
       onAcceptImage: ({required final ImageExportData exportData, required final ImageExportType exportType}) {
-        _exportImagePressed(exportData: exportData, exportType: exportType, l10n: l10n);
+        _exportImagePressed(exportData: exportData, exportType: exportType);
       },
       onAcceptAnimation: ({required final AnimationExportData exportData, required final AnimationExportType exportType}) {
-        _exportAnimationPressed(exportData: exportData, exportType: exportType, l10n: l10n);
+        _exportAnimationPressed(exportData: exportData, exportType: exportType);
       },
       onAcceptPalette: ({required final PaletteExportType paletteType, required final PaletteExportData saveData}) {
-        _paletteSavePressed(saveData: saveData, paletteType: paletteType, l10n: l10n);
+        _paletteSavePressed(saveData: saveData, paletteType: paletteType);
       },);
 
     _saveImportWarningDialog ??= getThreeButtonDialog(
@@ -550,7 +559,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onNo: _saveImportWarningNo,
       onCancel: _closeAllMenus,
       outsideCancelable: false,
-      message: l10n.thereAreUnsavedChanges,
+      message: (final AppLocalizations l10n) => l10n.thereAreUnsavedChanges,
     );
 
     return Container(

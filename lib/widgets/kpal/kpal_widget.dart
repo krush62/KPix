@@ -107,9 +107,8 @@ class _KPalState extends State<KPal>
     _originalData = KPalRampData.from(other: widget._colorRamp);
   }
 
-  String _deleteMessage({required final RampPixelUsage usage})
+  String _deleteMessage({required final AppLocalizations l10n, required final RampPixelUsage usage})
   {
-    final AppLocalizations l10n = AppLocalizations.of(context)!;
     final StringBuffer message = StringBuffer(l10n.deleteColorRampQuestion(usage.layers + usage.selection));
     if (usage.selection > 0)
     {
@@ -151,7 +150,7 @@ class _KPalState extends State<KPal>
       onNo: _dismissAlertDialog,
       onYes: _acceptDeletion,
       outsideCancelable: false,
-      message: _deleteMessage(usage: widget._usage),
+      message: (final AppLocalizations l10n) => _deleteMessage(l10n: l10n, usage: widget._usage),
     );
     _alertDialog.show(context: context);
   }

@@ -113,10 +113,10 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
     widget.dismiss();
   }
 
-  void _deleteStampPressed(final AppLocalizations l10n)
+  void _deleteStampPressed(final AppLocalizations _)
   {
     _deleteWarningDialog = getTwoButtonDialog(
-      message: l10n.doYouReallyWantToDeleteStamp,
+      message: (final AppLocalizations l10n) => l10n.doYouReallyWantToDeleteStamp,
       onNo: _deleteWarningNo,
       onYes: _deleteWarningYes,
       outsideCancelable: false,

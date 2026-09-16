@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -40,7 +41,7 @@ class BehaviorPreferences extends StatefulWidget
 
 class _BehaviorPreferencesState extends State<BehaviorPreferences>
 {
-  void _projectDirectoryModeChanged({required final bool useCustom})
+  void _projectDirectoryModeChanged({required final bool useCustom, required final AppLocalizations l10n})
   {
     if (useCustom)
     {
@@ -50,7 +51,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
       }
       else
       {
-        _selectCustomProjectDirectory();
+        _selectCustomProjectDirectory(l10n: l10n);
       }
     }
     else
@@ -59,7 +60,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
     }
   }
 
-  void _selectCustomProjectDirectory()
+  void _selectCustomProjectDirectory({required final AppLocalizations l10n})
   {
     final String startDir = widget.prefs.customProjectDirectory.value.isNotEmpty ? widget.prefs.customProjectDirectory.value : GetIt.I.get<AppPaths>().projectsDir;
     getDirectory(startDir: startDir).then((final String? chosenDir)
@@ -73,7 +74,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
         }
         else
         {
-          showMessage(text: "Insufficient permissions for the selected directory!", toastType: ToastType.error);
+          showMessage(text: l10n.insufficientPermissionsForDir, toastType: ToastType.error);
         }
       }
     });
@@ -81,13 +82,14 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
 
   @override
   Widget build(final BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         PrefSliderRow<int>(
-            text: "Undo Steps",
+            text: l10n.undoSteps,
             minVal: widget.prefs.undoStepsMin.toDouble(),
             maxVal: widget.prefs.undoStepsMax.toDouble(),
             notifier: widget.prefs.undoSteps,
@@ -114,27 +116,27 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
           ],
         ),*/
         PrefSwitchRow(
-            label: "Select Inserted Layers",
+            label: l10n.selectInsertedLayers,
             notifier: widget.prefs.selectLayerAfterInsert,
         ),
 
         Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Expanded(child: Text("Default Shading Layer Settings", style: Theme.of(context).textTheme.titleSmall)),
+            Expanded(child: Text(l10n.defaultShadingLayerSettings, style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
               child: Column(
                 children: <Widget>[
                   PrefSliderRow<int>(
-                    text: "Max Darken",
+                    text: l10n.maxDarken,
                     minVal: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
                     maxVal: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
                     notifier: widget.prefs.shadingStepsMinus,
                     textStyle:  Theme.of(context).textTheme.labelMedium,
                   ),
                   PrefSliderRow<int>(
-                    text: "Max Brighten",
+                    text: l10n.maxBrighten,
                     minVal: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
                     maxVal: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
                     notifier: widget.prefs.shadingStepsPlus,
@@ -146,20 +148,20 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
           ],
         ),
         PrefSliderRow<int>(
-            text: "Default Frame Time",
+            text: l10n.defaultFrameTime,
             minVal: widget.prefs.frameConstraints.minFps.toDouble(),
             maxVal: widget.prefs.frameConstraints.maxFps.toDouble(),
             notifier: widget.prefs.fps,
         ),
        PrefSwitchRow(
-           label: "Show Reference Layers outside of canvas",
+           label: l10n.showReferenceLayersOutsideOfCanvas,
            notifier: widget.prefs.showReferenceOutsideCanvas,
        ),
         if (!kIsWeb)
           Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Expanded(child: Text("Project Directory", style: Theme.of(context).textTheme.titleSmall)),
+              Expanded(child: Text(l10n.projectDirectory, style: Theme.of(context).textTheme.titleSmall)),
               Expanded(
                 flex: 2,
                 child: ValueListenableBuilder<bool>(
@@ -168,7 +170,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
                   {
                     return RadioGroup<bool>(
                       groupValue: useCustom,
-                      onChanged: (final bool? newVal) {_projectDirectoryModeChanged(useCustom: newVal ?? false);},
+                      onChanged: (final bool? newVal) {_projectDirectoryModeChanged(useCustom: newVal ?? false, l10n: l10n);},
                       child: Column(
                         children: <Widget>[
                           Row(
@@ -179,11 +181,11 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
                               ),
                               Expanded(
                                 child: GestureDetector(
-                                  onTap: () {_projectDirectoryModeChanged(useCustom: false);},
+                                  onTap: () {_projectDirectoryModeChanged(useCustom: false, l10n: l10n);},
                                   child: Tooltip(
                                     message: getDefaultProjectsDir(internalDir: GetIt.I.get<AppPaths>().internalDir),
                                     waitDuration: toolTipDuration,
-                                    child: const Text("Default"),
+                                    child: Text(l10n.defaultDir),
                                   ),
                                 ),
                               ),
@@ -196,8 +198,8 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
                                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
                               GestureDetector(
-                                onTap: () {_projectDirectoryModeChanged(useCustom: true);},
-                                child: const Text("Custom"),
+                                onTap: () {_projectDirectoryModeChanged(useCustom: true, l10n: l10n);},
+                                child: Text(l10n.customDir),
                               ),
                               Expanded(
                                 child: ValueListenableBuilder<String>(
@@ -220,14 +222,14 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
                                 width: 16,
                               ),
                               Tooltip(
-                                message: "Choose Directory",
+                                message: l10n.chooseDirectory,
                                 waitDuration: toolTipDuration,
                                 child: SizedBox(
                                   height: 32,
                                   width: 32,
                                   child: IconButton.outlined(
                                     constraints: const BoxConstraints(),
-                                    onPressed: _selectCustomProjectDirectory,
+                                    onPressed: () {_selectCustomProjectDirectory(l10n: l10n);},
                                     icon: const Icon(TablerIcons.folder, size: 20),
                                   ),
                                 ),

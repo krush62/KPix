@@ -354,7 +354,48 @@
   "appendToCurrentPalette": "An aktuelle Palette anhängen",
   "applySelectedPalette": "Ausgewählte Palette anwenden",
   "addNewColorRamp": "Neue Farbrampe hinzufügen",
-  "savePalette": "Palette speichern"
+  "savePalette": "Palette speichern",
+
+  "insufficientPermissionsForDir": "Unzureichende Berechtigungen für das ausgewählte Verzeichnis!",
+  "undoSteps": "Rückgängig Schritte",
+  "selectInsertedLayers": "Eingefügte Ebenen auswählen",
+  "defaultShadingLayerSettings": "Voreinstellung für Schattierungsebenen",
+  "defaultFrameTime": "Voreinstellung Frame-Dauer",
+  "showReferenceLayersOutsideOfCanvas": "Referenzebenen außerhalb der Leinwand anzeigen",
+  "projectDirectory": "Projektverzeichnis",
+  "defaultDir": "Standard",
+  "customDir": "Benutzerdefiniert",
+  "chooseDirectory": "Verzeichnis wählen",
+
+  "mouseCursor": "Mauszeiger",
+
+  "themePreferences": "Thema-Präferenzen",
+  "theme": "Thema",
+  "checkerboardPreferences": "Schachbrett-Präferenzen",
+  "checkerboardSize": "Schachbrettgröße",
+  "checkerboardContrast": "Schachbrettkontrast",
+  "palettePreferences": "Paletten-Präferenzen",
+  "colorNaming": "Farbnamen",
+  "borderPreferences": "Umrandungs-Präferenzen",
+  "toolOutlineOpacity": "Deckkraft Werkzeugumrandungen",
+  "selectionOutlineOpacity": "Deckkraft Auswahlumrandungen",
+  "pulsatingSelectionOutline": "Pulsierende Auswahlumrandung",
+  "canvasBorerOpacity": "Deckkraft Leinwandumrandung",
+
+  "pollingTimeToCheck": "Abfrageintervall für Tastendrücke des Stylus.",
+  "pollInterval": "Abfrageintervall",
+  "timeThatNeedsToBeHeldDown": "Zeit die die Taste des Stylus gedrückt werden muss für einen \"Langen Druck\"",
+  "longPressDelay": "Verzögerung für \"Langen Druck\"",
+  "distanceThatMustBeMoved": "Bewegungsdistanz zum Abbrechen eines \"Langen Drucks\"",
+  "longPressCancelDistance": "Abbruchdistanz für \"Langen Druck\"",
+  "distanceThatNeedsToBeMovedVertically": "Vertikale Distanz um die Zoomstufe zu verändern.",
+  "zoomStepDistance": "Bewegungsdistanz für Zoomstufe",
+  "distanceThatNeedsToBeMovedHorizontally": "Horizontale Distanz um die Werkzeuggröße zu verändern.",
+  "toolSizeStepDistance": "Bewegungsdistanz für Werkzeuggröße",
+  "timeoutForPickingAColor": "Timeout für Pipette",
+  "colorPickTimeout": "Pipetten-Timeout",
+
+  "touchDelay": "Berührungsverzögerung"
 
 
 

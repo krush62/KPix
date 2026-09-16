@@ -1921,6 +1921,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save Palette'**
   String get savePalette;
+
+  /// No description provided for @insufficientPermissionsForDir.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient permissions for the selected directory!'**
+  String get insufficientPermissionsForDir;
+
+  /// No description provided for @undoSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo Steps'**
+  String get undoSteps;
+
+  /// No description provided for @selectInsertedLayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Inserted Layers'**
+  String get selectInsertedLayers;
+
+  /// No description provided for @defaultShadingLayerSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Default Shading Layer Settings'**
+  String get defaultShadingLayerSettings;
+
+  /// No description provided for @defaultFrameTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Default Frame Time'**
+  String get defaultFrameTime;
+
+  /// No description provided for @showReferenceLayersOutsideOfCanvas.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Reference Layers outside of canvas'**
+  String get showReferenceLayersOutsideOfCanvas;
+
+  /// No description provided for @projectDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'Project Directory'**
+  String get projectDirectory;
+
+  /// No description provided for @defaultDir.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get defaultDir;
+
+  /// No description provided for @customDir.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get customDir;
+
+  /// No description provided for @chooseDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Directory'**
+  String get chooseDirectory;
+
+  /// No description provided for @mouseCursor.
+  ///
+  /// In en, this message translates to:
+  /// **'Mouse Cursor'**
+  String get mouseCursor;
+
+  /// No description provided for @themePreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme Preferences'**
+  String get themePreferences;
+
+  /// No description provided for @theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// No description provided for @checkerboardPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkerboard Preferences'**
+  String get checkerboardPreferences;
+
+  /// No description provided for @checkerboardSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkerboard Size'**
+  String get checkerboardSize;
+
+  /// No description provided for @checkerboardContrast.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkerboard Contrast'**
+  String get checkerboardContrast;
+
+  /// No description provided for @palettePreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Palette Preferences'**
+  String get palettePreferences;
+
+  /// No description provided for @colorNaming.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Naming'**
+  String get colorNaming;
+
+  /// No description provided for @borderPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Border Preferences'**
+  String get borderPreferences;
+
+  /// No description provided for @toolOutlineOpacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Tool Outline Opacity'**
+  String get toolOutlineOpacity;
+
+  /// No description provided for @selectionOutlineOpacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Selection Outline Opacity'**
+  String get selectionOutlineOpacity;
+
+  /// No description provided for @pulsatingSelectionOutline.
+  ///
+  /// In en, this message translates to:
+  /// **'Pulsating Selection Outline'**
+  String get pulsatingSelectionOutline;
+
+  /// No description provided for @canvasBorerOpacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Canvas Border Opacity'**
+  String get canvasBorerOpacity;
+
+  /// No description provided for @pollingTimeToCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Polling time to check for presses of stylus buttons.'**
+  String get pollingTimeToCheck;
+
+  /// No description provided for @pollInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Poll Interval'**
+  String get pollInterval;
+
+  /// No description provided for @timeThatNeedsToBeHeldDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Time that needs to be held down for a long press.'**
+  String get timeThatNeedsToBeHeldDown;
+
+  /// No description provided for @longPressDelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Long Press Delay'**
+  String get longPressDelay;
+
+  /// No description provided for @distanceThatMustBeMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance that must be moved during a long press to cancel it.'**
+  String get distanceThatMustBeMoved;
+
+  /// No description provided for @longPressCancelDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Long Press Cancel Distance'**
+  String get longPressCancelDistance;
+
+  /// No description provided for @distanceThatNeedsToBeMovedVertically.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance that needs to be moved vertically to zoom in or out.'**
+  String get distanceThatNeedsToBeMovedVertically;
+
+  /// No description provided for @zoomStepDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom Step Distance'**
+  String get zoomStepDistance;
+
+  /// No description provided for @distanceThatNeedsToBeMovedHorizontally.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance that needs to be moved horizontally to change the size of the current tool.'**
+  String get distanceThatNeedsToBeMovedHorizontally;
+
+  /// No description provided for @toolSizeStepDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Tool Size Step Distance'**
+  String get toolSizeStepDistance;
+
+  /// No description provided for @timeoutForPickingAColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeout for picking a color.'**
+  String get timeoutForPickingAColor;
+
+  /// No description provided for @colorPickTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Pick Timeout'**
+  String get colorPickTimeout;
+
+  /// No description provided for @touchDelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Touch Delay'**
+  String get touchDelay;
 }
 
 class _AppLocalizationsDelegate

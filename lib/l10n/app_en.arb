@@ -439,7 +439,50 @@
   "appendToCurrentPalette": "Append to Current Palette",
   "applySelectedPalette": "Apply Selected Palette",
   "addNewColorRamp": "Add New Color Ramp",
-  "savePalette": "Save Palette"
+  "savePalette": "Save Palette",
+
+  "insufficientPermissionsForDir": "Insufficient permissions for the selected directory!",
+  "undoSteps": "Undo Steps",
+  "selectInsertedLayers": "Select Inserted Layers",
+  "defaultShadingLayerSettings": "Default Shading Layer Settings",
+  "defaultFrameTime": "Default Frame Time",
+  "showReferenceLayersOutsideOfCanvas": "Show Reference Layers outside of canvas",
+  "projectDirectory": "Project Directory",
+  "defaultDir": "Default",
+  "customDir": "Custom",
+  "chooseDirectory": "Choose Directory",
+
+  "mouseCursor": "Mouse Cursor",
+
+  "themePreferences": "Theme Preferences",
+  "theme": "Theme",
+  "checkerboardPreferences": "Checkerboard Preferences",
+  "checkerboardSize": "Checkerboard Size",
+  "checkerboardContrast": "Checkerboard Contrast",
+  "palettePreferences": "Palette Preferences",
+  "colorNaming": "Color Naming",
+  "borderPreferences": "Border Preferences",
+  "toolOutlineOpacity": "Tool Outline Opacity",
+  "selectionOutlineOpacity": "Selection Outline Opacity",
+  "pulsatingSelectionOutline": "Pulsating Selection Outline",
+  "canvasBorerOpacity": "Canvas Border Opacity",
+
+  "pollingTimeToCheck": "Polling time to check for presses of stylus buttons.",
+  "pollInterval": "Poll Interval",
+  "timeThatNeedsToBeHeldDown": "Time that needs to be held down for a long press.",
+  "longPressDelay": "Long Press Delay",
+  "distanceThatMustBeMoved": "Distance that must be moved during a long press to cancel it.",
+  "longPressCancelDistance": "Long Press Cancel Distance",
+  "distanceThatNeedsToBeMovedVertically": "Distance that needs to be moved vertically to zoom in or out.",
+  "zoomStepDistance": "Zoom Step Distance",
+  "distanceThatNeedsToBeMovedHorizontally": "Distance that needs to be moved horizontally to change the size of the current tool.",
+  "toolSizeStepDistance": "Tool Size Step Distance",
+  "timeoutForPickingAColor": "Timeout for picking a color.",
+  "colorPickTimeout": "Color Pick Timeout",
+
+  "touchDelay": "Touch Delay"
+
+
 
 
 

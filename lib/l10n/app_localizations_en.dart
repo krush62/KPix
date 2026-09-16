@@ -981,4 +981,119 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get savePalette => 'Save Palette';
+
+  @override
+  String get insufficientPermissionsForDir =>
+      'Insufficient permissions for the selected directory!';
+
+  @override
+  String get undoSteps => 'Undo Steps';
+
+  @override
+  String get selectInsertedLayers => 'Select Inserted Layers';
+
+  @override
+  String get defaultShadingLayerSettings => 'Default Shading Layer Settings';
+
+  @override
+  String get defaultFrameTime => 'Default Frame Time';
+
+  @override
+  String get showReferenceLayersOutsideOfCanvas =>
+      'Show Reference Layers outside of canvas';
+
+  @override
+  String get projectDirectory => 'Project Directory';
+
+  @override
+  String get defaultDir => 'Default';
+
+  @override
+  String get customDir => 'Custom';
+
+  @override
+  String get chooseDirectory => 'Choose Directory';
+
+  @override
+  String get mouseCursor => 'Mouse Cursor';
+
+  @override
+  String get themePreferences => 'Theme Preferences';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get checkerboardPreferences => 'Checkerboard Preferences';
+
+  @override
+  String get checkerboardSize => 'Checkerboard Size';
+
+  @override
+  String get checkerboardContrast => 'Checkerboard Contrast';
+
+  @override
+  String get palettePreferences => 'Palette Preferences';
+
+  @override
+  String get colorNaming => 'Color Naming';
+
+  @override
+  String get borderPreferences => 'Border Preferences';
+
+  @override
+  String get toolOutlineOpacity => 'Tool Outline Opacity';
+
+  @override
+  String get selectionOutlineOpacity => 'Selection Outline Opacity';
+
+  @override
+  String get pulsatingSelectionOutline => 'Pulsating Selection Outline';
+
+  @override
+  String get canvasBorerOpacity => 'Canvas Border Opacity';
+
+  @override
+  String get pollingTimeToCheck =>
+      'Polling time to check for presses of stylus buttons.';
+
+  @override
+  String get pollInterval => 'Poll Interval';
+
+  @override
+  String get timeThatNeedsToBeHeldDown =>
+      'Time that needs to be held down for a long press.';
+
+  @override
+  String get longPressDelay => 'Long Press Delay';
+
+  @override
+  String get distanceThatMustBeMoved =>
+      'Distance that must be moved during a long press to cancel it.';
+
+  @override
+  String get longPressCancelDistance => 'Long Press Cancel Distance';
+
+  @override
+  String get distanceThatNeedsToBeMovedVertically =>
+      'Distance that needs to be moved vertically to zoom in or out.';
+
+  @override
+  String get zoomStepDistance => 'Zoom Step Distance';
+
+  @override
+  String get distanceThatNeedsToBeMovedHorizontally =>
+      'Distance that needs to be moved horizontally to change the size of the current tool.';
+
+  @override
+  String get toolSizeStepDistance => 'Tool Size Step Distance';
+
+  @override
+  String get timeoutForPickingAColor => 'Timeout for picking a color.';
+
+  @override
+  String get colorPickTimeout => 'Color Pick Timeout';
+
+  @override
+  String get touchDelay => 'Touch Delay';
 }

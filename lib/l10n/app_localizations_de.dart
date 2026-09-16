@@ -1000,4 +1000,120 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get savePalette => 'Palette speichern';
+
+  @override
+  String get insufficientPermissionsForDir =>
+      'Unzureichende Berechtigungen für das ausgewählte Verzeichnis!';
+
+  @override
+  String get undoSteps => 'Rückgängig Schritte';
+
+  @override
+  String get selectInsertedLayers => 'Eingefügte Ebenen auswählen';
+
+  @override
+  String get defaultShadingLayerSettings =>
+      'Voreinstellung für Schattierungsebenen';
+
+  @override
+  String get defaultFrameTime => 'Voreinstellung Frame-Dauer';
+
+  @override
+  String get showReferenceLayersOutsideOfCanvas =>
+      'Referenzebenen außerhalb der Leinwand anzeigen';
+
+  @override
+  String get projectDirectory => 'Projektverzeichnis';
+
+  @override
+  String get defaultDir => 'Standard';
+
+  @override
+  String get customDir => 'Benutzerdefiniert';
+
+  @override
+  String get chooseDirectory => 'Verzeichnis wählen';
+
+  @override
+  String get mouseCursor => 'Mauszeiger';
+
+  @override
+  String get themePreferences => 'Thema-Präferenzen';
+
+  @override
+  String get theme => 'Thema';
+
+  @override
+  String get checkerboardPreferences => 'Schachbrett-Präferenzen';
+
+  @override
+  String get checkerboardSize => 'Schachbrettgröße';
+
+  @override
+  String get checkerboardContrast => 'Schachbrettkontrast';
+
+  @override
+  String get palettePreferences => 'Paletten-Präferenzen';
+
+  @override
+  String get colorNaming => 'Farbnamen';
+
+  @override
+  String get borderPreferences => 'Umrandungs-Präferenzen';
+
+  @override
+  String get toolOutlineOpacity => 'Deckkraft Werkzeugumrandungen';
+
+  @override
+  String get selectionOutlineOpacity => 'Deckkraft Auswahlumrandungen';
+
+  @override
+  String get pulsatingSelectionOutline => 'Pulsierende Auswahlumrandung';
+
+  @override
+  String get canvasBorerOpacity => 'Deckkraft Leinwandumrandung';
+
+  @override
+  String get pollingTimeToCheck =>
+      'Abfrageintervall für Tastendrücke des Stylus.';
+
+  @override
+  String get pollInterval => 'Abfrageintervall';
+
+  @override
+  String get timeThatNeedsToBeHeldDown =>
+      'Zeit die die Taste des Stylus gedrückt werden muss für einen \"Langen Druck\"';
+
+  @override
+  String get longPressDelay => 'Verzögerung für \"Langen Druck\"';
+
+  @override
+  String get distanceThatMustBeMoved =>
+      'Bewegungsdistanz zum Abbrechen eines \"Langen Drucks\"';
+
+  @override
+  String get longPressCancelDistance => 'Abbruchdistanz für \"Langen Druck\"';
+
+  @override
+  String get distanceThatNeedsToBeMovedVertically =>
+      'Vertikale Distanz um die Zoomstufe zu verändern.';
+
+  @override
+  String get zoomStepDistance => 'Bewegungsdistanz für Zoomstufe';
+
+  @override
+  String get distanceThatNeedsToBeMovedHorizontally =>
+      'Horizontale Distanz um die Werkzeuggröße zu verändern.';
+
+  @override
+  String get toolSizeStepDistance => 'Bewegungsdistanz für Werkzeuggröße';
+
+  @override
+  String get timeoutForPickingAColor => 'Timeout für Pipette';
+
+  @override
+  String get colorPickTimeout => 'Pipetten-Timeout';
+
+  @override
+  String get touchDelay => 'Berührungsverzögerung';
 }

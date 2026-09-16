@@ -33,14 +33,15 @@ class _DesktopPreferencesState extends State<DesktopPreferences>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         PrefSegmentedButtonRow<CursorType>(
-          label: "Mouse Cursor",
+          label: l10n.mouseCursor,
           notifier: widget.prefs.cursorType,
-          labels: CursorType.getNameMap(AppLocalizations.of(context)!),
+          labels: CursorType.getNameMap(l10n),
         ),
       ],
     );

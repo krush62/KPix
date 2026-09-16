@@ -83,6 +83,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get projectImportSuccessful => 'Project imported successfully!';
 
   @override
+  String get couldNotOpenFile => 'Could not open file!';
+
+  @override
+  String get projectWithSameNameExists =>
+      'A project with the same name already exists!';
+
+  @override
+  String get pleaseSelectAKPixFile => 'Please select a KPix file!';
+
+  @override
   String get couldNotReadProjectDir => 'Could not read the project directory!';
 
   @override
@@ -212,9 +222,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pixelsAbbrev => 'px';
-
-  @override
-  String get couldNotAddAllLayers => 'Could not add all layers.';
 
   @override
   String get invalidLayerIndex => 'Invalid layer insert index.';
@@ -348,6 +355,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get couldNotCrop => 'Could not crop!';
+
+  @override
+  String get cropToSelection => 'Crop To Selection';
 
   @override
   String get hidden => 'Hidden';
@@ -494,6 +504,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get text => 'Text';
+
+  @override
+  String get textToolDefaultText => 'Text';
 
   @override
   String get sprayCan => 'Spray Can';
@@ -735,6 +748,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get texturePackAnimation => 'Texture Pack Animation';
 
   @override
+  String get pngSequence => 'PNG Sequence';
+
+  @override
   String get scaling => 'Scaling';
 
   @override
@@ -750,6 +766,11 @@ class AppLocalizationsEn extends AppLocalizations {
       zero: '0 frames',
     );
     return '$_temp0';
+  }
+
+  @override
+  String frameNumber(int number) {
+    return 'Frame $number';
   }
 
   @override
@@ -993,6 +1014,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get savePalette => 'Save Palette';
+
+  @override
+  String get defaultPalette => 'Default';
+
+  @override
+  String get errorSavingPalette => 'Error saving palette!';
+
+  @override
+  String paletteSavedAt(String path) {
+    return 'Palette saved successfully at $path.';
+  }
+
+  @override
+  String get paletteWithSameNameExists =>
+      'A palette with the same name already exists!';
+
+  @override
+  String get pleaseSelectAKPalFile => 'Please select a KPal file!';
+
+  @override
+  String get paletteImportSuccessful => 'Import successful!';
+
+  @override
+  String get paletteImportFailed => 'Import failed!';
 
   @override
   String get insufficientPermissionsForDir =>
@@ -1367,6 +1412,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get movingProjectFilesDot => 'Moving project files...';
+
+  @override
+  String get targetDirCouldNotBeCreated =>
+      'The directory does not exist and could not be created!';
+
+  @override
+  String dirAlreadyContainsFile(String fileName) {
+    return 'The directory already contains a file named $fileName!';
+  }
+
+  @override
+  String couldNotMoveFile(String fileName) {
+    return 'Could not move file $fileName!';
+  }
+
+  @override
+  String get unexpectedErrorMovingProjectFiles =>
+      'An unexpected error occurred while moving project files!';
 
   @override
   String changedProjectDirectoryFiles(String directory, int count) {

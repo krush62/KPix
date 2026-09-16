@@ -81,7 +81,6 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:kpix/util/helpers/platform_helper.dart';
-import 'package:kpix/util/messages.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -575,9 +574,9 @@ Future<String?> exportPalettePressed({required final PaletteExportData saveData,
   );
 }
 
-Future<String?> getDirectory({required final String startDir}) async
+Future<String?> getDirectory({required final String startDir, required final String dialogTitle}) async
 {
-  return await FilePicker.getDirectoryPath(dialogTitle: "Choose Directory", initialDirectory: startDir,);
+  return await FilePicker.getDirectoryPath(dialogTitle: dialogTitle, initialDirectory: startDir,);
 }
 
 Future<Uint8List?> _createImageData({required final ImageExportData exportData, required final ImageExportType exportType,}) async
@@ -831,15 +830,6 @@ Future<ProjectDirectoryResolveResult> resolveProjectsDir({required final String 
   return ProjectDirectoryResolveResult(resolvedDir: dirToUse, useCustom: useCustomDir, customValid: customValid);
 }
 
-class ProjectDirectoryMoveResult
-{
-  final bool success;
-  final String message;
-  final int projectCount;
-  
-  ProjectDirectoryMoveResult({required this.success, required this.message, this.projectCount = 0,});
-}
-
 Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourceDir, required final String targetDir,}) async
 {
   final Logger logger = GetIt.I.get<Logger>();
@@ -862,7 +852,7 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourc
         );
         return ProjectDirectoryMoveResult(
           success: false,
-          message: "The directory does not exist and could not be created!",
+          error: ProjectDirectoryMoveError.targetNotCreated,
         );
       }
     }
@@ -870,7 +860,7 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourc
     {
       return ProjectDirectoryMoveResult(
         success: false,
-        message: "Insufficient permissions for the directory!",
+        error: ProjectDirectoryMoveError.insufficientPermissions,
       );
     }
 
@@ -903,7 +893,7 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourc
       final String targetPath = p.join(targetDir, p.basename(file.path));
       if (await File(targetPath).exists())
       {
-        return ProjectDirectoryMoveResult(success: false, message: "The directory already contains a file named ${p.basename(file.path)}!",);
+        return ProjectDirectoryMoveResult(success: false, error: ProjectDirectoryMoveError.targetFileExists, fileName: p.basename(file.path),);
       }
     }
 
@@ -943,18 +933,19 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourc
         }
         return ProjectDirectoryMoveResult(
           success: false,
-          message: "Could not move file ${p.basename(file.path)}!",
+          error: ProjectDirectoryMoveError.moveFailed,
+          fileName: p.basename(file.path),
         );
       }
     }
 
     logger.i("Moved $projectCount project file(s) to $targetDir.");
-    return ProjectDirectoryMoveResult(success: true, message: "", projectCount: projectCount,);
+    return ProjectDirectoryMoveResult(success: true, projectCount: projectCount,);
   }
   catch (e, s)
   {
     logger.w("Error moving project files.", error: e, stackTrace: s);
-    return ProjectDirectoryMoveResult(success: false, message: "An unexpected error occurred while moving project files!",);
+    return ProjectDirectoryMoveResult(success: false, error: ProjectDirectoryMoveError.unexpected,);
   }
 }
 
@@ -1075,9 +1066,9 @@ Future<String?> getRecoveryFile() async
   return null;
 }
 
-Future<bool> importProject({required final String? path, final bool showMessages = true,}) async
+Future<ProjectImportResult> importProject({required final String? path}) async
 {
-  bool success = false;
+  ProjectImportResult result = ProjectImportResult.cancelled;
   final Logger logger = GetIt.I.get<Logger>();
 
   try
@@ -1102,45 +1093,41 @@ Future<bool> importProject({required final String? path, final bool showMessages
             final ui.Image? img = await getImageFromLoadFileSet(loadFileSet: loadFileSet);
             if (img != null)
             {
-              success = await copyImportFile(inputPath: loadFileSet.path!, image: img, targetPath: projectPath,);
-              if (success)
+              final bool copied = await copyImportFile(inputPath: loadFileSet.path!, image: img, targetPath: projectPath,);
+              if (copied)
               {
                 notifyProjectFileChanged(path: projectPath);
               }
+              result = copied ? ProjectImportResult.success : ProjectImportResult.couldNotOpenFile;
             }
             else
             {
-              if (showMessages)
-              {
-                showMessage(text: "Could not open file!", toastType: ToastType.error);
-              }
+              result = ProjectImportResult.couldNotOpenFile;
             }
           }
           else
           {
-            if (showMessages)
-            {
-              showMessage(text: "Project with the same name already exists!", toastType: ToastType.error);
-            }
+            result = ProjectImportResult.projectAlreadyExists;
           }
         }
         else
         {
-          if (showMessages) showMessage(text: "Could not open file!", toastType: ToastType.error);
+          result = ProjectImportResult.couldNotOpenFile;
         }
       }
       else
       {
-        showMessage(text: "Please select a KPix file!", toastType: ToastType.warning);
+        result = ProjectImportResult.notAKPixFile;
       }
     }
   }
   catch (e, s)
   {
     logger.w("Error importing project.", error: e, stackTrace: s);
+    result = ProjectImportResult.couldNotOpenFile;
   }
 
-  return success;
+  return result;
 }
 
 /// Renders the first frame of [loadFileSet] into an image.

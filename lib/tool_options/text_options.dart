@@ -34,7 +34,7 @@ class TextOptions extends IToolOptions
 
   final ValueNotifier<int> size = ValueNotifier<int>(1);
   final ValueNotifier<PixelFontType?> font = ValueNotifier<PixelFontType?>(null);
-  final ValueNotifier<String> text = ValueNotifier<String>("Text");
+  final ValueNotifier<String> text = ValueNotifier<String>(TextConstraints.textDefault);
 
 
   TextOptions({
@@ -44,6 +44,18 @@ class TextOptions extends IToolOptions
     size.value = TextConstraints.sizeDefault;
     font.value = pixelFontIndexMap[TextConstraints.fontIndexDefault];
     text.value = TextConstraints.textDefault;
+  }
+
+  /// Replaces the untranslated placeholder with the localized default.
+  ///
+  /// The tool options are built before the localizations can be reached, so the
+  /// default is filled in once they are. Text the user already changed is kept.
+  void applyLocalizedDefault({required final AppLocalizations l10n})
+  {
+    if (text.value == TextConstraints.textDefault)
+    {
+      text.value = l10n.textToolDefaultText;
+    }
   }
 
   static KPixOverlay? _changeTextDialog;

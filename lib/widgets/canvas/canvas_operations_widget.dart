@@ -179,7 +179,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                       }
                     }
                     return Tooltip(
-                      message: "Crop To Selection",
+                      message: AppLocalizations.of(context)!.cropToSelection,
                       waitDuration: toolTipDuration,
                       child: IconButton.outlined(
                         onPressed: cropEnabled ? _crop : null,
@@ -195,7 +195,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
               const SizedBox(width: _CanvasOperationsWidgetOptions.padding),
               Expanded(
                 child: Tooltip(
-                  message: "Set Size",
+                  message: AppLocalizations.of(context)!.changeCanvasSize,
                   waitDuration: toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _setSize,

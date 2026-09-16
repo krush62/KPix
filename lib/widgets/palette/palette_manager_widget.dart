@@ -79,15 +79,17 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _acceptAddPalette({required final PaletteExportData saveData, required final PaletteExportType paletteType})
   {
+    //taken now: this widget is dismissed before the palette has been written
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     saveCurrentPalette(fileName: saveData.fileName, directory: saveData.directory, extension: saveData.extension).then((final String? fileName) {
 
       if (fileName == null)
       {
-        showMessage(text: "Error saving palette!", toastType: ToastType.error);
+        showMessage(text: l10n.errorSavingPalette, toastType: ToastType.error);
       }
       else
       {
-        showMessage(text: "Palette saved successfully at $fileName.", toastType: ToastType.success);
+        showMessage(text: l10n.paletteSavedAt(fileName), toastType: ToastType.success);
         _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
           _paletteEntries.value = pList;
         });
@@ -127,7 +129,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   {
     final List<PaletteManagerEntryWidget> pList = <PaletteManagerEntryWidget>[];
     //Default Palette
-    pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: PaletteManagerEntryData(rampDataList: KPalRampData.getDefaultPalette(), isLocked: true, path: null, name: "Default")));
+    //the list is built here but shown later, so the name is left empty and
+    //PaletteManagerEntryData.displayName localizes it where it is rendered
+    pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: PaletteManagerEntryData(rampDataList: KPalRampData.getDefaultPalette(), isLocked: true, path: null, name: "")));
 
     //Asset Palettes
     final List<PaletteManagerEntryData> assetPalettes = await loadPalettesFromAssets();
@@ -227,12 +231,12 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
         }
         else
         {
-          showMessage(text: "A palette with the same name already exists!", toastType: ToastType.error);
+          showMessage(text: AppLocalizations.of(context)!.paletteWithSameNameExists, toastType: ToastType.error);
         }
       }
       else
       {
-        showMessage(text: "Please select a KPal file!", toastType: ToastType.warning);
+        showMessage(text: AppLocalizations.of(context)!.pleaseSelectAKPalFile, toastType: ToastType.warning);
       }
     }
   }
@@ -244,11 +248,11 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
       _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
         _paletteEntries.value = pList;
       });
-      showMessage(text: "Import successful!", toastType: ToastType.success);
+      showMessage(text: AppLocalizations.of(context)!.paletteImportSuccessful, toastType: ToastType.success);
     }
     else
     {
-      showMessage(text: "Import failed!", toastType: ToastType.error);
+      showMessage(text: AppLocalizations.of(context)!.paletteImportFailed, toastType: ToastType.error);
     }
   }
 

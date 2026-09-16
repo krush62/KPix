@@ -63,7 +63,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
   void _selectCustomProjectDirectory({required final AppLocalizations l10n})
   {
     final String startDir = widget.prefs.customProjectDirectory.value.isNotEmpty ? widget.prefs.customProjectDirectory.value : GetIt.I.get<AppPaths>().projectsDir;
-    getDirectory(startDir: startDir).then((final String? chosenDir)
+    getDirectory(startDir: startDir, dialogTitle: l10n.chooseDirectory).then((final String? chosenDir)
     {
       if (chosenDir != null)
       {

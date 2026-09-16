@@ -25,6 +25,9 @@
   "openingImageDot": "Opening Image...",
   "doYouReallyWantToDeleteProject":  "Do you really want to delete this project?",
   "projectImportSuccessful": "Project imported successfully!",
+  "couldNotOpenFile": "Could not open file!",
+  "projectWithSameNameExists": "A project with the same name already exists!",
+  "pleaseSelectAKPixFile": "Please select a KPix file!",
   "couldNotReadProjectDir": "Could not read the project directory!",
   "noFilesFound": "No files found!",
 
@@ -76,7 +79,6 @@
   "applyDropShadow": "Apply Drop Shadow",
   "pixelsAbbrev": "px",
 
-  "couldNotAddAllLayers": "Could not add all layers.",
   "invalidLayerIndex": "Invalid layer insert index.",
   "couldNotAddMoreLayers": "Could not add more layers.",
   "layerAlreadyExistsOnFrame": "Layer already exists on that frame.",
@@ -150,6 +152,7 @@
 
 
   "couldNotCrop": "Could not crop!",
+  "cropToSelection": "Crop To Selection",
 
   "hidden": "Hidden",
   "visible": "Visible",
@@ -205,6 +208,7 @@
   "colorPicker": "Color Picker",
   "eraser": "Eraser",
   "text": "Text",
+  "textToolDefaultText": "Text",
   "sprayCan": "Spray Can",
   "line": "Line",
   "stamp": "Stamp",
@@ -305,6 +309,7 @@
   "format": "Format",
   "texturePack": "Texture Pack",
   "texturePackAnimation": "Texture Pack Animation",
+  "pngSequence": "PNG Sequence",
   "scaling": "Scaling",
   "selectionOnly": "Selection Only",
 
@@ -313,6 +318,14 @@
     "description": "frame plural",
     "placeholders": {
       "count": {"type": "int"}
+    }
+  },
+  "frameNumber": "Frame {number}",
+  "@frameNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
     }
   },
   "directory": "Directory",
@@ -445,6 +458,21 @@
   "applySelectedPalette": "Apply Selected Palette",
   "addNewColorRamp": "Add New Color Ramp",
   "savePalette": "Save Palette",
+  "defaultPalette": "Default",
+  "errorSavingPalette": "Error saving palette!",
+  "paletteSavedAt": "Palette saved successfully at {path}.",
+  "@paletteSavedAt": {
+    "description": "palette manager",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "paletteWithSameNameExists": "A palette with the same name already exists!",
+  "pleaseSelectAKPalFile": "Please select a KPal file!",
+  "paletteImportSuccessful": "Import successful!",
+  "paletteImportFailed": "Import failed!",
 
   "insufficientPermissionsForDir": "Insufficient permissions for the selected directory!",
   "undoSteps": "Undo Steps",
@@ -587,6 +615,26 @@
   "importingImageDot": "Importing Image...",
   "exportingDot": "Exporting...",
   "movingProjectFilesDot": "Moving project files...",
+  "targetDirCouldNotBeCreated": "The directory does not exist and could not be created!",
+  "dirAlreadyContainsFile": "The directory already contains a file named {fileName}!",
+  "@dirAlreadyContainsFile": {
+    "description": "project dir change",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotMoveFile": "Could not move file {fileName}!",
+  "@couldNotMoveFile": {
+    "description": "project dir change",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "unexpectedErrorMovingProjectFiles": "An unexpected error occurred while moving project files!",
   "changedProjectDirectoryFiles": "Changed project directory to {directory} (moved {count} project file(s)).",
   "@changedProjectDirectoryFiles": {
     "description": "project dir change",

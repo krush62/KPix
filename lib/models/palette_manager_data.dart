@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/color_types.dart';
 
 /// What the manager knows about a saved palette on disk.
@@ -24,15 +25,20 @@ class PaletteManagerEntryData
   final bool isLocked;
   final String _name;
 
-  String get name
+  /// The name to show, bracketed while the palette cannot be edited.
+  ///
+  /// The built-in palette has no file behind it, so its name comes from the
+  /// localizations instead of being stored.
+  String displayName({required final AppLocalizations l10n})
   {
+    final String baseName = path == null ? l10n.defaultPalette : _name;
     if (isLocked)
     {
-      return "[$_name]";
+      return "[$baseName]";
     }
     else
     {
-      return _name;
+      return baseName;
     }
   }
 

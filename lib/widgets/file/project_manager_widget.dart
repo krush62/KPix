@@ -27,7 +27,6 @@ import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
@@ -214,20 +213,20 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     getPathForKPixFile().then((final String? loadPath)
     {
       importProject(path: loadPath).then(
-        (final bool success)
+        (final ProjectImportResult result)
         {
-          _importFileCompleted(success: success);
+          _importFileCompleted(result: result);
         },
       );
     });
   }
 
-  void _importFileCompleted({required final bool success})
+  void _importFileCompleted({required final ProjectImportResult result})
   {
-    if (success)
+    //the imported file is picked up by the cache on its own
+    if (mounted && context.mounted)
     {
-      //the imported file is picked up by the cache on its own
-      showMessage(text: AppLocalizations.of(context)!.projectImportSuccessful, toastType: ToastType.success);
+      showMessageForProjectImport(result: result, l10n: AppLocalizations.of(context)!);
     }
   }
 

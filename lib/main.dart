@@ -334,6 +334,8 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       GetIt.I.registerSingleton<ToolState>(ToolState());
       GetIt.I.registerSingleton<LayerManager>(LayerManager());
       GetIt.I.registerSingleton<HistoryController>(HistoryController());
+      //the tool options were built before the localizations could be reached
+      GetIt.I.get<ToolOptions>().textOptions.applyLocalizedDefault(l10n: AppLocalizations.of(context)!);
       final Size logicalSize = MediaQuery.of(context).size;
       logger.i("Logical Size: $logicalSize");
 
@@ -516,7 +518,11 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         initialFilePath = await channel.invokeMethod('getSharedFile');
       }
 
-      await importProject(path: initialFilePath);
+      final ProjectImportResult importResult = await importProject(path: initialFilePath);
+      if (mounted && context.mounted)
+      {
+        showMessageForProjectImport(result: importResult, l10n: AppLocalizations.of(context)!);
+      }
       final String fileName = extractFilenameFromPath(path: initialFilePath);
       final String expectedFileName = initialFilePath = p.join(GetIt.I.get<AppPaths>().projectsDir, fileName);
       final File expectedFile = File(expectedFileName);

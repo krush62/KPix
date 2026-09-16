@@ -242,6 +242,24 @@ abstract class AppLocalizations {
   /// **'Project imported successfully!'**
   String get projectImportSuccessful;
 
+  /// No description provided for @couldNotOpenFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open file!'**
+  String get couldNotOpenFile;
+
+  /// No description provided for @projectWithSameNameExists.
+  ///
+  /// In en, this message translates to:
+  /// **'A project with the same name already exists!'**
+  String get projectWithSameNameExists;
+
+  /// No description provided for @pleaseSelectAKPixFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a KPix file!'**
+  String get pleaseSelectAKPixFile;
+
   /// No description provided for @couldNotReadProjectDir.
   ///
   /// In en, this message translates to:
@@ -488,12 +506,6 @@ abstract class AppLocalizations {
   /// **'px'**
   String get pixelsAbbrev;
 
-  /// No description provided for @couldNotAddAllLayers.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not add all layers.'**
-  String get couldNotAddAllLayers;
-
   /// No description provided for @invalidLayerIndex.
   ///
   /// In en, this message translates to:
@@ -709,6 +721,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not crop!'**
   String get couldNotCrop;
+
+  /// No description provided for @cropToSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop To Selection'**
+  String get cropToSelection;
 
   /// No description provided for @hidden.
   ///
@@ -997,6 +1015,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Text'**
   String get text;
+
+  /// No description provided for @textToolDefaultText.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get textToolDefaultText;
 
   /// No description provided for @sprayCan.
   ///
@@ -1472,6 +1496,12 @@ abstract class AppLocalizations {
   /// **'Texture Pack Animation'**
   String get texturePackAnimation;
 
+  /// No description provided for @pngSequence.
+  ///
+  /// In en, this message translates to:
+  /// **'PNG Sequence'**
+  String get pngSequence;
+
   /// No description provided for @scaling.
   ///
   /// In en, this message translates to:
@@ -1489,6 +1519,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =0{0 frames} =1{1 frame} other{{count} frames}}'**
   String nFrames(int count);
+
+  /// No description provided for @frameNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Frame {number}'**
+  String frameNumber(int number);
 
   /// No description provided for @directory.
   ///
@@ -1945,6 +1981,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save Palette'**
   String get savePalette;
+
+  /// No description provided for @defaultPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get defaultPalette;
+
+  /// No description provided for @errorSavingPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving palette!'**
+  String get errorSavingPalette;
+
+  /// palette manager
+  ///
+  /// In en, this message translates to:
+  /// **'Palette saved successfully at {path}.'**
+  String paletteSavedAt(String path);
+
+  /// No description provided for @paletteWithSameNameExists.
+  ///
+  /// In en, this message translates to:
+  /// **'A palette with the same name already exists!'**
+  String get paletteWithSameNameExists;
+
+  /// No description provided for @pleaseSelectAKPalFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a KPal file!'**
+  String get pleaseSelectAKPalFile;
+
+  /// No description provided for @paletteImportSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Import successful!'**
+  String get paletteImportSuccessful;
+
+  /// No description provided for @paletteImportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed!'**
+  String get paletteImportFailed;
 
   /// No description provided for @insufficientPermissionsForDir.
   ///
@@ -2653,6 +2731,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Moving project files...'**
   String get movingProjectFilesDot;
+
+  /// No description provided for @targetDirCouldNotBeCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'The directory does not exist and could not be created!'**
+  String get targetDirCouldNotBeCreated;
+
+  /// project dir change
+  ///
+  /// In en, this message translates to:
+  /// **'The directory already contains a file named {fileName}!'**
+  String dirAlreadyContainsFile(String fileName);
+
+  /// project dir change
+  ///
+  /// In en, this message translates to:
+  /// **'Could not move file {fileName}!'**
+  String couldNotMoveFile(String fileName);
+
+  /// No description provided for @unexpectedErrorMovingProjectFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred while moving project files!'**
+  String get unexpectedErrorMovingProjectFiles;
 
   /// project dir change
   ///

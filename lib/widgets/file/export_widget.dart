@@ -70,7 +70,7 @@ class _ExportWidgetState extends State<ExportWidget>
 
     void _changeDirectoryPressed()
     {
-      getDirectory(startDir: GetIt.I.get<AppPaths>().exportDir).then((final String? chosenDir) {_handleChosenDirectory(chosenDir: chosenDir);});
+      getDirectory(startDir: GetIt.I.get<AppPaths>().exportDir, dialogTitle: AppLocalizations.of(context)!.chooseDirectory).then((final String? chosenDir) {_handleChosenDirectory(chosenDir: chosenDir);});
     }
 
     void _handleChosenDirectory({required final String? chosenDir})
@@ -232,7 +232,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                       onSelectionChanged: (final Set<ImageExportType> types) {_fileExportType.value = types.first; _updateFileNameStatus();},
                                       segments: ImageExportType.values
                                         .where((final ImageExportType type) => type != ImageExportType.kpix && type != ImageExportType.texturePack)
-                                        .map((final ImageExportType x) => ButtonSegment<ImageExportType>(value: x, enabled: x != ImageExportType.texturePack || isValidTexturePack, label: Text(ImageExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                        .map((final ImageExportType x) => ButtonSegment<ImageExportType>(value: x, enabled: x != ImageExportType.texturePack || isValidTexturePack, label: Text(getImageExportTypeLabel(type: x, l10n: l10n), style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
                                     );
                                   },
                                 ),
@@ -263,7 +263,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                           onSelectionChanged: (final Set<AnimationExportType> types) {_animationExportType.value = types.first; _updateFileNameStatus();},
                                           segments: AnimationExportType.values
                                             .where((final AnimationExportType type) => type != AnimationExportType.texturePack)
-                                            .map((final AnimationExportType x) => ButtonSegment<AnimationExportType>(value: x, enabled: x != AnimationExportType.texturePack || isValidTexturePack, label: Text(AnimationExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                            .map((final AnimationExportType x) => ButtonSegment<AnimationExportType>(value: x, enabled: x != AnimationExportType.texturePack || isValidTexturePack, label: Text(getAnimationExportTypeLabel(type: x, l10n: l10n), style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
                                         );
                                       },
                                     );

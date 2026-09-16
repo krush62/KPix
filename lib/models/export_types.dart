@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/file_constants.dart';
 
 /// What an export asks for: which format, at which scale, to which file.
@@ -79,6 +80,11 @@ enum ExportSectionType
 abstract class ExportData
 {
   final String extension;
+  /// The untranslated format name.
+  ///
+  /// Do not show this directly for image and animation exports: not every
+  /// format is named after a product, so go through [getImageExportTypeLabel]
+  /// and [getAnimationExportTypeLabel] instead.
   final String name;
   final String fileName;
   final String directory;
@@ -152,6 +158,36 @@ class AnimationExportData extends ImageExportData
     //AnimationExportType.pixelorama : AnimationExportData(name: "PIXELORAMA", extension: "pxo", scalable: false),
     AnimationExportType.texturePack : AnimationExportData(name: "TEXTURE PACK", extension: "zip", scalable: false, ),
   };
+}
+
+/// The label for [type] in the export dialog.
+///
+/// Most formats carry a product name that stays as it is; the ones that are
+/// described rather than named are taken from the localizations.
+String getImageExportTypeLabel({required final ImageExportType type, required final AppLocalizations l10n})
+{
+  if (type == ImageExportType.texturePack)
+  {
+    return l10n.texturePack.toUpperCase();
+  }
+  return ImageExportData.exportTypeMap[type]!.name;
+}
+
+/// The label for [type] in the export dialog.
+///
+/// See [getImageExportTypeLabel].
+String getAnimationExportTypeLabel({required final AnimationExportType type, required final AppLocalizations l10n})
+{
+  switch (type)
+  {
+    case AnimationExportType.zippedPng:
+      return l10n.pngSequence.toUpperCase();
+    case AnimationExportType.texturePack:
+      return l10n.texturePack.toUpperCase();
+    case AnimationExportType.gif:
+    case AnimationExportType.apng:
+      return AnimationExportData.exportTypeMap[type]!.name;
+  }
 }
 
 /// The screen for showing all the options for exporting a project.

@@ -81,7 +81,7 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
                 Expanded(
                   child: Center(
                     child: Text(
-                      widget.entryData.name,
+                      widget.entryData.displayName(l10n: l10n),
                       style: Theme.of(context).textTheme.titleSmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
                   ),

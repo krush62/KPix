@@ -294,7 +294,7 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
                   widget.timeline.selectFrameByIndex(index: i);
                 },
                 child: Tooltip(
-                  message: "Frame ${i + 1}",
+                  message: AppLocalizations.of(context)!.frameNumber(i + 1),
                   waitDuration: toolTipDuration,
                   child: DecoratedBox(
                     decoration: BoxDecoration(

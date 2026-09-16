@@ -438,7 +438,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
     else
     {
-      GetIt.I.get<Logger>().w("Project directory was not changed: ${moveResult.message}");
+      GetIt.I.get<Logger>().w("Project directory was not changed: ${moveResult.error}");
       final bool currentIsCustom = !p.equals(currentDir, defaultDir);
       behaviorPrefs.useCustomProjectDirectory.value = currentIsCustom;
       if (currentIsCustom)
@@ -446,7 +446,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         behaviorPrefs.customProjectDirectory.value = currentDir;
       }
       late final KPixOverlay errorDialog;
-      errorDialog = getSingleButtonDialog(onAction: () {errorDialog.hide();}, message: (final AppLocalizations l10n) => l10n.projectDirWasNotChanged(moveResult.message));
+      errorDialog = getSingleButtonDialog(onAction: () {errorDialog.hide();}, message: (final AppLocalizations l10n) => l10n.projectDirWasNotChanged(getMessageForProjectDirectoryMove(result: moveResult, l10n: l10n)));
       if (mounted)
       {
         errorDialog.show(context: context);

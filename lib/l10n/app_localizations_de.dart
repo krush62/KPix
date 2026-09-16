@@ -83,6 +83,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get projectImportSuccessful => 'Projekt erfolgreich importiert!';
 
   @override
+  String get couldNotOpenFile => 'Datei konnte nicht geöffnet werden!';
+
+  @override
+  String get projectWithSameNameExists =>
+      'Ein Projekt mit demselben Namen existiert bereits!';
+
+  @override
+  String get pleaseSelectAKPixFile => 'Bitte eine KPix-Datei auswählen!';
+
+  @override
   String get couldNotReadProjectDir =>
       'Projektverzeichnis konnte nicht gelesen werden!';
 
@@ -213,10 +223,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get pixelsAbbrev => 'px';
-
-  @override
-  String get couldNotAddAllLayers =>
-      'Nicht alle Ebenen konnten hinzugefügt werden.';
 
   @override
   String get invalidLayerIndex => 'Ungültiger Ebenenindex.';
@@ -368,6 +374,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get couldNotCrop => 'Zuschneiden nicht möglich!';
 
   @override
+  String get cropToSelection => 'Auf Auswahl zuschneiden';
+
+  @override
   String get hidden => 'Ausgeblendet';
 
   @override
@@ -512,6 +521,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get text => 'Text';
+
+  @override
+  String get textToolDefaultText => 'Text';
 
   @override
   String get sprayCan => 'Sprühdose';
@@ -753,6 +765,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get texturePackAnimation => 'Textur-Animations-Bündel';
 
   @override
+  String get pngSequence => 'PNG-Sequenz';
+
+  @override
   String get scaling => 'Skalierung';
 
   @override
@@ -768,6 +783,11 @@ class AppLocalizationsDe extends AppLocalizations {
       zero: '0 Frames',
     );
     return '$_temp0';
+  }
+
+  @override
+  String frameNumber(int number) {
+    return 'Frame $number';
   }
 
   @override
@@ -1012,6 +1032,30 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get savePalette => 'Palette speichern';
+
+  @override
+  String get defaultPalette => 'Standard';
+
+  @override
+  String get errorSavingPalette => 'Fehler beim Speichern der Palette!';
+
+  @override
+  String paletteSavedAt(String path) {
+    return 'Palette erfolgreich gespeichert unter $path.';
+  }
+
+  @override
+  String get paletteWithSameNameExists =>
+      'Eine Palette mit demselben Namen existiert bereits!';
+
+  @override
+  String get pleaseSelectAKPalFile => 'Bitte eine KPal-Datei auswählen!';
+
+  @override
+  String get paletteImportSuccessful => 'Import erfolgreich!';
+
+  @override
+  String get paletteImportFailed => 'Import fehlgeschlagen!';
 
   @override
   String get insufficientPermissionsForDir =>
@@ -1388,6 +1432,24 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get movingProjectFilesDot => 'Verschiebe Projektdateien...';
+
+  @override
+  String get targetDirCouldNotBeCreated =>
+      'Das Verzeichnis existiert nicht und konnte nicht erstellt werden!';
+
+  @override
+  String dirAlreadyContainsFile(String fileName) {
+    return 'Das Verzeichnis enthält bereits eine Datei namens $fileName!';
+  }
+
+  @override
+  String couldNotMoveFile(String fileName) {
+    return 'Datei $fileName konnte nicht verschoben werden!';
+  }
+
+  @override
+  String get unexpectedErrorMovingProjectFiles =>
+      'Beim Verschieben der Projektdateien ist ein unerwarteter Fehler aufgetreten!';
 
   @override
   String changedProjectDirectoryFiles(String directory, int count) {

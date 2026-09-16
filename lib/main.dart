@@ -25,6 +25,7 @@ import 'package:flutter_localizations/flutter_localizations.dart'  as flutter_lo
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/infra/reference_image_manager.dart';
+import 'package:kpix/kpix_language.dart';
 import 'package:kpix/kpix_logger.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -93,6 +94,8 @@ void main(final List<String> args)
   final HotkeyManager hotkeyManager = HotkeyManager();
   final FocusNode focusNode = FocusNode();
   GetIt.I.registerSingleton<HotkeyManager>(hotkeyManager);
+  //built once: the app rebuilds when either the theme or the language changes
+  final Listenable appSettings = Listenable.merge(<Listenable>[themeSettings, languageSettings]);
   runApp(
     ValueListenableBuilder<Map<SingleActivator, VoidCallback>>(
       valueListenable: hotkeyManager.callbackMapNotifier,
@@ -104,7 +107,7 @@ void main(final List<String> args)
             autofocus: true,
             onKeyEvent: hotkeyManager.handleRawKeyboardEvent,
             child: AnimatedBuilder(
-              animation: themeSettings,
+              animation: appSettings,
               builder: (final BuildContext context, final Widget? child)
               {
                 return getToastificationWrapper(
@@ -112,6 +115,8 @@ void main(final List<String> args)
                     debugShowCheckedModeBanner: false,
                     localizationsDelegates: const <LocalizationsDelegate<dynamic>>[AppLocalizations.delegate, ...flutter_localizations.GlobalMaterialLocalizations.delegates],
                     supportedLocales: AppLocalizations.supportedLocales,
+                    //null follows the system language
+                    locale: languageSettings.locale,
                     home: const KPixApp(),
                     theme: monochromeTheme,
                     darkTheme: monochromeThemeDark,
@@ -291,6 +296,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       GetIt.I.registerSingleton<ToolOptions>(ToolOptions(fontManager: FontManager(kFontMap: fontMap)));
       logger.i("Creating Preferences");
       GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs));
+      languageSettings.languageCode = GetIt.I.get<PreferenceManager>().guiPreferenceContent.language.value;
       logger.i("Creating Blending Options");
       GetIt.I.registerSingleton<FrameBlendingOptions>(FrameBlendingOptions());
       logger.i("Creating Shader Options");
@@ -334,8 +340,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       GetIt.I.registerSingleton<ToolState>(ToolState());
       GetIt.I.registerSingleton<LayerManager>(LayerManager());
       GetIt.I.registerSingleton<HistoryController>(HistoryController());
-      //the tool options were built before the localizations could be reached
-      GetIt.I.get<ToolOptions>().textOptions.applyLocalizedDefault(l10n: AppLocalizations.of(context)!);
+      GetIt.I.get<ToolOptions>().textOptions.applyLocalizedDefault(l10n: languageSettings.resolve(fallback: AppLocalizations.of(context)!));
       final Size logicalSize = MediaQuery.of(context).size;
       logger.i("Logical Size: $logicalSize");
 

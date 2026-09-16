@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/kpix_language.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/color_names.dart';
@@ -41,6 +42,15 @@ class _GuiPreferencesState extends State<GuiPreferences>
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          Text(l10n.languagePreferences, style: Theme.of(context).textTheme.titleLarge),
+          PrefDropdownRow<String>(
+            label: l10n.language,
+            notifier: widget.prefs.language,
+            valueMap: getLanguageLabelMap(l10n: l10n),
+          ),
+
+          SizedBox(height: widget.itemPadding),
+
           Text(l10n.themePreferences, style: Theme.of(context).textTheme.titleLarge),
           PrefSegmentedButtonRow<ThemeMode>(
               label: l10n.theme,

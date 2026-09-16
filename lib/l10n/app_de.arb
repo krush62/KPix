@@ -386,6 +386,10 @@
 
   "mouseCursor": "Mauszeiger",
 
+  "languagePreferences": "Spracheinstellungen",
+  "language": "Sprache",
+  "languageSystem": "System",
+
   "themePreferences": "Thema-Einstellungen",
   "theme": "Thema",
   "checkerboardPreferences": "Schachbrett-Einstellungen",

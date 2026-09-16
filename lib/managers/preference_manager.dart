@@ -16,6 +16,7 @@
 
 // ignore_for_file: constant_identifier_names
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_language.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models/constraints/drawing_layer_settings_constraints.dart';
 import 'package:kpix/models/constraints/frame_constraints.dart';
@@ -158,6 +159,7 @@ enum PreferenceString
 {
   ColorNames_ColorNamePath(defaultValue: PreferenceManager.ASSET_PATH_COLOR_NAMES),
   ProjectDirectory_CustomPath(defaultValue: ""),
+  Gui_Language(defaultValue: systemLanguageCode),
 
   ;
   const PreferenceString({
@@ -371,6 +373,7 @@ class PreferenceManager
       selectionOpacityValue: _getValueI(PreferenceInt.Opacity_Selection),
       selectionPulsatingValue: _getValueB(PreferenceBool.Selection_PulsatingOutline),
       toolOpacityValue: _getValueI(PreferenceInt.Opacity_Tool),
+      languageValue: _getValueS(PreferenceString.Gui_Language),
     );
 
     shadingLayerSettingsConstraints = ShadingLayerSettingsConstraints(
@@ -471,6 +474,11 @@ class PreferenceManager
     _intMap[PreferenceInt.Opacity_Selection]!.value = guiPreferenceContent.selectionOpacity.value;
     _boolMap[PreferenceBool.Selection_PulsatingOutline]!.value = guiPreferenceContent.selectionPulsatingOutline.value;
     _intMap[PreferenceInt.Opacity_CanvasBorder]!.value = guiPreferenceContent.canvasBorderOpacity.value;
+    if (guiPreferenceContent.language.value != _stringMap[PreferenceString.Gui_Language]!.value)
+    {
+      _stringMap[PreferenceString.Gui_Language]!.value = guiPreferenceContent.language.value;
+      languageSettings.languageCode = guiPreferenceContent.language.value;
+    }
 
     //BEHAVIOR PREFERENCES
     if (_intMap[PreferenceInt.HistoryOptions_Steps]!.value != behaviorPreferenceContent.undoSteps.value)

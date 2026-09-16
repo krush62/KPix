@@ -2090,6 +2090,24 @@ abstract class AppLocalizations {
   /// **'Mouse Cursor'**
   String get mouseCursor;
 
+  /// No description provided for @languagePreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Language Preferences'**
+  String get languagePreferences;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @languageSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get languageSystem;
+
   /// No description provided for @themePreferences.
   ///
   /// In en, this message translates to:

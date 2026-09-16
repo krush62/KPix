@@ -487,6 +487,10 @@
 
   "mouseCursor": "Mouse Cursor",
 
+  "languagePreferences": "Language Preferences",
+  "language": "Language",
+  "languageSystem": "System",
+
   "themePreferences": "Theme Preferences",
   "theme": "Theme",
   "checkerboardPreferences": "Checkerboard Preferences",

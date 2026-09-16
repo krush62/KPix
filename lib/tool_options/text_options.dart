@@ -25,6 +25,7 @@ import 'package:kpix/models/constraints/tool_text_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/platform_helper.dart';
+import 'package:kpix/widgets/controls/kpix_dropdown.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class TextOptions extends IToolOptions
@@ -89,18 +90,16 @@ class TextOptions extends IToolOptions
                   valueListenable: textOptions.font,
                   builder: (final BuildContext context, final PixelFontType? font, final Widget? child)
                   {
-                    return DropdownButton<PixelFontType>(
+                    return KPixDropdown<PixelFontType?>(
                       value: font,
-                      dropdownColor: Theme.of(context).primaryColorDark,
-                      focusColor: Theme.of(context).primaryColor,
-                      isExpanded: true,
+                      valueMap: <PixelFontType?, String>{
+                        for (final PixelFontType typeValue in textOptions.fontManager.kFontMap.keys)
+                          typeValue: FontManager.getFontName(type: typeValue),
+                      },
+                      itemTextStyle: (final PixelFontType? typeValue) => typeValue == null
+                          ? null
+                          : Theme.of(context).textTheme.bodyLarge?.apply(fontFamily: FontManager.getFontName(type: typeValue)),
                       onChanged: (final PixelFontType? type) {textOptions.font.value = type;},
-                      items: textOptions.fontManager.kFontMap.keys.map<DropdownMenuItem<PixelFontType>>((final PixelFontType typeValue) {
-                        return DropdownMenuItem<PixelFontType>(
-                          value: typeValue,
-                          child: Text(FontManager.getFontName(type: typeValue), style: Theme.of(context).textTheme.bodyLarge?.apply(fontFamily: FontManager.getFontName(type: typeValue)),),
-                        );
-                      }).toList(),
                     );
                   },
                 ),

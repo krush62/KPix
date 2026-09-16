@@ -1075,6 +1075,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mouseCursor => 'Mouse Cursor';
 
   @override
+  String get languagePreferences => 'Language Preferences';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get languageSystem => 'System';
+
+  @override
   String get themePreferences => 'Theme Preferences';
 
   @override

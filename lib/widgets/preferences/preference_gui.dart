@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/widgets/controls/kpix_dropdown.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 
@@ -212,6 +213,51 @@ class PrefSwitchRow extends StatelessWidget {
               ),
               const Spacer(),
             ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A labelled dropdown, styled like the dropdowns in the tool settings.
+class PrefDropdownRow<E> extends StatelessWidget {
+  const PrefDropdownRow({
+    super.key,
+    required this.label,
+    required this.notifier,
+    required this.valueMap,
+    this.labelFlex = 1,
+    this.dropdownFlex = 2,
+  });
+
+  final String label;
+  final ValueNotifier<E> notifier;
+  final Map<E, String> valueMap;
+  final int labelFlex;
+  final int dropdownFlex;
+
+  @override
+  Widget build(final BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Expanded(
+          flex: labelFlex,
+          child: Text(label, style: Theme.of(context).textTheme.titleSmall),
+        ),
+        Expanded(
+          flex: dropdownFlex,
+          child: ValueListenableBuilder<E>(
+            valueListenable: notifier,
+            builder: (final BuildContext context, final E val, final Widget? child)
+            {
+              return KPixDropdown<E>(
+                value: val,
+                valueMap: valueMap,
+                onChanged: (final E newVal) {notifier.value = newVal;},
+              );
+            },
           ),
         ),
       ],

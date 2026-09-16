@@ -1094,6 +1094,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get mouseCursor => 'Mauszeiger';
 
   @override
+  String get languagePreferences => 'Spracheinstellungen';
+
+  @override
+  String get language => 'Sprache';
+
+  @override
+  String get languageSystem => 'System';
+
+  @override
   String get themePreferences => 'Thema-Einstellungen';
 
   @override

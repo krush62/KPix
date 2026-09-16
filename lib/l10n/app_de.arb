@@ -395,7 +395,12 @@
   "timeoutForPickingAColor": "Timeout für Pipette",
   "colorPickTimeout": "Pipetten-Timeout",
 
-  "touchDelay": "Berührungsverzögerung"
+  "touchDelay": "Berührungsverzögerung",
+
+  "stampManager": "Stempelverwaltung",
+  "deleteSelectedStamp": "Ausgewählten Stempel löschen",
+  "loadSelectedStamp": "Ausgewählten Stempel laden",
+  "doYouReallyWantToDeleteStamp": "Soll der Stempel wirklich gelöscht werden?"
 
 
 

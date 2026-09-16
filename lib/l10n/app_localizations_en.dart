@@ -1096,4 +1096,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get touchDelay => 'Touch Delay';
+
+  @override
+  String get stampManager => 'Stamp Manager';
+
+  @override
+  String get deleteSelectedStamp => 'Delete Selected Stamp';
+
+  @override
+  String get loadSelectedStamp => 'Load Selected Stamp';
+
+  @override
+  String get doYouReallyWantToDeleteStamp =>
+      'Do you really want to delete this stamp?';
 }

@@ -1116,4 +1116,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get touchDelay => 'Berührungsverzögerung';
+
+  @override
+  String get stampManager => 'Stempelverwaltung';
+
+  @override
+  String get deleteSelectedStamp => 'Ausgewählten Stempel löschen';
+
+  @override
+  String get loadSelectedStamp => 'Ausgewählten Stempel laden';
+
+  @override
+  String get doYouReallyWantToDeleteStamp =>
+      'Soll der Stempel wirklich gelöscht werden?';
 }

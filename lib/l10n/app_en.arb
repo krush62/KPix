@@ -480,7 +480,12 @@
   "timeoutForPickingAColor": "Timeout for picking a color.",
   "colorPickTimeout": "Color Pick Timeout",
 
-  "touchDelay": "Touch Delay"
+  "touchDelay": "Touch Delay",
+
+  "stampManager": "Stamp Manager",
+  "deleteSelectedStamp": "Delete Selected Stamp",
+  "loadSelectedStamp": "Load Selected Stamp",
+  "doYouReallyWantToDeleteStamp": "Do you really want to delete this stamp?"
 
 
 

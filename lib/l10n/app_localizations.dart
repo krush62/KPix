@@ -2137,6 +2137,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Touch Delay'**
   String get touchDelay;
+
+  /// No description provided for @stampManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Stamp Manager'**
+  String get stampManager;
+
+  /// No description provided for @deleteSelectedStamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Selected Stamp'**
+  String get deleteSelectedStamp;
+
+  /// No description provided for @loadSelectedStamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Load Selected Stamp'**
+  String get loadSelectedStamp;
+
+  /// No description provided for @doYouReallyWantToDeleteStamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you really want to delete this stamp?'**
+  String get doYouReallyWantToDeleteStamp;
 }
 
 class _AppLocalizationsDelegate

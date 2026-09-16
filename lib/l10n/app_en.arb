@@ -7,6 +7,10 @@
   "height": "Height",
   "presets": "Presets",
   "custom": "Custom",
+  "lockAspectRatio": "Lock Aspect Ratio",
+  "exitApplication": "Exit Application",
+  "openProjectManager": "Open Project Manager",
+  "createProject": "Create Project",
 
   "projectManager": "Project Manager",
   "filter": "Filter",

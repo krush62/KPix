@@ -140,6 +140,30 @@ abstract class AppLocalizations {
   /// **'Custom'**
   String get custom;
 
+  /// No description provided for @lockAspectRatio.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock Aspect Ratio'**
+  String get lockAspectRatio;
+
+  /// No description provided for @exitApplication.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit Application'**
+  String get exitApplication;
+
+  /// No description provided for @openProjectManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Project Manager'**
+  String get openProjectManager;
+
+  /// No description provided for @createProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Project'**
+  String get createProject;
+
   /// No description provided for @projectManager.
   ///
   /// In en, this message translates to:

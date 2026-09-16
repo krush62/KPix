@@ -30,6 +30,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get custom => 'Custom';
 
   @override
+  String get lockAspectRatio => 'Lock Aspect Ratio';
+
+  @override
+  String get exitApplication => 'Exit Application';
+
+  @override
+  String get openProjectManager => 'Open Project Manager';
+
+  @override
+  String get createProject => 'Create Project';
+
+  @override
   String get projectManager => 'Project Manager';
 
   @override

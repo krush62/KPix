@@ -7,6 +7,10 @@
   "height": "Höhe",
   "presets": "Vorlagen",
   "custom": "Benutzerdefiniert",
+  "lockAspectRatio": "Seitenverhältnis sperren",
+  "exitApplication": "Anwendung beenden",
+  "openProjectManager": "Projektverwaltung öffnen",
+  "createProject": "Projekt erstellen",
 
   "projectManager": "Projektverwaltung",
   "filter": "Filter",

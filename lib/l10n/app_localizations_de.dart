@@ -30,6 +30,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get custom => 'Benutzerdefiniert';
 
   @override
+  String get lockAspectRatio => 'Seitenverhältnis sperren';
+
+  @override
+  String get exitApplication => 'Anwendung beenden';
+
+  @override
+  String get openProjectManager => 'Projektverwaltung öffnen';
+
+  @override
+  String get createProject => 'Projekt erstellen';
+
+  @override
   String get projectManager => 'Projektverwaltung';
 
   @override
@@ -1038,13 +1050,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get mouseCursor => 'Mauszeiger';
 
   @override
-  String get themePreferences => 'Thema-Präferenzen';
+  String get themePreferences => 'Thema-Einstellungen';
 
   @override
   String get theme => 'Thema';
 
   @override
-  String get checkerboardPreferences => 'Schachbrett-Präferenzen';
+  String get checkerboardPreferences => 'Schachbrett-Einstellungen';
 
   @override
   String get checkerboardSize => 'Schachbrettgröße';
@@ -1053,13 +1065,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get checkerboardContrast => 'Schachbrettkontrast';
 
   @override
-  String get palettePreferences => 'Paletten-Präferenzen';
+  String get palettePreferences => 'Paletten-Einstellungen';
 
   @override
   String get colorNaming => 'Farbnamen';
 
   @override
-  String get borderPreferences => 'Umrandungs-Präferenzen';
+  String get borderPreferences => 'Umrandungs-Einstellungen';
 
   @override
   String get toolOutlineOpacity => 'Deckkraft Werkzeugumrandungen';
@@ -1321,70 +1333,70 @@ class AppLocalizationsDe extends AppLocalizations {
   String get loadingDot => 'Lade...';
 
   @override
-  String get undo => 'Undo';
+  String get undo => 'Rückgängig';
 
   @override
-  String get redo => 'Redo';
+  String get redo => 'Wiederholen';
 
   @override
-  String get about => 'About';
+  String get about => 'Über';
 
   @override
-  String get preferences => 'Preferences';
+  String get preferences => 'Einstellungen';
 
   @override
-  String get saveDot => 'Save...';
+  String get saveDot => 'Speichern...';
 
   @override
-  String get newOpenDot => 'New/Open...';
+  String get newOpenDot => 'Neu/Öffnen...';
 
   @override
-  String get errorImportingImage => 'Error importing image.';
+  String get errorImportingImage => 'Fehler beim Importieren des Bildes.';
 
   @override
   String get thereAreUnsavedChanges =>
-      'There are unsaved changes, do you want to save first?';
+      'Es gibt ungespeicherte Änderungen, zuerst speichern?';
 
   @override
-  String get importingImageDot => 'Importing Image...';
+  String get importingImageDot => 'Importiere Bild...';
 
   @override
-  String get exportingDot => 'Exporting...';
+  String get exportingDot => 'Exportiere...';
 
   @override
-  String get movingProjectFilesDot => 'Moving project files...';
+  String get movingProjectFilesDot => 'Verschiebe Projektdateien...';
 
   @override
   String changedProjectDirectoryFiles(String directory, int count) {
-    return 'Changed project directory to $directory (moved $count project file(s)).';
+    return 'Projektverzeichnis geändert zu $directory ($count Projektdatei(en) verschoben).';
   }
 
   @override
   String projectDirWasNotChanged(String message) {
-    return 'The project directory was not changed!\n$message';
+    return 'Das Projektverzeichnis wurde nicht geändert!\n$message';
   }
 
   @override
   String exportedPaletteTo(String path) {
-    return 'Exported palette to: $path';
+    return 'Palette exportiert nach: $path';
   }
 
   @override
-  String get errorExportingPaletteFile => 'Error exporting palette file.';
+  String get errorExportingPaletteFile => 'Fehler beim Exportieren der Palette';
 
   @override
   String exportedTo(String path) {
-    return 'Exported to: $path';
+    return 'Exportiert nach: $path';
   }
 
   @override
-  String get errorExportingFile => 'Error exporting file!';
+  String get errorExportingFile => 'Fehler beim Exportieren der Datei!';
 
   @override
   String get withoutAllFilesWarning =>
-      'Without the \"All files access\" permission, KPix cannot see project files that were created by other apps (e.g. sync tools) in this directory.\nDo you want to open the system settings to grant the permission?';
+      'Ohne die \"Zugriff auf alle Dateien erlauben\" Erlaubnis, kann KPix keine Projektdateien sehen, die von anderen Programmen (wie Synchronisations-Tools) in diesem Verzeichnis sehen.\nSollen die Systemeinstellungen geöffnet werden um den Zugriff zu erlauben?';
 
   @override
   String get allFilesAccessNotNeededWarning =>
-      'The \"All files access\" permission is not needed for the default project directory.\nDo you want to open the system settings to revoke the permission?';
+      'Die \"Zugriff auf alle Dateien erlauben\" Erlaubnis wird für das Standardverzeichnis nicht benötigt.\nSollen die Systemeinstellungen geöffnet werden um die Berechtigung zu entfernen?';
 }

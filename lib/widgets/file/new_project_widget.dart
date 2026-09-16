@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/canvas_size_constraints.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -190,6 +191,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -201,11 +203,11 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text(AppLocalizations.of(context)!.createNewProject, style: Theme.of(context).textTheme.titleLarge),
+          Text(l10n.createNewProject, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
           Divider(height: OverlayEntryAlertDialogOptions.padding / 4, thickness: OverlayEntryAlertDialogOptions.padding / 4, color: Theme.of(context).primaryColorLight,),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
-          Text(AppLocalizations.of(context)!.presets, style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.presets, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
           _getSizeRow(
               sizes: <CoordinateSetI>[
@@ -251,7 +253,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Divider(height: OverlayEntryAlertDialogOptions.padding / 4, thickness: OverlayEntryAlertDialogOptions.padding / 4, color: Theme.of(context).primaryColorLight,),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
-          Text(AppLocalizations.of(context)!.custom, style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.custom, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -264,48 +266,52 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      _getInputRow(title: AppLocalizations.of(context)!.width, notifier: _width, controller: _textWidthController, focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectWidthTextFocus), changeFunc: _changeWidth),
-                      _getInputRow(title: AppLocalizations.of(context)!.height, notifier: _height, controller: _textHeightController, focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectHeightTextFocus), changeFunc: _changeHeight),
+                      _getInputRow(title: l10n.width, notifier: _width, controller: _textWidthController, focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectWidthTextFocus), changeFunc: _changeWidth),
+                      _getInputRow(title: l10n.height, notifier: _height, controller: _textHeightController, focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectHeightTextFocus), changeFunc: _changeHeight),
                     ],
                   ),
                 ),
               ),
               const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
-              ValueListenableBuilder<bool>(
-                valueListenable: _locked,
-                builder: (final BuildContext context, final bool locked, final Widget? child)
-                {
-                  return IconButton.outlined(
-                    constraints: const BoxConstraints(
-                      minHeight: OverlayEntryAlertDialogOptions.iconSize * 2.5,
-                      minWidth: OverlayEntryAlertDialogOptions.iconSize,
-                      maxHeight: OverlayEntryAlertDialogOptions.iconSize * 2.5,
-                      maxWidth: OverlayEntryAlertDialogOptions.iconSize,
-                    ),
-                    icon: Icon(
-                      locked ? TablerIcons.lock : TablerIcons.lock_open_2,
-                      size: OverlayEntryAlertDialogOptions.iconSize / 2,
-                    ),
-                    style: ButtonStyle(
-                      tapTargetSize:
-                      MaterialTapTargetSize.shrinkWrap,
-                      backgroundColor: locked
-                          ? WidgetStatePropertyAll<Color?>(
-                        Theme.of(context)
-                            .primaryColorLight,)
-                          : null,
-                      iconColor: locked
-                          ? WidgetStatePropertyAll<Color?>(
-                        Theme.of(context)
-                            .primaryColor,)
-                          : null,
-                    ),
-                    onPressed: () {
-                      _locked.value = !_locked.value;
-                      _setAspectRatio();
-                    },
-                  );
-                },
+              Tooltip(
+                waitDuration: toolTipDuration,
+                message: l10n.lockAspectRatio,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: _locked,
+                  builder: (final BuildContext context, final bool locked, final Widget? child)
+                  {
+                    return IconButton.outlined(
+                      constraints: const BoxConstraints(
+                        minHeight: OverlayEntryAlertDialogOptions.iconSize * 2.5,
+                        minWidth: OverlayEntryAlertDialogOptions.iconSize,
+                        maxHeight: OverlayEntryAlertDialogOptions.iconSize * 2.5,
+                        maxWidth: OverlayEntryAlertDialogOptions.iconSize,
+                      ),
+                      icon: Icon(
+                        locked ? TablerIcons.lock : TablerIcons.lock_open_2,
+                        size: OverlayEntryAlertDialogOptions.iconSize / 2,
+                      ),
+                      style: ButtonStyle(
+                        tapTargetSize:
+                        MaterialTapTargetSize.shrinkWrap,
+                        backgroundColor: locked
+                            ? WidgetStatePropertyAll<Color?>(
+                          Theme.of(context)
+                              .primaryColorLight,)
+                            : null,
+                        iconColor: locked
+                            ? WidgetStatePropertyAll<Color?>(
+                          Theme.of(context)
+                              .primaryColor,)
+                            : null,
+                      ),
+                      onPressed: () {
+                        _locked.value = !_locked.value;
+                        _setAspectRatio();
+                      },
+                    );
+                  },
+                ),
               ),
               Expanded(
                 child: Center(
@@ -350,36 +356,48 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
             children: <Widget>[
               if (widget.dismiss != null) ...<Widget>[
                 Expanded(
-                  child: IconButton.outlined(
-                    icon: const Icon(
-                      TablerIcons.x,
+                  child: Tooltip(
+                    waitDuration: toolTipDuration,
+                    message: l10n.exitApplication,
+                    child: IconButton.outlined(
+                      icon: const Icon(
+                        TablerIcons.x,
+                      ),
+                      onPressed: () {
+                        widget.dismiss!();
+                      },
                     ),
-                    onPressed: () {
-                      widget.dismiss!();
-                    },
                   ),
                 ),
                 const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
               ],
               Expanded(
-                  child: IconButton.outlined(
-                    icon: const Icon(
-                      TablerIcons.folder_open,
+                  child: Tooltip(
+                    waitDuration: toolTipDuration,
+                    message: l10n.openProjectManager,
+                    child: IconButton.outlined(
+                      icon: const Icon(
+                        TablerIcons.folder_open,
+                      ),
+                      onPressed: () {
+                        widget.open();
+                      },
                     ),
-                    onPressed: () {
-                      widget.open();
-                    },
                   ),
               ),
               const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
               Expanded(
-                child: IconButton.outlined(
-                  icon: const Icon(
-                    TablerIcons.check,
+                child: Tooltip(
+                  waitDuration: toolTipDuration,
+                  message: l10n.createProject,
+                  child: IconButton.outlined(
+                    icon: const Icon(
+                      TablerIcons.check,
+                    ),
+                    onPressed: () {
+                      widget.accept(size: CoordinateSetI(x: _width.value, y: _height.value));
+                    },
                   ),
-                  onPressed: () {
-                    widget.accept(size: CoordinateSetI(x: _width.value, y: _height.value));
-                  },
                 ),
               ),
             ],

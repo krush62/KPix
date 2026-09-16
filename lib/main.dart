@@ -157,7 +157,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   KPixOverlay? _closeWarningDialog;
   late KPixOverlay _newProjectDialog;
   KPixOverlay? _saveNewWarningDialog;
-  late Timer _recoverTimer;
+  Timer? _recoverTimer;
   late AppLifecycleState _lastAppLifeCycleState;
   HistoryState? _lastHistoryState;
 
@@ -181,7 +181,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   void dispose()
   {
     WidgetsBinding.instance.removeObserver(this);
-    _recoverTimer.cancel();
+    //the timer is only started for non-web builds and only once the preferences
+    //have been initialized, so it can still be null here
+    _recoverTimer?.cancel();
     if (GetIt.I.isRegistered<ProjectManager>())
     {
       GetIt.I.get<ProjectManager>().dispose();
@@ -301,7 +303,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       final ProjectDirectoryResolveResult projectDirResult = await resolveProjectsDir(internalDir: internalDirString);
       logger.i("Projects Dir: ${projectDirResult.resolvedDir}");
 
-      if (!context.mounted || !mounted)
+      //mounted has to be checked first: State.context throws once the state has
+      //been unmounted, so reading context.mounted up front is not safe
+      if (!mounted || !context.mounted)
       {
         logger.e("BuildContext not mounted.");
         return;
@@ -336,7 +340,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       if (logicalSize.width < minimumApplicationSize.width || logicalSize.height < minimumApplicationSize.height)
       {
         logger.w("This device does not support the minimum logical resolution to run this application.");
-        final String message = AppLocalizations.of(context)!.thisDeviceDoesNotSupportResolution;
+        String message(final AppLocalizations l10n) => l10n.thisDeviceDoesNotSupportResolution;
         final KPixOverlay resolutionDialog = kIsWeb ? getLoadingDialog(message: message, textStyle: Theme.of(context).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: message);
         resolutionDialog.show(context: context);
         return;
@@ -391,7 +395,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
           logger.w("Could not create internal directories.", error: e, stackTrace: s);
           if (mounted && context.mounted)
           {
-            final KPixOverlay dirDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: AppLocalizations.of(context)!.couldNotCreateInternalDirectories);
+            final KPixOverlay dirDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: (final AppLocalizations l10n) => l10n.couldNotCreateInternalDirectories);
             dirDialog.show(context: context);
           }
         }
@@ -403,7 +407,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
           final PreferenceManager preferenceManager = GetIt.I.get<PreferenceManager>();
           preferenceManager.behaviorPreferenceContent.useCustomProjectDirectory.value = false;
           preferenceManager.behaviorPreferenceContent.customProjectDirectory.value = "";
-          if (mounted)
+          if (mounted && context.mounted)
           {
             showMessage(text: AppLocalizations.of(context)!.customProjectDirectoryInvalid, toastType: ToastType.warning);
           }
@@ -411,7 +415,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         }
 
 
-        if (!kIsWeb && Platform.isAndroid && context.mounted && mounted)
+        if (!kIsWeb && Platform.isAndroid && mounted && context.mounted)
         {
           await _checkAllFilesAccessOnStartup(context: context);
         }
@@ -436,9 +440,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     catch (e, s)
     {
       logger.w("Could not initialize the application.", error: e, stackTrace: s);
-      if (context.mounted && mounted)
+      if (mounted && context.mounted)
       {
-        final String message = AppLocalizations.of(context)!.couldNotInitializeApp;
+        String message(final AppLocalizations l10n) => l10n.couldNotInitializeApp;
         final KPixOverlay dirDialog = kIsWeb ? getLoadingDialog(message: message, textStyle: Theme.of(context).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: message);
         dirDialog.show(context: context);
       }
@@ -482,10 +486,10 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     {
       GetIt.I.get<Logger>().w("Using a custom project directory without all files access.");
 
-      if (context.mounted && mounted)
+      if (mounted && context.mounted)
       {
         final KPixOverlay permissionDialog = getAllFilesAccessDialog(
-          message: AppLocalizations.of(context)!.aCustomProjectDirectoryIsUsed,
+          message: (final AppLocalizations l10n) => l10n.aCustomProjectDirectoryIsUsed,
         );
         permissionDialog.show(context: context);
       }
@@ -674,12 +678,14 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
 
+    //the dialogs are built once and kept, so their text is resolved while the
+    //overlay builds instead of being captured here
     _closeWarningDialog ??= getThreeButtonDialog(
       onYes: _closeWarningYes,
       onNo: _closeWarningNo,
       onCancel: _closeAllMenus,
       outsideCancelable: false,
-      message: l10n.thereAreUnsavedChanges,
+      message: (final AppLocalizations l10n) => l10n.thereAreUnsavedChanges,
     );
 
     _saveNewWarningDialog ??= getThreeButtonDialog(
@@ -687,7 +693,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       onNo: _saveNewWarningNo,
       onCancel: _saveNewWarningCancel,
       outsideCancelable: false,
-      message: l10n.thereAreUnsavedChanges,
+      message: (final AppLocalizations l10n) => l10n.thereAreUnsavedChanges,
     );
 
     return ValueListenableBuilder<bool>(

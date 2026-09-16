@@ -1228,4 +1228,92 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get toggle => 'Umschalten';
+
+  @override
+  String get grid => 'Gitter';
+
+  @override
+  String get gridButton => 'GITTER';
+
+  @override
+  String get perspective => 'Perspektive';
+
+  @override
+  String get perspectiveButton => 'PERSPEkTIVE';
+
+  @override
+  String get brightness => 'Helligkeit';
+
+  @override
+  String get interval => 'Intervall';
+
+  @override
+  String get intervalX => 'Intervall X';
+
+  @override
+  String get intervalY => 'Intervall Y';
+
+  @override
+  String get horizon => 'Horizont';
+
+  @override
+  String get vanishingPoint => 'Fluchtpunkt';
+
+  @override
+  String get horPoints => 'Hor Punkte';
+
+  @override
+  String get verPoint => 'Ver Punkt';
+
+  @override
+  String couldNotLoadImageFrom(String location) {
+    return 'Konnte Bild nicht von $location laden.';
+  }
+
+  @override
+  String resetSetting(String setting) {
+    return '$setting zurücksetzen';
+  }
+
+  @override
+  String get noFileLoaded => 'Keine Datei geladen';
+
+  @override
+  String get openReferenceImage => 'Referenzbild öffnen';
+
+  @override
+  String get aspectRatio => 'Seitenverhältnis';
+
+  @override
+  String get zoom => 'Zoom';
+
+  @override
+  String get expandHorizontallyAndCenter =>
+      ' Horizontal ausdehnen und zentrieren (aktuelles Seitenverhältnis wird beibehalten)';
+
+  @override
+  String get expandVerticallyAndCenter =>
+      'Vertikal ausdehnen und zentrieren (aktuelles Seitenverhältnis wird beibehalten)';
+
+  @override
+  String get fitsImageIntoCanvas =>
+      'Bild in Leinwand einpassen (Seitenverhältnis wird geändert)';
+
+  @override
+  String get contrast => 'Kontrast';
+
+  @override
+  String get saturation => 'Sättigung';
+
+  @override
+  String get warmth => 'Wärme';
+
+  @override
+  String get shading => 'Schattierung';
+
+  @override
+  String get currentRampOnly => 'nur aktuelle Rampe';
+
+  @override
+  String get direction => 'Richtung';
 }

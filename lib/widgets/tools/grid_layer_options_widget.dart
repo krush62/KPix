@@ -65,6 +65,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Material(
       color: Theme.of(context).primaryColor,
       child: Padding(
@@ -101,11 +102,11 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                     segments: <ButtonSegment<bool>>[
                       ButtonSegment<bool>(
                         value: false,
-                        label: Tooltip(waitDuration: toolTipDuration, message: "Grid", child: Text("GRID", style: Theme.of(context).textTheme.labelSmall!.apply(color: !isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                        label: Tooltip(waitDuration: toolTipDuration, message: l10n.grid, child: Text(l10n.gridButton, style: Theme.of(context).textTheme.labelSmall!.apply(color: !isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                       ),
                       ButtonSegment<bool>(
                         value: true,
-                        label: Tooltip(waitDuration: toolTipDuration, message: "Perspective", child: Text("PERSPECTIVE", style: Theme.of(context).textTheme.labelSmall!.apply(color: isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                        label: Tooltip(waitDuration: toolTipDuration, message: l10n.perspective, child: Text(l10n.perspectiveButton, style: Theme.of(context).textTheme.labelSmall!.apply(color: isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                       ),
                     ],
                   ),
@@ -115,7 +116,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         if (isPerspectiveGridType(gridType: g) == isPerspective)
                           ButtonSegment<GridType>(
                             value: g,
-                            label: Tooltip(waitDuration: toolTipDuration, message: g.desc(AppLocalizations.of(context)!), child: Text(g.label(AppLocalizations.of(context)!), style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                            label: Tooltip(waitDuration: toolTipDuration, message: g.desc(l10n), child: Text(g.label(l10n), style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                           ),
                     ],
                     selected: <GridType>{gridType},
@@ -141,7 +142,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "Opacity",
+                            l10n.opacity,
                             style: Theme.of(context).textTheme.labelLarge,
                           ),
                         ),
@@ -177,7 +178,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "Brightness",
+                            l10n.brightness,
                             style: Theme.of(context).textTheme.labelLarge,
                           ),
                         ),
@@ -212,7 +213,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            !isPerspective ? "Interval X" : "Interval",
+                            !isPerspective ? l10n.intervalX : l10n.interval,
                             style: Theme.of(context).textTheme.labelLarge,
                           ),
                         ),
@@ -248,7 +249,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "Interval Y",
+                            l10n.intervalY,
                             style: Theme.of(context).textTheme.labelLarge,
                           ),
                         ),
@@ -284,7 +285,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              "Horizon",
+                              l10n.horizon,
                               style: Theme.of(context).textTheme.labelLarge,
                             ),
                           ),
@@ -320,7 +321,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              "Vanishing Point",
+                              l10n.vanishingPoint,
                               style: Theme.of(context).textTheme.labelLarge,
                             ),
                           ),
@@ -356,7 +357,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              "Hor Points",
+                              l10n.horPoints,
                               style: Theme.of(context).textTheme.labelLarge,
                             ),
                           ),
@@ -400,7 +401,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              "Ver Point",
+                              l10n.verPoint,
                               style: Theme.of(context).textTheme.labelLarge,
                             ),
                           ),

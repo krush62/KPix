@@ -436,7 +436,38 @@
   "createLinkedFrame": "Verknüpften Frame hinzufügen",
   "createLinkedFrameRight": "Verknüpften Frame rechts hinzufügen",
   "deleteFrame": "Frame löschen",
-  "toggle": "Umschalten"
+  "toggle": "Umschalten",
+
+  "grid": "Gitter",
+  "gridButton": "GITTER",
+  "perspective": "Perspektive",
+  "perspectiveButton": "PERSPEkTIVE",
+  "brightness": "Helligkeit",
+  "interval": "Intervall",
+  "intervalX": "Intervall X",
+  "intervalY": "Intervall Y",
+  "horizon": "Horizont",
+  "vanishingPoint": "Fluchtpunkt",
+  "horPoints": "Hor Punkte",
+  "verPoint": "Ver Punkt",
+
+  "couldNotLoadImageFrom": "Konnte Bild nicht von {location} laden.",
+  "resetSetting": "{setting} zurücksetzen",
+
+  "noFileLoaded": "Keine Datei geladen",
+  "openReferenceImage": "Referenzbild öffnen",
+  "aspectRatio": "Seitenverhältnis",
+  "zoom": "Zoom",
+  "expandHorizontallyAndCenter": " Horizontal ausdehnen und zentrieren (aktuelles Seitenverhältnis wird beibehalten)",
+  "expandVerticallyAndCenter": "Vertikal ausdehnen und zentrieren (aktuelles Seitenverhältnis wird beibehalten)",
+  "fitsImageIntoCanvas": "Bild in Leinwand einpassen (Seitenverhältnis wird geändert)",
+  "contrast": "Kontrast",
+  "saturation": "Sättigung",
+  "warmth": "Wärme",
+
+  "shading": "Schattierung",
+  "currentRampOnly": "nur aktuelle Rampe",
+  "direction": "Richtung"
 
 
 

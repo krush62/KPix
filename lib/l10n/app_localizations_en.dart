@@ -1208,4 +1208,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get toggle => 'Toggle';
+
+  @override
+  String get grid => 'Grid';
+
+  @override
+  String get gridButton => 'GRID';
+
+  @override
+  String get perspective => 'Perspective';
+
+  @override
+  String get perspectiveButton => 'PERSPECTIVE';
+
+  @override
+  String get brightness => 'Brightness';
+
+  @override
+  String get interval => 'Interval';
+
+  @override
+  String get intervalX => 'Interval X';
+
+  @override
+  String get intervalY => 'Interval Y';
+
+  @override
+  String get horizon => 'Horizon';
+
+  @override
+  String get vanishingPoint => 'Vanishing Point';
+
+  @override
+  String get horPoints => 'Hor Points';
+
+  @override
+  String get verPoint => 'Ver Point';
+
+  @override
+  String couldNotLoadImageFrom(String location) {
+    return 'Could not load image from $location.';
+  }
+
+  @override
+  String resetSetting(String setting) {
+    return 'Reset $setting';
+  }
+
+  @override
+  String get noFileLoaded => 'No File Loaded';
+
+  @override
+  String get openReferenceImage => 'Open Reference Image';
+
+  @override
+  String get aspectRatio => 'Aspect Ratio';
+
+  @override
+  String get zoom => 'Zoom';
+
+  @override
+  String get expandHorizontallyAndCenter =>
+      'Expand horizontally and center by keeping the current aspect ratio';
+
+  @override
+  String get expandVerticallyAndCenter =>
+      'Expand vertically and center by keeping the current aspect ratio';
+
+  @override
+  String get fitsImageIntoCanvas =>
+      'Fits the image into the canvas (changes aspect ratio)';
+
+  @override
+  String get contrast => 'Contrast';
+
+  @override
+  String get saturation => 'Saturation';
+
+  @override
+  String get warmth => 'Warmth';
+
+  @override
+  String get shading => 'Shading';
+
+  @override
+  String get currentRampOnly => 'Current Ramp Only';
+
+  @override
+  String get direction => 'Direction';
 }

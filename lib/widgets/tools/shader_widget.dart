@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
@@ -62,6 +63,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Padding (
       padding: const EdgeInsets.only(left: _ShaderWidgetOptions.outsidePadding, right: _ShaderWidgetOptions.outsidePadding, bottom: _ShaderWidgetOptions.outsidePadding),
       child: ListenableBuilder(
@@ -97,7 +99,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
                         flex: 3,
                         child: GestureDetector(
                           onTap: (!isShadingLayer && !isForbiddenLayerType) ? () {_shaderOptions.isEnabled.value = !shouldBeEnabled;} : null,
-                          child: Text("Shading",
+                          child: Text(l10n.shading,
                             textAlign: TextAlign.start, style: shouldBeEnabled ? widget.titleStyle?.apply(color: Theme.of(context).primaryColorLight) : widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark),),
                         ),
                       ),
@@ -105,7 +107,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
                         flex: 2,
                         child: Padding(
                           padding: const EdgeInsets.only(right: _ShaderWidgetOptions.outsidePadding),
-                          child: Text("Enabled",
+                          child: Text(l10n.enabled,
                             textAlign: TextAlign.end, style: widget.labelStyle,),
                         ),
                       ),
@@ -130,7 +132,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
                         flex: 2,
                         child: Padding(
                           padding: const EdgeInsets.only(right: _ShaderWidgetOptions.outsidePadding),
-                          child: Text("Current Ramp Only",
+                          child: Text(l10n.currentRampOnly,
                             textAlign: TextAlign.start, style: widget.labelStyle,),
                         ),
                       ),
@@ -157,7 +159,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
                         flex: 2,
                         child: Padding(
                           padding: const EdgeInsets.only(right: _ShaderWidgetOptions.outsidePadding),
-                          child: Text("Direction",
+                          child: Text(l10n.direction,
                             textAlign: TextAlign.end, style: widget.labelStyle,),
                         ),
                       ),

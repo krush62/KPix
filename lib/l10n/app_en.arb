@@ -521,12 +521,47 @@
   "createLinkedFrame": "Create Linked Frame",
   "createLinkedFrameRight": "Create Linked Frame Right",
   "deleteFrame": "Delete Frame",
-  "toggle": "Toggle"
+  "toggle": "Toggle",
 
+  "grid": "Grid",
+  "gridButton": "GRID",
+  "perspective": "Perspective",
+  "perspectiveButton": "PERSPECTIVE",
+  "brightness": "Brightness",
+  "interval": "Interval",
+  "intervalX": "Interval X",
+  "intervalY": "Interval Y",
+  "horizon": "Horizon",
+  "vanishingPoint": "Vanishing Point",
+  "horPoints": "Hor Points",
+  "verPoint": "Ver Point",
 
+  "couldNotLoadImageFrom": "Could not load image from {location}.",
+  "@couldNotLoadImageFrom": {
+    "placeholders": {
+      "location": {"type": "String"}
+    }
+  },
+  "resetSetting": "Reset {setting}",
+  "@resetSetting": {
+    "placeholders": {
+      "setting": {"type": "String"}
+    }
+  },
+  "noFileLoaded": "No File Loaded",
+  "openReferenceImage": "Open Reference Image",
+  "aspectRatio": "Aspect Ratio",
+  "zoom": "Zoom",
+  "expandHorizontallyAndCenter": "Expand horizontally and center by keeping the current aspect ratio",
+  "expandVerticallyAndCenter": "Expand vertically and center by keeping the current aspect ratio",
+  "fitsImageIntoCanvas": "Fits the image into the canvas (changes aspect ratio)",
+  "contrast": "Contrast",
+  "saturation": "Saturation",
+  "warmth": "Warmth",
 
-
-
+  "shading": "Shading",
+  "currentRampOnly": "Current Ramp Only",
+  "direction": "Direction"
 
 
 }

@@ -2359,6 +2359,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Toggle'**
   String get toggle;
+
+  /// No description provided for @grid.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid'**
+  String get grid;
+
+  /// No description provided for @gridButton.
+  ///
+  /// In en, this message translates to:
+  /// **'GRID'**
+  String get gridButton;
+
+  /// No description provided for @perspective.
+  ///
+  /// In en, this message translates to:
+  /// **'Perspective'**
+  String get perspective;
+
+  /// No description provided for @perspectiveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'PERSPECTIVE'**
+  String get perspectiveButton;
+
+  /// No description provided for @brightness.
+  ///
+  /// In en, this message translates to:
+  /// **'Brightness'**
+  String get brightness;
+
+  /// No description provided for @interval.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval'**
+  String get interval;
+
+  /// No description provided for @intervalX.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval X'**
+  String get intervalX;
+
+  /// No description provided for @intervalY.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval Y'**
+  String get intervalY;
+
+  /// No description provided for @horizon.
+  ///
+  /// In en, this message translates to:
+  /// **'Horizon'**
+  String get horizon;
+
+  /// No description provided for @vanishingPoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Vanishing Point'**
+  String get vanishingPoint;
+
+  /// No description provided for @horPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Hor Points'**
+  String get horPoints;
+
+  /// No description provided for @verPoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ver Point'**
+  String get verPoint;
+
+  /// No description provided for @couldNotLoadImageFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load image from {location}.'**
+  String couldNotLoadImageFrom(String location);
+
+  /// No description provided for @resetSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset {setting}'**
+  String resetSetting(String setting);
+
+  /// No description provided for @noFileLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'No File Loaded'**
+  String get noFileLoaded;
+
+  /// No description provided for @openReferenceImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Reference Image'**
+  String get openReferenceImage;
+
+  /// No description provided for @aspectRatio.
+  ///
+  /// In en, this message translates to:
+  /// **'Aspect Ratio'**
+  String get aspectRatio;
+
+  /// No description provided for @zoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom'**
+  String get zoom;
+
+  /// No description provided for @expandHorizontallyAndCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand horizontally and center by keeping the current aspect ratio'**
+  String get expandHorizontallyAndCenter;
+
+  /// No description provided for @expandVerticallyAndCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand vertically and center by keeping the current aspect ratio'**
+  String get expandVerticallyAndCenter;
+
+  /// No description provided for @fitsImageIntoCanvas.
+  ///
+  /// In en, this message translates to:
+  /// **'Fits the image into the canvas (changes aspect ratio)'**
+  String get fitsImageIntoCanvas;
+
+  /// No description provided for @contrast.
+  ///
+  /// In en, this message translates to:
+  /// **'Contrast'**
+  String get contrast;
+
+  /// No description provided for @saturation.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturation'**
+  String get saturation;
+
+  /// No description provided for @warmth.
+  ///
+  /// In en, this message translates to:
+  /// **'Warmth'**
+  String get warmth;
+
+  /// No description provided for @shading.
+  ///
+  /// In en, this message translates to:
+  /// **'Shading'**
+  String get shading;
+
+  /// No description provided for @currentRampOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Ramp Only'**
+  String get currentRampOnly;
+
+  /// No description provided for @direction.
+  ///
+  /// In en, this message translates to:
+  /// **'Direction'**
+  String get direction;
 }
 
 class _AppLocalizationsDelegate

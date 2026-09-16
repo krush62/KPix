@@ -485,7 +485,43 @@
   "stampManager": "Stamp Manager",
   "deleteSelectedStamp": "Delete Selected Stamp",
   "loadSelectedStamp": "Load Selected Stamp",
-  "doYouReallyWantToDeleteStamp": "Do you really want to delete this stamp?"
+  "doYouReallyWantToDeleteStamp": "Do you really want to delete this stamp?",
+
+  "frameBlending": "Frame Blending",
+  "enabled": "Enabled",
+  "framesBefore": "Frames Before",
+  "wrapAround": "Wrap Around",
+  "framesAfter": "Frames After",
+  "opacity": "Opacity",
+  "gradual": "Gradual",
+  "tinting": "Tinting",
+  "activeLayerOnly": "Active Layer Only",
+
+  "cancel": "Cancel",
+  "applyToAllFrames": "Apply to All Frames",
+  "applyToCurrentFrame": "Apply to Current Frame",
+
+  "collapseTimeline": "Collapse Timeline",
+  "expandTimeline": "Expand Timeline",
+  "pause": "Pause",
+  "play": "Play",
+  "loopStartMarker": "Loop Start Marker",
+  "loopEndMarker": "Loop End Marker",
+  "changeDuration": "Change Duration",
+  "moveFrameLeft": "Move Frame Left",
+  "moveFrame": "Move Frame",
+  "moveFrameRight": "Move Frame Right",
+  "addFrameLeft": "Add Frame Left",
+  "addFrame": "Add Frame",
+  "addFrameRight": "Add Frame Right",
+  "copyFrameLeft": "Copy Frame Left",
+  "copyFrame": "Copy Frame",
+  "copyFrameRight": "Copy Frame Right",
+  "createLinkedFrameLeft": "Create Linked Frame Left",
+  "createLinkedFrame": "Create Linked Frame",
+  "createLinkedFrameRight": "Create Linked Frame Right",
+  "deleteFrame": "Delete Frame",
+  "toggle": "Toggle"
 
 
 

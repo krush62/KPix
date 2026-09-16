@@ -2161,6 +2161,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Do you really want to delete this stamp?'**
   String get doYouReallyWantToDeleteStamp;
+
+  /// No description provided for @frameBlending.
+  ///
+  /// In en, this message translates to:
+  /// **'Frame Blending'**
+  String get frameBlending;
+
+  /// No description provided for @enabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get enabled;
+
+  /// No description provided for @framesBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Frames Before'**
+  String get framesBefore;
+
+  /// No description provided for @wrapAround.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrap Around'**
+  String get wrapAround;
+
+  /// No description provided for @framesAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Frames After'**
+  String get framesAfter;
+
+  /// No description provided for @opacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Opacity'**
+  String get opacity;
+
+  /// No description provided for @gradual.
+  ///
+  /// In en, this message translates to:
+  /// **'Gradual'**
+  String get gradual;
+
+  /// No description provided for @tinting.
+  ///
+  /// In en, this message translates to:
+  /// **'Tinting'**
+  String get tinting;
+
+  /// No description provided for @activeLayerOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Layer Only'**
+  String get activeLayerOnly;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @applyToAllFrames.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply to All Frames'**
+  String get applyToAllFrames;
+
+  /// No description provided for @applyToCurrentFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply to Current Frame'**
+  String get applyToCurrentFrame;
+
+  /// No description provided for @collapseTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse Timeline'**
+  String get collapseTimeline;
+
+  /// No description provided for @expandTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand Timeline'**
+  String get expandTimeline;
+
+  /// No description provided for @pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pause;
+
+  /// No description provided for @play.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get play;
+
+  /// No description provided for @loopStartMarker.
+  ///
+  /// In en, this message translates to:
+  /// **'Loop Start Marker'**
+  String get loopStartMarker;
+
+  /// No description provided for @loopEndMarker.
+  ///
+  /// In en, this message translates to:
+  /// **'Loop End Marker'**
+  String get loopEndMarker;
+
+  /// No description provided for @changeDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Duration'**
+  String get changeDuration;
+
+  /// No description provided for @moveFrameLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Move Frame Left'**
+  String get moveFrameLeft;
+
+  /// No description provided for @moveFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Move Frame'**
+  String get moveFrame;
+
+  /// No description provided for @moveFrameRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Move Frame Right'**
+  String get moveFrameRight;
+
+  /// No description provided for @addFrameLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Frame Left'**
+  String get addFrameLeft;
+
+  /// No description provided for @addFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Frame'**
+  String get addFrame;
+
+  /// No description provided for @addFrameRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Frame Right'**
+  String get addFrameRight;
+
+  /// No description provided for @copyFrameLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Frame Left'**
+  String get copyFrameLeft;
+
+  /// No description provided for @copyFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Frame'**
+  String get copyFrame;
+
+  /// No description provided for @copyFrameRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Frame Right'**
+  String get copyFrameRight;
+
+  /// No description provided for @createLinkedFrameLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Linked Frame Left'**
+  String get createLinkedFrameLeft;
+
+  /// No description provided for @createLinkedFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Linked Frame'**
+  String get createLinkedFrame;
+
+  /// No description provided for @createLinkedFrameRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Linked Frame Right'**
+  String get createLinkedFrameRight;
+
+  /// No description provided for @deleteFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Frame'**
+  String get deleteFrame;
+
+  /// No description provided for @toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle'**
+  String get toggle;
 }
 
 class _AppLocalizationsDelegate

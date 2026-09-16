@@ -1109,4 +1109,103 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get doYouReallyWantToDeleteStamp =>
       'Do you really want to delete this stamp?';
+
+  @override
+  String get frameBlending => 'Frame Blending';
+
+  @override
+  String get enabled => 'Enabled';
+
+  @override
+  String get framesBefore => 'Frames Before';
+
+  @override
+  String get wrapAround => 'Wrap Around';
+
+  @override
+  String get framesAfter => 'Frames After';
+
+  @override
+  String get opacity => 'Opacity';
+
+  @override
+  String get gradual => 'Gradual';
+
+  @override
+  String get tinting => 'Tinting';
+
+  @override
+  String get activeLayerOnly => 'Active Layer Only';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get applyToAllFrames => 'Apply to All Frames';
+
+  @override
+  String get applyToCurrentFrame => 'Apply to Current Frame';
+
+  @override
+  String get collapseTimeline => 'Collapse Timeline';
+
+  @override
+  String get expandTimeline => 'Expand Timeline';
+
+  @override
+  String get pause => 'Pause';
+
+  @override
+  String get play => 'Play';
+
+  @override
+  String get loopStartMarker => 'Loop Start Marker';
+
+  @override
+  String get loopEndMarker => 'Loop End Marker';
+
+  @override
+  String get changeDuration => 'Change Duration';
+
+  @override
+  String get moveFrameLeft => 'Move Frame Left';
+
+  @override
+  String get moveFrame => 'Move Frame';
+
+  @override
+  String get moveFrameRight => 'Move Frame Right';
+
+  @override
+  String get addFrameLeft => 'Add Frame Left';
+
+  @override
+  String get addFrame => 'Add Frame';
+
+  @override
+  String get addFrameRight => 'Add Frame Right';
+
+  @override
+  String get copyFrameLeft => 'Copy Frame Left';
+
+  @override
+  String get copyFrame => 'Copy Frame';
+
+  @override
+  String get copyFrameRight => 'Copy Frame Right';
+
+  @override
+  String get createLinkedFrameLeft => 'Create Linked Frame Left';
+
+  @override
+  String get createLinkedFrame => 'Create Linked Frame';
+
+  @override
+  String get createLinkedFrameRight => 'Create Linked Frame Right';
+
+  @override
+  String get deleteFrame => 'Delete Frame';
+
+  @override
+  String get toggle => 'Toggle';
 }

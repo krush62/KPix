@@ -1129,4 +1129,103 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get doYouReallyWantToDeleteStamp =>
       'Soll der Stempel wirklich gelöscht werden?';
+
+  @override
+  String get frameBlending => 'Frame-Überblendung';
+
+  @override
+  String get enabled => 'Aktiv';
+
+  @override
+  String get framesBefore => 'Frames Davor';
+
+  @override
+  String get wrapAround => 'Umlaufend';
+
+  @override
+  String get framesAfter => 'Frames Danach';
+
+  @override
+  String get opacity => 'Deckkraft';
+
+  @override
+  String get gradual => 'Graduell';
+
+  @override
+  String get tinting => 'Einfärben';
+
+  @override
+  String get activeLayerOnly => 'Nur aktive Ebene';
+
+  @override
+  String get cancel => 'Abbrechen';
+
+  @override
+  String get applyToAllFrames => 'Auf alle Frames anwenden';
+
+  @override
+  String get applyToCurrentFrame => 'Auf aktuellen Frame anwenden';
+
+  @override
+  String get collapseTimeline => 'Zeitleiste einklappen';
+
+  @override
+  String get expandTimeline => 'Zeitleiste ausklappen';
+
+  @override
+  String get pause => 'Pause';
+
+  @override
+  String get play => 'Abspielen';
+
+  @override
+  String get loopStartMarker => 'Startmarkierung für Wiederholung';
+
+  @override
+  String get loopEndMarker => 'Enmarkierung für Wiederholung';
+
+  @override
+  String get changeDuration => 'Dauer ändern';
+
+  @override
+  String get moveFrameLeft => 'Frame nach links bewegen';
+
+  @override
+  String get moveFrame => 'Frame bewegen';
+
+  @override
+  String get moveFrameRight => 'Frame nach rechts bewegen';
+
+  @override
+  String get addFrameLeft => 'Frame links hinzufügen';
+
+  @override
+  String get addFrame => 'Frame hinzufügen';
+
+  @override
+  String get addFrameRight => 'Frame rechts hinzufügen';
+
+  @override
+  String get copyFrameLeft => 'Frame nach links kopieren';
+
+  @override
+  String get copyFrame => 'Frame kopieren';
+
+  @override
+  String get copyFrameRight => 'Frame nach rechts kopieren';
+
+  @override
+  String get createLinkedFrameLeft => 'Verknüpften Frame links hinzufügen';
+
+  @override
+  String get createLinkedFrame => 'Verknüpften Frame hinzufügen';
+
+  @override
+  String get createLinkedFrameRight => 'Verknüpften Frame rechts hinzufügen';
+
+  @override
+  String get deleteFrame => 'Frame löschen';
+
+  @override
+  String get toggle => 'Umschalten';
 }

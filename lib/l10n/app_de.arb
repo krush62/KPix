@@ -400,7 +400,43 @@
   "stampManager": "Stempelverwaltung",
   "deleteSelectedStamp": "Ausgewählten Stempel löschen",
   "loadSelectedStamp": "Ausgewählten Stempel laden",
-  "doYouReallyWantToDeleteStamp": "Soll der Stempel wirklich gelöscht werden?"
+  "doYouReallyWantToDeleteStamp": "Soll der Stempel wirklich gelöscht werden?",
+
+  "frameBlending": "Frame-Überblendung",
+  "enabled": "Aktiv",
+  "framesBefore": "Frames Davor",
+  "wrapAround": "Umlaufend",
+  "framesAfter": "Frames Danach",
+  "opacity": "Deckkraft",
+  "gradual": "Graduell",
+  "tinting": "Einfärben",
+  "activeLayerOnly": "Nur aktive Ebene",
+
+  "cancel": "Abbrechen",
+  "applyToAllFrames": "Auf alle Frames anwenden",
+  "applyToCurrentFrame": "Auf aktuellen Frame anwenden",
+
+  "collapseTimeline": "Zeitleiste einklappen",
+  "expandTimeline": "Zeitleiste ausklappen",
+  "pause": "Pause",
+  "play": "Abspielen",
+  "loopStartMarker": "Startmarkierung für Wiederholung",
+  "loopEndMarker": "Enmarkierung für Wiederholung",
+  "changeDuration": "Dauer ändern",
+  "moveFrameLeft": "Frame nach links bewegen",
+  "moveFrame": "Frame bewegen",
+  "moveFrameRight": "Frame nach rechts bewegen",
+  "addFrameLeft": "Frame links hinzufügen",
+  "addFrame": "Frame hinzufügen",
+  "addFrameRight": "Frame rechts hinzufügen",
+  "copyFrameLeft": "Frame nach links kopieren",
+  "copyFrame": "Frame kopieren",
+  "copyFrameRight": "Frame nach rechts kopieren",
+  "createLinkedFrameLeft": "Verknüpften Frame links hinzufügen",
+  "createLinkedFrame": "Verknüpften Frame hinzufügen",
+  "createLinkedFrameRight": "Verknüpften Frame rechts hinzufügen",
+  "deleteFrame": "Frame löschen",
+  "toggle": "Umschalten"
 
 
 

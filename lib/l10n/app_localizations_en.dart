@@ -1313,6 +1313,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loadingDot => 'Loading...';
 
   @override
+  String get thisDeviceDoesNotSupportResolution =>
+      'This device does not support the minimum logical resolution to run this application.';
+
+  @override
+  String get customProjectDirectoryInvalid =>
+      'Custom Project directory invalid. Switching to default directory.';
+
+  @override
+  String get couldNotCreateInternalDirectories =>
+      'Could not create internal directories.';
+
+  @override
+  String get couldNotInitializeApp => 'Could not initialize the application.';
+
+  @override
+  String get aCustomProjectDirectoryIsUsed =>
+      'A custom project directory is used, but KPix does not have the \"All files access\" permission. Project files created by other apps (e.g. sync tools) might not be shown.\nDo you want to open the system settings to grant the permission?';
+
+  @override
+  String get workRecovered => 'Work Recovered';
+
+  @override
   String get undo => 'Undo';
 
   @override

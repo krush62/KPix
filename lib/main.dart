@@ -154,9 +154,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 {
   final ValueNotifier<bool> initialized = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isFocused = ValueNotifier<bool>(true);
-  late KPixOverlay _closeWarningDialog;
+  KPixOverlay? _closeWarningDialog;
   late KPixOverlay _newProjectDialog;
-  late KPixOverlay _saveNewWarningDialog;
+  KPixOverlay? _saveNewWarningDialog;
   late Timer _recoverTimer;
   late AppLifecycleState _lastAppLifeCycleState;
   HistoryState? _lastHistoryState;
@@ -301,16 +301,13 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       final ProjectDirectoryResolveResult projectDirResult = await resolveProjectsDir(internalDir: internalDirString);
       logger.i("Projects Dir: ${projectDirResult.resolvedDir}");
 
-      if (!context.mounted)
+      if (!context.mounted || !mounted)
       {
-        const String contextNotMountedMessage = "BuildContext not mounted.";
-        logger.e(contextNotMountedMessage);
+        logger.e("BuildContext not mounted.");
         return;
       }
 
-
-      final BuildContext c = context;
-      final double devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
+      final double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
       logger.i("Pixel Ratio: $devicePixelRatio");
       logger.i("Creating App Paths");
       GetIt.I.registerSingleton<AppPaths>(AppPaths(exportDir: exportDirString, internalDir: internalDirString, projectsDir: projectDirResult.resolvedDir));
@@ -333,15 +330,15 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       GetIt.I.registerSingleton<ToolState>(ToolState());
       GetIt.I.registerSingleton<LayerManager>(LayerManager());
       GetIt.I.registerSingleton<HistoryController>(HistoryController());
-      final Size logicalSize = MediaQuery.of(c).size;
+      final Size logicalSize = MediaQuery.of(context).size;
       logger.i("Logical Size: $logicalSize");
 
       if (logicalSize.width < minimumApplicationSize.width || logicalSize.height < minimumApplicationSize.height)
       {
-        const String wrongResolutionMessage = "This device does not support the minimum logical resolution to run this application.";
-        logger.w(wrongResolutionMessage);
-        final KPixOverlay resolutionDialog = kIsWeb ? getLoadingDialog(message: wrongResolutionMessage, textStyle: Theme.of(c).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: wrongResolutionMessage);
-        resolutionDialog.show(context: c);
+        logger.w("This device does not support the minimum logical resolution to run this application.");
+        final String message = AppLocalizations.of(context)!.thisDeviceDoesNotSupportResolution;
+        final KPixOverlay resolutionDialog = kIsWeb ? getLoadingDialog(message: message, textStyle: Theme.of(context).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: message);
+        resolutionDialog.show(context: context);
         return;
       }
 
@@ -365,21 +362,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       unawaited(projectManager.start());
 
       //CREATE DIALOG OVERLAYS
-      _closeWarningDialog = getThreeButtonDialog(
-        onYes: _closeWarningYes,
-        onNo: _closeWarningNo,
-        onCancel: _closeAllMenus,
-        outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?",
-      );
 
-      _saveNewWarningDialog = getThreeButtonDialog(
-        onYes: _saveNewWarningYes,
-        onNo: _saveNewWarningNo,
-        onCancel: _saveNewWarningCancel,
-        outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?",
-      );
       _newProjectDialog = getNewProjectDialog(
         onDismiss: !kIsWeb ? () {exitApplication();} : null,
         onAccept: _newFilePressed,
@@ -405,12 +388,11 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         }
         catch (e, s)
         {
-          const String couldNotCreateDirsMessage = "Could not create internal directories.";
-          logger.w(couldNotCreateDirsMessage, error: e, stackTrace: s);
-          if (c.mounted)
+          logger.w("Could not create internal directories.", error: e, stackTrace: s);
+          if (mounted && context.mounted)
           {
-            final KPixOverlay dirDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: couldNotCreateDirsMessage);
-            dirDialog.show(context: c);
+            final KPixOverlay dirDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: AppLocalizations.of(context)!.couldNotCreateInternalDirectories);
+            dirDialog.show(context: context);
           }
         }
 
@@ -421,13 +403,17 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
           final PreferenceManager preferenceManager = GetIt.I.get<PreferenceManager>();
           preferenceManager.behaviorPreferenceContent.useCustomProjectDirectory.value = false;
           preferenceManager.behaviorPreferenceContent.customProjectDirectory.value = "";
-          showMessage(text: "Custom Project directory invalid. Switching to default directory.", toastType: ToastType.warning);
+          if (mounted)
+          {
+            showMessage(text: AppLocalizations.of(context)!.customProjectDirectoryInvalid, toastType: ToastType.warning);
+          }
+
         }
 
 
-        if (!kIsWeb && Platform.isAndroid && c.mounted)
+        if (!kIsWeb && Platform.isAndroid && context.mounted && mounted)
         {
-          await _checkAllFilesAccessOnStartup(context: c);
+          await _checkAllFilesAccessOnStartup(context: context);
         }
 
         if (isDesktop())
@@ -449,13 +435,12 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     }
     catch (e, s)
     {
-      const String couldNotInitializeAppMessage = "Could not initialize the application.";
-      logger.w(couldNotInitializeAppMessage, error: e, stackTrace: s);
-      if (context.mounted)
+      logger.w("Could not initialize the application.", error: e, stackTrace: s);
+      if (context.mounted && mounted)
       {
-        final BuildContext c = context;
-        final KPixOverlay dirDialog = kIsWeb ? getLoadingDialog(message: couldNotInitializeAppMessage, textStyle: Theme.of(c).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: couldNotInitializeAppMessage);
-        dirDialog.show(context: c);
+        final String message = AppLocalizations.of(context)!.couldNotInitializeApp;
+        final KPixOverlay dirDialog = kIsWeb ? getLoadingDialog(message: message, textStyle: Theme.of(context).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: message);
+        dirDialog.show(context: context);
       }
     }
 
@@ -496,11 +481,12 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     if (!p.equals(GetIt.I.get<AppPaths>().projectsDir, defaultProjectsDir) && !await hasAllFilesAccess())
     {
       GetIt.I.get<Logger>().w("Using a custom project directory without all files access.");
-      final KPixOverlay permissionDialog = getAllFilesAccessDialog(
-        message: 'A custom project directory is used, but KPix does not have the "All files access" permission. Project files created by other apps (e.g. sync tools) might not be shown.\nDo you want to open the system settings to grant the permission?',
-      );
-      if (context.mounted)
+
+      if (context.mounted && mounted)
       {
+        final KPixOverlay permissionDialog = getAllFilesAccessDialog(
+          message: AppLocalizations.of(context)!.aCustomProjectDirectoryIsUsed,
+        );
         permissionDialog.show(context: context);
       }
     }
@@ -562,8 +548,8 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         if (mounted)
         {
           showMessagesForProjectLoad(result: loadResult, l10n: AppLocalizations.of(context)!);
+          showMessage(text: AppLocalizations.of(context)!.workRecovered, toastType: ToastType.info);
         }
-        showMessage(text: "work recovered", toastType: ToastType.info);
       }
       else
       {
@@ -588,7 +574,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   {
     if (GetIt.I.get<ProjectSession>().hasChanges.value)
     {
-      _closeWarningDialog.show(context: context);
+      _closeWarningDialog?.show(context: context);
     }
     else
     {
@@ -618,14 +604,14 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   void _closeAllMenus()
   {
-    _closeWarningDialog.hide();
+    _closeWarningDialog?.hide();
   }
 
   void _newFile()
   {
     if (GetIt.I.get<ProjectSession>().hasChanges.value)
     {
-      _saveNewWarningDialog.show(context: context);
+      _saveNewWarningDialog?.show(context: context);
     }
     else
     {
@@ -650,13 +636,13 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   void _saveNewWarningCancel()
   {
-    _saveNewWarningDialog.hide();
+    _saveNewWarningDialog?.hide();
     GetIt.I.get<ProjectSession>().hasProjectNotifier.value = true;
   }
 
   void _saveBeforeNewFinished()
   {
-    _saveNewWarningDialog.hide();
+    _saveNewWarningDialog?.hide();
     _newProjectDialog.show(context: context);
   }
 
@@ -687,6 +673,23 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   Widget build(final BuildContext context)
   {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
+
+    _closeWarningDialog ??= getThreeButtonDialog(
+      onYes: _closeWarningYes,
+      onNo: _closeWarningNo,
+      onCancel: _closeAllMenus,
+      outsideCancelable: false,
+      message: l10n.thereAreUnsavedChanges,
+    );
+
+    _saveNewWarningDialog ??= getThreeButtonDialog(
+      onYes: _saveNewWarningYes,
+      onNo: _saveNewWarningNo,
+      onCancel: _saveNewWarningCancel,
+      outsideCancelable: false,
+      message: l10n.thereAreUnsavedChanges,
+    );
+
     return ValueListenableBuilder<bool>(
       valueListenable: initialized,
       builder: (final BuildContext context, final bool init, final Widget? child)

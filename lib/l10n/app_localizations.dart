@@ -2552,6 +2552,42 @@ abstract class AppLocalizations {
   /// **'Loading...'**
   String get loadingDot;
 
+  /// No description provided for @thisDeviceDoesNotSupportResolution.
+  ///
+  /// In en, this message translates to:
+  /// **'This device does not support the minimum logical resolution to run this application.'**
+  String get thisDeviceDoesNotSupportResolution;
+
+  /// No description provided for @customProjectDirectoryInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Project directory invalid. Switching to default directory.'**
+  String get customProjectDirectoryInvalid;
+
+  /// No description provided for @couldNotCreateInternalDirectories.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create internal directories.'**
+  String get couldNotCreateInternalDirectories;
+
+  /// No description provided for @couldNotInitializeApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not initialize the application.'**
+  String get couldNotInitializeApp;
+
+  /// No description provided for @aCustomProjectDirectoryIsUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'A custom project directory is used, but KPix does not have the \"All files access\" permission. Project files created by other apps (e.g. sync tools) might not be shown.\nDo you want to open the system settings to grant the permission?'**
+  String get aCustomProjectDirectoryIsUsed;
+
+  /// No description provided for @workRecovered.
+  ///
+  /// In en, this message translates to:
+  /// **'Work Recovered'**
+  String get workRecovered;
+
   /// No description provided for @undo.
   ///
   /// In en, this message translates to:

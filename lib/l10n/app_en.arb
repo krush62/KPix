@@ -148,6 +148,7 @@
   "imageImportSuccessful": "Image imported successfully!",
   "couldNotConvertImageData": "Could not convert image data!",
 
+
   "couldNotCrop": "Could not crop!",
 
   "hidden": "Hidden",
@@ -568,6 +569,12 @@
   "direction": "Direction",
 
   "loadingDot": "Loading...",
+  "thisDeviceDoesNotSupportResolution": "This device does not support the minimum logical resolution to run this application.",
+  "customProjectDirectoryInvalid": "Custom Project directory invalid. Switching to default directory.",
+  "couldNotCreateInternalDirectories": "Could not create internal directories.",
+  "couldNotInitializeApp": "Could not initialize the application.",
+  "aCustomProjectDirectoryIsUsed": "A custom project directory is used, but KPix does not have the \"All files access\" permission. Project files created by other apps (e.g. sync tools) might not be shown.\nDo you want to open the system settings to grant the permission?",
+  "workRecovered": "Work Recovered",
 
   "undo": "Undo",
   "redo": "Redo",

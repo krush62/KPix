@@ -89,6 +89,8 @@ class PreferencesWidget extends StatefulWidget
 
 class _PreferencesWidgetState extends State<PreferencesWidget>
 {
+  static const double _maxWidth = 960;
+  static const double _maxHeight = 640;
   final ValueNotifier<PreferenceSectionType> _prefSection = ValueNotifier<PreferenceSectionType>(PreferenceSectionType.gui);
 
   ButtonSegment<PreferenceSectionType> _createSegment({required final PreferenceSectionType section, required final AppLocalizations l10n})
@@ -113,8 +115,8 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
         minWidth: OverlayEntryAlertDialogOptions.minWidth,
-        maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
-        maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
+        maxHeight: _maxHeight,
+        maxWidth: _maxWidth,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

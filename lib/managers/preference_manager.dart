@@ -312,28 +312,28 @@ class PreferenceManager
   void _loadWidgetOptions()
   {
     drawingLayerSettingsConstraints = DrawingLayerSettingsConstraints(
-        darkenBrightenMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDarkenBrighten),
-        darkenBrightenDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDarkenBrighten),
-        darkenBrightenMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDarkenBrighten),
-        glowDepthMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinGlowDepth),
-        glowDepthDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultGlowDepth),
-        glowDepthMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxGlowDepth),
-        glowRecursiveDefault: _getValueB(PreferenceBool.DrawingLayerConstraints_DefaultGlowRecursive),
-        bevelDistanceMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinBevelDistance),
-        bevelDistanceDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultBevelDistance),
-        bevelDistanceMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxBevelDistance),
-        bevelStrengthMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinBevelStrength),
-        bevelStrengthDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultBevelStrength),
-        bevelStrengthMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxBevelStrength),
-        dropShadowOffsetMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDropShadowDistance),
-        dropShadowOffsetDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDropShadowDistance),
-        dropShadowOffsetMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDropShadowDistance),);
+      darkenBrightenMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDarkenBrighten),
+      darkenBrightenDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDarkenBrighten),
+      darkenBrightenMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDarkenBrighten),
+      glowDepthMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinGlowDepth),
+      glowDepthDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultGlowDepth),
+      glowDepthMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxGlowDepth),
+      glowRecursiveDefault: _getValueB(PreferenceBool.DrawingLayerConstraints_DefaultGlowRecursive),
+      bevelDistanceMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinBevelDistance),
+      bevelDistanceDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultBevelDistance),
+      bevelDistanceMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxBevelDistance),
+      bevelStrengthMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinBevelStrength),
+      bevelStrengthDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultBevelStrength),
+      bevelStrengthMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxBevelStrength),
+      dropShadowOffsetMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDropShadowDistance),
+      dropShadowOffsetDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDropShadowDistance),
+      dropShadowOffsetMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDropShadowDistance),);
     shadingLayerSettingsConstraints = ShadingLayerSettingsConstraints(
-        shadingStepsMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
-        shadingStepsDefaultBrighten: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten),
-        shadingStepsDefaultDarken: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken),
-        shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),
-        ditherStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxDither),);
+      shadingStepsMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
+      shadingStepsDefaultBrighten: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten),
+      shadingStepsDefaultDarken: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken),
+      shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),
+      ditherStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxDither),);
     frameConstraints = FrameConstraints(
       minFps: _getValueI(PreferenceInt.FrameConstraints_MinFps),
       maxFps: _getValueI(PreferenceInt.FrameConstraints_MaxFps),

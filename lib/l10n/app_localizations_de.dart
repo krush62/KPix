@@ -73,7 +73,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Es gibt ungespeicherte Änderungen. Vorher speichern?';
 
   @override
-  String get openingImageDot => 'Opening Image...';
+  String get openingImageDot => 'Öffne Projekt...';
 
   @override
   String get doYouReallyWantToDeleteProject =>
@@ -783,7 +783,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get exportFile => 'Datei Exportieren';
 
   @override
-  String imageDimensionsExceed(Object height, Object width) {
+  String imageDimensionsExceed(int width, int height) {
     return 'Bildmaße dürfen ${width}x$height nicht überschreiten!';
   }
 

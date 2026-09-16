@@ -321,7 +321,7 @@
   "exportFile": "Export File",
 
   "imageDimensionsExceed": "Image dimensions cannot exceed {width}x{height}!",
-  "@hello": {
+  "@imageDimensionsExceed": {
     "description": "message during import regarding image dimensions",
     "placeholders": {
       "width": {"type": "int"},
@@ -659,5 +659,6 @@
   "changeRampOrder": "Change Ramp Order",
   "changeFrameTime": "Change Frame Time",
   "changeLoopMarker": "Change Loop Marker"
+
 
 }

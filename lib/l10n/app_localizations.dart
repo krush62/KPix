@@ -1514,11 +1514,11 @@ abstract class AppLocalizations {
   /// **'Export File'**
   String get exportFile;
 
-  /// No description provided for @imageDimensionsExceed.
+  /// message during import regarding image dimensions
   ///
   /// In en, this message translates to:
   /// **'Image dimensions cannot exceed {width}x{height}!'**
-  String imageDimensionsExceed(Object height, Object width);
+  String imageDimensionsExceed(int width, int height);
 
   /// No description provided for @couldNotDecodeImage.
   ///

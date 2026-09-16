@@ -765,7 +765,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportFile => 'Export File';
 
   @override
-  String imageDimensionsExceed(Object height, Object width) {
+  String imageDimensionsExceed(int width, int height) {
     return 'Image dimensions cannot exceed ${width}x$height!';
   }
 

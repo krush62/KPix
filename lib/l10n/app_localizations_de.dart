@@ -575,7 +575,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get segmentSorting => 'Segment-Sortierung';
 
   @override
-  String get smooth => 'Geglättet';
+  String get smooth => 'Glättung';
 
   @override
   String get mode => 'Modus';
@@ -584,7 +584,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get continuous => 'Kontinuierlich';
 
   @override
-  String get keep1to1 => '1:1 beibehalten';
+  String get keep1to1 => '1:1 Verhältnis';
 
   @override
   String get wholeRamp => 'Gesamte Rampe';
@@ -599,7 +599,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get angle => 'Winkel';
 
   @override
-  String get cornerCount => 'Anzahl der Ecken';
+  String get cornerCount => 'Eckenanzahl';
 
   @override
   String get radius => 'Radius';
@@ -617,7 +617,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get scale => 'Skalierung';
 
   @override
-  String get gridAlign => 'Rasterausrichtung';
+  String get gridAlign => 'am Raster\nausrichten';
 
   @override
   String get offsetX => 'Versatz X';

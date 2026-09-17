@@ -19,6 +19,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/models/constraints/tool_stamp_constraints.dart';
 import 'package:kpix/models/stamp_manager_data.dart';
@@ -95,7 +96,7 @@ class StampOptions extends IToolOptions
                       }
                       else
                       {
-                        return const Text("<NO STAMP>");
+                        return Text("<${AppLocalizations.of(context)!.noStamp.toUpperCase()}>");
                       }
                     },
                   ),
@@ -162,7 +163,7 @@ class StampOptions extends IToolOptions
         Visibility(
           visible: false,
           child: ToolSliderRow<int>(
-            label: "Scale",
+            label: AppLocalizations.of(context)!.scale,
             notifier: stampOptions.scale,
             flex: ToolSettingsWidgetOptions.columnWidthRatio,
             minVal: StampConstraints.scaleMin.toDouble(),
@@ -174,7 +175,7 @@ class StampOptions extends IToolOptions
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: stampOptions.gridAlign,
           unmodifiedNotifier: stampOptions.unmodifiedGridAlign,
-          label: "Grid Align",
+          label: AppLocalizations.of(context)!.gridAlign,
             defaultState: StampConstraints.gridAlignDefault,
           modifierNotifier: hotkeyManager.controlNotifier,
         ),
@@ -189,7 +190,7 @@ class StampOptions extends IToolOptions
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        "Offset X",
+                        AppLocalizations.of(context)!.offsetX,
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
                     ),
@@ -246,7 +247,7 @@ class StampOptions extends IToolOptions
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        "Offset Y",
+                        AppLocalizations.of(context)!.offsetY,
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
                     ),

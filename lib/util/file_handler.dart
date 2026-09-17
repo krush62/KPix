@@ -28,6 +28,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -80,7 +81,6 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:kpix/util/helpers/platform_helper.dart';
-import 'package:kpix/util/messages.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -104,13 +104,20 @@ class LoadProjectFileSet
 
 enum FileNameStatus
 {
-  available("Available", TablerIcons.check),
-  forbidden("Invalid File Name", TablerIcons.x),
-  noRights("Insufficient Permissions", TablerIcons.ban),
-  overwrite("Overwriting Existing File", TablerIcons.exclamation_mark);
+  available(TablerIcons.check),
+  forbidden(TablerIcons.x),
+  noRights(TablerIcons.ban),
+  overwrite(TablerIcons.exclamation_mark);
 
-  const FileNameStatus(this.label, this.icon);
-  final String label;
+  String label(final AppLocalizations l10n) => switch(this)
+  {
+    available => l10n.available,
+    forbidden => l10n.invalidFileName,
+    noRights => l10n.insufficientPermissions,
+    overwrite => l10n.overwritingExistingFile,
+  };
+
+  const FileNameStatus(this.icon);
   final IconData icon;
 }
 
@@ -231,7 +238,9 @@ Future<(String?, Uint8List?)> getPathAndDataForImage() async
   }
 }
 
-void loadFilePressed({final Function()? finishCallback, final Function()? loadStartCallback})
+/// [finishCallback] receives what loading the file came to, or null if loading
+/// threw.
+void loadFilePressed({final void Function(ProjectLoadResult? result)? finishCallback, final Function()? loadStartCallback})
 {
   final String exportDir = GetIt.I.get<AppPaths>().exportDir;
   if (isDesktop(includingWeb: true))
@@ -256,7 +265,7 @@ void loadFilePressed({final Function()? finishCallback, final Function()? loadSt
   }
 }
 
-void _loadFileChosen({final FilePickerResult? result, required final Function()? finishCallback, required final Function()? loadStartCallback,})
+void _loadFileChosen({final FilePickerResult? result, required final void Function(ProjectLoadResult? result)? finishCallback, required final Function()? loadStartCallback,})
 {
   if (result != null && result.files.isNotEmpty) 
   {
@@ -279,25 +288,33 @@ void _loadFileChosen({final FilePickerResult? result, required final Function()?
   }
 }
 
-void fileLoaded({required final LoadFileSet loadFileSet, required final Function()? finishCallback,})
+/// [finishCallback] receives what loading [loadFileSet] came to, or null if
+/// loading threw; it is called either way.
+void fileLoaded({required final LoadFileSet loadFileSet, required final void Function(ProjectLoadResult? result)? finishCallback,})
 {
-  GetIt.I.get<ProjectSession>().restoreFromFile(loadFileSet: loadFileSet).whenComplete(()
+  ProjectLoadResult? loadResult;
+  GetIt.I.get<ProjectSession>().restoreFromFile(loadFileSet: loadFileSet).then((final ProjectLoadResult result)
   {
-    finishCallback?.call();
+    loadResult = result;
+  }).whenComplete(()
+  {
+    finishCallback?.call(loadResult);
   });
 }
 
-Future<void> saveFilePressed({required final String fileName, final Function()? finishCallback, final bool forceSaveAs = false,}) async
+/// [savedCallback] receives the path to show the user once the file is saved;
+/// [finishCallback] is called afterwards, and also if saving failed.
+Future<void> saveFilePressed({required final String fileName, final Function()? finishCallback, final void Function(String displayPath)? savedCallback, final bool forceSaveAs = false,}) async
 {
   if (!kIsWeb)
   {
     final String finalPath = p.join(GetIt.I.get<AppPaths>().projectsDir, "$fileName.$fileExtensionKpix");
     saveKPixFile(path: finalPath).then((final String? path)
     {
-      if (path != null) 
+      if (path != null)
       {
-        _projectFileSaved(fileName: fileName, path: path,finishCallback: finishCallback,);
-      } 
+        _projectFileSaved(fileName: fileName, path: path,finishCallback: finishCallback, savedCallback: savedCallback,);
+      }
       else if (finishCallback != null) 
       {
         finishCallback();
@@ -314,6 +331,7 @@ Future<void> saveFilePressed({required final String fileName, final Function()? 
           fileName: fileName,
           path: path,
           finishCallback: finishCallback,
+          savedCallback: savedCallback,
         );
       } 
       else if (finishCallback != null) 
@@ -324,7 +342,7 @@ Future<void> saveFilePressed({required final String fileName, final Function()? 
   }
 }
 
-Future<void> _projectFileSaved({required final String fileName, required final String path, required final Function()? finishCallback,}) async
+Future<void> _projectFileSaved({required final String fileName, required final String path, required final Function()? finishCallback, required final void Function(String displayPath)? savedCallback,}) async
 {
   final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
   final DocumentState documentState = GetIt.I.get<DocumentState>();
@@ -361,8 +379,9 @@ Future<void> _projectFileSaved({required final String fileName, required final S
     notifyProjectFileChanged(path: path);
   }
 
-  projectSession.fileSaved(saveName: fileName, path: path, addKPixExtension: kIsWeb);
-  if (finishCallback != null) 
+  final String displayPath = projectSession.fileSaved(saveName: fileName, path: path, addKPixExtension: kIsWeb);
+  savedCallback?.call(displayPath);
+  if (finishCallback != null)
   {
     finishCallback();
   }
@@ -555,9 +574,9 @@ Future<String?> exportPalettePressed({required final PaletteExportData saveData,
   );
 }
 
-Future<String?> getDirectory({required final String startDir}) async
+Future<String?> getDirectory({required final String startDir, required final String dialogTitle}) async
 {
-  return await FilePicker.getDirectoryPath(dialogTitle: "Choose Directory", initialDirectory: startDir,);
+  return await FilePicker.getDirectoryPath(dialogTitle: dialogTitle, initialDirectory: startDir,);
 }
 
 Future<Uint8List?> _createImageData({required final ImageExportData exportData, required final ImageExportType exportType,}) async
@@ -811,15 +830,6 @@ Future<ProjectDirectoryResolveResult> resolveProjectsDir({required final String 
   return ProjectDirectoryResolveResult(resolvedDir: dirToUse, useCustom: useCustomDir, customValid: customValid);
 }
 
-class ProjectDirectoryMoveResult
-{
-  final bool success;
-  final String message;
-  final int projectCount;
-  
-  ProjectDirectoryMoveResult({required this.success, required this.message, this.projectCount = 0,});
-}
-
 Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourceDir, required final String targetDir,}) async
 {
   final Logger logger = GetIt.I.get<Logger>();
@@ -842,7 +852,7 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourc
         );
         return ProjectDirectoryMoveResult(
           success: false,
-          message: "The directory does not exist and could not be created!",
+          error: ProjectDirectoryMoveError.targetNotCreated,
         );
       }
     }
@@ -850,7 +860,7 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourc
     {
       return ProjectDirectoryMoveResult(
         success: false,
-        message: "Insufficient permissions for the directory!",
+        error: ProjectDirectoryMoveError.insufficientPermissions,
       );
     }
 
@@ -883,7 +893,7 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourc
       final String targetPath = p.join(targetDir, p.basename(file.path));
       if (await File(targetPath).exists())
       {
-        return ProjectDirectoryMoveResult(success: false, message: "The directory already contains a file named ${p.basename(file.path)}!",);
+        return ProjectDirectoryMoveResult(success: false, error: ProjectDirectoryMoveError.targetFileExists, fileName: p.basename(file.path),);
       }
     }
 
@@ -923,18 +933,19 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourc
         }
         return ProjectDirectoryMoveResult(
           success: false,
-          message: "Could not move file ${p.basename(file.path)}!",
+          error: ProjectDirectoryMoveError.moveFailed,
+          fileName: p.basename(file.path),
         );
       }
     }
 
     logger.i("Moved $projectCount project file(s) to $targetDir.");
-    return ProjectDirectoryMoveResult(success: true, message: "", projectCount: projectCount,);
+    return ProjectDirectoryMoveResult(success: true, projectCount: projectCount,);
   }
   catch (e, s)
   {
     logger.w("Error moving project files.", error: e, stackTrace: s);
-    return ProjectDirectoryMoveResult(success: false, message: "An unexpected error occurred while moving project files!",);
+    return ProjectDirectoryMoveResult(success: false, error: ProjectDirectoryMoveError.unexpected,);
   }
 }
 
@@ -1055,9 +1066,9 @@ Future<String?> getRecoveryFile() async
   return null;
 }
 
-Future<bool> importProject({required final String? path, final bool showMessages = true,}) async
+Future<ProjectImportResult> importProject({required final String? path}) async
 {
-  bool success = false;
+  ProjectImportResult result = ProjectImportResult.cancelled;
   final Logger logger = GetIt.I.get<Logger>();
 
   try
@@ -1082,45 +1093,41 @@ Future<bool> importProject({required final String? path, final bool showMessages
             final ui.Image? img = await getImageFromLoadFileSet(loadFileSet: loadFileSet);
             if (img != null)
             {
-              success = await copyImportFile(inputPath: loadFileSet.path!, image: img, targetPath: projectPath,);
-              if (success)
+              final bool copied = await copyImportFile(inputPath: loadFileSet.path!, image: img, targetPath: projectPath,);
+              if (copied)
               {
                 notifyProjectFileChanged(path: projectPath);
               }
+              result = copied ? ProjectImportResult.success : ProjectImportResult.couldNotOpenFile;
             }
             else
             {
-              if (showMessages)
-              {
-                showMessage(text: "Could not open file!", toastType: ToastType.error);
-              }
+              result = ProjectImportResult.couldNotOpenFile;
             }
           }
           else
           {
-            if (showMessages)
-            {
-              showMessage(text: "Project with the same name already exists!", toastType: ToastType.error);
-            }
+            result = ProjectImportResult.projectAlreadyExists;
           }
         }
         else
         {
-          if (showMessages) showMessage(text: "Could not open file!", toastType: ToastType.error);
+          result = ProjectImportResult.couldNotOpenFile;
         }
       }
       else
       {
-        showMessage(text: "Please select a KPix file!", toastType: ToastType.warning);
+        result = ProjectImportResult.notAKPixFile;
       }
     }
   }
   catch (e, s)
   {
     logger.w("Error importing project.", error: e, stackTrace: s);
+    result = ProjectImportResult.couldNotOpenFile;
   }
 
-  return success;
+  return result;
 }
 
 /// Renders the first frame of [loadFileSet] into an image.

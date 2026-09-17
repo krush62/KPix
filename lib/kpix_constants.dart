@@ -24,12 +24,6 @@ import 'package:flutter/material.dart';
 /// snapshot, so it cannot live in the widget that happens to render it.
 final LinkedHashSet<Alignment> allAlignments = LinkedHashSet<Alignment>.from(<Alignment>[Alignment.topLeft, Alignment.topCenter, Alignment.topRight, Alignment.centerRight, Alignment.bottomRight, Alignment.bottomCenter, Alignment.bottomLeft, Alignment.centerLeft]);
 
-/// How long the pointer has to rest on a control before its tooltip appears.
-///
-/// Used by every widget that shows one, which is why it is a plain constant
-/// rather than a member of any state object.
-const Duration toolTipDuration = Duration(seconds: 1);
-
 /// Layout of the tool settings column.
 ///
 /// Every tool's options widget lays itself out against these, which is why they

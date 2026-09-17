@@ -17,7 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/document_state.dart';
@@ -65,19 +65,19 @@ class _ToolsWidgetState extends State<ToolsWidget>
     super.initState();
     _documentState.timeline.layerChangeNotifier.addListener(currentLayerTypeChanged);
     toolDataRow1 =  <SegmentButtonData>[
-      SegmentButtonData(toolType: ToolType.pencil, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolPencil)),
-      SegmentButtonData(toolType: ToolType.erase, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolEraser)),
-      SegmentButtonData(toolType: ToolType.select, isDisabledDuringShading: true, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectRectangle) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectCircle) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectWand)),
-      SegmentButtonData(toolType: ToolType.fill, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolFill)),
+      SegmentButtonData(toolType: ToolType.pencil, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolPencil, context: context)),
+      SegmentButtonData(toolType: ToolType.erase, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolEraser, context: context)),
+      SegmentButtonData(toolType: ToolType.select, isDisabledDuringShading: true, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectRectangle, context: context) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectCircle, context: context) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectWand, context: context)),
+      SegmentButtonData(toolType: ToolType.fill, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolFill, context: context)),
       SegmentButtonData(toolType: ToolType.pick, isDisabledDuringShading: true),
       ];
 
     toolDataRow2 = <SegmentButtonData>[
-      SegmentButtonData(toolType: ToolType.line, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolLine)),
-      SegmentButtonData(toolType: ToolType.shape, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolShape)),
-      SegmentButtonData(toolType: ToolType.font, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolText)),
-      SegmentButtonData(toolType: ToolType.spraycan, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSprayCan)),
-      SegmentButtonData(toolType: ToolType.stamp, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolStamp)),
+      SegmentButtonData(toolType: ToolType.line, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolLine, context: context)),
+      SegmentButtonData(toolType: ToolType.shape, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolShape, context: context)),
+      SegmentButtonData(toolType: ToolType.font, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolText, context: context)),
+      SegmentButtonData(toolType: ToolType.spraycan, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSprayCan, context: context)),
+      SegmentButtonData(toolType: ToolType.stamp, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolStamp, context: context)),
     ];
   }
 
@@ -106,14 +106,11 @@ class _ToolsWidgetState extends State<ToolsWidget>
       final ButtonSegment<ToolType> segment = ButtonSegment<ToolType>(
         value: buttonData.toolType,
         enabled: !shouldBeDisabled,
-        label: Tooltip(
-          message: buttonData.toolType.title + buttonData.toolTipExtraText,
-          waitDuration: toolTipDuration,
-          child: Icon(
-            buttonData.toolType.icon,
-            color: shouldBeDisabled ? Theme.of(context).primaryColorDark : null,
-            size: _ToolsWidgetOptions.iconSize,
-          ),
+        tooltip: buttonData.toolType.label(AppLocalizations.of(context)!) + buttonData.toolTipExtraText,
+        icon: Icon(
+          buttonData.toolType.icon,
+          color: shouldBeDisabled ? Theme.of(context).primaryColorDark : null,
+          size: _ToolsWidgetOptions.iconSize,
         ),
       );
       segments.add(segment);

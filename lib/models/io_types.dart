@@ -39,11 +39,42 @@ class LoadFileSet
   final String? path;
   LoadFileSet({required this.status, this.historyState, this.path});
 }
+/// The outcome of importing a project file, turned into a message by the widgets.
+///
+/// [cancelled] means no file was picked, which is not worth a message.
+enum ProjectImportResult { success, cancelled, couldNotOpenFile, projectAlreadyExists, notAKPixFile }
+
+/// Why moving the project files to another directory did not work.
+enum ProjectDirectoryMoveError
+{
+  targetNotCreated,
+  insufficientPermissions,
+  targetFileExists,
+  moveFailed,
+  unexpected,
+}
+
+/// The outcome of moving the project files to another directory.
+///
+/// [fileName] names the file the move tripped over and is only set for the
+/// errors that mention one.
+class ProjectDirectoryMoveResult
+{
+  final bool success;
+  final ProjectDirectoryMoveError? error;
+  final String fileName;
+  final int projectCount;
+
+  ProjectDirectoryMoveResult({required this.success, this.error, this.fileName = "", this.projectCount = 0,});
+}
+
+/// The outcome of importing an image, turned into a message by the widgets.
+enum ImageImportResult { success, conversionFailed }
 class ImportResult
 {
   final ImportDataSet? data;
-  final String message;
-  ImportResult({this.data, required this.message});
+  final ImageImportResult result;
+  ImportResult({this.data, required this.result});
 }
 
 class ImportDataSet

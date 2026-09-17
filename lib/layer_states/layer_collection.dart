@@ -37,9 +37,28 @@ import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:logger/logger.dart';
+
+enum LayerActionResult {
+  success,
+  layerLimitReached,
+  frameLimitReached,
+  invalidIndex,
+  alreadyExists,
+  noLayerBelow,
+  linkedLayerMergeFrom,
+  linkedLayerMergeTo,
+  invisibleLayerMergeFrom,
+  invisibleLayerMergeTo,
+  lockedLayerMergeFrom,
+  lockedLayerMergeTo,
+  onlyMergeDrawingLayers,
+  effectLayerMerge,
+  lastLayerDelete,
+
+  unknownError,
+}
 
 class LayerCollection with ChangeNotifier {
   static const int maxLayers = 256;
@@ -137,7 +156,9 @@ class LayerCollection with ChangeNotifier {
     }
     if (!couldAddAllLayers)
     {
-      showMessage(text: "Could not add all layers.", toastType: ToastType.error);
+      //no caller hands over more than maxLayers (a frame in a kpix file holds at
+      //most 255), so this guards an invariant rather than a user action
+      GetIt.I.get<Logger>().w("Dropped ${layers.length - maxLayers} layer(s): a frame holds at most $maxLayers.");
     }
     updateIndividualLayerSelection();
   }
@@ -179,17 +200,17 @@ class LayerCollection with ChangeNotifier {
     }
   }
 
-  LayerState? addLayerWithData({required final LayerState layer, required final int position})
+
+
+  (LayerActionResult, LayerState?) addLayerWithData({required final LayerState layer, required final int position})
   {
     if (_layers.length >= maxLayers)
     {
-      showMessage(text: "Could not add more layers.", toastType: ToastType.warning);
-      return null;
+      return (LayerActionResult.layerLimitReached, null);
     }
     else if (position < 0 || position > _layers.length)
     {
-      showMessage(text: "Invalid layer insert index.", toastType: ToastType.error);
-      return null;
+      return (LayerActionResult.invalidIndex, null);
     }
     else
     {
@@ -198,23 +219,23 @@ class LayerCollection with ChangeNotifier {
       _rebuildDependencies();
       _triggerNewLayerRender(layer: addLayer);
       notifyListeners();
-      return addLayer;
+      return (LayerActionResult.success, addLayer);
     }
   }
 
-  void addLinkLayer({required final LayerState layer, required final int position,})
+  LayerActionResult addLinkLayer({required final LayerState layer, required final int position,})
   {
     if (_layers.length >= maxLayers)
     {
-      showMessage(text: "Could not add more layers.", toastType: ToastType.warning);
+      return LayerActionResult.layerLimitReached;
     }
     else if (position < 0 || position > _layers.length)
     {
-      showMessage(text: "Invalid layer insert index.", toastType: ToastType.error);
+      return LayerActionResult.invalidIndex;
     }
     else if (_layers.contains(layer))
     {
-      showMessage(text: "Layer already exists on that frame.", toastType: ToastType.warning);
+      return LayerActionResult.alreadyExists;
     }
     else
     {
@@ -222,11 +243,12 @@ class LayerCollection with ChangeNotifier {
       _rebuildDependencies();
       notifyListeners();
       reRasterAllDrawingLayers();
+      return LayerActionResult.success;
     }
   }
 
 
-  ReferenceLayerState? addNewReferenceLayer({final bool select = false})
+  (LayerActionResult, ReferenceLayerState?) addNewReferenceLayer({final bool select = false})
   {
     final ReferenceLayerState newLayer = ReferenceLayerState(
         aspectRatio: ReferenceLayerConstraints.aspectRatioDefault,
@@ -241,43 +263,25 @@ class LayerCollection with ChangeNotifier {
         saturation: ReferenceLayerConstraints.saturationDefault,
 
     );
-    if (_addNewLayer(newLayer: newLayer, select: select))
-    {
-      return newLayer;
-    }
-    else
-    {
-      return null;
-    }
+    final LayerActionResult result = _addNewLayer(newLayer: newLayer, select: select);
+    return (result, result == LayerActionResult.success ? newLayer : null);
   }
 
-  ShadingLayerState? addNewShadingLayer({final bool select = false})
+  (LayerActionResult, ShadingLayerState?) addNewShadingLayer({final bool select = false})
   {
     final ShadingLayerState newLayer = ShadingLayerState();
-    if (_addNewLayer(newLayer: newLayer, select: select))
-    {
-      return newLayer;
-    }
-    else
-    {
-      return null;
-    }
+    final LayerActionResult result = _addNewLayer(newLayer: newLayer, select: select);
+    return (result, result == LayerActionResult.success ? newLayer : null);
   }
 
-  DitherLayerState? addNewDitherLayer({final bool select = false})
+  (LayerActionResult, DitherLayerState?) addNewDitherLayer({final bool select = false})
   {
     final DitherLayerState newLayer = DitherLayerState();
-    if (_addNewLayer(newLayer: newLayer, select: select))
-    {
-      return newLayer;
-    }
-    else
-    {
-      return null;
-    }
+    final LayerActionResult result = _addNewLayer(newLayer: newLayer, select: select);
+    return (result, result == LayerActionResult.success ? newLayer : null);
   }
 
-  GridLayerState? addNewGridLayer({final bool select = false})
+  (LayerActionResult, GridLayerState?) addNewGridLayer({final bool select = false})
   {
     final GridLayerState newLayer = GridLayerState(
       brightness: GridLayerConstraints.brightnessDefault,
@@ -291,35 +295,22 @@ class LayerCollection with ChangeNotifier {
       vanishingPoint3: GridLayerConstraints.vanishingPoint3Default,
     );
 
-    if (_addNewLayer(newLayer: newLayer, select: select))
-    {
-      return newLayer;
-    }
-    else
-    {
-      return null;
-    }
+    final LayerActionResult result = _addNewLayer(newLayer: newLayer, select: select);
+    return (result, result == LayerActionResult.success ? newLayer : null);
   }
 
-  DrawingLayerState? addNewDrawingLayer({final bool select = false, final CoordinateColorMapNullable? content, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps,})
+  (LayerActionResult, DrawingLayerState?) addNewDrawingLayer({final bool select = false, final CoordinateColorMapNullable? content, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps,})
   {
     final DrawingLayerState newLayer = DrawingLayerState(size: canvasSize, content: content, ramps: ramps,);
-    if (_addNewLayer(newLayer: newLayer, select: select))
-    {
-      return newLayer;
-    }
-    else
-    {
-      return null;
-    }
+    final LayerActionResult result = _addNewLayer(newLayer: newLayer, select: select);
+    return (result, result == LayerActionResult.success ? newLayer : null);
   }
 
-  bool _addNewLayer({required final LayerState newLayer, required final bool select,})
+  LayerActionResult _addNewLayer({required final LayerState newLayer, required final bool select,})
   {
     if (_layers.length >= maxLayers)
     {
-      showMessage(text: "Could not add more layers.", toastType: ToastType.warning);
-      return false;
+      return LayerActionResult.layerLimitReached;
     }
     else
     {
@@ -342,7 +333,7 @@ class LayerCollection with ChangeNotifier {
       //one when some other layer happens to re-raster and invalidates it
       _triggerNewLayerRender(layer: newLayer);
       notifyListeners();
-      return true;
+      return LayerActionResult.success;
     }
   }
 
@@ -447,61 +438,62 @@ class LayerCollection with ChangeNotifier {
     }
   }
 
-  String? layerIsMergeable({required final LayerState mergeLayer})
+  LayerActionResult layerIsMergeable({required final LayerState mergeLayer})
   {
-    String? message;
+    LayerActionResult result = LayerActionResult.success;
     if (mergeLayer is DrawingLayerState)
     {
       final DocumentState documentState = GetIt.I.get<DocumentState>();
       final int mergeLayerIndex = _layers.indexOf(mergeLayer);
       if (mergeLayerIndex == _layers.length - 1)
       {
-        message = "No layer below!";
+        result = LayerActionResult.noLayerBelow;
       }
       else if (documentState.timeline.isLayerLinked(layer: mergeLayer))
       {
-        message = "Cannot merge a linked layer!";
+        result = LayerActionResult.linkedLayerMergeFrom;
       }
       else if (mergeLayer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        message = "Cannot merge from an invisible layer!";
+        result = LayerActionResult.invisibleLayerMergeFrom;
       }
       else if (_layers[mergeLayerIndex + 1].visibilityState.value == LayerVisibilityState.hidden)
       {
-        message = "Cannot merge with an invisible layer!";
+        result = LayerActionResult.invisibleLayerMergeTo;
       }
       else if (mergeLayer.lockState.value == LayerLockState.locked)
       {
-        message = "Cannot merge from a locked layer!";
+        result = LayerActionResult.lockedLayerMergeFrom;
       }
       else if (_layers[mergeLayerIndex + 1].runtimeType == DrawingLayerState && (_layers[mergeLayerIndex + 1] as DrawingLayerState).lockState.value == LayerLockState.locked)
       {
-        message = "Cannot merge with a locked layer!";
+        result = LayerActionResult.lockedLayerMergeTo;
       }
       else if (_layers[mergeLayerIndex + 1].runtimeType != DrawingLayerState)
       {
-        message = "Can only merge with drawing layers!";
+        result = LayerActionResult.onlyMergeDrawingLayers;
       }
       else if (documentState.timeline.isLayerLinked(layer: _layers[mergeLayerIndex + 1],))
       {
-        message = "Cannot merge with a linked layer!";
+        result = LayerActionResult.linkedLayerMergeTo;
       }
       else if (mergeLayer.layerSettings.hasActiveSettings() || _layers[mergeLayerIndex + 1].runtimeType == DrawingLayerState && (_layers[mergeLayerIndex + 1] as DrawingLayerState).layerSettings.hasActiveSettings())
       {
-        message = "Cannot merge layers with active effects!";
+        result = LayerActionResult.effectLayerMerge;
       }
     }
     else
     {
       //SHOULD NEVER HAPPEN
-      message = "Can only merge Drawing Layers!";
+      result = LayerActionResult.onlyMergeDrawingLayers;
     }
-    return message;
+    return result;
   }
 
-  void mergeLayer({required final LayerState mergeLayer, required final CoordinateSetI canvasSize,})
+  LayerActionResult mergeLayer({required final LayerState mergeLayer, required final CoordinateSetI canvasSize,})
   {
-    if (layerIsMergeable(mergeLayer: mergeLayer) == null)
+    final LayerActionResult result = layerIsMergeable(mergeLayer: mergeLayer);
+    if (result == LayerActionResult.success)
     {
       final DrawingLayerState drawingMergeLayer = mergeLayer as DrawingLayerState;
       final int mergeLayerIndex = _layers.indexOf(mergeLayer);
@@ -527,14 +519,14 @@ class LayerCollection with ChangeNotifier {
       selectLayer(newLayer: drawingMergeLayer);
       notifyListeners();
     }
+    return result;
   }
 
-  LayerState? duplicateLayer({required final LayerState duplicateLayer, final bool insertAtEnd = false,})
+  (LayerActionResult, LayerState?) duplicateLayer({required final LayerState duplicateLayer, final bool insertAtEnd = false,})
   {
     if (_layers.length >= maxLayers)
     {
-      showMessage(text: "Could not add more layers.", toastType: ToastType.warning);
-      return null;
+      return (LayerActionResult.layerLimitReached, null);
     }
     else
     {
@@ -554,7 +546,7 @@ class LayerCollection with ChangeNotifier {
       _rebuildDependencies();
       _triggerNewLayerRender(layer: addLayer);
       notifyListeners();
-      return addLayer;
+      return (LayerActionResult.success, addLayer);
     }
   }
 

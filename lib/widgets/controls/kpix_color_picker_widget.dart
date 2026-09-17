@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
@@ -27,10 +28,17 @@ class KPixColorPickerWidget extends StatelessWidget
   final List<KPalRampData> ramps;
   final Function() dismiss;
   final ColorReferenceSelectedFn colorSelected;
-  final String title;
+  final String? title;
 
 
-  const KPixColorPickerWidget({super.key, required this.ramps, required this.dismiss, required this.colorSelected, this.padding = 4.0, this.title = "SELECT A COLOR"});
+  const KPixColorPickerWidget({
+    super.key,
+    required this.ramps,
+    required this.dismiss,
+    required this.colorSelected,
+    this.padding = 4.0,
+    this.title,
+  });
 
   List<Widget> _createRampRows({required final BuildContext context})
   {
@@ -71,13 +79,14 @@ class KPixColorPickerWidget extends StatelessWidget
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     final List<Widget> rampWidgets = _createRampRows(context: context);
     return Padding(
       padding: EdgeInsets.all(padding * 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Text(title,
+          Text(title ?? AppLocalizations.of(context)!.selectAColor.toUpperCase(),
             style: Theme.of(context).textTheme.titleLarge,
             textAlign: TextAlign.center,
           ),
@@ -93,6 +102,7 @@ class KPixColorPickerWidget extends StatelessWidget
             height: padding,
           ),
           IconButton.outlined(
+            tooltip: l10n.close,
             icon: const Icon(TablerIcons.x,),
             onPressed: () {
               dismiss();

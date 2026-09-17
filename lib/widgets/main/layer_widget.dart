@@ -20,8 +20,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
@@ -30,6 +31,7 @@ import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
+import 'package:kpix/widgets/layer_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
@@ -93,26 +95,30 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _deletePressed()
   {
-    _layerManager.layerDeletedSelected(deleteLayer: widget.layerState);
+    final LayerActionResult result = _layerManager.layerDeletedSelected(deleteLayer: widget.layerState);
+    showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
     _closeActionsMenus();
   }
 
   void _mergeDownPressed()
   {
-    _layerManager.layerMerged(mergeLayer: widget.layerState);
+    final LayerActionResult result =_layerManager.layerMerged(mergeLayer: widget.layerState);
+    showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
     _closeActionsMenus();
   }
 
   void _duplicatePressed()
   {
-    _layerManager.layerDuplicateSelected(duplicateLayer: widget.layerState);
+    final (LayerActionResult, LayerState?) result = _layerManager.layerDuplicateSelected(duplicateLayer: widget.layerState);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeActionsMenus();
   }
 
   void _unlinkPressed()
   {
-    final LayerState? duplicatedLayer = _layerManager.layerDuplicateSelected(duplicateLayer: widget.layerState, addToHistoryStack: false);
-    if (duplicatedLayer != null)
+    final (LayerActionResult, LayerState?) result = _layerManager.layerDuplicateSelected(duplicateLayer: widget.layerState, addToHistoryStack: false);
+    final LayerState? duplicatedLayer = result.$2;
+    if (duplicatedLayer != null && result.$1 == LayerActionResult.success)
     {
       _layerManager.layerDeletedSelected(deleteLayer: widget.layerState, addToHistoryStack: false);
       _layerManager.selectLayer(newLayer: duplicatedLayer);
@@ -248,49 +254,46 @@ class _LayerWidgetState extends State<LayerWidget> {
                                       builder: (final BuildContext context,
                                           final LayerVisibilityState visibility,
                                           final Widget? child,) {
-                                        return Tooltip(
-                                          message:
-                                              visibility.desc +
-                                                  _hotkeyManager.getShortcutString(
-                                                      action: HotkeyAction
-                                                          .layersSwitchVisibility,),
-                                          waitDuration: toolTipDuration,
-                                          child: IconButton.outlined(
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(
-                                              maxHeight: LayerWidgetOptions.buttonSizeMax,
-                                              maxWidth: LayerWidgetOptions.buttonSizeMax,
-                                              minWidth: LayerWidgetOptions.buttonSizeMin,
-                                              minHeight: LayerWidgetOptions.buttonSizeMin,
-                                            ),
-                                            style: ButtonStyle(
-                                              shape: const WidgetStatePropertyAll<OutlinedBorder?>(
-                                                RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.all(
-                                                    Radius.circular(LayerWidgetOptions.borderRadius / 2),
-                                                  ),
+                                        return IconButton.outlined(
+                                          tooltip: visibility.label(AppLocalizations.of(context)!) +
+                                              _hotkeyManager.getShortcutString(
+                                                action: HotkeyAction.layersSwitchVisibility,
+                                                context: context,
+                                              ),
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(
+                                            maxHeight: LayerWidgetOptions.buttonSizeMax,
+                                            maxWidth: LayerWidgetOptions.buttonSizeMax,
+                                            minWidth: LayerWidgetOptions.buttonSizeMin,
+                                            minHeight: LayerWidgetOptions.buttonSizeMin,
+                                          ),
+                                          style: ButtonStyle(
+                                            shape: const WidgetStatePropertyAll<OutlinedBorder?>(
+                                              RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.all(
+                                                  Radius.circular(LayerWidgetOptions.borderRadius / 2),
                                                 ),
                                               ),
-                                              tapTargetSize:
-                                                  MaterialTapTargetSize.shrinkWrap,
-                                              backgroundColor: visibility ==
-                                                      LayerVisibilityState.hidden
-                                                  ? WidgetStatePropertyAll<Color?>(
-                                                      Theme.of(context)
-                                                          .primaryColorLight,)
-                                                  : null,
-                                              iconColor: visibility ==
-                                                      LayerVisibilityState.hidden
-                                                  ? WidgetStatePropertyAll<Color?>(
-                                                      Theme.of(context)
-                                                          .primaryColor,)
-                                                  : null,
                                             ),
-                                            onPressed: _visibilityButtonPressed,
-                                            icon: Icon(
-                                              visibility.icon,
-                                              size: LayerWidgetOptions.iconSize,
-                                            ),
+                                            tapTargetSize:
+                                                MaterialTapTargetSize.shrinkWrap,
+                                            backgroundColor: visibility ==
+                                                    LayerVisibilityState.hidden
+                                                ? WidgetStatePropertyAll<Color?>(
+                                                    Theme.of(context)
+                                                        .primaryColorLight,)
+                                                : null,
+                                            iconColor: visibility ==
+                                                    LayerVisibilityState.hidden
+                                                ? WidgetStatePropertyAll<Color?>(
+                                                    Theme.of(context)
+                                                        .primaryColor,)
+                                                : null,
+                                          ),
+                                          onPressed: _visibilityButtonPressed,
+                                          icon: Icon(
+                                            visibility.icon,
+                                            size: LayerWidgetOptions.iconSize,
                                           ),
                                         );
                                       },
@@ -312,48 +315,46 @@ class _LayerWidgetState extends State<LayerWidget> {
                                       builder: (final BuildContext context,
                                           final LayerLockState lock,
                                           final Widget? child,) {
-                                        return Tooltip(
-                                          message: lock.desc +
-                                              _hotkeyManager.getShortcutString(
-                                                  action: HotkeyAction
-                                                      .layersSwitchLock,),
-                                          waitDuration: toolTipDuration,
-                                          child: IconButton.outlined(
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(
-                                              maxHeight: LayerWidgetOptions.buttonSizeMax,
-                                              maxWidth: LayerWidgetOptions.buttonSizeMax,
-                                              minWidth: LayerWidgetOptions.buttonSizeMin,
-                                              minHeight: LayerWidgetOptions.buttonSizeMin,
+                                        return IconButton.outlined(
+                                          tooltip: lock.label(AppLocalizations.of(context)!) +
+                                            _hotkeyManager.getShortcutString(
+                                              action: HotkeyAction.layersSwitchLock,
+                                              context: context,
                                             ),
-                                            style: ButtonStyle(
-                                            shape: const WidgetStatePropertyAll<OutlinedBorder?>(
-                                              RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.all(
-                                                  Radius.circular(LayerWidgetOptions.borderRadius / 2),
-                                                ),
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(
+                                            maxHeight: LayerWidgetOptions.buttonSizeMax,
+                                            maxWidth: LayerWidgetOptions.buttonSizeMax,
+                                            minWidth: LayerWidgetOptions.buttonSizeMin,
+                                            minHeight: LayerWidgetOptions.buttonSizeMin,
+                                          ),
+                                          style: ButtonStyle(
+                                          shape: const WidgetStatePropertyAll<OutlinedBorder?>(
+                                            RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(LayerWidgetOptions.borderRadius / 2),
                                               ),
                                             ),
-                                              tapTargetSize:
-                                                  MaterialTapTargetSize.shrinkWrap,
-                                              backgroundColor: lock ==
-                                                      LayerLockState.unlocked
-                                                  ? null
-                                                  : WidgetStatePropertyAll<Color?>(
-                                                      Theme.of(context)
-                                                          .primaryColorLight,),
-                                              iconColor: lock ==
-                                                      LayerLockState.unlocked
-                                                  ? null
-                                                  : WidgetStatePropertyAll<Color?>(
-                                                      Theme.of(context)
-                                                          .primaryColor,),
-                                            ),
-                                            onPressed: _lockButtonPressed,
-                                            icon: Icon(
-                                              lock.icon,
-                                              size: LayerWidgetOptions.iconSize,
-                                            ),
+                                          ),
+                                            tapTargetSize:
+                                                MaterialTapTargetSize.shrinkWrap,
+                                            backgroundColor: lock ==
+                                                    LayerLockState.unlocked
+                                                ? null
+                                                : WidgetStatePropertyAll<Color?>(
+                                                    Theme.of(context)
+                                                        .primaryColorLight,),
+                                            iconColor: lock ==
+                                                    LayerLockState.unlocked
+                                                ? null
+                                                : WidgetStatePropertyAll<Color?>(
+                                                    Theme.of(context)
+                                                        .primaryColor,),
+                                          ),
+                                          onPressed: _lockButtonPressed,
+                                          icon: Icon(
+                                            lock.icon,
+                                            size: LayerWidgetOptions.iconSize,
                                           ),
                                         );
                                       },
@@ -409,6 +410,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                           ),
                           child: Builder(
                             builder: (final BuildContext context) {
+                              final AppLocalizations l10n = AppLocalizations.of(context)!;
                               final Column rightColumn = Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -417,8 +419,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                     child: OverlayAnchor(
                                       anchorKey: actionsAnchorKey,
                                       child: Tooltip(
-                                        message: "Layer Actions...",
-                                        waitDuration: toolTipDuration,
+                                        message: l10n.layerActionsDot,
                                         child: Builder(
                                           builder: (final BuildContext context) {
                                             ValueNotifier<LayerLockState> lockStateNotifier = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
@@ -475,8 +476,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                 rightColumn.children.add(
                                   Expanded(
                                     child: Tooltip(
-                                      message: "Settings",
-                                      waitDuration: toolTipDuration,
+                                      message: l10n.settings,
                                       child: Builder(
                                         builder: (final BuildContext context) {
                                           ValueNotifier<LayerLockState> lockStateNotifier = ValueNotifier<LayerLockState>(LayerLockState.unlocked);

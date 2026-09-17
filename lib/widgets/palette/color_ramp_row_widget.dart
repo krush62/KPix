@@ -33,7 +33,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -96,7 +96,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
     super.initState();
   }
 
-  void _createWidgetList({required final ColorRampFn createKPal})
+  void _createWidgetList({required final ColorRampFn createKPal, required final AppLocalizations l10n})
   {
     _widgetList.clear();
     _widgetList.add(
@@ -136,20 +136,17 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
       );
     }
     _widgetList.add(
-      Tooltip(
-        message: "Edit Color Ramp",
-        waitDuration: toolTipDuration,
-        child: Padding(
-          padding: const EdgeInsets.only(left: _ColorRampRowWidgetOptions.buttonPadding / 2, right: _ColorRampRowWidgetOptions.borderWidth) ,
-          child: IconButton(
-            style: Theme.of(context).iconButtonTheme.style!.copyWith(tapTargetSize: MaterialTapTargetSize.shrinkWrap, padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.all(_ColorRampRowWidgetOptions.buttonPadding))),
-            padding: const EdgeInsets.all(_ColorRampRowWidgetOptions.buttonPadding),
-            iconSize: ColorEntryWidgetOptions.settingsIconSize - _ColorRampRowWidgetOptions.buttonPadding,
-            constraints: const BoxConstraints(),
-            icon: const Icon(TablerIcons.adjustments_horizontal),
-            onPressed: () {createKPal(ramp: widget.rampData);
-            },
-          ),
+      Padding(
+        padding: const EdgeInsets.only(left: _ColorRampRowWidgetOptions.buttonPadding / 2, right: _ColorRampRowWidgetOptions.borderWidth) ,
+        child: IconButton(
+          tooltip: l10n.editColorRamp,
+          style: Theme.of(context).iconButtonTheme.style!.copyWith(tapTargetSize: MaterialTapTargetSize.shrinkWrap, padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.all(_ColorRampRowWidgetOptions.buttonPadding))),
+          padding: const EdgeInsets.all(_ColorRampRowWidgetOptions.buttonPadding),
+          iconSize: ColorEntryWidgetOptions.settingsIconSize - _ColorRampRowWidgetOptions.buttonPadding,
+          constraints: const BoxConstraints(),
+          icon: const Icon(TablerIcons.adjustments_horizontal),
+          onPressed: () {createKPal(ramp: widget.rampData);
+          },
         ),
       ),
     );
@@ -158,7 +155,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
 
   @override
   Widget build(final BuildContext context) {
-    _createWidgetList(createKPal: widget.showKPalFn);
+    _createWidgetList(createKPal: widget.showKPalFn, l10n: AppLocalizations.of(context)!);
     return ValueListenableBuilder<ColorReference?>(
       valueListenable: GetIt.I.get<PaletteState>().selectedColorNotifier,
       builder: (final BuildContext context, final ColorReference? selectedColor, final Widget? child) {

@@ -17,17 +17,26 @@
  */
 
 
+import 'package:kpix/l10n/app_localizations.dart';
+
 enum SegmentSortStyle
 {
-  asc(0, "Ascending segment order", "<"),
-  ascDesc(1, "Ascending/Descending segment order", "<>"),
-  descAsc(2, "Descending/Ascending segment order", "><"),
-  desc(3, "Descending segment order", ">");
+  asc(0, "<"),
+  ascDesc(1, "<>"),
+  descAsc(2, "><"),
+  desc(3, ">");
 
-  const SegmentSortStyle(this.id, this.label, this.iconText);
+  const SegmentSortStyle(this.id, this.iconText);
   final int id;
-  final String label;
   final String iconText;
+
+  String label(final AppLocalizations l10n) => switch (this)
+  {
+    asc => l10n.ascendingSegmentOrder,
+    ascDesc => l10n.ascendingDescendingSegmentOrder,
+    descAsc => l10n.descendingAscendingSegmentOrder,
+    desc => l10n.descendingSegmentOrder,
+  };
 }
 
 abstract final class LineConstraints

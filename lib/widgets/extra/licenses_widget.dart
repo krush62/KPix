@@ -16,7 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/oss_licenses.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -32,6 +32,7 @@ class LicensesWidget extends StatelessWidget
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -64,15 +65,12 @@ class LicensesWidget extends StatelessWidget
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                  child: Tooltip(
-                    message: "Close",
-                    waitDuration: toolTipDuration,
-                    child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.x,
-                      ),
-                      onPressed: onDismiss,
+                  child: IconButton.outlined(
+                    tooltip: l10n.close,
+                    icon: const Icon(
+                      TablerIcons.x,
                     ),
+                    onPressed: onDismiss,
                   ),
                 ),
               ),

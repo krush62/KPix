@@ -19,7 +19,7 @@
 ///
 /// Shared by the file layer, the project manager and several widgets, so it
 /// sits below all of them.
-const int fileVersion = 4;
+const int fileVersion = 5;
 const String magicNumber = "4B504958";
 const String fileExtensionKpix = "kpix";
 const String fileExtensionKpal = "kpal";

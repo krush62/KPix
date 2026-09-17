@@ -19,11 +19,13 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/models/constraints/tool_text_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/platform_helper.dart';
+import 'package:kpix/widgets/controls/kpix_dropdown.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class TextOptions extends IToolOptions
@@ -33,7 +35,7 @@ class TextOptions extends IToolOptions
 
   final ValueNotifier<int> size = ValueNotifier<int>(1);
   final ValueNotifier<PixelFontType?> font = ValueNotifier<PixelFontType?>(null);
-  final ValueNotifier<String> text = ValueNotifier<String>("Text");
+  final ValueNotifier<String> text = ValueNotifier<String>(TextConstraints.textDefault);
 
 
   TextOptions({
@@ -43,6 +45,18 @@ class TextOptions extends IToolOptions
     size.value = TextConstraints.sizeDefault;
     font.value = pixelFontIndexMap[TextConstraints.fontIndexDefault];
     text.value = TextConstraints.textDefault;
+  }
+
+  /// Replaces the untranslated placeholder with the localized default.
+  ///
+  /// The tool options are built before the localizations can be reached, so the
+  /// default is filled in once they are. Text the user already changed is kept.
+  void applyLocalizedDefault({required final AppLocalizations l10n})
+  {
+    if (text.value == TextConstraints.textDefault)
+    {
+      text.value = l10n.textToolDefaultText;
+    }
   }
 
   static KPixOverlay? _changeTextDialog;
@@ -65,7 +79,7 @@ class TextOptions extends IToolOptions
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    "Font",
+                    AppLocalizations.of(context)!.font,
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
                 ),
@@ -76,18 +90,16 @@ class TextOptions extends IToolOptions
                   valueListenable: textOptions.font,
                   builder: (final BuildContext context, final PixelFontType? font, final Widget? child)
                   {
-                    return DropdownButton<PixelFontType>(
+                    return KPixDropdown<PixelFontType?>(
                       value: font,
-                      dropdownColor: Theme.of(context).primaryColorDark,
-                      focusColor: Theme.of(context).primaryColor,
-                      isExpanded: true,
+                      valueMap: <PixelFontType?, String>{
+                        for (final PixelFontType typeValue in textOptions.fontManager.kFontMap.keys)
+                          typeValue: FontManager.getFontName(type: typeValue),
+                      },
+                      itemTextStyle: (final PixelFontType? typeValue) => typeValue == null
+                          ? null
+                          : Theme.of(context).textTheme.bodyLarge?.apply(fontFamily: FontManager.getFontName(type: typeValue)),
                       onChanged: (final PixelFontType? type) {textOptions.font.value = type;},
-                      items: textOptions.fontManager.kFontMap.keys.map<DropdownMenuItem<PixelFontType>>((final PixelFontType typeValue) {
-                        return DropdownMenuItem<PixelFontType>(
-                          value: typeValue,
-                          child: Text(FontManager.getFontName(type: typeValue), style: Theme.of(context).textTheme.bodyLarge?.apply(fontFamily: FontManager.getFontName(type: typeValue)),),
-                        );
-                      }).toList(),
                     );
                   },
                 ),
@@ -97,7 +109,7 @@ class TextOptions extends IToolOptions
         ),
         ExcludeFocus(
           child: ToolSliderRow<int>(
-            label: "Scale",
+            label: AppLocalizations.of(context)!.scale,
             notifier: textOptions.size,
             flex: ToolSettingsWidgetOptions.columnWidthRatio,
             minVal: TextConstraints.sizeMin.toDouble(),
@@ -112,7 +124,7 @@ class TextOptions extends IToolOptions
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Text",
+                  AppLocalizations.of(context)!.text,
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),

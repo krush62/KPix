@@ -17,12 +17,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/canvas_transformation.dart';
 import 'package:kpix/models/constraints/canvas_size_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/widgets/canvas_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// Layout options for the [CanvasOperationsWidget].
@@ -36,12 +37,19 @@ abstract final class _CanvasOperationsWidgetOptions
 /// Available canvas transformations.
 
 /// Descriptions for the available canvas operations.
-const Map<CanvasTransformation, String> transformationDescriptions =
-<CanvasTransformation, String>{
-  CanvasTransformation.rotate: "Rotate Canvas",
-  CanvasTransformation.flipH: "Flip Canvas Horizontally",
-  CanvasTransformation.flipV: "Flip Canvas Vertically",
-};
+String transformationDescription({required final AppLocalizations l10n, required final CanvasTransformation transformation})
+{
+  switch(transformation)
+  {
+
+    case CanvasTransformation.rotate:
+      return l10n.rotateCanvas;
+    case CanvasTransformation.flipH:
+      return l10n.flipCanvasHorizontally;
+    case CanvasTransformation.flipV:
+      return l10n.flipCanvasVertically;
+  }
+}
 
 /// Widget for applying canvas-level transformations.
 ///
@@ -75,7 +83,8 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 
   void _crop()
   {
-    _canvasState.cropToSelection();
+    final CanvasActionResult result = _canvasState.cropToSelection();
+    showMessageForCanvasResult(result: result, l10n: AppLocalizations.of(context)!);
   }
 
   void _setSize()
@@ -103,42 +112,43 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               Expanded(
-                child: Tooltip(
-                  message: transformationDescriptions[CanvasTransformation.rotate],
-                  waitDuration: toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.rotate);},
-                    icon: const Icon(
-                      TablerIcons.rotate_clockwise_2,
-                      size: _CanvasOperationsWidgetOptions.iconHeight,
-                    ),
+                child: IconButton.outlined(
+                  tooltip: transformationDescription(
+                    l10n: AppLocalizations.of(context)!,
+                    transformation: CanvasTransformation.rotate,
+                  ),
+                  onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.rotate);},
+                  icon: const Icon(
+                    TablerIcons.rotate_clockwise_2,
+                    size: _CanvasOperationsWidgetOptions.iconHeight,
                   ),
                 ),
               ),
               const SizedBox(width: _CanvasOperationsWidgetOptions.padding),
               Expanded(
-                child: Tooltip(
-                  message: transformationDescriptions[CanvasTransformation.flipH],
-                  waitDuration: toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.flipH);},
-                    icon: const Icon(
-                      TablerIcons.flip_vertical,
-                      size: _CanvasOperationsWidgetOptions.iconHeight,
-                    ),
+                child: IconButton.outlined(
+                  tooltip: transformationDescription(
+                    l10n: AppLocalizations.of(context)!,
+                    transformation: CanvasTransformation.flipH,
+                  ),
+                  onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.flipH);},
+                  icon: const Icon(
+                    TablerIcons.flip_vertical,
+                    size: _CanvasOperationsWidgetOptions.iconHeight,
                   ),
                 ),
               ),
               const SizedBox(width: _CanvasOperationsWidgetOptions.padding),
               Expanded(
-                child: Tooltip(
-                  message: transformationDescriptions[CanvasTransformation.flipV],
-                  child: IconButton.outlined(
-                    onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.flipV);},
-                    icon: const Icon(
-                      TablerIcons.flip_horizontal,
-                      size: _CanvasOperationsWidgetOptions.iconHeight,
-                    ),
+                child: IconButton.outlined(
+                  tooltip: transformationDescription(
+                    l10n: AppLocalizations.of(context)!,
+                    transformation: CanvasTransformation.flipV,
+                  ),
+                  onPressed: (){_canvasState.canvasTransform(transformation: CanvasTransformation.flipV);},
+                  icon: const Icon(
+                    TablerIcons.flip_horizontal,
+                    size: _CanvasOperationsWidgetOptions.iconHeight,
                   ),
                 ),
               ),
@@ -159,15 +169,12 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                         cropEnabled = true;
                       }
                     }
-                    return Tooltip(
-                      message: "Crop To Selection",
-                      waitDuration: toolTipDuration,
-                      child: IconButton.outlined(
-                        onPressed: cropEnabled ? _crop : null,
-                        icon: const Icon(
-                          TablerIcons.crop,
-                          size: _CanvasOperationsWidgetOptions.iconHeight,
-                        ),
+                    return IconButton.outlined(
+                      tooltip: AppLocalizations.of(context)!.cropToSelection,
+                      onPressed: cropEnabled ? _crop : null,
+                      icon: const Icon(
+                        TablerIcons.crop,
+                        size: _CanvasOperationsWidgetOptions.iconHeight,
                       ),
                     );
                   },
@@ -175,15 +182,12 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
               ),
               const SizedBox(width: _CanvasOperationsWidgetOptions.padding),
               Expanded(
-                child: Tooltip(
-                  message: "Set Size",
-                  waitDuration: toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: _setSize,
-                    icon: const Icon(
-                      TablerIcons.resize,
-                      size: _CanvasOperationsWidgetOptions.iconHeight,
-                    ),
+                child: IconButton.outlined(
+                  tooltip: AppLocalizations.of(context)!.changeCanvasSize,
+                  onPressed: _setSize,
+                  icon: const Icon(
+                    TablerIcons.resize,
+                    size: _CanvasOperationsWidgetOptions.iconHeight,
                   ),
                 ),
               ),

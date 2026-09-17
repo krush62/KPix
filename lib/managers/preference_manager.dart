@@ -16,6 +16,7 @@
 
 // ignore_for_file: constant_identifier_names
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_language.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models/constraints/drawing_layer_settings_constraints.dart';
 import 'package:kpix/models/constraints/frame_constraints.dart';
@@ -158,6 +159,7 @@ enum PreferenceString
 {
   ColorNames_ColorNamePath(defaultValue: PreferenceManager.ASSET_PATH_COLOR_NAMES),
   ProjectDirectory_CustomPath(defaultValue: ""),
+  Gui_Language(defaultValue: systemLanguageCode),
 
   ;
   const PreferenceString({
@@ -312,28 +314,28 @@ class PreferenceManager
   void _loadWidgetOptions()
   {
     drawingLayerSettingsConstraints = DrawingLayerSettingsConstraints(
-        darkenBrightenMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDarkenBrighten),
-        darkenBrightenDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDarkenBrighten),
-        darkenBrightenMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDarkenBrighten),
-        glowDepthMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinGlowDepth),
-        glowDepthDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultGlowDepth),
-        glowDepthMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxGlowDepth),
-        glowRecursiveDefault: _getValueB(PreferenceBool.DrawingLayerConstraints_DefaultGlowRecursive),
-        bevelDistanceMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinBevelDistance),
-        bevelDistanceDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultBevelDistance),
-        bevelDistanceMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxBevelDistance),
-        bevelStrengthMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinBevelStrength),
-        bevelStrengthDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultBevelStrength),
-        bevelStrengthMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxBevelStrength),
-        dropShadowOffsetMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDropShadowDistance),
-        dropShadowOffsetDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDropShadowDistance),
-        dropShadowOffsetMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDropShadowDistance),);
+      darkenBrightenMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDarkenBrighten),
+      darkenBrightenDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDarkenBrighten),
+      darkenBrightenMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDarkenBrighten),
+      glowDepthMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinGlowDepth),
+      glowDepthDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultGlowDepth),
+      glowDepthMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxGlowDepth),
+      glowRecursiveDefault: _getValueB(PreferenceBool.DrawingLayerConstraints_DefaultGlowRecursive),
+      bevelDistanceMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinBevelDistance),
+      bevelDistanceDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultBevelDistance),
+      bevelDistanceMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxBevelDistance),
+      bevelStrengthMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinBevelStrength),
+      bevelStrengthDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultBevelStrength),
+      bevelStrengthMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxBevelStrength),
+      dropShadowOffsetMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDropShadowDistance),
+      dropShadowOffsetDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDropShadowDistance),
+      dropShadowOffsetMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDropShadowDistance),);
     shadingLayerSettingsConstraints = ShadingLayerSettingsConstraints(
-        shadingStepsMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
-        shadingStepsDefaultBrighten: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten),
-        shadingStepsDefaultDarken: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken),
-        shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),
-        ditherStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxDither),);
+      shadingStepsMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
+      shadingStepsDefaultBrighten: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten),
+      shadingStepsDefaultDarken: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken),
+      shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),
+      ditherStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxDither),);
     frameConstraints = FrameConstraints(
       minFps: _getValueI(PreferenceInt.FrameConstraints_MinFps),
       maxFps: _getValueI(PreferenceInt.FrameConstraints_MaxFps),
@@ -371,6 +373,7 @@ class PreferenceManager
       selectionOpacityValue: _getValueI(PreferenceInt.Opacity_Selection),
       selectionPulsatingValue: _getValueB(PreferenceBool.Selection_PulsatingOutline),
       toolOpacityValue: _getValueI(PreferenceInt.Opacity_Tool),
+      languageValue: _getValueS(PreferenceString.Gui_Language),
     );
 
     shadingLayerSettingsConstraints = ShadingLayerSettingsConstraints(
@@ -471,6 +474,11 @@ class PreferenceManager
     _intMap[PreferenceInt.Opacity_Selection]!.value = guiPreferenceContent.selectionOpacity.value;
     _boolMap[PreferenceBool.Selection_PulsatingOutline]!.value = guiPreferenceContent.selectionPulsatingOutline.value;
     _intMap[PreferenceInt.Opacity_CanvasBorder]!.value = guiPreferenceContent.canvasBorderOpacity.value;
+    if (guiPreferenceContent.language.value != _stringMap[PreferenceString.Gui_Language]!.value)
+    {
+      _stringMap[PreferenceString.Gui_Language]!.value = guiPreferenceContent.language.value;
+      languageSettings.languageCode = guiPreferenceContent.language.value;
+    }
 
     //BEHAVIOR PREFERENCES
     if (_intMap[PreferenceInt.HistoryOptions_Steps]!.value != behaviorPreferenceContent.undoSteps.value)

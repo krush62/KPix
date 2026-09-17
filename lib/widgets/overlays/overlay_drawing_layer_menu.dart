@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -91,25 +91,21 @@ class _OverlayDrawingLayerMenuState extends State<OverlayDrawingLayerMenu> with 
 
   /// A single square menu entry showing [icon].
   ///
-  /// The [tooltip] is shown after [toolTipDuration] of hovering,
   /// pressing the entry calls [onPressedFunc]. Set [rotateIcon] for icons that
   /// have to point the other way, such as the merge arrow.
-  Tooltip _createMenuButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc, final bool rotateIcon = false})
+  SizedBox _createMenuButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc, final bool rotateIcon = false})
   {
     final Icon iconWidget = Icon(icon);
     final Widget buttonChild = rotateIcon ? Transform.rotate(angle: pi, child: iconWidget) : iconWidget;
 
-    return Tooltip(
-      message: tooltip,
-      waitDuration: toolTipDuration,
-      child: SizedBox(
-        width: OverlayEntrySubMenuOptions.buttonHeight * _buttonToIconRatio,
-        height: OverlayEntrySubMenuOptions.buttonHeight * _buttonToIconRatio,
-        child: IconButton.outlined(
-          padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing,),
-          onPressed: onPressedFunc,
-          icon: buttonChild,
-        ),
+    return SizedBox(
+      width: OverlayEntrySubMenuOptions.buttonHeight * _buttonToIconRatio,
+      height: OverlayEntrySubMenuOptions.buttonHeight * _buttonToIconRatio,
+      child: IconButton.outlined(
+        tooltip: tooltip,
+        padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing,),
+        onPressed: onPressedFunc,
+        icon: buttonChild,
       ),
     );
   }
@@ -117,6 +113,7 @@ class _OverlayDrawingLayerMenuState extends State<OverlayDrawingLayerMenu> with 
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return AnchoredOverlayBox(
       anchorKey: widget.anchorKey,
       width: _width,
@@ -133,9 +130,9 @@ class _OverlayDrawingLayerMenuState extends State<OverlayDrawingLayerMenu> with 
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              _createMenuButton(tooltip: "Delete Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}", icon: TablerIcons.trash, onPressedFunc: widget.onDelete),
-              _createMenuButton(tooltip: "Duplicate Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}", icon: TablerIcons.squares, onPressedFunc: widget.onDuplicate),
-              _createMenuButton(tooltip: "Merge Down Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersMerge)}", icon: TablerIcons.arrow_merge_left, onPressedFunc: widget.onMergeDown, rotateIcon: true),
+              _createMenuButton(tooltip: l10n.deleteLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete, context: context), icon: TablerIcons.trash, onPressedFunc: widget.onDelete),
+              _createMenuButton(tooltip: l10n.duplicateLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate, context: context), icon: TablerIcons.squares, onPressedFunc: widget.onDuplicate),
+              _createMenuButton(tooltip: l10n.mergeDownLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.layersMerge, context: context), icon: TablerIcons.arrow_merge_left, onPressedFunc: widget.onMergeDown, rotateIcon: true),
             ],
           ),
         ),

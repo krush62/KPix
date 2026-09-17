@@ -33,7 +33,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
@@ -53,6 +54,7 @@ import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
+import 'package:kpix/widgets/layer_action_messages.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_add_new_layer_menu.dart';
@@ -75,6 +77,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
   final ProjectSession _projectSession = GetIt.I.get<ProjectSession>();
   final DocumentState _documentState = GetIt.I.get<DocumentState>();
   final LayerManager _layerManager = GetIt.I.get<LayerManager>();
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
 
   final OverlayPortalController _addLayerPortalController = OverlayPortalController();
@@ -85,6 +88,71 @@ class _RightBarWidgetState extends State<RightBarWidget>
   void initState()
   {
     super.initState();
+    _hotkeyManager.addListener(func: _newDrawingLayerHotkey, action: HotkeyAction.layersNewDrawing);
+    _hotkeyManager.addListener(func: _newReferenceLayerHotkey, action: HotkeyAction.layersNewReference);
+    _hotkeyManager.addListener(func: _newShadingLayerHotkey, action: HotkeyAction.layersNewShading);
+    _hotkeyManager.addListener(func: _newGridLayerHotkey, action: HotkeyAction.layersNewGrid);
+    _hotkeyManager.addListener(func: _duplicateLayerHotkey, action: HotkeyAction.layersDuplicate);
+    _hotkeyManager.addListener(func: _deleteLayerHotkey, action: HotkeyAction.layersDelete);
+    _hotkeyManager.addListener(func: _mergeLayerHotkey, action: HotkeyAction.layersMerge);
+  }
+
+  @override
+  void dispose()
+  {
+    _hotkeyManager.removeListener(func: _newDrawingLayerHotkey, action: HotkeyAction.layersNewDrawing);
+    _hotkeyManager.removeListener(func: _newReferenceLayerHotkey, action: HotkeyAction.layersNewReference);
+    _hotkeyManager.removeListener(func: _newShadingLayerHotkey, action: HotkeyAction.layersNewShading);
+    _hotkeyManager.removeListener(func: _newGridLayerHotkey, action: HotkeyAction.layersNewGrid);
+    _hotkeyManager.removeListener(func: _duplicateLayerHotkey, action: HotkeyAction.layersDuplicate);
+    _hotkeyManager.removeListener(func: _deleteLayerHotkey, action: HotkeyAction.layersDelete);
+    _hotkeyManager.removeListener(func: _mergeLayerHotkey, action: HotkeyAction.layersMerge);
+    super.dispose();
+  }
+
+  void _newDrawingLayerHotkey() => _addLayerHotkey(layerType: DrawingLayerState);
+  void _newReferenceLayerHotkey() => _addLayerHotkey(layerType: ReferenceLayerState);
+  void _newShadingLayerHotkey() => _addLayerHotkey(layerType: ShadingLayerState);
+  void _newGridLayerHotkey() => _addLayerHotkey(layerType: GridLayerState);
+
+  //without a frame there is nothing to act on, and the hotkeys stay silent
+  void _addLayerHotkey({required final Type layerType})
+  {
+    if (_documentState.timeline.selectedFrame != null)
+    {
+      final (LayerActionResult, LayerState?) result = _layerManager.addNewLayer(layerType: layerType);
+      showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
+    }
+  }
+
+  void _duplicateLayerHotkey()
+  {
+    final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
+    if (currentLayer != null)
+    {
+      final (LayerActionResult, LayerState?) result = _layerManager.layerDuplicateSelected(duplicateLayer: currentLayer);
+      showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
+    }
+  }
+
+  void _deleteLayerHotkey()
+  {
+    final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
+    if (currentLayer != null)
+    {
+      final LayerActionResult result = _layerManager.layerDeletedSelected(deleteLayer: currentLayer);
+      showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
+    }
+  }
+
+  void _mergeLayerHotkey()
+  {
+    final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
+    if (currentLayer != null)
+    {
+      final LayerActionResult result = _layerManager.layerMerged(mergeLayer: currentLayer);
+      showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
+    }
   }
 
   void _closeLayerMenu()
@@ -94,31 +162,36 @@ class _RightBarWidgetState extends State<RightBarWidget>
 
   void _newDrawingLayerPressed()
   {
-    _layerManager.addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    final (LayerActionResult, LayerState?) result = _layerManager.addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeLayerMenu();
   }
 
   void _newReferenceLayerPressed()
   {
-    _layerManager.addNewLayer(layerType: ReferenceLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    final (LayerActionResult, LayerState?) result = _layerManager.addNewLayer(layerType: ReferenceLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeLayerMenu();
   }
 
   void _newGridLayerPressed()
   {
-    _layerManager.addNewLayer(layerType: GridLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    final (LayerActionResult, LayerState?) result = _layerManager.addNewLayer(layerType: GridLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeLayerMenu();
   }
 
   void _newShadingLayerPressed()
   {
-    _layerManager.addNewLayer(layerType: ShadingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    final (LayerActionResult, LayerState?) result = _layerManager.addNewLayer(layerType: ShadingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeLayerMenu();
   }
 
   void _newDitherLayerPressed()
   {
-    _layerManager.addNewLayer(layerType: DitherLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    final (LayerActionResult, LayerState?) result = _layerManager.addNewLayer(layerType: DitherLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeLayerMenu();
   }
 
@@ -172,6 +245,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
 
   @override
   Widget build(final BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Material(
       color: Theme.of(context).primaryColor,
 
@@ -199,39 +273,36 @@ class _RightBarWidgetState extends State<RightBarWidget>
                               padding: const EdgeInsets.only(top: LayerWidgetOptions.outerPadding, left: LayerWidgetOptions.outerPadding, right: LayerWidgetOptions.outerPadding),
                               child: OverlayAnchor(
                                 anchorKey: _addLayerAnchorKey,
-                                child: Tooltip(
-                                  message: "Add New Layer...",
-                                  waitDuration: toolTipDuration,
-                                  child: OverlayPortal(
-                                    controller: _addLayerPortalController,
-                                    overlayChildBuilder: (final BuildContext bcontext) {
-                                      return Stack(
-                                        children: <Widget>[
-                                          ModalBarrier(
-                                            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
-                                            onDismiss: _closeLayerMenu,
-                                          ),
-                                          OverlayAddNewLayerMenu(
-                                            anchorKey: _addLayerAnchorKey,
-                                            onNewDrawingLayer: _newDrawingLayerPressed,
-                                            onNewReferenceLayer: _newReferenceLayerPressed,
-                                            onNewGridLayer: _newGridLayerPressed,
-                                            onNewShadingLayer: _newShadingLayerPressed,
-                                            onNewDitherLayer: _newDitherLayerPressed,
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                    child: IconButton.outlined(
-                                      onPressed: _addLayerPortalController.show,
-                                      icon: const Icon(TablerIcons.plus),
-                                      style: IconButton.styleFrom(
-                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                        minimumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
-                                        maximumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
-                                        iconSize: LayerWidgetOptions.addButtonSize.toDouble() - LayerWidgetOptions.innerPadding,
-                                        padding: EdgeInsets.zero,
-                                      ),
+                                child: OverlayPortal(
+                                  controller: _addLayerPortalController,
+                                  overlayChildBuilder: (final BuildContext bcontext) {
+                                    return Stack(
+                                      children: <Widget>[
+                                        ModalBarrier(
+                                          color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
+                                          onDismiss: _closeLayerMenu,
+                                        ),
+                                        OverlayAddNewLayerMenu(
+                                          anchorKey: _addLayerAnchorKey,
+                                          onNewDrawingLayer: _newDrawingLayerPressed,
+                                          onNewReferenceLayer: _newReferenceLayerPressed,
+                                          onNewGridLayer: _newGridLayerPressed,
+                                          onNewShadingLayer: _newShadingLayerPressed,
+                                          onNewDitherLayer: _newDitherLayerPressed,
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  child: IconButton.outlined(
+                                    tooltip: l10n.addNewLayerDot,
+                                    onPressed: _addLayerPortalController.show,
+                                    icon: const Icon(TablerIcons.plus),
+                                    style: IconButton.styleFrom(
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      minimumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
+                                      maximumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
+                                      iconSize: LayerWidgetOptions.addButtonSize.toDouble() - LayerWidgetOptions.innerPadding,
+                                      padding: EdgeInsets.zero,
                                     ),
                                   ),
                                 ),
@@ -323,7 +394,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                   children: <Widget>[
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text("LAYER SETTINGS", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
+                                      child: Text(l10n.layerSettings.toUpperCase(), style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
                                     ),
                                     const SizedBox(height: 8.0),
                                     Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
@@ -332,27 +403,24 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                         child: settingsWidget,
                                       ),
                                     ),
-                                    Tooltip(
-                                      waitDuration: toolTipDuration,
-                                      message: "Close",
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: IconButton.outlined(
-                                          onPressed: () {
-                                            GetIt.I.get<ViewState>().layerSettingsVisible = false;
-                                            if (currentLayer != null && currentLayer is RasterableLayerState)
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: IconButton.outlined(
+                                        tooltip: l10n.close,
+                                        onPressed: () {
+                                          GetIt.I.get<ViewState>().layerSettingsVisible = false;
+                                          if (currentLayer != null && currentLayer is RasterableLayerState)
+                                          {
+                                            currentLayer.layerSettings.editStarted = false;
+                                            if (currentLayer.layerSettings.hasChanges)
                                             {
-                                              currentLayer.layerSettings.editStarted = false;
-                                              if (currentLayer.layerSettings.hasChanges)
-                                              {
-                                                final Frame? frame = _documentState.timeline.selectedFrame;
-                                                GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: frame?.layerList.getSelectedLayer());
-                                                currentLayer.layerSettings.hasChanges = false;
-                                              }
+                                              final Frame? frame = _documentState.timeline.selectedFrame;
+                                              GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: frame?.layerList.getSelectedLayer());
+                                              currentLayer.layerSettings.hasChanges = false;
                                             }
-                                          },
-                                          icon: const Icon(TablerIcons.arrow_narrow_right,),
-                                        ),
+                                          }
+                                        },
+                                        icon: const Icon(TablerIcons.arrow_narrow_right,),
                                       ),
                                     ),
                                   ],

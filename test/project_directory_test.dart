@@ -21,6 +21,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/models/file_constants.dart';
+import 'package:kpix/models/io_types.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
@@ -108,6 +109,8 @@ void testMoveProjectFiles() {
       final ProjectDirectoryMoveResult result = await moveProjectFiles(sourceDir: sourceDir, targetDir: targetDir);
 
       expect(result.success, isFalse);
+      expect(result.error, ProjectDirectoryMoveError.targetFileExists);
+      expect(result.fileName, "b.$fileExtensionKpix");
       expect(File(p.join(sourceDir, "a.$fileExtensionKpix")).existsSync(), isTrue);
       expect(File(p.join(sourceDir, "b.$fileExtensionKpix")).existsSync(), isTrue);
       expect(await File(p.join(targetDir, "b.$fileExtensionKpix")).readAsString(), "existing");
@@ -121,6 +124,7 @@ void testMoveProjectFiles() {
       final ProjectDirectoryMoveResult result = await moveProjectFiles(sourceDir: sourceDir, targetDir: blockedTarget);
 
       expect(result.success, isFalse);
+      expect(result.error, ProjectDirectoryMoveError.targetNotCreated);
       expect(File(p.join(sourceDir, "a.$fileExtensionKpix")).existsSync(), isTrue);
     });
   });

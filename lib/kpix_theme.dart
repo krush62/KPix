@@ -112,6 +112,27 @@ class ColorSet
       bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
     ),
 
+    tooltipTheme: TooltipThemeData(
+      padding: const EdgeInsetsGeometry.all(6),
+      waitDuration: const Duration(milliseconds: 750),
+      showDuration: const Duration(seconds: 5),
+      decoration: BoxDecoration(
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: _lightColors.light,
+            blurRadius: 8,
+          ),
+        ],
+        color: _lightColors.light,
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        border: BoxBorder.all(
+          width: 2.0,
+          color: _lightColors.normal,
+        ),
+      ),
+      textStyle: TextStyle(fontSize: 12, height: 1.4, letterSpacing: 0.7, fontWeight: FontWeight.w900, color: _lightColors.dark, fontFamily: "Oxanium"),
+    ),
+
     sliderTheme: SliderThemeData(
       activeTrackColor: _lightColors.light,
       inactiveTrackColor: _lightColors.dark,
@@ -224,25 +245,46 @@ class ColorSet
     //fontFamily: "PixelFonts",
 
     textTheme: TextTheme(
-        displayLarge: monochromeTheme.textTheme.displayLarge!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
-        displayMedium: monochromeTheme.textTheme.displayMedium!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
-        displaySmall: monochromeTheme.textTheme.displaySmall!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        displayLarge: monochromeTheme.textTheme.displayLarge!.copyWith(color: _darkColors.light),
+        displayMedium: monochromeTheme.textTheme.displayMedium!.copyWith(color: _darkColors.light),
+        displaySmall: monochromeTheme.textTheme.displaySmall!.copyWith(color: _darkColors.light),
 
-        headlineLarge: monochromeTheme.textTheme.headlineLarge!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
-        headlineMedium: monochromeTheme.textTheme.headlineMedium!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
-        headlineSmall: monochromeTheme.textTheme.headlineSmall!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        headlineLarge: monochromeTheme.textTheme.headlineLarge!.copyWith(color: _darkColors.light),
+        headlineMedium: monochromeTheme.textTheme.headlineMedium!.copyWith(color: _darkColors.light),
+        headlineSmall: monochromeTheme.textTheme.headlineSmall!.copyWith(color: _darkColors.light),
 
-        titleLarge: monochromeTheme.textTheme.titleLarge!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
-        titleMedium: monochromeTheme.textTheme.titleMedium!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
-        titleSmall: monochromeTheme.textTheme.titleSmall!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        titleLarge: monochromeTheme.textTheme.titleLarge!.copyWith(color: _darkColors.light),
+        titleMedium: monochromeTheme.textTheme.titleMedium!.copyWith(color: _darkColors.light),
+        titleSmall: monochromeTheme.textTheme.titleSmall!.copyWith(color: _darkColors.light),
 
-        labelLarge: monochromeTheme.textTheme.labelLarge!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
-        labelMedium: monochromeTheme.textTheme.labelMedium!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
-        labelSmall: monochromeTheme.textTheme.labelSmall!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        labelLarge: monochromeTheme.textTheme.labelLarge!.copyWith(color: _darkColors.light),
+        labelMedium: monochromeTheme.textTheme.labelMedium!.copyWith(color: _darkColors.light),
+        labelSmall: monochromeTheme.textTheme.labelSmall!.copyWith(color: _darkColors.light),
 
-        bodyLarge: monochromeTheme.textTheme.bodyLarge!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
-        bodyMedium: monochromeTheme.textTheme.bodyMedium!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
-        bodySmall: monochromeTheme.textTheme.bodySmall!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        bodyLarge: monochromeTheme.textTheme.bodyLarge!.copyWith(color: _darkColors.light),
+        bodyMedium: monochromeTheme.textTheme.bodyMedium!.copyWith(color: _darkColors.light),
+        bodySmall: monochromeTheme.textTheme.bodySmall!.copyWith(color: _darkColors.light),
+    ),
+
+    tooltipTheme: TooltipThemeData(
+      waitDuration: monochromeTheme.tooltipTheme.waitDuration,
+      showDuration: monochromeTheme.tooltipTheme.showDuration,
+      padding: monochromeTheme.tooltipTheme.padding,
+      decoration: BoxDecoration(
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: _darkColors.dark,
+            blurRadius: 8,
+          ),
+        ],
+        color: _darkColors.dark,
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        border: BoxBorder.all(
+          width: 2.0,
+          color: _darkColors.normal,
+        ),
+      ),
+      textStyle: monochromeTheme.tooltipTheme.textStyle!.copyWith(color: _darkColors.light),
     ),
 
     sliderTheme: SliderThemeData(

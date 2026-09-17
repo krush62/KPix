@@ -18,7 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/project_session.dart';
@@ -64,6 +64,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -75,7 +76,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Text("SAVE PROJECT AS", style: Theme.of(context).textTheme.titleLarge),
+          Text(l10n.saveProjectAs.toUpperCase(), style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Padding(
             padding:  const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
@@ -84,7 +85,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 Expanded(
-                  child: Text("File Name", style: Theme.of(context).textTheme.titleMedium),
+                  child: Text(l10n.fileName, style: Theme.of(context).textTheme.titleMedium),
                 ),
                 Expanded(
                   flex: 3,
@@ -113,8 +114,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                     valueListenable: _fileNameStatus,
                     builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                       return Tooltip(
-                        message: status.label,
-                        waitDuration: toolTipDuration,
+                        message: status.label(AppLocalizations.of(context)!),
                         child: Icon(
                           status.icon,
                           size: OverlayEntryAlertDialogOptions.iconSize / 2,
@@ -134,9 +134,8 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.x,
-                      ),
+                      tooltip: l10n.cancel,
+                      icon: const Icon(TablerIcons.x),
                       onPressed: () {
                         widget.dismiss();
                       },
@@ -150,9 +149,8 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                       valueListenable: _fileNameStatus,
                       builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                         return IconButton.outlined(
-                          icon: const Icon(
-                            TablerIcons.check,
-                          ),
+                          tooltip: l10n.saveProject,
+                          icon: const Icon(TablerIcons.check),
                           onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
                               () {
                             widget.accept(fileName: _fileName.value, callback: widget.callback);

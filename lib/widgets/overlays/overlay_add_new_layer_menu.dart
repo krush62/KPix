@@ -18,7 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
@@ -89,16 +89,12 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
   {
     return Padding(
       padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing / 2),
-      child: Tooltip(
-        message: toolTip,
-        preferBelow: false,
-        waitDuration: toolTipDuration,
-        child: IconButton.outlined(
-          constraints: const BoxConstraints(),
-          padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
-          onPressed: onPressedFunc,
-          icon: Icon(icon) ,
-        ),
+      child: IconButton.outlined(
+        tooltip: toolTip,
+        constraints: const BoxConstraints(),
+        padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
+        onPressed: onPressedFunc,
+        icon: Icon(icon) ,
       ),
     );
   }
@@ -106,6 +102,7 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return AnchoredOverlayBox(
       anchorKey: widget.anchorKey,
       width: OverlayEntrySubMenuOptions.width / 2,
@@ -123,27 +120,27 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               _createMenuButton(
-                toolTip: "Add New Drawing Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewDrawing)}",
+                toolTip: l10n.addNewDrawingLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.layersNewDrawing, context: context),
                 icon: TablerIcons.brush,
                 onPressedFunc: widget.onNewDrawingLayer,
               ),
               _createMenuButton(
-                toolTip: "Add New Shading Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewShading)}",
+                toolTip: l10n.addNewShadingLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.layersNewShading, context: context),
                 icon: TablerIcons.exposure,
                 onPressedFunc: widget.onNewShadingLayer,
               ),
               _createMenuButton(
-                toolTip: "Add New Dither Layer",
+                toolTip: l10n.addNewDitherLayer,
                 icon: Icons.gradient,
                 onPressedFunc: widget.onNewDitherLayer,
               ),
               _createMenuButton(
-                toolTip: "Add New Reference Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewReference)}",
+                toolTip: l10n.addNewReferenceLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.layersNewReference, context: context),
                 icon: Icons.photo,
                 onPressedFunc: widget.onNewReferenceLayer,
               ),
               _createMenuButton(
-                toolTip: "Add New Grid Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewGrid)}",
+                toolTip: l10n.addNewGridLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.layersNewGrid, context: context),
                 icon: Icons.grid_4x4,
                 onPressedFunc: widget.onNewGridLayer,
               ),

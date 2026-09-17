@@ -31,7 +31,6 @@ import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
-import 'package:kpix/util/messages.dart';
 
 class Frame
 {
@@ -302,42 +301,41 @@ class Timeline
     }
   }
 
-  void addNewFrameLeft()
+  LayerActionResult addNewFrameLeft()
   {
-    _addNewFrame(position: _FrameCreationPosition.left, method: _FrameCreationMethod.empty);
+    return _addNewFrame(position: _FrameCreationPosition.left, method: _FrameCreationMethod.empty);
   }
 
-  void addNewFrameRight()
+  LayerActionResult addNewFrameRight()
   {
-    _addNewFrame(position: _FrameCreationPosition.right, method: _FrameCreationMethod.empty);
+    return _addNewFrame(position: _FrameCreationPosition.right, method: _FrameCreationMethod.empty);
   }
 
-  void copyFrameLeft()
+  LayerActionResult copyFrameLeft()
   {
-    _addNewFrame(position: _FrameCreationPosition.left, method: _FrameCreationMethod.copy);
+    return _addNewFrame(position: _FrameCreationPosition.left, method: _FrameCreationMethod.copy);
   }
 
-  void copyFrameRight()
+  LayerActionResult copyFrameRight()
   {
-    _addNewFrame(position: _FrameCreationPosition.right, method: _FrameCreationMethod.copy);
+    return _addNewFrame(position: _FrameCreationPosition.right, method: _FrameCreationMethod.copy);
   }
 
-  void linkFrameLeft()
+  LayerActionResult linkFrameLeft()
   {
-    _addNewFrame(position: _FrameCreationPosition.left, method: _FrameCreationMethod.link);
+    return _addNewFrame(position: _FrameCreationPosition.left, method: _FrameCreationMethod.link);
   }
 
-  void linkFrameRight()
+  LayerActionResult linkFrameRight()
   {
-    _addNewFrame(position: _FrameCreationPosition.right, method: _FrameCreationMethod.link);
+    return _addNewFrame(position: _FrameCreationPosition.right, method: _FrameCreationMethod.link);
   }
 
-  void _addNewFrame({required final _FrameCreationPosition position, required final _FrameCreationMethod method})
+  LayerActionResult _addNewFrame({required final _FrameCreationPosition position, required final _FrameCreationMethod method})
   {
     if (frames.value.length >= maxFrames)
     {
-      showMessage(text: "Cannot add more frames.", toastType: ToastType.warning);
-      return;
+      return LayerActionResult.frameLimitReached;
     }
     else
     {
@@ -351,10 +349,10 @@ class Timeline
         for (int i = 0; i < cf.layerList.length; i++)
         {
           final LayerState l = cf.layerList.getLayer(index: i);
-          final LayerState? addedLayer = f.layerList.duplicateLayer(duplicateLayer: l, insertAtEnd: true);
+          final (LayerActionResult, LayerState?) duplicateResult = f.layerList.duplicateLayer(duplicateLayer: l, insertAtEnd: true);
           if (i == cf.layerList.selectedLayerIndex)
           {
-            layerToSelect = addedLayer;
+            layerToSelect = duplicateResult.$2;
           }
         }
 
@@ -375,7 +373,11 @@ class Timeline
         for (int i = 0; i < cf.layerList.length; i++)
         {
           final LayerState l = cf.layerList.getLayer(index: i);
-          f.layerList.addLinkLayer(layer: l, position: i);
+          final LayerActionResult result = f.layerList.addLinkLayer(layer: l, position: i);
+          if (result != LayerActionResult.success)
+          {
+            return result;
+          }
           if (i == cf.layerList.selectedLayerIndex)
           {
             layerToSelect = l;
@@ -427,6 +429,7 @@ class Timeline
       }
       GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameAdd);
     }
+    return LayerActionResult.success;
   }
 
   void deleteFrame()

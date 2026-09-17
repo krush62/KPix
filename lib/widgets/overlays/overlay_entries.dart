@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
@@ -175,10 +176,14 @@ Widget _centeredOnDesktop({required final Widget child})
 /// One of the buttons in the row below the message of a [_messageDialog].
 class _DialogAction
 {
-  const _DialogAction({required this.icon, required this.onPressed});
+  const _DialogAction({required this.icon, required this.onPressed, required this.tooltip});
 
   final IconData icon;
   final Function() onPressed;
+
+  /// Resolved when the dialog is built, so a cached dialog follows a locale
+  /// change like its message does.
+  final LocalizedMessageFn tooltip;
 }
 
 /// Builds a dialog showing [message] above a row of [actions].
@@ -186,7 +191,7 @@ class _DialogAction
 /// [onBarrierDismiss] is called when the barrier is tapped; null makes the barrier
 /// swallow taps, so one of the [actions] is the only way out.
 KPixOverlay _messageDialog({
-  required final String message,
+  required final LocalizedMessageFn message,
   required final List<_DialogAction> actions,
   final Function()? onBarrierDismiss,
 })
@@ -194,44 +199,49 @@ KPixOverlay _messageDialog({
   return _barrierOverlay(
     smokeOpacity: OverlayEntryAlertDialogOptions.smokeOpacity,
     onDismiss: onBarrierDismiss,
-    content: (final BuildContext context) => Center(
-      child: KPixAnimationWidget(
-        constraints: const BoxConstraints(
-          minHeight: OverlayEntryAlertDialogOptions.minHeight,
-          minWidth: OverlayEntryAlertDialogOptions.minWidth,
-          maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
-          maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
+    content: (final BuildContext context)
+    {
+      final AppLocalizations l10n = AppLocalizations.of(context)!;
+      return Center(
+        child: KPixAnimationWidget(
+          constraints: const BoxConstraints(
+            minHeight: OverlayEntryAlertDialogOptions.minHeight,
+            minWidth: OverlayEntryAlertDialogOptions.minWidth,
+            maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+            maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                  child: Text(message(l10n), style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
+                ),
               ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                for (final _DialogAction action in actions)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                      child: IconButton.outlined(
-                        icon: Icon(action.icon),
-                        onPressed: action.onPressed,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  for (final _DialogAction action in actions)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                        child: IconButton.outlined(
+                          tooltip: action.tooltip(l10n),
+                          icon: Icon(action.icon),
+                          onPressed: action.onPressed,
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-    ),
+      );
+    },
   );
 }
 
@@ -377,16 +387,16 @@ KPixOverlay getThreeButtonDialog({
   required final Function() onNo,
   required final Function() onCancel,
   required final bool outsideCancelable,
-  required final String message,
+  required final LocalizedMessageFn message,
 })
 {
   return _messageDialog(
     message: message,
     onBarrierDismiss: outsideCancelable ? onCancel : null,
     actions: <_DialogAction>[
-      _DialogAction(icon: TablerIcons.check, onPressed: onYes),
-      _DialogAction(icon: TablerIcons.x, onPressed: onNo),
-      _DialogAction(icon: TablerIcons.ban, onPressed: onCancel),
+      _DialogAction(icon: TablerIcons.check, onPressed: onYes, tooltip: (final AppLocalizations l10n) => l10n.yes),
+      _DialogAction(icon: TablerIcons.x, onPressed: onNo, tooltip: (final AppLocalizations l10n) => l10n.no),
+      _DialogAction(icon: TablerIcons.ban, onPressed: onCancel, tooltip: (final AppLocalizations l10n) => l10n.cancel),
     ],
   );
 }
@@ -399,15 +409,15 @@ KPixOverlay getTwoButtonDialog({
   required final Function() onYes,
   required final Function() onNo,
   required final bool outsideCancelable,
-  required final String message,
+  required final LocalizedMessageFn message,
 })
 {
   return _messageDialog(
     message: message,
     onBarrierDismiss: outsideCancelable ? onNo : null,
     actions: <_DialogAction>[
-      _DialogAction(icon: TablerIcons.check, onPressed: onYes),
-      _DialogAction(icon: TablerIcons.x, onPressed: onNo),
+      _DialogAction(icon: TablerIcons.check, onPressed: onYes, tooltip: (final AppLocalizations l10n) => l10n.yes),
+      _DialogAction(icon: TablerIcons.x, onPressed: onNo, tooltip: (final AppLocalizations l10n) => l10n.no),
     ],
   );
 }
@@ -418,13 +428,13 @@ KPixOverlay getTwoButtonDialog({
 /// is the only way out.
 KPixOverlay getSingleButtonDialog({
   required final Function() onAction,
-  required final String message,
+  required final LocalizedMessageFn message,
 })
 {
   return _messageDialog(
     message: message,
     actions: <_DialogAction>[
-      _DialogAction(icon: TablerIcons.check, onPressed: onAction),
+      _DialogAction(icon: TablerIcons.check, onPressed: onAction, tooltip: (final AppLocalizations l10n) => l10n.close),
     ],
   );
 }
@@ -434,7 +444,7 @@ KPixOverlay getSingleButtonDialog({
 ///
 /// [message] is shown above the buttons. Unlike the other dialogs, this one
 /// closes itself, so the caller only has to show it.
-KPixOverlay getAllFilesAccessDialog({required final String message})
+KPixOverlay getAllFilesAccessDialog({required final LocalizedMessageFn message})
 {
   late final KPixOverlay dialog;
   return dialog = getTwoButtonDialog(
@@ -672,7 +682,7 @@ KPixOverlay getStampManagerDialog({required final Function() onDismiss, required
 ///
 /// Shown while long running work blocks the app, so it has to be taken down with
 /// [KPixOverlay.hide].
-KPixOverlay getLoadingDialog({required final String message, final TextStyle? textStyle})
+KPixOverlay getLoadingDialog({required final LocalizedMessageFn message, final TextStyle? textStyle})
 {
   return _barrierOverlay(
     smokeOpacity: OverlayEntryAlertDialogOptions.smokeOpacity,
@@ -686,7 +696,7 @@ KPixOverlay getLoadingDialog({required final String message, final TextStyle? te
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             Text(
-              message,
+              message(AppLocalizations.of(context)!),
               style: textStyle ?? Theme.of(context).textTheme.headlineLarge,
             ),
             CircularProgressIndicator(
@@ -701,8 +711,8 @@ KPixOverlay getLoadingDialog({required final String message, final TextStyle? te
 
 /// An overlay holding a color picker for the colors of [ramps].
 ///
-/// [title] is shown above the colors.
-KPixOverlay getColorPickerDialog({required final Function() onDismiss, required final ColorReferenceSelectedFn onColorSelected, required final List<KPalRampData> ramps, final String title = "SELECT A COLOR"})
+/// [title] is shown above the colors; null falls back to the localized default.
+KPixOverlay getColorPickerDialog({required final Function() onDismiss, required final ColorReferenceSelectedFn onColorSelected, required final List<KPalRampData> ramps, final String? title})
 {
   return _barrierOverlay(
     smokeOpacity: OverlayEntryAlertDialogOptions.smokeOpacity,

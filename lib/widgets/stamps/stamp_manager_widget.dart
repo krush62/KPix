@@ -18,7 +18,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/models/stamp_manager_data.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
@@ -56,13 +56,6 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
   void initState()
   {
     super.initState();
-    _deleteWarningDialog = getTwoButtonDialog(
-      message: "Do you really want to delete this stamp?",
-      onNo: _deleteWarningNo,
-      onYes: _deleteWarningYes,
-      outsideCancelable: false,
-    );
-
     _createWidgetList();
   }
 
@@ -114,17 +107,23 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
     _deleteWarningDialog.hide();
   }
 
-  void _dismissPressed()
+  void _dismissPressed(final AppLocalizations _)
   {
     widget.dismiss();
   }
 
-  void _deleteStampPressed()
+  void _deleteStampPressed(final AppLocalizations _)
   {
+    _deleteWarningDialog = getTwoButtonDialog(
+      message: (final AppLocalizations l10n) => l10n.doYouReallyWantToDeleteStamp,
+      onNo: _deleteWarningNo,
+      onYes: _deleteWarningYes,
+      outsideCancelable: false,
+    );
     _deleteWarningDialog.show(context: context);
   }
 
-  void _loadStampPressed()
+  void _loadStampPressed(final AppLocalizations _)
   {
     final StampManagerEntryWidget? selectedStamp = _selectedWidget.value;
     if (selectedStamp != null)
@@ -134,18 +133,15 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
 
   }
 
-  Expanded _createExpandedButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc, final bool isEnabled = true})
+  Expanded _createExpandedButton({required final String tooltip, required final IconData icon, required final AppLocalizations l10n, required final void Function(AppLocalizations l10n) onPressedFunc, final bool isEnabled = true})
   {
     return Expanded(
-      child: Tooltip(
-        message: tooltip,
-        waitDuration: toolTipDuration,
-        child: Padding(
-          padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-          child: IconButton.outlined(
-            icon: Icon(icon),
-            onPressed: isEnabled ? onPressedFunc : null,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+        child: IconButton.outlined(
+          tooltip: tooltip,
+          icon: Icon(icon),
+          onPressed: isEnabled ? () {onPressedFunc(l10n);} : null,
         ),
       ),
     );
@@ -154,6 +150,7 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -165,7 +162,7 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
-          Center(child: Text("STAMP MANAGER", style: Theme.of(context).textTheme.titleLarge)),
+          Center(child: Text(l10n.stampManager.toUpperCase(), style: Theme.of(context).textTheme.titleLarge)),
           ValueListenableBuilder<StampMap>(
             valueListenable: _stampManager.stampMap,
             builder: (final BuildContext context1, final StampMap stampMap, final Widget? child1) {
@@ -228,17 +225,17 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              _createExpandedButton(tooltip: "Close", icon: TablerIcons.x, onPressedFunc: _dismissPressed),
+              _createExpandedButton(tooltip: l10n.close, icon: TablerIcons.x, onPressedFunc: _dismissPressed, l10n: l10n),
               ValueListenableBuilder<StampManagerEntryWidget?>(
                 valueListenable: _selectedWidget,
                 builder: (final BuildContext context, final StampManagerEntryWidget? selWidget, final Widget? child) {
-                  return _createExpandedButton(tooltip: "Delete Selected Stamp", icon: TablerIcons.trash, onPressedFunc: _deleteStampPressed, isEnabled: selWidget != null && !selWidget.entryData.isLocked);
+                  return _createExpandedButton(tooltip: l10n.deleteSelectedStamp, icon: TablerIcons.trash, onPressedFunc: _deleteStampPressed, isEnabled: selWidget != null && !selWidget.entryData.isLocked, l10n: l10n);
                 },
               ),
               ValueListenableBuilder<StampManagerEntryWidget?>(
                 valueListenable: _selectedWidget,
                 builder: (final BuildContext context, final StampManagerEntryWidget? selWidget, final Widget? child) {
-                  return _createExpandedButton(tooltip: "Load Selected Stamp", icon: TablerIcons.check, onPressedFunc: _loadStampPressed, isEnabled: selWidget != null);
+                  return _createExpandedButton(tooltip: l10n.loadSelectedStamp, icon: TablerIcons.check, onPressedFunc: _loadStampPressed, isEnabled: selWidget != null, l10n: l10n);
                 },
               ),
             ],

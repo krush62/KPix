@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_select_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -52,7 +53,7 @@ class SelectOptions extends IToolOptions
                 child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      "Mode",
+                      AppLocalizations.of(context)!.mode,
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                 ),
@@ -92,13 +93,10 @@ class SelectOptions extends IToolOptions
                                   segList.add(
                                       ButtonSegment<SelectMode>(
                                         value: sMode,
-                                        label: Tooltip(
-                                          showDuration: toolTipDuration,
-                                          message: sMode.label,
-                                          child: Icon(
-                                              sMode.icon,
-                                              size: ToolSettingsWidgetOptions.smallIconSize,
-                                          ),
+                                        tooltip: sMode.label(AppLocalizations.of(context)!),
+                                        icon: Icon(
+                                          sMode.icon,
+                                          size: ToolSettingsWidgetOptions.smallIconSize,
                                         ),
                                       ),
                                   );
@@ -132,8 +130,8 @@ class SelectOptions extends IToolOptions
         Padding(
           padding: const EdgeInsets.only(bottom: ToolSettingsWidgetOptions.padding, top: ToolSettingsWidgetOptions.padding),
           child: ToolSegmentedIconButtonRow<SelectShape>(
-            iconData: SelectShape.getLabelIconMap(),
-            label: "Shape",
+            iconData: SelectShape.getLabelIconMap(AppLocalizations.of(context)!),
+            label: AppLocalizations.of(context)!.shape,
             notifier: selectOptions.shape,
             //flex: ToolSettingsWidgetOptions.columnWidthRatio,
             iconSize: ToolSettingsWidgetOptions.smallIconSize,
@@ -151,7 +149,7 @@ class SelectOptions extends IToolOptions
                     child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          (shape == SelectShape.wand) ? "Continuous" : "Keep 1:1",
+                          (shape == SelectShape.wand) ? AppLocalizations.of(context)!.continuous : AppLocalizations.of(context)!.keep1to1,
                           style: Theme.of(context).textTheme.labelLarge,
                         ),
                     ),
@@ -202,7 +200,7 @@ class SelectOptions extends IToolOptions
               visible: shape == SelectShape.wand,
               child: ToolSwitchRow(
                 notifier: selectOptions.wandWholeRamp,
-                label: "Whole Ramp",
+                label: AppLocalizations.of(context)!.wholeRamp,
                 flex: ToolSettingsWidgetOptions.columnWidthRatio,
               ),
             );

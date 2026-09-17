@@ -18,24 +18,38 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 
 enum ToolType
 {
-  pencil("Pencil", TablerIcons.pencil),
-  shape("Shapes", TablerIcons.triangle_square_circle),
-  fill("Fill", TablerIcons.droplet),
-  select("Select", TablerIcons.border_corners),
-  pick("Color Pick", TablerIcons.color_picker),
-  erase("Eraser", TablerIcons.eraser),
-  font("Text", TablerIcons.typography),
-  spraycan("Spray Can", TablerIcons.spray),
-  line("Line", Icons.multiline_chart),
-  stamp("Stamp", TablerIcons.rubber_stamp);
+  pencil(TablerIcons.pencil),
+  shape(TablerIcons.triangle_square_circle),
+  fill(TablerIcons.droplet),
+  select( TablerIcons.border_corners),
+  pick(TablerIcons.color_picker),
+  erase(TablerIcons.eraser),
+  font(TablerIcons.typography),
+  spraycan(TablerIcons.spray),
+  line(Icons.multiline_chart),
+  stamp(TablerIcons.rubber_stamp);
 
-  const ToolType(this.title, this.icon);
+  const ToolType(this.icon);
 
-  final String title;
   final IconData icon;
+
+  String label(final AppLocalizations l10n) => switch(this)
+  {
+    pencil => l10n.pencil,
+    shape => l10n.shape,
+    fill => l10n.fill,
+    select => l10n.select,
+    pick => l10n.colorPicker,
+    erase => l10n.eraser,
+    font => l10n.text,
+    spraycan => l10n.sprayCan,
+    line => l10n.line,
+    stamp => l10n.stamp,
+  };
 
   bool isDrawTool()
   {

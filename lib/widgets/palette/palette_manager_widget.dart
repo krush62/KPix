@@ -20,7 +20,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/export_types.dart';
@@ -34,6 +34,7 @@ import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
+import 'package:kpix/widgets/palette_action_messages.dart';
 import 'package:path/path.dart' as p;
 
 abstract final class _PaletteManagerOptions
@@ -56,31 +57,19 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   final ValueNotifier<List<PaletteManagerEntryWidget>> _paletteEntries = ValueNotifier<List<PaletteManagerEntryWidget>>(<PaletteManagerEntryWidget>[]);
   final ValueNotifier<PaletteManagerEntryWidget?> _selectedWidget = ValueNotifier<PaletteManagerEntryWidget?>(null);
 
-  late KPixOverlay _paletteWarningDialog;
+  KPixOverlay? _paletteWarningDialog;
   late KPixOverlay _addPaletteDialog;
-  late KPixOverlay _deleteWarningDialog;
+  KPixOverlay? _deleteWarningDialog;
 
   @override
   void initState()
   {
     super.initState();
-    _paletteWarningDialog = getThreeButtonDialog(
-        onYes: _paletteWarningYes,
-        onNo: _paletteWarningNo,
-        onCancel: _closeWarning,
-        outsideCancelable: false,
-        message: "Do you want to remap the existing colors (all pixels will be deleted otherwise)?",);
+
     _addPaletteDialog = getPaletteSaveDialog(
       onAccept: _acceptAddPalette,
       onDismiss: _dismissAddPalette,
     );
-    _deleteWarningDialog = getTwoButtonDialog(
-        message: "Do you really want to delete this palette?",
-        onNo: _deleteWarningNo,
-        onYes: _deleteWarningYes,
-        outsideCancelable: false,
-    );
-
 
     _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
       _paletteEntries.value = pList;
@@ -89,15 +78,17 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _acceptAddPalette({required final PaletteExportData saveData, required final PaletteExportType paletteType})
   {
+    //taken now: this widget is dismissed before the palette has been written
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     saveCurrentPalette(fileName: saveData.fileName, directory: saveData.directory, extension: saveData.extension).then((final String? fileName) {
 
       if (fileName == null)
       {
-        showMessage(text: "Error saving palette!", toastType: ToastType.error);
+        showMessage(text: l10n.errorSavingPalette, toastType: ToastType.error);
       }
       else
       {
-        showMessage(text: "Palette saved successfully at $fileName.", toastType: ToastType.success);
+        showMessage(text: l10n.paletteSavedAt(fileName), toastType: ToastType.success);
         _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
           _paletteEntries.value = pList;
         });
@@ -114,19 +105,21 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _closeWarning()
   {
-    _paletteWarningDialog.hide();
+    _paletteWarningDialog?.hide();
   }
 
   void _paletteWarningYes()
   {
-    GetIt.I.get<PaletteState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.remap);
+    final PaletteActionResult result = GetIt.I.get<PaletteState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.remap);
+    showMessageForPaletteResult(result: result, l10n: AppLocalizations.of(context)!);
     _closeWarning();
     widget.dismiss();
   }
 
   void _paletteWarningNo()
   {
-    GetIt.I.get<PaletteState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.replace);
+    final PaletteActionResult result = GetIt.I.get<PaletteState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.replace);
+    showMessageForPaletteResult(result: result, l10n: AppLocalizations.of(context)!);
     _closeWarning();
     widget.dismiss();
   }
@@ -135,7 +128,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   {
     final List<PaletteManagerEntryWidget> pList = <PaletteManagerEntryWidget>[];
     //Default Palette
-    pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: PaletteManagerEntryData(rampDataList: KPalRampData.getDefaultPalette(), isLocked: true, path: null, name: "Default")));
+    //the list is built here but shown later, so the name is left empty and
+    //PaletteManagerEntryData.displayName localizes it where it is rendered
+    pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: PaletteManagerEntryData(rampDataList: KPalRampData.getDefaultPalette(), isLocked: true, path: null, name: "")));
 
     //Asset Palettes
     final List<PaletteManagerEntryData> assetPalettes = await loadPalettesFromAssets();
@@ -164,19 +159,20 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _applyPalette()
   {
-    _paletteWarningDialog.show(context: context);
+    _paletteWarningDialog?.show(context: context);
   }
 
   void _appendPalette()
   {
-    GetIt.I.get<PaletteState>().appendPalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList));
+    final PaletteActionResult result = GetIt.I.get<PaletteState>().appendPalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList));
+    showMessageForPaletteResult(result: result, l10n: AppLocalizations.of(context)!);
     _closeWarning();
     widget.dismiss();
   }
 
   void _deletePalettePressed()
   {
-    _deleteWarningDialog.show(context: context);
+    _deleteWarningDialog?.show(context: context);
   }
 
   void _deleteWarningYes()
@@ -187,12 +183,12 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
         _fileDeleted(success: success);
       });
     }
-    _deleteWarningDialog.hide();
+    _deleteWarningDialog?.hide();
   }
 
   void _deleteWarningNo()
   {
-    _deleteWarningDialog.hide();
+    _deleteWarningDialog?.hide();
   }
 
   void _fileDeleted({required final bool success})
@@ -234,12 +230,12 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
         }
         else
         {
-          showMessage(text: "A palette with the same name already exists!", toastType: ToastType.error);
+          showMessage(text: AppLocalizations.of(context)!.paletteWithSameNameExists, toastType: ToastType.error);
         }
       }
       else
       {
-        showMessage(text: "Please select a KPal file!", toastType: ToastType.warning);
+        showMessage(text: AppLocalizations.of(context)!.pleaseSelectAKPalFile, toastType: ToastType.warning);
       }
     }
   }
@@ -251,26 +247,23 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
       _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
         _paletteEntries.value = pList;
       });
-      showMessage(text: "Import successful!", toastType: ToastType.success);
+      showMessage(text: AppLocalizations.of(context)!.paletteImportSuccessful, toastType: ToastType.success);
     }
     else
     {
-      showMessage(text: "Import failed!", toastType: ToastType.error);
+      showMessage(text: AppLocalizations.of(context)!.paletteImportFailed, toastType: ToastType.error);
     }
   }
 
   Expanded _createExpandedButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc, final bool isEnabled = true})
   {
     return Expanded(
-      child: Tooltip(
-        waitDuration: toolTipDuration,
-        message: tooltip,
-        child: Padding(
-          padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-            child: IconButton.outlined(
-              icon: Icon(icon),
-            onPressed: isEnabled ? onPressedFunc : null,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+          child: IconButton.outlined(
+            tooltip: tooltip,
+            icon: Icon(icon),
+          onPressed: isEnabled ? onPressedFunc : null,
         ),
       ),
     );
@@ -279,6 +272,23 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    //the dialogs are built once and kept, so their text is resolved while the
+    //overlay builds instead of being captured here
+    _paletteWarningDialog ??= getThreeButtonDialog(
+        onYes: _paletteWarningYes,
+        onNo: _paletteWarningNo,
+        onCancel: _closeWarning,
+        outsideCancelable: false,
+        message: (final AppLocalizations l10n) => l10n.remapExistingColors,);
+
+    _deleteWarningDialog ??= getTwoButtonDialog(
+      message: (final AppLocalizations l10n) => l10n.wantToDeletePalette,
+      onNo: _deleteWarningNo,
+      onYes: _deleteWarningYes,
+      outsideCancelable: false,
+    );
+
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -289,7 +299,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
       child: Column(
         children: <Widget>[
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
-          Text("PALETTE MANAGER", style: Theme.of(context).textTheme.titleLarge),
+          Text(l10n.paletteManager.toUpperCase(), style: Theme.of(context).textTheme.titleLarge),
           Expanded(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -315,25 +325,25 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              _createExpandedButton(tooltip: "Close", icon: TablerIcons.x, onPressedFunc: _dismissPressed),
-              _createExpandedButton(tooltip: "Import Palette", icon: TablerIcons.file_import, onPressedFunc: _importPalettePressed, isEnabled: !kIsWeb),
-              _createExpandedButton(tooltip: "Save Current Palette", icon: TablerIcons.device_floppy, onPressedFunc: _addCurrentPalette, isEnabled: !kIsWeb),
+              _createExpandedButton(tooltip: l10n.close, icon: TablerIcons.x, onPressedFunc: _dismissPressed),
+              _createExpandedButton(tooltip: l10n.importPalette, icon: TablerIcons.file_import, onPressedFunc: _importPalettePressed, isEnabled: !kIsWeb),
+              _createExpandedButton(tooltip: l10n.saveCurrentPalette, icon: TablerIcons.device_floppy, onPressedFunc: _addCurrentPalette, isEnabled: !kIsWeb),
               ValueListenableBuilder<PaletteManagerEntryWidget?>(
                 valueListenable: _selectedWidget,
                 builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
-                  return _createExpandedButton(tooltip: "Delete Selected Palette", icon: TablerIcons.trash, onPressedFunc: _deletePalettePressed, isEnabled: selWidget != null && !selWidget.entryData.isLocked);
+                  return _createExpandedButton(tooltip: l10n.deleteSelectedPalette, icon: TablerIcons.trash, onPressedFunc: _deletePalettePressed, isEnabled: selWidget != null && !selWidget.entryData.isLocked);
                 },
               ),
               ValueListenableBuilder<PaletteManagerEntryWidget?>(
                 valueListenable: _selectedWidget,
                 builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
-                  return _createExpandedButton(tooltip: "Append to Current Palette", icon: TablerIcons.plus, onPressedFunc: _appendPalette, isEnabled: selWidget != null);
+                  return _createExpandedButton(tooltip: l10n.appendToCurrentPalette, icon: TablerIcons.plus, onPressedFunc: _appendPalette, isEnabled: selWidget != null);
                 },
               ),
               ValueListenableBuilder<PaletteManagerEntryWidget?>(
                 valueListenable: _selectedWidget,
                 builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
-                  return _createExpandedButton(tooltip: "Apply Selected Palette", icon: TablerIcons.check, onPressedFunc: _applyPalette, isEnabled: selWidget != null);
+                  return _createExpandedButton(tooltip: l10n.applySelectedPalette, icon: TablerIcons.check, onPressedFunc: _applyPalette, isEnabled: selWidget != null);
                 },
               ),
             ],

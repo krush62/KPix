@@ -834,19 +834,23 @@ LoadFileSet _parseKPixFile({required final Uint8List bytes, required final Strin
     }
     else
     {
-      final int framesCount = reader.getUint8();
-      final int startFrame = reader.getUint8();
-      final int endFrame = reader.getUint8();
+      //before version 5 the counts and indices were single bytes, which could
+      //not hold a full frame (256 layers), a full timeline or a layer past the 256th
+      final int Function() readTimelineValue = fVersion >= 5 ? reader.getUint16 : reader.getUint8;
+      final int framesCount = readTimelineValue();
+      final int startFrame = readTimelineValue();
+      final int endFrame = readTimelineValue();
 
       final List<HistoryFrame> hFrames = <HistoryFrame>[];
       for (int i = 0; i < framesCount; i++)
       {
         final LinkedHashSet<int> indices = LinkedHashSet<int>();
         final int fps = reader.getUint8();
-        final int layerCount = reader.getUint8();
+        final int layerCount = readTimelineValue();
         for (int j = 0; j < layerCount; j++)
         {
-          final int layerIndex = reader.getUint8();
+          final int layerIndex = readTimelineValue();
+          if (layerIndex >= layerList.length) return LoadFileSet(status: "Layer index out of range in frame $i: $layerIndex");
           indices.add(layerIndex);
         }
         hFrames.add(HistoryFrame(fps: fps, layerIndices: indices, selectedLayerIndex: 0));
@@ -855,7 +859,7 @@ LoadFileSet _parseKPixFile({required final Uint8List bytes, required final Strin
     }
 
     final HistorySelectionState selectionState = HistorySelectionState.empty();
-    final HistoryState historyState = HistoryState(timeline: hTimeline, selectedColor: const HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
+    final HistoryState historyState = HistoryState(timeline: hTimeline, selectedColor: const HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, compressionBehavior: HistoryStateCompressionBehavior.leave));
 
     return LoadFileSet(status: returnString.toString(), historyState: historyState, path: path);
   }

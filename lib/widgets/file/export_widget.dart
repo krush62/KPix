@@ -18,7 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
@@ -69,7 +69,7 @@ class _ExportWidgetState extends State<ExportWidget>
 
     void _changeDirectoryPressed()
     {
-      getDirectory(startDir: GetIt.I.get<AppPaths>().exportDir).then((final String? chosenDir) {_handleChosenDirectory(chosenDir: chosenDir);});
+      getDirectory(startDir: GetIt.I.get<AppPaths>().exportDir, dialogTitle: AppLocalizations.of(context)!.chooseDirectory).then((final String? chosenDir) {_handleChosenDirectory(chosenDir: chosenDir);});
     }
 
     void _handleChosenDirectory({required final String? chosenDir})
@@ -133,16 +133,14 @@ class _ExportWidgetState extends State<ExportWidget>
     return ButtonSegment<ExportSectionType>(
       enabled: isEnabled,
       value: type,
-      label: Tooltip(
-        message: tooltip,
-        waitDuration: toolTipDuration,
-        child: Icon(icon),
-      ),
+      tooltip: tooltip,
+      icon: Icon(icon),
     );
   }
 
   @override
   Widget build(final BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -161,10 +159,10 @@ class _ExportWidgetState extends State<ExportWidget>
               builder: (final BuildContext context, final ExportSectionType section, final Widget? child) {
                 return SegmentedButton<ExportSectionType>(
                   segments:  <ButtonSegment<ExportSectionType>>[
-                    _createExportSection(type: ExportSectionType.image, tooltip: "Image", icon: TablerIcons.photo),
-                    _createExportSection(type: ExportSectionType.animation, tooltip: "Animation", icon: TablerIcons.movie, isEnabled: _documentState.timeline.frames.value.length > 1),
-                    _createExportSection(type: ExportSectionType.palette, tooltip: "Palette", icon: Icons.palette),
-                    _createExportSection(type: ExportSectionType.kpix, tooltip: "KPix project", icon: TablerIcons.file_export),
+                    _createExportSection(type: ExportSectionType.image, tooltip: l10n.image, icon: TablerIcons.photo),
+                    _createExportSection(type: ExportSectionType.animation, tooltip: l10n.animation, icon: TablerIcons.movie, isEnabled: _documentState.timeline.frames.value.length > 1),
+                    _createExportSection(type: ExportSectionType.palette, tooltip: l10n.palette, icon: Icons.palette),
+                    _createExportSection(type: ExportSectionType.kpix, tooltip: l10n.kpixProject, icon: TablerIcons.file_export),
                   ],
                   selected: <ExportSectionType>{section},
                   showSelectedIcon: false,
@@ -182,23 +180,25 @@ class _ExportWidgetState extends State<ExportWidget>
             ),
             ValueListenableBuilder<ExportSectionType>(
               valueListenable: _selectedSection,
-              builder: (final BuildContext context, final ExportSectionType section, final Widget? child) {
-                String title = "EXPORT";
+              builder: (final BuildContext context, final ExportSectionType section, final Widget? child)
+              {
+                final AppLocalizations l10n = AppLocalizations.of(context)!;
+                String title = l10n.export.toUpperCase();
                 if (section == ExportSectionType.image)
                 {
-                  title += " IMAGE";
+                  title += " ${l10n.image.toUpperCase()}";
                 }
                 else if (section == ExportSectionType.palette)
                 {
-                  title += " PALETTE";
+                  title += " ${l10n.palette.toUpperCase()}";
                 }
                 else if (section == ExportSectionType.animation)
                 {
-                  title += " ANIMATION";
+                  title += " ${l10n.animation.toUpperCase()}";
                 }
                 else if (section == ExportSectionType.kpix)
                 {
-                  title += " PROJECT";
+                  title += " ${l10n.kpixProject.toUpperCase()}";
                 }
                 return Column(
                   children: <Widget>[
@@ -209,7 +209,7 @@ class _ExportWidgetState extends State<ExportWidget>
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         Expanded(
-                          child: Text("Format", style: Theme.of(context).textTheme.titleMedium),
+                          child: Text(l10n.format, style: Theme.of(context).textTheme.titleMedium),
                         ),
                         Expanded(
                           flex: 6,
@@ -228,7 +228,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                       onSelectionChanged: (final Set<ImageExportType> types) {_fileExportType.value = types.first; _updateFileNameStatus();},
                                       segments: ImageExportType.values
                                         .where((final ImageExportType type) => type != ImageExportType.kpix && type != ImageExportType.texturePack)
-                                        .map((final ImageExportType x) => ButtonSegment<ImageExportType>(value: x, enabled: x != ImageExportType.texturePack || isValidTexturePack, label: Text(ImageExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                        .map((final ImageExportType x) => ButtonSegment<ImageExportType>(value: x, enabled: x != ImageExportType.texturePack || isValidTexturePack, label: Text(getImageExportTypeLabel(type: x, l10n: l10n), style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
                                     );
                                   },
                                 ),
@@ -259,7 +259,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                           onSelectionChanged: (final Set<AnimationExportType> types) {_animationExportType.value = types.first; _updateFileNameStatus();},
                                           segments: AnimationExportType.values
                                             .where((final AnimationExportType type) => type != AnimationExportType.texturePack)
-                                            .map((final AnimationExportType x) => ButtonSegment<AnimationExportType>(value: x, enabled: x != AnimationExportType.texturePack || isValidTexturePack, label: Text(AnimationExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                            .map((final AnimationExportType x) => ButtonSegment<AnimationExportType>(value: x, enabled: x != AnimationExportType.texturePack || isValidTexturePack, label: Text(getAnimationExportTypeLabel(type: x, l10n: l10n), style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
                                         );
                                       },
                                     );
@@ -300,15 +300,14 @@ class _ExportWidgetState extends State<ExportWidget>
                                             break;
                                           }
                                         }
-
                                         return SegmentedButton<KPixExportType>(
                                           selected: <KPixExportType>{exportTypeEnum},
                                           showSelectedIcon: false,
                                           onSelectionChanged: (final Set<KPixExportType> types) {_kpixExportType.value = types.first; _updateFileNameStatus();},
                                           segments: <ButtonSegment<KPixExportType>>[
-                                            ButtonSegment<KPixExportType>(value: KPixExportType.kpix, label: Text("KPIX PROJECT", style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.kpix ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
-                                            ButtonSegment<KPixExportType>(enabled: isValidTexturePack, value: KPixExportType.texturePack, label: Text("TEXTURE PACK", style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.texturePack ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
-                                            ButtonSegment<KPixExportType>(enabled: isValidTexturePackAnimation, value: KPixExportType.texturePackAnimated, label: Text("TEXTURE PACK ANIMATION", style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.texturePackAnimated ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
+                                            ButtonSegment<KPixExportType>(value: KPixExportType.kpix, label: Text(l10n.kpixProject.toUpperCase(), style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.kpix ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
+                                            ButtonSegment<KPixExportType>(enabled: isValidTexturePack, value: KPixExportType.texturePack, label: Text(l10n.texturePack.toUpperCase(), style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.texturePack ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
+                                            ButtonSegment<KPixExportType>(enabled: isValidTexturePackAnimation, value: KPixExportType.texturePackAnimated, label: Text(l10n.texturePackAnimation.toUpperCase(), style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.texturePackAnimated ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
                                           ],
                                         );
                                       },
@@ -328,7 +327,7 @@ class _ExportWidgetState extends State<ExportWidget>
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
                           Expanded(
-                            child: Text("Scaling", style: Theme.of(context).textTheme.titleMedium),
+                            child: Text(l10n.scaling, style: Theme.of(context).textTheme.titleMedium),
                           ),
                           Expanded(
                             flex: 4,
@@ -393,7 +392,7 @@ class _ExportWidgetState extends State<ExportWidget>
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
                               Expanded(
-                                child: Text("Selection Only", style: Theme.of(context).textTheme.titleMedium),
+                                child: Text(l10n.selectionOnly, style: Theme.of(context).textTheme.titleMedium),
                               ),
                               Expanded(
                                 flex: 4,
@@ -416,7 +415,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                   builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
                                     final int animationLengthMs = _documentState.timeline.calculateTotalFrameTime(sectionOnly: animationSectionOnly);
                                     final int frameCount = animationSectionOnly ? _documentState.timeline.loopEndIndex.value - _documentState.timeline.loopStartIndex.value + 1 : _documentState.timeline.frames.value.length;
-                                    final String animationLength = "$frameCount frames (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
+                                    final String animationLength = "${l10n.nFrames(frameCount)} (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
                                     return Text(animationLength, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium);
                                   },
                                 ),
@@ -431,7 +430,7 @@ class _ExportWidgetState extends State<ExportWidget>
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         Expanded(
-                          child: Text("Directory", style: Theme.of(context).textTheme.titleMedium),
+                          child: Text(l10n.directory, style: Theme.of(context).textTheme.titleMedium),
                         ),
                         Expanded(
                           flex: 4,
@@ -444,17 +443,14 @@ class _ExportWidgetState extends State<ExportWidget>
                         ),
                         Expanded(
                           flex: 2,
-                          child: Tooltip(
-                            message: "Change Directory",
-                            waitDuration: toolTipDuration,
-                            child: IconButton.outlined(
-                              constraints: const BoxConstraints(),
-                              padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                              onPressed: _changeDirectoryPressed,
-                              icon: const Icon(
-                                  TablerIcons.folder,
-                                  size: OverlayEntryAlertDialogOptions.iconSize / 2,
-                              ),
+                          child: IconButton.outlined(
+                            tooltip: l10n.changeDirectory,
+                            constraints: const BoxConstraints(),
+                            padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                            onPressed: _changeDirectoryPressed,
+                            icon: const Icon(
+                                TablerIcons.folder,
+                                size: OverlayEntryAlertDialogOptions.iconSize / 2,
                             ),
                           ),
                         ),
@@ -465,7 +461,7 @@ class _ExportWidgetState extends State<ExportWidget>
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         Expanded(
-                            child: Text("File Name", style: Theme.of(context).textTheme.titleMedium),
+                            child: Text(l10n.fileName, style: Theme.of(context).textTheme.titleMedium),
                         ),
                         Expanded(
                             flex: 3,
@@ -515,8 +511,7 @@ class _ExportWidgetState extends State<ExportWidget>
                               valueListenable: _fileNameStatus,
                               builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                                 return Tooltip(
-                                  message: status.label,
-                                  waitDuration: toolTipDuration,
+                                  message: status.label(AppLocalizations.of(context)!),
                                   child: Icon(
                                     status.icon,
                                     size: OverlayEntryAlertDialogOptions.iconSize / 2,
@@ -538,17 +533,12 @@ class _ExportWidgetState extends State<ExportWidget>
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: Tooltip(
-                      waitDuration: toolTipDuration,
-                      message: "Close",
-                      child: IconButton.outlined(
-                        icon: const Icon(
-                          TablerIcons.x,
-                        ),
-                        onPressed: () {
-                          widget.dismiss();
-                        },
-                      ),
+                    child: IconButton.outlined(
+                      tooltip: l10n.close,
+                      icon: const Icon(TablerIcons.x),
+                      onPressed: () {
+                        widget.dismiss();
+                      },
                     ),
                   ),
                 ),
@@ -561,46 +551,41 @@ class _ExportWidgetState extends State<ExportWidget>
                         return ValueListenableBuilder<FileNameStatus>(
                           valueListenable: _fileNameStatus,
                           builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
-                            return Tooltip(
-                              waitDuration: toolTipDuration,
-                              message: "Export File",
-                              child: IconButton.outlined(
-                                icon: const Icon(
-                                  TablerIcons.check,
-                                ),
-                                onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
-                                () {
-                                  final String exportDir = GetIt.I.get<AppPaths>().exportDir;
-                                  if (selSection == ExportSectionType.image)
+                            return IconButton.outlined(
+                              tooltip: l10n.exportFile,
+                              icon: const Icon(TablerIcons.check),
+                              onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
+                              () {
+                                final String exportDir = GetIt.I.get<AppPaths>().exportDir;
+                                if (selSection == ExportSectionType.image)
+                                {
+                                  widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: ImageExportData.exportTypeMap[_fileExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: exportDir), exportType: _fileExportType.value);
+                                }
+                                else if (selSection == ExportSectionType.palette)
+                                {
+                                  widget.acceptPalette(saveData: PaletteExportData.fromWithConcreteData(other: PaletteExportData.exportTypeMap[_paletteExportType.value]!, fileName: _fileName.value, directory: exportDir), paletteType: _paletteExportType.value);
+                                }
+                                else if (selSection == ExportSectionType.animation)
+                                {
+                                  widget.acceptAnimation(exportData: AnimationExportData.fromWithConcreteData(other: AnimationExportData.exportTypeMap[_animationExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: exportDir, loopOnly: _animationSectionOnly.value), exportType: _animationExportType.value);
+                                }
+                                else if (selSection == ExportSectionType.kpix)
+                                {
+                                  if (_kpixExportType.value == KPixExportType.kpix)
                                   {
-                                    widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: ImageExportData.exportTypeMap[_fileExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: exportDir), exportType: _fileExportType.value);
+                                    widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: const ImageExportData(name: "KPIX", extension: fileExtensionKpix, scalable: false), scaling: 1, fileName: _fileName.value, directory: exportDir), exportType: ImageExportType.kpix);
                                   }
-                                  else if (selSection == ExportSectionType.palette)
+                                  else if (_kpixExportType.value == KPixExportType.texturePack)
                                   {
-                                    widget.acceptPalette(saveData: PaletteExportData.fromWithConcreteData(other: PaletteExportData.exportTypeMap[_paletteExportType.value]!, fileName: _fileName.value, directory: exportDir), paletteType: _paletteExportType.value);
+                                    widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: ImageExportData.exportTypeMap[ImageExportType.texturePack]!, scaling: 1, fileName: _fileName.value, directory: exportDir), exportType: ImageExportType.texturePack);
                                   }
-                                  else if (selSection == ExportSectionType.animation)
+                                  else if (_kpixExportType.value == KPixExportType.texturePackAnimated)
                                   {
-                                    widget.acceptAnimation(exportData: AnimationExportData.fromWithConcreteData(other: AnimationExportData.exportTypeMap[_animationExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: exportDir, loopOnly: _animationSectionOnly.value), exportType: _animationExportType.value);
+                                    widget.acceptAnimation(exportData: AnimationExportData.fromWithConcreteData(other: AnimationExportData.exportTypeMap[AnimationExportType.texturePack]!, scaling: 1, fileName: _fileName.value, directory: exportDir, loopOnly: _animationSectionOnly.value), exportType: AnimationExportType.texturePack);
                                   }
-                                  else if (selSection == ExportSectionType.kpix)
-                                  {
-                                    if (_kpixExportType.value == KPixExportType.kpix)
-                                    {
-                                      widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: const ImageExportData(name: "KPIX", extension: fileExtensionKpix, scalable: false), scaling: 1, fileName: _fileName.value, directory: exportDir), exportType: ImageExportType.kpix);
-                                    }
-                                    else if (_kpixExportType.value == KPixExportType.texturePack)
-                                    {
-                                      widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: ImageExportData.exportTypeMap[ImageExportType.texturePack]!, scaling: 1, fileName: _fileName.value, directory: exportDir), exportType: ImageExportType.texturePack);
-                                    }
-                                    else if (_kpixExportType.value == KPixExportType.texturePackAnimated)
-                                    {
-                                      widget.acceptAnimation(exportData: AnimationExportData.fromWithConcreteData(other: AnimationExportData.exportTypeMap[AnimationExportType.texturePack]!, scaling: 1, fileName: _fileName.value, directory: exportDir, loopOnly: _animationSectionOnly.value), exportType: AnimationExportType.texturePack);
-                                    }
 
-                                  }
-                                } : null,
-                              ),
+                                }
+                              } : null,
                             );
                           },
                         );

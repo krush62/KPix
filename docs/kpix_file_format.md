@@ -1,4 +1,4 @@
-# kpix File Format Description v4
+# kpix File Format Description v5
 
 This document describes the structure of the kpix file format which is used to save/load project files for the KPix software.
 
@@ -35,7 +35,7 @@ The kpix file format consists of the following three consecutive sections:
 
 ### Header
 * magic_number ``ubyte (4)`` //``4B 50 49 58``
-* file_format_version ``ubyte (1)`` // currently: ``03``
+* file_format_version ``ubyte (1)`` // currently: ``05``
 
 ### Palette
 * ramp_count ``ubyte (1)`` // how many color ramps in the palette
@@ -128,13 +128,13 @@ The kpix file format consists of the following three consecutive sections:
     * shading ``byte (1)`` // how many shading steps -5...5
     
   ### Timeline
-* frames_count ``ubyte (1)`` // how many frames in the timeline
-* start_frame ``ubyte (1)`` // first loop frame
-* end_frame ``ubyte (1)`` // last loop frame
+* frames_count ``ushort (1)`` // how many frames in the timeline (``ubyte`` before v5)
+* start_frame ``ushort (1)`` // first loop frame (``ubyte`` before v5)
+* end_frame ``ushort (1)`` // last loop frame (``ubyte`` before v5)
 * frames ``(frames_count)``
   * fps ``ubyte (1)`` // frames per second
-  * frame_layer_count ``ubyte (1)`` // how many layers in the frame
+  * frame_layer_count ``ushort (1)`` // how many layers in the frame (``ubyte`` before v5)
   * Frame Layers ``(frame_layer_count)``
-    * layer_index ``ubyte (1)`` // index of the layer (see layer list in image section)
+    * layer_index ``ushort (1)`` // index of the layer (see layer list in image section) (``ubyte`` before v5)
   
   

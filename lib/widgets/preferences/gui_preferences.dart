@@ -15,6 +15,8 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/kpix_language.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/widgets/preferences/preference_gui.dart';
@@ -34,28 +36,38 @@ class _GuiPreferencesState extends State<GuiPreferences>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text("Theme Preferences", style: Theme.of(context).textTheme.titleLarge),
-          PrefSegmentedButtonRow<ThemeMode>(
-              label: "Theme",
-              notifier: widget.prefs.themeType,
-              labels: themeTypeStringMap,
+          Text(l10n.languagePreferences, style: Theme.of(context).textTheme.titleLarge),
+          PrefDropdownRow<String>(
+            label: l10n.language,
+            notifier: widget.prefs.language,
+            valueMap: getLanguageLabelMap(l10n: l10n),
           ),
 
           SizedBox(height: widget.itemPadding),
 
-          Text("Raster Preferences", style: Theme.of(context).textTheme.titleLarge),
+          Text(l10n.themePreferences, style: Theme.of(context).textTheme.titleLarge),
+          PrefSegmentedButtonRow<ThemeMode>(
+              label: l10n.theme,
+              notifier: widget.prefs.themeType,
+              labels: themeTypeStringMap(l10n),
+          ),
+
+          SizedBox(height: widget.itemPadding),
+
+          Text(l10n.checkerboardPreferences, style: Theme.of(context).textTheme.titleLarge),
           PrefSliderRowIndexed(
-              text: "Raster Size",
+              text: l10n.checkerboardSize,
               valueList: rasterSizes,
               notifier: widget.prefs.rasterSizeIndex,
           ),
           PrefSliderRow<int>(
-              text: "Raster Contrast",
+              text: l10n.checkerboardContrast,
               notifier: widget.prefs.rasterContrast,
               minVal: rasterContrastMin.toDouble(),
               maxVal: rasterContrastMax.toDouble(),
@@ -63,9 +75,9 @@ class _GuiPreferencesState extends State<GuiPreferences>
 
           SizedBox(height: widget.itemPadding),
 
-          Text("Palette Preferences", style: Theme.of(context).textTheme.titleLarge),
+          Text(l10n.palettePreferences, style: Theme.of(context).textTheme.titleLarge),
           PrefSegmentedButtonRow<ColorNameScheme>(
-            label: "Color Naming",
+            label: l10n.colorNaming,
             notifier: widget.prefs.colorNameScheme,
             labels: ColorNameScheme.getNameMap(),
             buttonTextStyle: Theme.of(context).textTheme.bodySmall,
@@ -73,25 +85,25 @@ class _GuiPreferencesState extends State<GuiPreferences>
 
           SizedBox(height: widget.itemPadding),
 
-          Text("Border Preferences", style: Theme.of(context).textTheme.titleLarge),
+          Text(l10n.borderPreferences, style: Theme.of(context).textTheme.titleLarge),
           PrefSliderRow<int>(
-              text: "Tool Outline Opacity",
+              text: l10n.toolOutlineOpacity,
               minVal: opacityMin.toDouble(),
               maxVal: opacityMax.toDouble(),
               notifier: widget.prefs.toolOpacity,
           ),
           PrefSliderRow<int>(
-              text: "Selection Outline Opacity",
+              text: l10n.selectionOutlineOpacity,
               minVal: opacityMin.toDouble(),
               maxVal: opacityMax.toDouble(),
               notifier: widget.prefs.selectionOpacity,
           ),
           PrefSwitchRow(
-            label: "Pulsating Selection Outline",
+            label: l10n.pulsatingSelectionOutline,
             notifier: widget.prefs.selectionPulsatingOutline,
           ),
           PrefSliderRow<int>(
-            text: "Canvas Border Opacity",
+            text: l10n.canvasBorerOpacity,
             minVal: opacityMin.toDouble(),
             maxVal: opacityMax.toDouble(),
             notifier: widget.prefs.canvasBorderOpacity,

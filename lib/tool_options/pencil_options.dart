@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -41,7 +42,7 @@ class PencilOptions extends IToolOptions
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         ToolSliderRow<int>(
-          label: "Size",
+          label: AppLocalizations.of(context)!.size,
           notifier: pencilOptions.size,
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           minVal: PencilConstraints.sizeMin.toDouble(),
@@ -49,16 +50,16 @@ class PencilOptions extends IToolOptions
           //divisions: pencilOptions.sizeMax - pencilOptions.sizeMin,
         ),
         ToolDropdownRow<PencilShape>(
-          label: "Shape",
+          label: AppLocalizations.of(context)!.shape,
           notifier: pencilOptions.shape,
-          valueMap: PencilShape.getLabelMap(),
+          valueMap: PencilShape.getLabelMap(AppLocalizations.of(context)!),
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
         ),
         ToolModifierSwitchRow(
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: pencilOptions.pixelPerfect,
           unmodifiedNotifier: pencilOptions.unmodifiedPixelPerfect,
-          label: "Smooth",
+          label: AppLocalizations.of(context)!.smooth,
           defaultState: PencilConstraints.pixelPerfectDefault,
           modifierNotifier: hotkeyManager.controlNotifier,
         ),

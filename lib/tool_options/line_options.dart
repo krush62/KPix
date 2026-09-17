@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_line_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -98,7 +99,7 @@ class LineOptions extends IToolOptions
       children: <Widget>[
         ToolSliderRow<int>(
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
-          label: "Width",
+          label: AppLocalizations.of(context)!.width,
           notifier: lineOptions.width,
           minVal: LineConstraints.widthMin.toDouble(),
           maxVal: LineConstraints.widthMax.toDouble(),
@@ -108,7 +109,7 @@ class LineOptions extends IToolOptions
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: lineOptions.integerAspectRatio,
           unmodifiedNotifier: lineOptions.unmodifiedIntegerAspectRatio,
-          label: "Integer Aspect Ratio",
+          label: AppLocalizations.of(context)!.integerAspectRatio,
           defaultState: LineConstraints.integerAspectRatioDefault,
           modifierNotifier: hotkeyManager.controlNotifier,
         ),
@@ -118,7 +119,7 @@ class LineOptions extends IToolOptions
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Segment Sorting",
+                  AppLocalizations.of(context)!.segmentSorting,
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),
@@ -137,11 +138,8 @@ class LineOptions extends IToolOptions
                       segList.add(
                         ButtonSegment<SegmentSortStyle>(
                           value: sortStyle,
-                          label: Tooltip(
-                            message: sortStyle.label,
-                            waitDuration: toolTipDuration,
-                            child: Text(sortStyle.iconText),
-                          ),
+                          tooltip: sortStyle.label(AppLocalizations.of(context)!),
+                          label: Text(sortStyle.iconText),
                         ),
                       );
                     }

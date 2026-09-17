@@ -137,7 +137,7 @@ void main()
       final DrawingLayerState artwork = layerAt(projectSession: projectSession, index: 0);
       artwork.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
 
-      final DrawingLayerState hidden = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState)! as DrawingLayerState;
+      final DrawingLayerState hidden = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState).$2! as DrawingLayerState;
       GetIt.I.get<LayerManager>().changeLayerVisibility(layerState: hidden);
       GetIt.I.get<LayerManager>().selectLayer(newLayer: artwork);
       await settle();

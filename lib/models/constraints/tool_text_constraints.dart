@@ -24,6 +24,6 @@ abstract final class TextConstraints
   static const int sizeDefault = 1;
   static const int sizeMax = 8;
 
-  static const String textDefault = "Text";
+  static const String textDefault = "Text"; // TODO: This might get translated
   static const int maxLength = 32;
 }

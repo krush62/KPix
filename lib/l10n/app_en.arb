@@ -1,0 +1,726 @@
+{
+  "close": "Close",
+  "color": "Color",
+
+  "createNewProject": "Create New Project",
+  "width": "Width",
+  "height": "Height",
+  "presets": "Presets",
+  "custom": "Custom",
+  "lockAspectRatio": "Lock Aspect Ratio",
+  "exitApplication": "Exit Application",
+  "openProjectManager": "Open Project Manager",
+  "createProject": "Create Project",
+
+  "projectManager": "Project Manager",
+  "filter": "Filter",
+  "sortFileNameAsc": "Order by file name (ascending)",
+  "sortFileNameDesc": "Order by file name (descending)",
+  "sortDateAsc": "Order by last modification (ascending)",
+  "sortDateDesc": "Order by last modification (descending)",
+  "importProject": "Import Project",
+  "deleteSelectedProject": "Delete Selected Project",
+  "loadSelectedProject": "Load Selected Project",
+  "unsavedChangesSaveFirst": "There are unsaved changes, do you want to save first?",
+  "openingImageDot": "Opening Image...",
+  "doYouReallyWantToDeleteProject":  "Do you really want to delete this project?",
+  "projectImportSuccessful": "Project imported successfully!",
+  "couldNotOpenFile": "Could not open file!",
+  "projectWithSameNameExists": "A project with the same name already exists!",
+  "pleaseSelectAKPixFile": "Please select a KPix file!",
+  "couldNotReadProjectDir": "Could not read the project directory!",
+  "noFilesFound": "No files found!",
+
+  "keyShift": "shift",
+  "keyAlt": "alt",
+  "keyCtrl": "ctrl",
+  "keySpace": "space",
+
+  "buttonOff": "OFF",
+  "buttonSolid": "SLD",
+  "buttonRelative": "RLT",
+  "buttonGlow": "GLW",
+  "buttonShade": "SHD",
+  "buttonBevel": "BVL",
+  "outerStrokeOff": "No outer stroke",
+  "outerStrokeSolid": "Solid color outer stroke",
+  "outerStrokeRelative": "Color relative outer stroke",
+  "outerStrokeGlowing": "Glowing outer stroke",
+  "outerStrokeShaded": "Shaded outer stroke",
+  "innerStrokeOff": "No inner stroke",
+  "innerStrokeSolid": "Solid color inner stroke",
+  "innerStrokeBeveled": "Beveled inner stroke",
+  "innerStrokeGlowing": "Glowing inner stroke",
+  "innerStrokeShaded": "Shaded inner stroke",
+  "shadowOff": "No drop shadow",
+  "shadowSolid": "Solid color drop shadow",
+  "shadowShaded": "Shaded drop shadow",
+  "stepCount": "{count, plural, =1{{value} step} other{{value} steps}}",
+  "@stepCount": {
+    "description": "A number of steps; count picks the plural form, value is the number as shown (it may carry a sign)",
+    "placeholders": {
+      "count": {"type": "int"},
+      "value": {"type": "String"}
+    }
+  },
+  "recursive": "recursive",
+  "outerStroke": "Outer Stroke",
+  "innerStroke": "Inner Stroke",
+  "dropShadow": "Drop Shadow",
+  "selectOuterStrokeColor": "Select outer stroke color",
+  "darkenBrighten": "Darken/Brighten",
+  "darkenBrightenBreak": "Darken /\nBrighten",
+  "applyOuterStroke": "Apply Outer Stroke",
+  "selectInnerStrokeColor": "Select inner stroke color",
+  "applyInnerStroke": "Apply Inner Stroke",
+  "horizontal": "horizontal",
+  "vertical": "vertical",
+  "selectDropShadowColor": "Select drop shadow color",
+  "applyDropShadow": "Apply Drop Shadow",
+  "pixelsAbbrev": "px",
+
+  "invalidLayerIndex": "Invalid layer insert index.",
+  "couldNotAddMoreLayers": "Could not add more layers.",
+  "layerAlreadyExistsOnFrame": "Layer already exists on that frame.",
+  "cannotAddMoreFrames": "Cannot add more frames.",
+  "unknownError": "Unknown error",
+  "noLayerBelow": "No layer below!",
+  "cannotMergeFromLinkedLayer": "Cannot merge from a linked layer!",
+  "cannotMergeToLinkedLayer": "Cannot merge to a linked layer!",
+  "cannotMergeFromInvisibleLayer": "Cannot merge from an invisible layer!",
+  "cannotMergeToInvisibleLayer": "Cannot merge to an invisible layer!",
+  "cannotMergeFromLockedLayer": "Cannot merge from a locked layer!",
+  "cannotMergeToLockedLayer": "Cannot merge to a locked layer!",
+  "canOnlyMergeWithDrawingLayer": "Can only merge with drawing layers!",
+  "cannotMergeWithActiveEffects": "Cannot merge layers with active effects!",
+  "cannotDeleteLastLayer": "Cannot delete the last layer!",
+
+  "cannotDeleteFromHiddenLayer": "Cannot delete from hidden layer!",
+  "cannotDeleteFromLockedLayer": "Cannot delete from locked layer!",
+  "cannotCutFromHiddenLayer": "Cannot cut from hidden layer!",
+  "cannotCutFromLockedLayer": "Cannot cut from locked layer!",
+  "nothingToCopy": "Nothing to copy!",
+  "nothingToPasteColorsNotInPalette": "Nothing to paste: the copied colors are no longer in the palette!",
+  "cannotPasteToHiddenLayer": "Cannot paste to a hidden layer!",
+  "cannotPasteToLockedLayer": "Cannot paste to a locked layer!",
+  "cannotTransformOnHiddenLayer": "Cannot transform on a hidden layer!",
+  "cannotTransformOnLockedLayer": "Cannot transform on a locked layer!",
+
+  "needAtLeastColorRamps": "{count, plural, =1{Need at least 1 color ramp!} other{Need at least {count} color ramps!}}",
+  "@needAtLeastColorRamps": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "notMoreThanColorRampsAllowed": "Not more than {count} color ramps allowed!",
+  "@notMoreThanColorRampsAllowed": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "loadingPaletteFailed": "Loading palette failed!",
+
+  "undoStep": "Undo: {description}",
+  "@undoStep": {
+    "placeholders": {
+      "description": {"type": "String"}
+    }
+  },
+  "redoStep": "Redo: {description}",
+  "@redoStep": {
+    "placeholders": {
+      "description": {"type": "String"}
+    }
+  },
+  "historyRestoreFailed": "History restore failed!",
+
+  "loadingFailed": "Loading failed ({status})",
+  "@loadingFailed": {
+    "description": "status is the file reader's report and is not translated",
+    "placeholders": {
+      "status": {"type": "String"}
+    }
+  },
+  "fileSavedAt": "File saved at: {path}",
+  "@fileSavedAt": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "imageImportSuccessful": "Image imported successfully!",
+  "couldNotConvertImageData": "Could not convert image data!",
+
+
+  "couldNotCrop": "Could not crop!",
+  "cropToSelection": "Crop To Selection",
+
+  "hidden": "Hidden",
+  "visible": "Visible",
+  "unlocked": "Unlocked",
+  "transparencyLocked": "Transparency locked",
+  "locked": "Locked",
+
+  "buttonRec": "REC",
+  "buttonDia": "DIA",
+  "buttonIso": "ISO",
+  "buttonHex": "HEX",
+  "buttonTri": "TRI",
+  "buttonBrk": "BRK",
+  "button1Point": "1-Point",
+  "button2Point": "2-Point",
+  "button3Point": "3-Point",
+  "rectangularGrid": "Rectangular Grid",
+  "diagonalGrid": "Diagonal Grid",
+  "isometricGrid": "Isometric Grid",
+  "hexagonalGrid": "Hexagonal Grid",
+  "triangularGrid": "Triangular Grid",
+  "bricks": "Bricks",
+  "onePointPerspective": "1-Point Perspective",
+  "twoPointPerspective": "2-Point Perspective",
+  "threePointPerspective": "3-Point Perspective",
+
+  "ascendingSegmentOrder": "Ascending segment order",
+  "ascendingDescendingSegmentOrder": "Ascending/Descending segment order",
+  "descendingAscendingSegmentOrder": "Descending/Ascending segment order",
+  "descendingSegmentOrder": "Descending segment order",
+
+  "round": "Round",
+  "square": "Square",
+
+  "rectangle": "Rectangle",
+  "ellipse": "Ellipse",
+  "polygon": "Polygon",
+  "wand": "Wand",
+  "triangle": "Triangle",
+  "midAngleRectangle": "Mid-Angle Rectangle",
+  "regularPolygon": "Regular Polygon",
+  "star": "Star",
+
+  "replaceSelection": "Replace Selection",
+  "addToSelection": "Add to Selection",
+  "subtractFromSelection": "Subtract from Selection",
+  "intersectWithSelection": "IntersectWithSelection",
+
+  "pencil": "Pencil",
+  "shape": "Shape",
+  "fill": "Fill",
+  "select": "Select",
+  "colorPicker": "Color Picker",
+  "eraser": "Eraser",
+  "text": "Text",
+  "textToolDefaultText": "Text",
+  "sprayCan": "Spray Can",
+  "line": "Line",
+  "stamp": "Stamp",
+
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+
+  "cursorNone": "None",
+  "cursorCrosshair": "Crosshair",
+  "cursorArrow": "Arrow",
+
+  "rawModeExplanation": "Raw Mode does not use any values from shading layers or layer settings that use shading.",
+  "rawMode": "Raw Mode",
+
+  "size": "Size",
+
+  "fillAdjacent": "Fill Adjacent",
+  "fillWholeRamp": "Fill Whole Ramp",
+
+  "integerAspectRatio": "Integer Aspect Ratio",
+  "segmentSorting": "Segment Sorting",
+
+  "smooth": "Smooth",
+
+  "mode": "Mode",
+
+  "continuous": "Continuous",
+  "keep1to1": "Keep 1:1",
+  "wholeRamp": "Whole Ramp",
+
+  "strokeOnly": "Stroke Only",
+  "cornerRadius": "Corner Radius",
+  "angle": "Angle",
+  "cornerCount": "Corner Count",
+
+  "radius": "Radius",
+  "blobSize": "Blob Size",
+  "intensity": "Intensity",
+
+  "noStamp": "No Stamp",
+  "scale": "Scale",
+  "gridAlign": "Grid Align",
+  "offsetX": "Offset X",
+  "offsetY": "Offset Y",
+
+  "font": "Font",
+
+  "available": "Available",
+  "invalidFileName": "Invalid File Name",
+  "insufficientPermissions": "Insufficient Permissions",
+  "overwritingExistingFile": "Overwriting Existing File",
+
+  "rotateCanvas": "Rotate Canvas",
+  "flipCanvasHorizontally": "Flip Canvas Horizontally",
+  "flipCanvasVertically": "Flip Canvas Vertically",
+  "canvasSize": "Canvas Size",
+  "offset": "Offset",
+
+
+  "selectAll": "Select All",
+  "deselect": "Deselect",
+  "inverseSelection": "Inverse Selection",
+  "copy": "Copy",
+  "copyMerged": "Copy Merged",
+  "cut": "Cut",
+  "paste": "Paste",
+  "pasteAsNewLayer": "Paste As New Layer",
+  "horizontalFlip": "HorizontalFlip",
+  "verticalFlip": "VerticalFlip",
+  "rotate90Clockwise": "Rotate 90° Clockwise",
+  "alignDot": "Align...",
+  "delete": "Delete",
+
+  "selectAColor": "Select a Color",
+
+  "newVersionAvailable": "New version available",
+  "downloadFromGithub": "Download from GitHub",
+  "aPixelArtCreationTool": "A Pixel Art Creation Tool",
+  "thisIsFreeSoftwareLicensed": "This is free software licensed under",
+  "gnuAGPLv3": "GNU AGPLv3",
+  "credits": "Credits",
+  "licenses": "Licenses",
+  "controlsShortcuts": "Controls/Shortcuts",
+
+  "textToolContent": "Text Tool Content",
+
+  "gui": "GUI",
+  "behavior": "Behavior",
+  "controlsPC": "Controls PC",
+  "controlsStylus": "Controls Stylus",
+  "controlsTouch": "Controls Touch",
+
+  "image": "Image",
+  "animation": "Animation",
+  "palette": "Palette",
+  "kpixProject": "KPix Project",
+  "export": "Export",
+  "format": "Format",
+  "texturePack": "Texture Pack",
+  "texturePackAnimation": "Texture Pack Animation",
+  "pngSequence": "PNG Sequence",
+  "scaling": "Scaling",
+  "selectionOnly": "Selection Only",
+
+  "nFrames": "{count, plural, =0{0 frames} =1{1 frame} other{{count} frames}}",
+  "@nFrames": {
+    "description": "frame plural",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "frameNumber": "Frame {number}",
+  "@frameNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "directory": "Directory",
+  "changeDirectory": "Change Directory",
+  "fileName": "File Name",
+  "exportFile": "Export File",
+
+  "imageDimensionsExceed": "Image dimensions cannot exceed {width}x{height}!",
+  "@imageDimensionsExceed": {
+    "description": "message during import regarding image dimensions",
+    "placeholders": {
+      "width": {"type": "int"},
+      "height": {"type": "int"}
+    }
+  },
+  "couldNotDecodeImage": "Could not decode image!",
+  "couldNotLoadFile": "Could not load file!",
+  "importImage": "Import Image",
+  "file": "File",
+  "noFileSelected": "No File Selected",
+  "chooseImage": "Choose Image",
+  "scaleDown": "Scale Down",
+  "createNewPaletteFromImage": "Create a New Palette From Image",
+  "maxColorRamps": "Max Color Ramps",
+  "maxColorsPerRamp": "Max Colors per Ramp",
+  "includeImageAsReferenceLayer": "Include Image as Reference Layer",
+  "import": "Import",
+
+  "saveProjectAs": "Save Project as",
+
+  "hueAbb": "hue",
+  "satAbb": "sat",
+  "valAbb": "val",
+  "pressToReset": "Press to Reset",
+  "colorCount": "Color Count",
+  "baseHue": "Base Hue",
+  "hueShift": "Hue Shift",
+  "exponent": "Exponent",
+  "baseSat": "Base Sat",
+  "satShift": "Sat Shift",
+  "satCurve": "Sat Curve",
+  "satCurveNoFlat": "Decreased Saturation for Dark and Bright Values",
+  "satCurveDarkFlat": "Decreased Saturation for Bright Values",
+  "satCurveBrightFlat": "Decreased Saturation for Dark Values",
+  "satCurveLinear": "Linear Saturation Progression",
+  "valueRange": "Value Range",
+  "deleteColorRampQuestion": "Do you really want to delete this color ramp?\n{amount} pixel(s) will be deleted",
+  "@deleteColorRampQuestion": {
+    "description": "message when deleting ramp",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "ofThemInSelection": "({amount} of them in the selection)",
+  "@ofThemInSelection": {
+    "description": "message when deleting ramp",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "pixelsInClipboard": "{amount} pixel(s) in the clipboard will no longer be pasted",
+  "@pixelsInClipboard": {
+    "description": "message when deleting ramp",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "shadingRange": "Shading Range",
+  "maxDarken": "Max Darken",
+  "maxBrighten": "Max Brighten",
+
+  "layerActionsDot": "Layer Actions...",
+  "settings": "Settings",
+
+  "addNewLayerDot": "Add New Layer...",
+  "layerSettings": "Layer Settings",
+
+  "symmetryOptions": "Symmetry Options",
+  "centerHorizontalRuler": "Center Horizontal Ruler",
+  "centerVerticalRuler": "Center Vertical Ruler",
+
+  "addNewDrawingLayer": "Add New Drawing Layer",
+  "addNewShadingLayer": "Add New Shading Layer",
+  "addNewDitherLayer": "Add New Dither Layer",
+  "addNewReferenceLayer": "Add New Reference Layer",
+  "addNewGridLayer": "Add New Grid Layer",
+
+  "deleteLayer": "Delete Layer",
+  "duplicateLayer": "Duplicate Layer",
+  "mergeDownLayer": "Merge Down Layer",
+  "unlinkLayer": "Unlink Layer / Make Unique",
+
+  "newProject": "New Project",
+  "openProject": "Open Project",
+
+  "rasterLayer": "Raster Layer",
+
+  "saveProject": "Save Project",
+  "exportProjectPalette": "Export Project/Palette",
+
+  "centerHorizontally": "Center Horizontally",
+  "centerVertically": "Center Vertically",
+  "left": "Left",
+  "right": "Right",
+  "top": "Top",
+  "bottom": "Bottom",
+
+  "editColorRamp": "Edit Color Ramp",
+
+  "nColors": "{amount} colors",
+  "@nColors": {
+    "description": "palette manager summary",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+
+  "nRampsColors": "{rampAmount} ramps | {colorAmount} colors",
+  "@nRampsColors": {
+    "description": "palette manager summary",
+    "placeholders": {
+      "rampAmount": {"type": "int"},
+      "colorAmount": {"type": "int"}
+    }
+  },
+
+  "remapExistingColors": "Do you want to remap the existing colors (all pixels will be deleted otherwise)?",
+  "wantToDeletePalette": "Do you really want to delete this palette?",
+  "paletteManager": "Palette Manager",
+  "importPalette": "Import Palette",
+  "saveCurrentPalette": "Save Current Palette",
+  "deleteSelectedPalette": "Delete Selected Palette",
+  "appendToCurrentPalette": "Append to Current Palette",
+  "applySelectedPalette": "Apply Selected Palette",
+  "addNewColorRamp": "Add New Color Ramp",
+  "savePalette": "Save Palette",
+  "defaultPalette": "Default",
+  "errorSavingPalette": "Error saving palette!",
+  "paletteSavedAt": "Palette saved successfully at {path}.",
+  "@paletteSavedAt": {
+    "description": "palette manager",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "paletteWithSameNameExists": "A palette with the same name already exists!",
+  "pleaseSelectAKPalFile": "Please select a KPal file!",
+  "paletteImportSuccessful": "Import successful!",
+  "paletteImportFailed": "Import failed!",
+
+  "insufficientPermissionsForDir": "Insufficient permissions for the selected directory!",
+  "undoSteps": "Undo Steps",
+  "selectInsertedLayers": "Select Inserted Layers",
+  "defaultShadingLayerSettings": "Default Shading Layer Settings",
+  "defaultFrameTime": "Default Frame Time",
+  "showReferenceLayersOutsideOfCanvas": "Show Reference Layers outside of canvas",
+  "projectDirectory": "Project Directory",
+  "defaultDir": "Default",
+  "customDir": "Custom",
+  "chooseDirectory": "Choose Directory",
+
+  "mouseCursor": "Mouse Cursor",
+
+  "languagePreferences": "Language Preferences",
+  "language": "Language",
+  "languageSystem": "System",
+
+  "themePreferences": "Theme Preferences",
+  "theme": "Theme",
+  "checkerboardPreferences": "Checkerboard Preferences",
+  "checkerboardSize": "Checkerboard Size",
+  "checkerboardContrast": "Checkerboard Contrast",
+  "palettePreferences": "Palette Preferences",
+  "colorNaming": "Color Naming",
+  "borderPreferences": "Border Preferences",
+  "toolOutlineOpacity": "Tool Outline Opacity",
+  "selectionOutlineOpacity": "Selection Outline Opacity",
+  "pulsatingSelectionOutline": "Pulsating Selection Outline",
+  "canvasBorerOpacity": "Canvas Border Opacity",
+
+  "pollingTimeToCheck": "Polling time to check for presses of stylus buttons.",
+  "pollInterval": "Poll Interval",
+  "timeThatNeedsToBeHeldDown": "Time that needs to be held down for a long press.",
+  "longPressDelay": "Long Press Delay",
+  "distanceThatMustBeMoved": "Distance that must be moved during a long press to cancel it.",
+  "longPressCancelDistance": "Long Press Cancel Distance",
+  "distanceThatNeedsToBeMovedVertically": "Distance that needs to be moved vertically to zoom in or out.",
+  "zoomStepDistance": "Zoom Step Distance",
+  "distanceThatNeedsToBeMovedHorizontally": "Distance that needs to be moved horizontally to change the size of the current tool.",
+  "toolSizeStepDistance": "Tool Size Step Distance",
+  "timeoutForPickingAColor": "Timeout for picking a color.",
+  "colorPickTimeout": "Color Pick Timeout",
+
+  "touchDelay": "Touch Delay",
+
+  "stampManager": "Stamp Manager",
+  "deleteSelectedStamp": "Delete Selected Stamp",
+  "loadSelectedStamp": "Load Selected Stamp",
+  "doYouReallyWantToDeleteStamp": "Do you really want to delete this stamp?",
+
+  "frameBlending": "Frame Blending",
+  "enabled": "Enabled",
+  "framesBefore": "Frames Before",
+  "wrapAround": "Wrap Around",
+  "framesAfter": "Frames After",
+  "opacity": "Opacity",
+  "gradual": "Gradual",
+  "tinting": "Tinting",
+  "activeLayerOnly": "Active Layer Only",
+
+  "cancel": "Cancel",
+  "applyToAllFrames": "Apply to All Frames",
+  "applyToCurrentFrame": "Apply to Current Frame",
+
+  "collapseTimeline": "Collapse Timeline",
+  "expandTimeline": "Expand Timeline",
+  "pause": "Pause",
+  "play": "Play",
+  "loopStartMarker": "Loop Start Marker",
+  "loopEndMarker": "Loop End Marker",
+  "changeDuration": "Change Duration",
+  "moveFrameLeft": "Move Frame Left",
+  "moveFrame": "Move Frame",
+  "moveFrameRight": "Move Frame Right",
+  "addFrameLeft": "Add Frame Left",
+  "addFrame": "Add Frame",
+  "addFrameRight": "Add Frame Right",
+  "copyFrameLeft": "Copy Frame Left",
+  "copyFrame": "Copy Frame",
+  "copyFrameRight": "Copy Frame Right",
+  "createLinkedFrameLeft": "Create Linked Frame Left",
+  "createLinkedFrame": "Create Linked Frame",
+  "createLinkedFrameRight": "Create Linked Frame Right",
+  "deleteFrame": "Delete Frame",
+  "toggle": "Toggle",
+
+  "grid": "Grid",
+  "gridButton": "GRID",
+  "perspective": "Perspective",
+  "perspectiveButton": "PERSPECTIVE",
+  "brightness": "Brightness",
+  "interval": "Interval",
+  "intervalX": "Interval X",
+  "intervalY": "Interval Y",
+  "horizon": "Horizon",
+  "vanishingPoint": "Vanishing Point",
+  "horPoints": "Hor Points",
+  "verPoint": "Ver Point",
+
+  "couldNotLoadImageFrom": "Could not load image from {location}.",
+  "@couldNotLoadImageFrom": {
+    "placeholders": {
+      "location": {"type": "String"}
+    }
+  },
+  "resetSetting": "Reset {setting}",
+  "@resetSetting": {
+    "placeholders": {
+      "setting": {"type": "String"}
+    }
+  },
+  "noFileLoaded": "No File Loaded",
+  "openReferenceImage": "Open Reference Image",
+  "aspectRatio": "Aspect Ratio",
+  "zoom": "Zoom",
+  "expandHorizontallyAndCenter": "Expand horizontally and center by keeping the current aspect ratio",
+  "expandVerticallyAndCenter": "Expand vertically and center by keeping the current aspect ratio",
+  "fitsImageIntoCanvas": "Fits the image into the canvas (changes aspect ratio)",
+  "contrast": "Contrast",
+  "saturation": "Saturation",
+  "warmth": "Warmth",
+
+  "shading": "Shading",
+  "currentRampOnly": "Current Ramp Only",
+  "direction": "Direction",
+
+  "loadingDot": "Loading...",
+  "thisDeviceDoesNotSupportResolution": "This device does not support the minimum logical resolution to run this application.",
+  "customProjectDirectoryInvalid": "Custom Project directory invalid. Switching to default directory.",
+  "couldNotCreateInternalDirectories": "Could not create internal directories.",
+  "couldNotInitializeApp": "Could not initialize the application.",
+  "aCustomProjectDirectoryIsUsed": "A custom project directory is used, but KPix does not have the \"All files access\" permission. Project files created by other apps (e.g. sync tools) might not be shown.\nDo you want to open the system settings to grant the permission?",
+  "workRecovered": "Work Recovered",
+
+  "undo": "Undo",
+  "redo": "Redo",
+  "about": "About",
+  "preferences": "Preferences",
+  "saveDot": "Save...",
+  "newOpenDot": "New/Open...",
+  "errorImportingImage": "Error importing image.",
+  "thereAreUnsavedChanges": "There are unsaved changes, do you want to save first?",
+  "importingImageDot": "Importing Image...",
+  "exportingDot": "Exporting...",
+  "movingProjectFilesDot": "Moving project files...",
+  "targetDirCouldNotBeCreated": "The directory does not exist and could not be created!",
+  "dirAlreadyContainsFile": "The directory already contains a file named {fileName}!",
+  "@dirAlreadyContainsFile": {
+    "description": "project dir change",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotMoveFile": "Could not move file {fileName}!",
+  "@couldNotMoveFile": {
+    "description": "project dir change",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "unexpectedErrorMovingProjectFiles": "An unexpected error occurred while moving project files!",
+  "changedProjectDirectoryFiles": "Changed project directory to {directory} (moved {count} project file(s)).",
+  "@changedProjectDirectoryFiles": {
+    "description": "project dir change",
+    "placeholders": {
+      "directory": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "projectDirWasNotChanged": "The project directory was not changed!\n{message}",
+  "@projectDirWasNotChanged": {
+    "description": "project dir change",
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "exportedPaletteTo": "Exported palette to: {path}",
+  "@exportedPaletteTo": {
+    "description": "palette export",
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "errorExportingPaletteFile": "Error exporting palette file.",
+  "exportedTo": "Exported to: {path}",
+  "@exportedTo": {
+    "description": "export",
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "errorExportingFile": "Error exporting file!",
+  "withoutAllFilesWarning": "Without the \"All files access\" permission, KPix cannot see project files that were created by other apps (e.g. sync tools) in this directory.\nDo you want to open the system settings to grant the permission?",
+  "allFilesAccessNotNeededWarning": "The \"All files access\" permission is not needed for the default project directory.\nDo you want to open the system settings to revoke the permission?",
+
+  "initial": "Initial",
+  "generic": "Generic",
+  "saveData": "Save Data",
+  "loadData": "Load Data",
+  "selectLayer": "Select Layer",
+  "selectLayerMoveSelection": "Select Layer (Move Selection)",
+  "mergeLayer": "Merge Layer",
+  "changeLayerOrder": "Change Layer Order",
+  "layerVisibilityChanged": "Layer Visibility Changed",
+  "layerLockStateChanged": "Layer Lock State Changed",
+  "changeReferenceImage": "Change Reference Image",
+  "layerSettingsChange": "Layer Settings Change",
+  "layerSettingsRaster": "Layer Settings Raster",
+  "newSelection": "New Selection",
+  "cutSelection": "Cut Selection",
+  "flipSelectionHorizontally": "Flip Selection Horizontally",
+  "flipSelectionVertically": "Flip Selection Vertically",
+  "rotateSelection": "Rotate Selection",
+  "moveSelection": "Move Selection",
+  "pasteSelection": "Paste Selection",
+  "selectionToNewLayer": "Selection To New Layer",
+  "deleteSelection": "Delete Selection",
+  "changeCanvasSize": "Change Canvas Size",
+  "penDrawing": "Pen Drawing",
+  "stampDrawing": "Stamp Drawing",
+  "erase": "Erase",
+  "fontDrawing": "Font Drawing",
+  "shapeDrawing": "Shape Drawing",
+  "lineDrawing": "Line Drawing",
+  "sprayCanDrawing": "Spray Can Drawing",
+  "changeColorSelection": "Change Color Selection",
+  "deleteRamp": "Delete Ramp",
+  "updateRamp": "Update Ramp",
+  "replacePalette": "Replace Palette",
+  "addNewRamp": "Add New Ramp",
+  "changeRampOrder": "Change Ramp Order",
+  "changeFrameTime": "Change Frame Time",
+  "changeLoopMarker": "Change Loop Marker",
+
+  "apply": "Apply",
+  "chooseColor": "Choose Color",
+  "yes": "Yes",
+  "no": "No"
+
+
+}

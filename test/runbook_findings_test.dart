@@ -62,7 +62,7 @@ void main()
         await settle();
         expect(GetIt.I.get<DocumentState>().selectionState.selection.getColorReference(coord: pixel), color, reason: "setup: the pixel is floating");
 
-        final DrawingLayerState copy = GetIt.I.get<LayerManager>().layerDuplicateSelected(duplicateLayer: source)! as DrawingLayerState;
+        final DrawingLayerState copy = GetIt.I.get<LayerManager>().layerDuplicateSelected(duplicateLayer: source).$2! as DrawingLayerState;
         await settle();
 
         expect(copy.getDataEntry(coord: pixel), color,

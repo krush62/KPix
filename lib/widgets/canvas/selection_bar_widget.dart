@@ -18,12 +18,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/widgets/layer_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/overlays/overlay_selection_align_menu.dart';
+import 'package:kpix/widgets/selection_action_messages.dart';
 
 /// Layout options for the [SelectionBarWidget].
 abstract final class _SelectionBarWidgetOptions
@@ -49,11 +52,63 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
   final GlobalKey _alignAnchorKey = GlobalKey();
   final OverlayPortalController _alignmentController = OverlayPortalController();
 
+  //kept so the very same callbacks can be removed again in dispose
+  late final Map<HotkeyAction, VoidCallback> _hotkeyCallbacks = <HotkeyAction, VoidCallback>{
+    HotkeyAction.selectionCopy: () {if (!_selectionState.selection.isEmpty) _copyPressed();},
+    HotkeyAction.selectionCopyMerged: () {if (!_selectionState.selection.isEmpty) _copyMergedPressed();},
+    HotkeyAction.selectionCut: () {if (!_selectionState.selection.isEmpty) _cutPressed();},
+    HotkeyAction.selectionPaste: () {if (_selectionState.hasClipboard) _pastePressed();},
+    HotkeyAction.selectionPasteAsNewLayer: () {if (_selectionState.hasClipboard) _pasteAsNewLayerPressed();},
+    HotkeyAction.selectionDelete: () {if (!_selectionState.selection.isEmpty) _deletePressed();},
+    HotkeyAction.selectionFlipH: () {if (!_selectionState.selection.isEmpty) _flipHPressed();},
+    HotkeyAction.selectionFlipV: () {if (!_selectionState.selection.isEmpty) _flipVPressed();},
+    HotkeyAction.selectionRotate: () {if (!_selectionState.selection.isEmpty) _rotatePressed();},
+  };
+
 
   @override
   void initState()
   {
     super.initState();
+    for (final MapEntry<HotkeyAction, VoidCallback> hotkey in _hotkeyCallbacks.entries)
+    {
+      _hotkeyManager.addListener(func: hotkey.value, action: hotkey.key);
+    }
+  }
+
+  @override
+  void dispose()
+  {
+    for (final MapEntry<HotkeyAction, VoidCallback> hotkey in _hotkeyCallbacks.entries)
+    {
+      _hotkeyManager.removeListener(func: hotkey.value, action: hotkey.key);
+    }
+    super.dispose();
+  }
+
+  void _showSelectionResult({required final SelectionActionResult result})
+  {
+    showMessageForSelectionResult(result: result, l10n: AppLocalizations.of(context)!);
+  }
+
+  void _copyPressed() => _showSelectionResult(result: _selectionState.copy());
+  void _copyMergedPressed() => _showSelectionResult(result: _selectionState.copyMerged());
+  void _cutPressed() => _showSelectionResult(result: _selectionState.cut());
+  void _pastePressed() => _showSelectionResult(result: _selectionState.paste());
+  void _deletePressed() => _showSelectionResult(result: _selectionState.delete());
+  void _flipHPressed() => _showSelectionResult(result: _selectionState.flipH());
+  void _flipVPressed() => _showSelectionResult(result: _selectionState.flipV());
+  void _rotatePressed() => _showSelectionResult(result: _selectionState.rotate());
+
+  void _pasteAsNewLayerPressed()
+  {
+    final (SelectionActionResult, LayerActionResult?) result = _selectionState.pasteAsNewLayer();
+    _showSelectionResult(result: result.$1);
+    final LayerActionResult? layerResult = result.$2;
+    if (layerResult != null)
+    {
+      showMessageForResult(result: layerResult, l10n: AppLocalizations.of(context)!);
+    }
   }
 
   void _alignDismiss()
@@ -96,13 +151,10 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
   {
     return Padding(
       padding: const EdgeInsets.all(_SelectionBarWidgetOptions.padding),
-      child: Tooltip(
-        message: tooltip,
-        waitDuration: toolTipDuration,
-        child: IconButton.outlined(
-          onPressed: isEnabled ? onPressedFunc : null,
-          icon: Icon(icon, size: _SelectionBarWidgetOptions.iconHeight),
-        ),
+      child: IconButton.outlined(
+        tooltip: tooltip,
+        onPressed: isEnabled ? onPressedFunc : null,
+        icon: Icon(icon, size: _SelectionBarWidgetOptions.iconHeight),
       ),
     );
   }
@@ -112,74 +164,75 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
     return ListenableBuilder(
       listenable: _selectionState,
       builder: (final BuildContext context, final Widget? child){
+        final AppLocalizations l10n = AppLocalizations.of(context)!;
         return Material(
           color: Theme.of(context).primaryColor,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               _createBarButton(
-                  tooltip: "Select All${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionSelectAll)}",
+                  tooltip: l10n.selectAll + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionSelectAll, context: context),
                   icon: TablerIcons.select_all,
                   onPressedFunc: _selectionState.selectAll,
               ),
               _createBarButton(
-                tooltip: "Deselect${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDeselect)}",
+                tooltip: l10n.deselect + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionDeselect, context: context),
                 icon: TablerIcons.deselect,
                 onPressedFunc: _selectionState.deselectWithHistory,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Inverse Selection${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionInvert)}",
+                tooltip: l10n.inverseSelection + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionInvert, context: context),
                 icon: TablerIcons.percentage_50,
                 onPressedFunc: _selectionState.inverse,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Copy${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopy)}",
+                tooltip: l10n.copy + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopy, context: context),
                 icon: TablerIcons.copy,
-                onPressedFunc: _selectionState.copy,
+                onPressedFunc: _copyPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Copy Merged${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopyMerged)}",
+                tooltip: l10n.copyMerged + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopyMerged, context: context),
                 icon: TablerIcons.copy_plus,
-                onPressedFunc: _selectionState.copyMerged,
+                onPressedFunc: _copyMergedPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Cut${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCut)}",
+                tooltip: l10n.cut + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionCut, context: context),
                 icon: TablerIcons.scissors,
-                onPressedFunc: _selectionState.cut,
+                onPressedFunc: _cutPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Paste${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPaste)}",
+                tooltip: l10n.paste + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionPaste, context: context),
                 icon: TablerIcons.clipboard,
-                onPressedFunc: _selectionState.paste,
+                onPressedFunc: _pastePressed,
                 isEnabled: _selectionState.hasClipboard,
               ),
               _createBarButton(
-                tooltip: "Paste As New Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPasteAsNewLayer)}",
+                tooltip: l10n.pasteAsNewLayer + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionPasteAsNewLayer, context: context),
                 icon: TablerIcons.clipboard_plus,
-                onPressedFunc: _selectionState.pasteAsNewLayer,
+                onPressedFunc: _pasteAsNewLayerPressed,
                 isEnabled: _selectionState.hasClipboard,
               ),
               _createBarButton(
-                tooltip: "Horizontal Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipH)}",
+                tooltip: l10n.horizontalFlip + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipH, context: context),
                 icon: TablerIcons.flip_vertical,
-                onPressedFunc: _selectionState.flipH,
+                onPressedFunc: _flipHPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Vertical Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipV)}",
+                tooltip: l10n.verticalFlip + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipV, context: context),
                 icon: TablerIcons.flip_horizontal,
-                onPressedFunc: _selectionState.flipV,
+                onPressedFunc: _flipVPressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               _createBarButton(
-                tooltip: "Rotate 90° Clockwise${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionRotate)}",
+                tooltip: l10n.rotate90Clockwise + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionRotate, context: context),
                 icon: TablerIcons.rotate_clockwise_2,
-                onPressedFunc: _selectionState.rotate,
+                onPressedFunc: _rotatePressed,
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               Padding(
@@ -187,8 +240,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                 child: OverlayAnchor(
                   anchorKey: _alignAnchorKey,
                   child: Tooltip(
-                    message: "Align...",
-                    waitDuration: toolTipDuration,
+                    message: l10n.alignDot,
                     child: OverlayPortal(
                       controller: _alignmentController,
                       overlayChildBuilder: (final BuildContext bcontext) {
@@ -224,15 +276,12 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               ),
               Padding(
                 padding: const EdgeInsets.all(_SelectionBarWidgetOptions.padding),
-                child: Tooltip(
-                  message: "Delete${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDelete)}",
-                  waitDuration: toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.delete,
-                    icon: const Icon(
-                      TablerIcons.trash,
-                      size: _SelectionBarWidgetOptions.iconHeight,
-                    ),
+                child: IconButton.outlined(
+                  tooltip: l10n.delete + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionDelete, context: context),
+                  onPressed: _selectionState.selection.isEmpty ? null : _deletePressed,
+                  icon: const Icon(
+                    TablerIcons.trash,
+                    size: _SelectionBarWidgetOptions.iconHeight,
                   ),
                 ),
               ),

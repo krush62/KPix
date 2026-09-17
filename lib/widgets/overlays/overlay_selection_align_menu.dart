@@ -16,7 +16,7 @@
 
  import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
@@ -93,16 +93,12 @@ class OverlaySelectionAlignMenu extends StatefulWidget
    {
      return Padding(
        padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing / 2),
-       child: Tooltip(
-         message: toolTipMessage,
-         preferBelow: false,
-         waitDuration: toolTipDuration,
-         child: IconButton.outlined(
-           constraints: const BoxConstraints(),
-           padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
-           onPressed: onPressed,
-           icon: Icon(icon),
-         ),
+       child: IconButton.outlined(
+         tooltip: toolTipMessage,
+         constraints: const BoxConstraints(),
+         padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
+         onPressed: onPressed,
+         icon: Icon(icon),
        ),
      );
    }
@@ -111,6 +107,7 @@ class OverlaySelectionAlignMenu extends StatefulWidget
    @override
    Widget build(final BuildContext context)
    {
+     final AppLocalizations l10n = AppLocalizations.of(context)!;
      return AnchoredOverlayBox(
        anchorKey: widget.anchorKey,
        width: OverlayEntrySubMenuOptions.width / 3,
@@ -127,12 +124,12 @@ class OverlaySelectionAlignMenu extends StatefulWidget
              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
              crossAxisAlignment: CrossAxisAlignment.stretch,
              children: <Widget>[
-               _getEntry(toolTipMessage: "Center Horizontally", onPressed: widget.onAlignCenterH, icon: TablerIcons.layout_align_middle),
-               _getEntry(toolTipMessage: "Center Vertically", onPressed: widget.onAlignCenterV, icon: TablerIcons.layout_align_center),
-               _getEntry(toolTipMessage: "Left", onPressed: widget.onAlignLeft, icon: TablerIcons.layout_align_left),
-               _getEntry(toolTipMessage: "Right", onPressed: widget.onAlignRight, icon: TablerIcons.layout_align_right),
-               _getEntry(toolTipMessage: "Top", onPressed: widget.onAlignTop, icon: TablerIcons.layout_align_top),
-               _getEntry(toolTipMessage: "Bottom", onPressed: widget.onAlignBottom, icon: TablerIcons.layout_align_bottom),
+               _getEntry(toolTipMessage: l10n.centerHorizontally, onPressed: widget.onAlignCenterH, icon: TablerIcons.layout_align_middle),
+               _getEntry(toolTipMessage: l10n.centerVertically, onPressed: widget.onAlignCenterV, icon: TablerIcons.layout_align_center),
+               _getEntry(toolTipMessage: l10n.left , onPressed: widget.onAlignLeft, icon: TablerIcons.layout_align_left),
+               _getEntry(toolTipMessage: l10n.right, onPressed: widget.onAlignRight, icon: TablerIcons.layout_align_right),
+               _getEntry(toolTipMessage: l10n.top, onPressed: widget.onAlignTop, icon: TablerIcons.layout_align_top),
+               _getEntry(toolTipMessage: l10n.bottom, onPressed: widget.onAlignBottom, icon: TablerIcons.layout_align_bottom),
              ],
            ),
          ),

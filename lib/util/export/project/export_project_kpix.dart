@@ -43,9 +43,10 @@ PixelGridView _layerPixelsForSaving({
   return merged;
 }
 
-Future<ByteData> createKPixData() async
+/// Serialises [state], or the live document when none is given.
+Future<ByteData> createKPixData({final HistoryState? state}) async
 {
-  final HistoryState saveData = HistoryState.fromDocument(identifier: HistoryStateTypeIdentifier.saveData);
+  final HistoryState saveData = state ?? HistoryState.fromDocument(identifier: HistoryStateTypeIdentifier.saveData);
   final ByteData byteData = ByteData(_calculateKPixFileSize(saveData: saveData));
 
   int offset = 0;
@@ -309,23 +310,28 @@ Future<ByteData> createKPixData() async
 
   //TIMELINE
 
-  //frames_count ``ubyte (1)``
-  byteData.setInt8(offset++, saveData.timeline.frames.length);
-  //start_frame ``ubyte (1)``
-  byteData.setInt8(offset++, saveData.timeline.loopStart);
-  //end_frame ``ubyte (1)``
-  byteData.setInt8(offset++, saveData.timeline.loopEnd);
+  //frames_count ``ushort (1)``
+  byteData.setUint16(offset, saveData.timeline.frames.length);
+  offset+=2;
+  //start_frame ``ushort (1)``
+  byteData.setUint16(offset, saveData.timeline.loopStart);
+  offset+=2;
+  //end_frame ``ushort (1)``
+  byteData.setUint16(offset, saveData.timeline.loopEnd);
+  offset+=2;
 
   for (final HistoryFrame frame in saveData.timeline.frames)
   {
     //fps ``ubyte (1)``
-    byteData.setInt8(offset++, frame.fps);
-    //frame_layer_count ``ubyte (1)``
-    byteData.setInt8(offset++, frame.layerIndices.length);
-    for (int i = 0; i < frame.layerIndices.length; i++)
+    byteData.setUint8(offset++, frame.fps);
+    //frame_layer_count ``ushort (1)``
+    byteData.setUint16(offset, frame.layerIndices.length);
+    offset+=2;
+    for (final int layerIndex in frame.layerIndices)
     {
-      //layer_index ``ubyte (1)``
-      byteData.setInt8(offset++, frame.layerIndices.elementAt(i));
+      //layer_index ``ushort (1)``
+      byteData.setUint16(offset, layerIndex);
+      offset+=2;
     }
   }
 
@@ -544,28 +550,25 @@ int _calculateKPixFileSize({required final HistoryState saveData})
 
   //TIMELINE/FRAMES
 
-  //frames_count ``ubyte (1)``
-  size += 1;
+  //frames_count ``ushort (1)``
+  size += 2;
 
-  //start_frame ``ubyte (1)``
-  size += 1;
+  //start_frame ``ushort (1)``
+  size += 2;
 
-  //end_frame ``ubyte (1)``
-  size += 1;
+  //end_frame ``ushort (1)``
+  size += 2;
 
   for (final HistoryFrame frame in saveData.timeline.frames)
   {
     //fps ``ubyte (1)``
     size += 1;
 
-    //frame_layer_count ``ubyte (1)``
-    size += 1;
+    //frame_layer_count ``ushort (1)``
+    size += 2;
 
-    for (int i = 0; i < frame.layerIndices.length; i++)
-    {
-      //layer_index ``ubyte (1)``
-      size += 1;
-    }
+    //layer_index ``ushort (1)`` per layer
+    size += frame.layerIndices.length * 2;
   }
 
 

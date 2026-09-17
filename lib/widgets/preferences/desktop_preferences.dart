@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/preferences/preference_gui.dart';
 
@@ -32,14 +33,15 @@ class _DesktopPreferencesState extends State<DesktopPreferences>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         PrefSegmentedButtonRow<CursorType>(
-          label: "Mouse Cursor",
+          label: l10n.mouseCursor,
           notifier: widget.prefs.cursorType,
-          labels: CursorType.getNameMap(),
+          labels: CursorType.getNameMap(l10n),
         ),
       ],
     );

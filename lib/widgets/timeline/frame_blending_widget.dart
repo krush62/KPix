@@ -19,7 +19,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/frame_blending_constraints.dart';
 import 'package:kpix/models/frame_blending_options.dart';
 import 'package:kpix/models/view_state.dart';
@@ -52,6 +52,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Column(
       children: <Widget>[
         KPixAnimationWidget(
@@ -61,16 +62,16 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Center(child: Text("Frame Blending", style: Theme.of(context).textTheme.headlineMedium,)),
+                Center(child: Text(l10n.frameBlending.toUpperCase(), style: Theme.of(context).textTheme.headlineMedium,)),
                 Divider(color: Theme.of(context).primaryColorLight,),
 
                 //ENABLED
                 Row(
                   children: <Widget>[
-                    const Expanded(
+                    Expanded(
                       // ignore: avoid_redundant_argument_values
                       flex: _expansion1,
-                      child: Text("Enabled"),
+                      child: Text(l10n.enabled),
                     ),
                     Expanded(
                       flex: _expansion2 + _expansion3 + _expansion4 + _expansion5,
@@ -102,13 +103,13 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                      // ignore: avoid_redundant_argument_values
                      flex: _expansion1,
                    ),
-                    const Expanded(
+                    Expanded(
                       flex: _expansion2,
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Padding(
-                          padding: EdgeInsets.only(right: _padding / 2.0),
-                          child: Text("Frames Before"),
+                          padding: const EdgeInsets.only(right: _padding / 2.0),
+                          child: Text(l10n.framesBefore),
                         ),
                       ),
                     ),
@@ -140,11 +141,11 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                         ),
                       ),
                     ),
-                    const Expanded(
+                    Expanded(
                       flex: _expansion4,
                       child: Align(
                         alignment: Alignment.centerRight,
-                        child: Text("Wrap Around"),
+                        child: Text(l10n.wrapAround),
                       ),
                     ),
                     Expanded(
@@ -188,13 +189,13 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                       // ignore: avoid_redundant_argument_values
                       flex: _expansion1,
                     ),
-                    const Expanded(
+                    Expanded(
                       flex: _expansion2,
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Padding(
-                          padding: EdgeInsets.only(right: _padding / 2.0),
-                          child: Text("Frames After"),
+                          padding: const EdgeInsets.only(right: _padding / 2.0),
+                          child: Text(l10n.framesAfter),
                         ),
                       ),
                     ),
@@ -226,11 +227,11 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                         ),
                       ),
                     ),
-                    const Expanded(
+                    Expanded(
                       flex: _expansion4,
                       child: Align(
                         alignment: Alignment.centerRight,
-                        child: Text("Wrap Around"),
+                        child: Text(l10n.wrapAround),
                       ),
                     ),
                     Expanded(
@@ -274,13 +275,13 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                       // ignore: avoid_redundant_argument_values
                       flex: _expansion1,
                     ),
-                    const Expanded(
+                    Expanded(
                       flex: _expansion2,
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Padding(
-                          padding: EdgeInsets.only(right: _padding / 2.0),
-                          child: Text("Opacity"),
+                          padding: const EdgeInsets.only(right: _padding / 2.0),
+                          child: Text(l10n.opacity),
                         ),
                       ),
                     ),
@@ -314,11 +315,11 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                         ),
                       ),
                     ),
-                    const Expanded(
+                    Expanded(
                       flex: _expansion4,
                       child: Align(
                         alignment: Alignment.centerRight,
-                        child: Text("Gradual"),
+                        child: Text(l10n.gradual),
                       ),
                     ),
                     Expanded(
@@ -356,13 +357,13 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                       // ignore: avoid_redundant_argument_values
                       flex: _expansion1,
                     ),
-                    const Expanded(
+                    Expanded(
                       flex: _expansion2,
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Padding(
-                          padding: EdgeInsets.only(right: _padding / 2.0),
-                          child: Text("Tinting"),
+                          padding: const EdgeInsets.only(right: _padding / 2.0),
+                          child: Text(l10n.tinting),
                         ),
                       ),
                     ),
@@ -400,13 +401,13 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                       // ignore: avoid_redundant_argument_values
                       flex: _expansion1,
                     ),
-                    const Expanded(
+                    Expanded(
                       flex: _expansion2,
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Padding(
-                          padding: EdgeInsets.only(right: _padding / 2.0),
-                          child: Text("Active Layer Only"),
+                          padding: const EdgeInsets.only(right: _padding / 2.0),
+                          child: Text(l10n.activeLayerOnly),
                         ),
                       ),
                     ),
@@ -437,7 +438,11 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                   ],
                 ),
                 const SizedBox(height: _padding,),
-                Tooltip(message: "Close", waitDuration: toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(TablerIcons.check))),
+                IconButton(
+                  tooltip: l10n.close,
+                  onPressed: () {widget.onDismiss?.call();},
+                  icon: const Icon(TablerIcons.check),
+                ),
               ],
             ),
           ),

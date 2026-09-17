@@ -21,11 +21,14 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'  as flutter_localizations;
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/infra/reference_image_manager.dart';
+import 'package:kpix/kpix_language.dart';
 import 'package:kpix/kpix_logger.dart';
 import 'package:kpix/kpix_theme.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
@@ -64,6 +67,7 @@ import 'package:kpix/widgets/main/right_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:kpix/widgets/project_action_messages.dart';
 import 'package:kpix/widgets/timeline/timeline_widget.dart';
 import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -90,6 +94,8 @@ void main(final List<String> args)
   final HotkeyManager hotkeyManager = HotkeyManager();
   final FocusNode focusNode = FocusNode();
   GetIt.I.registerSingleton<HotkeyManager>(hotkeyManager);
+  //built once: the app rebuilds when either the theme or the language changes
+  final Listenable appSettings = Listenable.merge(<Listenable>[themeSettings, languageSettings]);
   runApp(
     ValueListenableBuilder<Map<SingleActivator, VoidCallback>>(
       valueListenable: hotkeyManager.callbackMapNotifier,
@@ -101,12 +107,16 @@ void main(final List<String> args)
             autofocus: true,
             onKeyEvent: hotkeyManager.handleRawKeyboardEvent,
             child: AnimatedBuilder(
-              animation: themeSettings,
+              animation: appSettings,
               builder: (final BuildContext context, final Widget? child)
               {
                 return getToastificationWrapper(
                   child: MaterialApp(
                     debugShowCheckedModeBanner: false,
+                    localizationsDelegates: const <LocalizationsDelegate<dynamic>>[AppLocalizations.delegate, ...flutter_localizations.GlobalMaterialLocalizations.delegates],
+                    supportedLocales: AppLocalizations.supportedLocales,
+                    //null follows the system language
+                    locale: languageSettings.locale,
                     home: const KPixApp(),
                     theme: monochromeTheme,
                     darkTheme: monochromeThemeDark,
@@ -149,10 +159,10 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 {
   final ValueNotifier<bool> initialized = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isFocused = ValueNotifier<bool>(true);
-  late KPixOverlay _closeWarningDialog;
+  KPixOverlay? _closeWarningDialog;
   late KPixOverlay _newProjectDialog;
-  late KPixOverlay _saveNewWarningDialog;
-  late Timer _recoverTimer;
+  KPixOverlay? _saveNewWarningDialog;
+  Timer? _recoverTimer;
   late AppLifecycleState _lastAppLifeCycleState;
   HistoryState? _lastHistoryState;
 
@@ -176,7 +186,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   void dispose()
   {
     WidgetsBinding.instance.removeObserver(this);
-    _recoverTimer.cancel();
+    //the timer is only started for non-web builds and only once the preferences
+    //have been initialized, so it can still be null here
+    _recoverTimer?.cancel();
     if (GetIt.I.isRegistered<ProjectManager>())
     {
       GetIt.I.get<ProjectManager>().dispose();
@@ -284,6 +296,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       GetIt.I.registerSingleton<ToolOptions>(ToolOptions(fontManager: FontManager(kFontMap: fontMap)));
       logger.i("Creating Preferences");
       GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs));
+      languageSettings.languageCode = GetIt.I.get<PreferenceManager>().guiPreferenceContent.language.value;
       logger.i("Creating Blending Options");
       GetIt.I.registerSingleton<FrameBlendingOptions>(FrameBlendingOptions());
       logger.i("Creating Shader Options");
@@ -296,16 +309,15 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       final ProjectDirectoryResolveResult projectDirResult = await resolveProjectsDir(internalDir: internalDirString);
       logger.i("Projects Dir: ${projectDirResult.resolvedDir}");
 
-      if (!context.mounted)
+      //mounted has to be checked first: State.context throws once the state has
+      //been unmounted, so reading context.mounted up front is not safe
+      if (!mounted || !context.mounted)
       {
-        const String contextNotMountedMessage = "BuildContext not mounted.";
-        logger.e(contextNotMountedMessage);
+        logger.e("BuildContext not mounted.");
         return;
       }
 
-
-      final BuildContext c = context;
-      final double devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
+      final double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
       logger.i("Pixel Ratio: $devicePixelRatio");
       logger.i("Creating App Paths");
       GetIt.I.registerSingleton<AppPaths>(AppPaths(exportDir: exportDirString, internalDir: internalDirString, projectsDir: projectDirResult.resolvedDir));
@@ -328,15 +340,16 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       GetIt.I.registerSingleton<ToolState>(ToolState());
       GetIt.I.registerSingleton<LayerManager>(LayerManager());
       GetIt.I.registerSingleton<HistoryController>(HistoryController());
-      final Size logicalSize = MediaQuery.of(c).size;
+      GetIt.I.get<ToolOptions>().textOptions.applyLocalizedDefault(l10n: languageSettings.resolve(fallback: AppLocalizations.of(context)!));
+      final Size logicalSize = MediaQuery.of(context).size;
       logger.i("Logical Size: $logicalSize");
 
       if (logicalSize.width < minimumApplicationSize.width || logicalSize.height < minimumApplicationSize.height)
       {
-        const String wrongResolutionMessage = "This device does not support the minimum logical resolution to run this application.";
-        logger.w(wrongResolutionMessage);
-        final KPixOverlay resolutionDialog = kIsWeb ? getLoadingDialog(message: wrongResolutionMessage, textStyle: Theme.of(c).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: wrongResolutionMessage);
-        resolutionDialog.show(context: c);
+        logger.w("This device does not support the minimum logical resolution to run this application.");
+        String message(final AppLocalizations l10n) => l10n.thisDeviceDoesNotSupportResolution;
+        final KPixOverlay resolutionDialog = kIsWeb ? getLoadingDialog(message: message, textStyle: Theme.of(context).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: message);
+        resolutionDialog.show(context: context);
         return;
       }
 
@@ -360,21 +373,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       unawaited(projectManager.start());
 
       //CREATE DIALOG OVERLAYS
-      _closeWarningDialog = getThreeButtonDialog(
-        onYes: _closeWarningYes,
-        onNo: _closeWarningNo,
-        onCancel: _closeAllMenus,
-        outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?",
-      );
 
-      _saveNewWarningDialog = getThreeButtonDialog(
-        onYes: _saveNewWarningYes,
-        onNo: _saveNewWarningNo,
-        onCancel: _saveNewWarningCancel,
-        outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?",
-      );
       _newProjectDialog = getNewProjectDialog(
         onDismiss: !kIsWeb ? () {exitApplication();} : null,
         onAccept: _newFilePressed,
@@ -400,12 +399,11 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         }
         catch (e, s)
         {
-          const String couldNotCreateDirsMessage = "Could not create internal directories.";
-          logger.w(couldNotCreateDirsMessage, error: e, stackTrace: s);
-          if (c.mounted)
+          logger.w("Could not create internal directories.", error: e, stackTrace: s);
+          if (mounted && context.mounted)
           {
-            final KPixOverlay dirDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: couldNotCreateDirsMessage);
-            dirDialog.show(context: c);
+            final KPixOverlay dirDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: (final AppLocalizations l10n) => l10n.couldNotCreateInternalDirectories);
+            dirDialog.show(context: context);
           }
         }
 
@@ -416,13 +414,17 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
           final PreferenceManager preferenceManager = GetIt.I.get<PreferenceManager>();
           preferenceManager.behaviorPreferenceContent.useCustomProjectDirectory.value = false;
           preferenceManager.behaviorPreferenceContent.customProjectDirectory.value = "";
-          showMessage(text: "Custom Project directory invalid. Switching to default directory.", toastType: ToastType.warning);
+          if (mounted && context.mounted)
+          {
+            showMessage(text: AppLocalizations.of(context)!.customProjectDirectoryInvalid, toastType: ToastType.warning);
+          }
+
         }
 
 
-        if (!kIsWeb && Platform.isAndroid && c.mounted)
+        if (!kIsWeb && Platform.isAndroid && mounted && context.mounted)
         {
-          await _checkAllFilesAccessOnStartup(context: c);
+          await _checkAllFilesAccessOnStartup(context: context);
         }
 
         if (isDesktop())
@@ -444,13 +446,12 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     }
     catch (e, s)
     {
-      const String couldNotInitializeAppMessage = "Could not initialize the application.";
-      logger.w(couldNotInitializeAppMessage, error: e, stackTrace: s);
-      if (context.mounted)
+      logger.w("Could not initialize the application.", error: e, stackTrace: s);
+      if (mounted && context.mounted)
       {
-        final BuildContext c = context;
-        final KPixOverlay dirDialog = kIsWeb ? getLoadingDialog(message: couldNotInitializeAppMessage, textStyle: Theme.of(c).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: couldNotInitializeAppMessage);
-        dirDialog.show(context: c);
+        String message(final AppLocalizations l10n) => l10n.couldNotInitializeApp;
+        final KPixOverlay dirDialog = kIsWeb ? getLoadingDialog(message: message, textStyle: Theme.of(context).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: message);
+        dirDialog.show(context: context);
       }
     }
 
@@ -491,11 +492,12 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     if (!p.equals(GetIt.I.get<AppPaths>().projectsDir, defaultProjectsDir) && !await hasAllFilesAccess())
     {
       GetIt.I.get<Logger>().w("Using a custom project directory without all files access.");
-      final KPixOverlay permissionDialog = getAllFilesAccessDialog(
-        message: 'A custom project directory is used, but KPix does not have the "All files access" permission. Project files created by other apps (e.g. sync tools) might not be shown.\nDo you want to open the system settings to grant the permission?',
-      );
-      if (context.mounted)
+
+      if (mounted && context.mounted)
       {
+        final KPixOverlay permissionDialog = getAllFilesAccessDialog(
+          message: (final AppLocalizations l10n) => l10n.aCustomProjectDirectoryIsUsed,
+        );
         permissionDialog.show(context: context);
       }
     }
@@ -521,7 +523,11 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         initialFilePath = await channel.invokeMethod('getSharedFile');
       }
 
-      await importProject(path: initialFilePath);
+      final ProjectImportResult importResult = await importProject(path: initialFilePath);
+      if (mounted && context.mounted)
+      {
+        showMessageForProjectImport(result: importResult, l10n: AppLocalizations.of(context)!);
+      }
       final String fileName = extractFilenameFromPath(path: initialFilePath);
       final String expectedFileName = initialFilePath = p.join(GetIt.I.get<AppPaths>().projectsDir, fileName);
       final File expectedFile = File(expectedFileName);
@@ -551,10 +557,14 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       );
       if (lfs.path != null && lfs.historyState != null)
       {
-        await projectSession.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
+        final ProjectLoadResult loadResult = await projectSession.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
         projectSession.hasProjectNotifier.value = true;
         _newProjectDialog.hide();
-        showMessage(text: "work recovered", toastType: ToastType.info);
+        if (mounted)
+        {
+          showMessagesForProjectLoad(result: loadResult, l10n: AppLocalizations.of(context)!);
+          showMessage(text: AppLocalizations.of(context)!.workRecovered, toastType: ToastType.info);
+        }
       }
       else
       {
@@ -579,7 +589,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   {
     if (GetIt.I.get<ProjectSession>().hasChanges.value)
     {
-      _closeWarningDialog.show(context: context);
+      _closeWarningDialog?.show(context: context);
     }
     else
     {
@@ -609,14 +619,14 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   void _closeAllMenus()
   {
-    _closeWarningDialog.hide();
+    _closeWarningDialog?.hide();
   }
 
   void _newFile()
   {
     if (GetIt.I.get<ProjectSession>().hasChanges.value)
     {
-      _saveNewWarningDialog.show(context: context);
+      _saveNewWarningDialog?.show(context: context);
     }
     else
     {
@@ -641,13 +651,13 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   void _saveNewWarningCancel()
   {
-    _saveNewWarningDialog.hide();
+    _saveNewWarningDialog?.hide();
     GetIt.I.get<ProjectSession>().hasProjectNotifier.value = true;
   }
 
   void _saveBeforeNewFinished()
   {
-    _saveNewWarningDialog.hide();
+    _saveNewWarningDialog?.hide();
     _newProjectDialog.show(context: context);
   }
 
@@ -677,6 +687,26 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+
+    //the dialogs are built once and kept, so their text is resolved while the
+    //overlay builds instead of being captured here
+    _closeWarningDialog ??= getThreeButtonDialog(
+      onYes: _closeWarningYes,
+      onNo: _closeWarningNo,
+      onCancel: _closeAllMenus,
+      outsideCancelable: false,
+      message: (final AppLocalizations l10n) => l10n.thereAreUnsavedChanges,
+    );
+
+    _saveNewWarningDialog ??= getThreeButtonDialog(
+      onYes: _saveNewWarningYes,
+      onNo: _saveNewWarningNo,
+      onCancel: _saveNewWarningCancel,
+      outsideCancelable: false,
+      message: (final AppLocalizations l10n) => l10n.thereAreUnsavedChanges,
+    );
+
     return ValueListenableBuilder<bool>(
       valueListenable: initialized,
       builder: (final BuildContext context, final bool init, final Widget? child)
@@ -698,7 +728,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Text(
-                    "Loading...",
+                    l10n.loadingDot,
                     style: Theme.of(context).textTheme.displayLarge?.apply(color: Theme.of(context).primaryColorLight),
                   ),
                 ),

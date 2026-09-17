@@ -60,8 +60,6 @@ class _KPalRampState extends State<KPalRamp>
   bool _isDisposed = false;
   final List<ui.Image> _imagesToRetire = <ui.Image>[];
   late Timer _renderTimer;
-  final String _valueToolTipMessage = "Press to reset";
-
   late List<RasterableLayerState> _drawingLayers;
 
   @override
@@ -310,6 +308,7 @@ class _KPalRampState extends State<KPalRamp>
 
   @override
   Widget build(final BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(_KPalRampWidgetOptions.padding),
       decoration: BoxDecoration(
@@ -358,14 +357,13 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
-                                  message: _valueToolTipMessage,
+                                  message: l10n.pressToReset,
                                   child: GestureDetector(
                                     onTap: ()
                                     {
                                       _colorCountSliderChanged(newVal: KPalConstraints.colorCountDefault.toDouble());
                                     },
-                                    child: const Text("Color Count"),
+                                    child: Text(l10n.colorCount),
                                   ),
                                 ),
                               ),
@@ -395,14 +393,13 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
-                                  message: _valueToolTipMessage,
+                                  message: l10n.pressToReset,
                                   child: GestureDetector(
                                     onTap: ()
                                     {
                                       _baseHueSliderChanged(newVal: KPalConstraints.baseHueDefault.toDouble());
                                     },
-                                    child: const Text("Base Hue"),
+                                    child: Text(l10n.baseHue),
                                   ),
                                 ),
                               ),
@@ -429,14 +426,13 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
-                                  message: _valueToolTipMessage,
+                                  message: l10n.pressToReset,
                                   child: GestureDetector(
                                     onTap: ()
                                     {
                                       _hueShiftSliderChanged(newVal: KPalConstraints.hueShiftDefault.toDouble());
                                     },
-                                    child: const Text("Hue Shift"),
+                                    child: Text(l10n.hueShift),
                                   ),
                                 ),
                               ),
@@ -462,14 +458,13 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
-                                  message: _valueToolTipMessage,
+                                  message: l10n.pressToReset,
                                   child: GestureDetector(
                                     onTap: ()
                                     {
                                       _hueShiftExpSliderChanged(newVal: KPalConstraints.hueShiftExpDefault);
                                     },
-                                    child: const Text("↳ Exponent"),
+                                    child: Text("↳ ${l10n.exponent}"),
                                   ),
                                 ),
                               ),
@@ -500,14 +495,13 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
-                                  message: _valueToolTipMessage,
+                                  message: l10n.pressToReset,
                                   child: GestureDetector(
                                     onTap: ()
                                     {
                                       _baseSatSliderChanged(newVal: KPalConstraints.baseSatDefault.toDouble());
                                     },
-                                    child: const Text("Base Sat"),
+                                    child: Text(l10n.baseSat),
                                   ),
                                 ),
                               ),
@@ -532,14 +526,13 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
-                                  message: _valueToolTipMessage,
+                                  message: l10n.pressToReset,
                                   child: GestureDetector(
                                     onTap: ()
                                     {
                                       _satShiftSliderChanged(newVal: KPalConstraints.satShiftDefault.toDouble());
                                     },
-                                    child: const Text("Sat Shift"),
+                                    child: Text(l10n.satShift),
                                   ),
                                 ),
                               ),
@@ -565,14 +558,13 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
-                                  message: _valueToolTipMessage,
+                                  message: l10n.pressToReset,
                                   child: GestureDetector(
                                       onTap: ()
                                       {
                                         _satShiftExpSliderChanged(newVal: KPalConstraints.satShiftExpDefault);
                                       },
-                                      child: const Text("↳ Exponent"),
+                                      child: Text("↳ ${l10n.exponent}"),
                                   ),
                                 ),
                               ),
@@ -595,9 +587,9 @@ class _KPalRampState extends State<KPalRamp>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              const Expanded(
+                              Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
-                                child: Text("Sat Curve"),
+                                child: Text(l10n.satCurve),
                               ),
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowControlFlex,
@@ -611,22 +603,26 @@ class _KPalRampState extends State<KPalRamp>
                                       _satCurveModeChanged(newCurve: curves.first);
                                     }
                                   },
-                                  segments: const <ButtonSegment<SatCurve>>[
+                                  segments: <ButtonSegment<SatCurve>>[
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.noFlat,
-                                      label: Icon(KPixIcons.noFlat),
+                                      icon: const Icon(KPixIcons.noFlat),
+                                      tooltip: l10n.satCurveNoFlat,
                                     ),
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.darkFlat,
-                                      label: Icon(KPixIcons.darkFlat),
+                                      icon: const Icon(KPixIcons.darkFlat),
+                                      tooltip: l10n.satCurveDarkFlat,
                                     ),
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.brightFlat,
-                                      label: Icon(KPixIcons.brightFlat),
+                                      icon: const Icon(KPixIcons.brightFlat),
+                                      tooltip: l10n.satCurveBrightFlat,
                                     ),
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.linear,
-                                      label: Icon(KPixIcons.linear),
+                                      icon: const Icon(KPixIcons.linear),
+                                      tooltip: l10n.satCurveLinear,
                                     ),
                                   ],
                                 ),
@@ -646,14 +642,13 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
-                                  message: _valueToolTipMessage,
+                                  message: l10n.pressToReset,
                                   child: GestureDetector(
                                       onTap: ()
                                       {
                                         _valueRangeSliderChanged(newVals: RangeValues(KPalConstraints.valueRangeMinDefault.toDouble(), KPalConstraints.valueRangeMaxDefault.toDouble()));
                                       },
-                                      child: const Text("Value Range"),
+                                      child: Text(l10n.valueRange),
                                   ),
                                 ),
                               ),

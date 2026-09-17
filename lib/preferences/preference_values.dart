@@ -20,6 +20,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kpix/kpix_language.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/frame_constraints.dart';
 import 'package:kpix/models/constraints/shading_layer_settings_constraints.dart';
 import 'package:kpix/util/color_names.dart';
@@ -171,12 +173,25 @@ const Map<int, ThemeMode> themeTypeIndexMap =
   1:ThemeMode.light,
   2:ThemeMode.dark,
 };
-const Map<ThemeMode, String> themeTypeStringMap =
-<ThemeMode, String>{
-  ThemeMode.system:"System",
-  ThemeMode.light:"Light",
-  ThemeMode.dark:"Dark",
-};
+
+extension ThemeModeLocalization on ThemeMode {
+  String themeName(final AppLocalizations l10n) => switch (this) {
+    ThemeMode.system => l10n.themeSystem,
+    ThemeMode.light => l10n.themeLight,
+    ThemeMode.dark => l10n.themeDark,
+  };
+}
+
+Map<ThemeMode, String> themeTypeStringMap(final AppLocalizations l10n)
+{
+  final Map<ThemeMode, String> map = <ThemeMode, String>{};
+  for (final ThemeMode mode in ThemeMode.values)
+  {
+    map[mode] = mode.themeName(l10n);
+  }
+  return map;
+}
+
 
 //RASTER SIZE
 const List<int> rasterSizes = <int>[2, 4, 8, 12, 16, 24, 36, 48, 64];
@@ -200,8 +215,9 @@ class GuiPreferenceContent
   final ValueNotifier<bool> selectionPulsatingOutline;
   final ValueNotifier<int> canvasBorderOpacity;
   final ValueNotifier<ColorNameScheme> colorNameScheme;
+  final ValueNotifier<String> language;
 
-  factory GuiPreferenceContent({required final int themeTypeValue, required final int rasterSizeValue, required final int rasterContrast, required final int colorNameSchemeValue, required final int canvasBorderOpacityValue, required final int selectionOpacityValue, required final bool selectionPulsatingValue, required final int toolOpacityValue})
+  factory GuiPreferenceContent({required final int themeTypeValue, required final int rasterSizeValue, required final int rasterContrast, required final int colorNameSchemeValue, required final int canvasBorderOpacityValue, required final int selectionOpacityValue, required final bool selectionPulsatingValue, required final int toolOpacityValue, required final String languageValue})
   {
     final ThemeMode themeType = themeTypeIndexMap[themeTypeValue]?? ThemeMode.system;
     final int rasterSizeIndex = max(rasterSizes.indexOf(rasterSizeValue), 0);
@@ -220,10 +236,11 @@ class GuiPreferenceContent
       selectionOpacity: ValueNotifier<int>(selectionOpacity),
       selectionPulsatingOutline: ValueNotifier<bool>(selectionPulsatingValue),
       toolOpacity: ValueNotifier<int>(toolOpacity),
+      language: ValueNotifier<String>(isSupportedLanguage(languageCode: languageValue) ? languageValue : systemLanguageCode),
     );
   }
 
-  GuiPreferenceContent._({required this.themeType, required this.rasterSizeIndex, required this.rasterContrast, required this.colorNameScheme, required this.canvasBorderOpacity, required this.selectionOpacity, required this.selectionPulsatingOutline, required this.toolOpacity});
+  GuiPreferenceContent._({required this.themeType, required this.rasterSizeIndex, required this.rasterContrast, required this.colorNameScheme, required this.canvasBorderOpacity, required this.selectionOpacity, required this.selectionPulsatingOutline, required this.toolOpacity, required this.language});
 
   void copyValuesFrom({required final GuiPreferenceContent other})
   {
@@ -235,26 +252,33 @@ class GuiPreferenceContent
     selectionOpacity.value = other.selectionOpacity.value;
     selectionPulsatingOutline.value = other.selectionPulsatingOutline.value;
     toolOpacity.value = other.toolOpacity.value;
+    language.value = other.language.value;
   }
 }
 
 enum CursorType
 {
-  none(0, "None", SystemMouseCursors.none),
-  crossHair(1, "CrossHair", SystemMouseCursors.precise),
-  arrow(2, "Arrow", SystemMouseCursors.basic);
+  none(0, SystemMouseCursors.none),
+  crossHair(1, SystemMouseCursors.precise),
+  arrow(2, SystemMouseCursors.basic);
 
   final int id;
-  final String name;
   final SystemMouseCursor systemCursor;
 
-  const CursorType(this.id, this.name, this.systemCursor);
+  const CursorType(this.id, this.systemCursor);
 
-  static Map<CursorType, String> getNameMap()
+  String label(final AppLocalizations l10n) => switch(this)
+  {
+    none => l10n.cursorNone,
+    crossHair => l10n.cursorCrosshair,
+    arrow => l10n.cursorArrow,
+  };
+
+  static Map<CursorType, String> getNameMap(final AppLocalizations l10n)
   {
     final Map<CursorType, String> map = <CursorType, String>{};
     for (final CursorType curs in CursorType.values) {
-      map[curs] = curs.name;
+      map[curs] = curs.label(l10n);
     }
     return map;
   }

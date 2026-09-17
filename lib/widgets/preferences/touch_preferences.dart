@@ -16,6 +16,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/preferences/preference_gui.dart';
 
@@ -33,19 +34,20 @@ class _TouchPreferencesState extends State<TouchPreferences>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         PrefSliderRow<int>(
-          text: "Touch Delay",
+          text: l10n.touchDelay,
           notifier: widget.prefs.singleTouchDelay,
           minVal: widget.prefs.singleTouchDelayMin.toDouble(),
           maxVal: widget.prefs.singleTouchDelayMax.toDouble(),
           labelBuilder: (final int val) => "${val}ms",
         ),
         PrefSliderRow<double>(
-          text: "Zoom Step Distance",
+          text: l10n.zoomStepDistance,
           notifier: widget.prefs.zoomStepDistance,
           minVal: widget.prefs.zoomStepDistanceMin,
           maxVal: widget.prefs.zoomStepDistanceMax,

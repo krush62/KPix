@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_manager_data.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -59,7 +60,7 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
       }
       colorColumn.add(Expanded(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: colorRowWidgetList)));
     }
-
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return ValueListenableBuilder<PaletteManagerEntryWidget?>(
       valueListenable: widget.selectedWidget,
       builder: (final BuildContext context, final PaletteManagerEntryWidget? selectedWidget, final Widget? child) {
@@ -80,7 +81,7 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
                 Expanded(
                   child: Center(
                     child: Text(
-                      widget.entryData.name,
+                      widget.entryData.displayName(l10n: l10n),
                       style: Theme.of(context).textTheme.titleSmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
                   ),
@@ -97,7 +98,7 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
                 Expanded(
                   child: Center(
                     child: Text(
-                      widget.entryData.rampDataList.length == 1 ? "$colorCount colors" : "${widget.entryData.rampDataList.length} ramps | $colorCount colors",
+                      widget.entryData.rampDataList.length == 1 ? l10n.nColors(colorCount) : l10n.nRampsColors(colorCount, widget.entryData.rampDataList.length),
                       style: Theme.of(context).textTheme.bodySmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
                   ),

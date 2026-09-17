@@ -19,18 +19,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:kpix/widgets/project_action_messages.dart';
 
 /// Layout options for [ProjectManagerWidget].
 abstract final class _ProjectManagerOptions
@@ -77,9 +77,11 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   final TextEditingController _filterController = TextEditingController();
   late final Listenable _listListenable;
 
-  late KPixOverlay _saveBeforeLoadWarningDialog;
-  late KPixOverlay _deleteWarningDialog;
-  late KPixOverlay _loadingDialog;
+  //the dialogs are built once and kept; their text is resolved while the
+  //overlay builds, so it still follows a locale change
+  late final KPixOverlay _saveBeforeLoadWarningDialog;
+  late final KPixOverlay _deleteWarningDialog;
+  late final KPixOverlay _loadingDialog;
 
   @override
   void initState()
@@ -91,16 +93,17 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       _projectViewOrder,
       _filterText,
     ],);
+
     _saveBeforeLoadWarningDialog = getThreeButtonDialog(
-        onYes: _saveBeforeLoadWarningYes,
-        onNo: _saveBeforeLoadWarningNo,
-        onCancel: _closeSaveBeforeLoadWarning,
-        outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?",
+      onYes: _saveBeforeLoadWarningYes,
+      onNo: _saveBeforeLoadWarningNo,
+      onCancel: _closeSaveBeforeLoadWarning,
+      outsideCancelable: false,
+      message: (final AppLocalizations l10n) => l10n.unsavedChangesSaveFirst,
     );
-    _loadingDialog = getLoadingDialog(message: "Opening Image...");
+    _loadingDialog = getLoadingDialog(message: (final AppLocalizations l10n) => l10n.openingImageDot);
     _deleteWarningDialog = getTwoButtonDialog(
-      message: "Do you really want to delete this project?",
+      message: (final AppLocalizations l10n) => l10n.doYouReallyWantToDeleteProject,
       onNo: _deleteWarningNo,
       onYes: _deleteWarningYes,
       outsideCancelable: false,
@@ -140,13 +143,25 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       return;
     }
     _loadingDialog.show(context: context);
+    //taken now: this widget is dismissed long before the file has loaded
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     loadKPixFile(
       fileData: null,
       path: selectedPath,
       drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
       shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
       frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
-    ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: _loadingDialog.hide);});
+    ).then((final LoadFileSet loadFileSet)
+    {
+      fileLoaded(loadFileSet: loadFileSet, finishCallback: (final ProjectLoadResult? result)
+      {
+        _loadingDialog.hide();
+        if (result != null)
+        {
+          showMessagesForProjectLoad(result: result, l10n: l10n);
+        }
+      },);
+    });
     _closeSaveBeforeLoadWarning();
     //report the load before dismissing, so the dismiss handler can drop any
     //pending callback without discarding one that is still owed a call
@@ -197,20 +212,20 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     getPathForKPixFile().then((final String? loadPath)
     {
       importProject(path: loadPath).then(
-        (final bool success)
+        (final ProjectImportResult result)
         {
-          _importFileCompleted(success: success);
+          _importFileCompleted(result: result);
         },
       );
     });
   }
 
-  void _importFileCompleted({required final bool success})
+  void _importFileCompleted({required final ProjectImportResult result})
   {
-    if (success)
+    //the imported file is picked up by the cache on its own
+    if (mounted && context.mounted)
     {
-      //the imported file is picked up by the cache on its own
-      showMessage(text: "Project imported successfully!", toastType: ToastType.success);
+      showMessageForProjectImport(result: result, l10n: AppLocalizations.of(context)!);
     }
   }
 
@@ -272,7 +287,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                "Could not read the project directory!",
+                AppLocalizations.of(context)!.couldNotReadProjectDir,
                 style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
@@ -293,7 +308,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       return SizedBox.expand(
         child: Center(
           child: Text(
-            "No files found!",
+            AppLocalizations.of(context)!.noFilesFound,
             style: Theme.of(context).textTheme.headlineMedium,
           ),
         ),
@@ -321,7 +336,9 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   }
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context)
+  {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
@@ -337,7 +354,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text("PROJECT MANAGER", style: Theme.of(context).textTheme.titleLarge),
+              Text(l10n.projectManager, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
               //an unobtrusive hint that the cache is catching up, used instead of
               //the full spinner whenever there are already entries on screen
@@ -368,7 +385,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   child: Row(
                     children: <Widget>[
                       Text(
-                        "Filter",
+                        l10n.filter,
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
                       const SizedBox(
@@ -399,46 +416,26 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                     valueListenable: _projectViewOrder,
                     builder: (final BuildContext context, final ProjectViewOrder viewOrder, final Widget? child) {
                       return SegmentedButton<ProjectViewOrder>(
-                        segments: const <ButtonSegment<ProjectViewOrder>>[
+                        segments: <ButtonSegment<ProjectViewOrder>>[
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.nameAsc,
-                            label: Tooltip(
-                              message: "Order by file name (ascending)",
-                              waitDuration: toolTipDuration,
-                              child: Icon(
-                                  TablerIcons.sort_ascending_letters,
-                              ),
-                            ),
+                            icon: const Icon(TablerIcons.sort_ascending_letters),
+                            tooltip: l10n.sortFileNameAsc,
                           ),
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.nameDesc,
-                            label: Tooltip(
-                              message: "Order by file name (descending)",
-                              waitDuration: toolTipDuration,
-                              child: Icon(
-                                  TablerIcons.sort_descending_letters,
-                              ),
-                            ),
+                            icon:const Icon(TablerIcons.sort_descending_letters),
+                            tooltip: l10n.sortFileNameDesc,
                           ),
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.lastModifiedAsc,
-                            label: Tooltip(
-                              message: "Order by last modification (ascending)",
-                              waitDuration: toolTipDuration,
-                              child: Icon(
-                                  TablerIcons.sort_ascending_numbers,
-                              ),
-                            ),
+                            icon: const Icon(TablerIcons.sort_ascending_numbers),
+                            tooltip: l10n.sortDateAsc,
                           ),
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.lastModifiedDesc,
-                            label: Tooltip(
-                              message: "Order by last modification (descending)",
-                              waitDuration: toolTipDuration,
-                              child: Icon(
-                                  TablerIcons.sort_descending_numbers,
-                              ),
-                            ),
+                            tooltip: l10n.sortDateDesc,
+                            icon: const Icon(TablerIcons.sort_descending_numbers),
                           ),
                         ],
                         selected: <ProjectViewOrder>{viewOrder},
@@ -473,72 +470,52 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               Expanded(
-                child: Tooltip(
-                  message: "Close",
-                  waitDuration: toolTipDuration,
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.x,
-                      ),
-                      onPressed: _dismissPressed,
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                  child: IconButton.outlined(
+                    tooltip: l10n.close,
+                    icon: const Icon(TablerIcons.x),
+                    onPressed: _dismissPressed,
                   ),
                 ),
               ),
               Expanded(
-                child: Tooltip(
-                  message: "Import Project",
-                  waitDuration: toolTipDuration,
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.file_import,
-                      ),
-                      onPressed: kIsWeb ? null : _importProjectPressed,
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                  child: IconButton.outlined(
+                    tooltip: l10n.importProject,
+                    icon: const Icon(TablerIcons.file_import),
+                    onPressed: kIsWeb ? null : _importProjectPressed,
                   ),
                 ),
               ),
               Expanded(
-                child: Tooltip(
-                  message: "Delete Selected Project",
-                  waitDuration: toolTipDuration,
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: ValueListenableBuilder<String?>(
-                      valueListenable: _projectManager.selectedPath,
-                      builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
-                        return IconButton.outlined(
-                          icon: const Icon(
-                            TablerIcons.trash,
-                          ),
-                          onPressed: (selectedPath != null) ? _deleteProjectPressed : null,
-                        );
-                      },
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                  child: ValueListenableBuilder<String?>(
+                    valueListenable: _projectManager.selectedPath,
+                    builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
+                      return IconButton.outlined(
+                        tooltip: l10n.deleteSelectedProject,
+                        icon: const Icon(TablerIcons.trash),
+                        onPressed: (selectedPath != null) ? _deleteProjectPressed : null,
+                      );
+                    },
                   ),
                 ),
               ),
               Expanded(
-                child: Tooltip(
-                  message: "Load Selected Project",
-                  waitDuration: toolTipDuration,
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: ValueListenableBuilder<String?>(
-                      valueListenable: _projectManager.selectedPath,
-                      builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
-                        return IconButton.outlined(
-                          icon: const Icon(
-                            TablerIcons.check,
-                          ),
-                          onPressed: selectedPath != null ? _loadProject : null,
-                        );
-                      },
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                  child: ValueListenableBuilder<String?>(
+                    valueListenable: _projectManager.selectedPath,
+                    builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
+                      return IconButton.outlined(
+                        tooltip: l10n.loadSelectedProject,
+                        icon: const Icon(TablerIcons.check),
+                        onPressed: selectedPath != null ? _loadProject : null,
+                      );
+                    },
                   ),
                 ),
               ),

@@ -17,7 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
@@ -80,17 +80,14 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
   {
     return Padding(
       padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing / 2),
-      child: Tooltip(
-        message: tooltip,
-        waitDuration: toolTipDuration,
-        child: IconButton.outlined(
-          constraints: const BoxConstraints(),
-          padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
-          onPressed: onPressedFunc,
-          icon: Icon(
-            icon,
-            size: OverlayEntrySubMenuOptions.buttonHeight,
-          ),
+      child: IconButton.outlined(
+        tooltip: tooltip,
+        constraints: const BoxConstraints(),
+        padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
+        onPressed: onPressedFunc,
+        icon: Icon(
+          icon,
+          size: OverlayEntrySubMenuOptions.buttonHeight,
         ),
       ),
     );
@@ -99,6 +96,7 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return AnchoredOverlayBox(
       anchorKey: widget.anchorKey,
       width: OverlayEntrySubMenuOptions.width / 2,
@@ -115,9 +113,9 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              _createMenuButton(tooltip: "Save Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSave)}", icon: Icons.save, onPressedFunc: widget.onSaveFile),
-              _createMenuButton(tooltip: "Save Project As${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSaveAs)}", icon: Icons.save_as, onPressedFunc: widget.onSaveAsFile),
-              _createMenuButton(tooltip: "Export Project/Palette${_hotkeyManager.getShortcutString(action: HotkeyAction.generalExport)}", icon: Icons.share, onPressedFunc: widget.onExportFile),
+              _createMenuButton(tooltip: l10n.saveProject + _hotkeyManager.getShortcutString(action: HotkeyAction.generalSave, context: context), icon: Icons.save, onPressedFunc: widget.onSaveFile),
+              _createMenuButton(tooltip: l10n.saveProjectAs + _hotkeyManager.getShortcutString(action: HotkeyAction.generalSaveAs, context: context), icon: Icons.save_as, onPressedFunc: widget.onSaveAsFile),
+              _createMenuButton(tooltip: l10n.exportProjectPalette + _hotkeyManager.getShortcutString(action: HotkeyAction.generalExport, context: context), icon: Icons.share, onPressedFunc: widget.onExportFile),
             ],
           ),
         ),

@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_spraycan_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -38,7 +39,7 @@ class SprayCanOptions extends IToolOptions
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         ToolSliderRow<int>(
-          label: "Radius",
+          label: AppLocalizations.of(context)!.radius,
           notifier: sprayCanOptions.radius,
           minVal: SpraycanConstraints.radiusMin.toDouble(),
           maxVal: SpraycanConstraints.radiusMax.toDouble(),
@@ -46,7 +47,7 @@ class SprayCanOptions extends IToolOptions
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
         ),
         ToolSliderRow<int>(
-          label:  "Blob Size",
+          label:  AppLocalizations.of(context)!.blobSize,
           notifier: sprayCanOptions.blobSize,
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           minVal: SpraycanConstraints.blobSizeMin.toDouble(),
@@ -54,7 +55,7 @@ class SprayCanOptions extends IToolOptions
           //divisions: sprayCanOptions.blobSizeMax - sprayCanOptions.blobSizeMin,
         ),
         ToolSliderRow<int>(
-          label: "Intensity",
+          label: AppLocalizations.of(context)!.intensity,
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: sprayCanOptions.intensity,
           minVal: SpraycanConstraints.intensityMin.toDouble(),

@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_color_pick_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -30,11 +31,10 @@ class ColorPickOptions extends IToolOptions
   })
   {
     return Tooltip(
-          waitDuration: toolTipDuration,
-          message: "Raw Mode does not use any values from shading layers or layer settings that use shading.",
+          message: AppLocalizations.of(context)!.rawModeExplanation,
           child: ToolSwitchRow(
             notifier: colorPickOptions.rawMode,
-            label: "Raw Mode",
+            label: AppLocalizations.of(context)!.rawMode,
             flex: ToolSettingsWidgetOptions.columnWidthRatio,
           ),
         );

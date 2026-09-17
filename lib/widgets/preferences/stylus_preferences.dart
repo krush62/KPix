@@ -16,7 +16,7 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/preferences/preference_gui.dart';
 
@@ -34,35 +34,33 @@ class _StylusPreferencesState extends State<StylusPreferences>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Tooltip(
-          waitDuration: toolTipDuration,
-          message: "Polling time to check for presses of stylus buttons.",
+          message: l10n.pollingTimeToCheck,
           child: PrefSliderRow<int>(
-            text: "Poll Interval",
+            text: l10n.pollInterval,
             minVal: widget.prefs.stylusPollIntervalMin.toDouble(),
             maxVal: widget.prefs.stylusPollIntervalMax.toDouble(),
             notifier: widget.prefs.stylusPollInterval,
           ),
         ),
         Tooltip(
-          waitDuration: toolTipDuration,
-          message: "Time that needs to be held down for a long press.",
+          message: l10n.timeThatNeedsToBeHeldDown,
           child: PrefSliderRow<int>(
-            text: "Long Press Delay",
+            text: l10n.longPressDelay,
             minVal: widget.prefs.stylusLongPressDelayMin.toDouble(),
             maxVal: widget.prefs.stylusLongPressDelayMax.toDouble(),
             notifier: widget.prefs.stylusLongPressDelay,
           ),
         ),
         Tooltip(
-          waitDuration: toolTipDuration,
-          message: "Distance that must be moved during a long press to cancel it.",
+          message: l10n.distanceThatMustBeMoved,
           child: PrefSliderRow<double>(
-            text: "Long Press Cancel Distance",
+            text: l10n.longPressCancelDistance,
             notifier: widget.prefs.stylusLongPressCancelDistance,
             minVal: widget.prefs.stylusLongPressCancelDistanceMin,
             maxVal: widget.prefs.stylusLongPressCancelDistanceMax,
@@ -71,10 +69,9 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: toolTipDuration,
-          message: "Distance that needs to be moved vertically to zoom in or out.",
+          message: l10n.distanceThatNeedsToBeMovedVertically,
           child: PrefSliderRow<double>(
-            text: "Zoom Step Distance",
+            text: l10n.zoomStepDistance,
             notifier: widget.prefs.stylusZoomStepDistance,
             minVal: widget.prefs.stylusZoomStepDistanceMin,
             maxVal: widget.prefs.stylusZoomStepDistanceMax,
@@ -83,10 +80,9 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: toolTipDuration,
-          message: "Distance that needs to be moved horizontally to change the size of the current tool.",
+          message: l10n.distanceThatNeedsToBeMovedHorizontally,
           child: PrefSliderRow<double>(
-            text: "Tool Size Step Distance",
+            text: l10n.toolSizeStepDistance,
             notifier: widget.prefs.stylusSizeStepDistance,
             minVal: widget.prefs.stylusSizeStepDistanceMin,
             maxVal: widget.prefs.stylusSizeStepDistanceMax,
@@ -95,10 +91,9 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: toolTipDuration,
-          message: "Timeout for picking a color.",
+          message: l10n.timeoutForPickingAColor,
           child: PrefSliderRow<int>(
-            text: "Color Pick Timeout",
+            text: l10n.colorPickTimeout,
             minVal: widget.prefs.stylusPickMaxDurationMin.toDouble(),
             maxVal: widget.prefs.stylusPickMaxDurationMax.toDouble(),
             notifier: widget.prefs.stylusPickMaxDuration,

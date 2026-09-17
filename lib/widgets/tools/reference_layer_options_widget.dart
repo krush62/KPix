@@ -21,6 +21,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/constraints/reference_layer_constraints.dart';
@@ -48,14 +49,14 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   final double _resetButtonHeight = 28;
   final double _resetIconSize = 16;
 
-  void _onLoadPressed()
+  void _onLoadPressed({required final AppLocalizations l10n})
   {
     getPathAndDataForImage().then((final (String?, Uint8List?) loadData,) {
-      _loadPathChosen(loadPath: loadData.$1, imageData: loadData.$2);
+      _loadPathChosen(loadPath: loadData.$1, imageData: loadData.$2, l10n: l10n);
     });
   }
 
-  void _loadPathChosen({required final String? loadPath, required final Uint8List? imageData})
+  void _loadPathChosen({required final String? loadPath, required final Uint8List? imageData, required final AppLocalizations l10n})
   {
     if (loadPath != null && loadPath.isNotEmpty)
     {
@@ -84,7 +85,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
         }
         else
         {
-          showMessage(text: "Could not load image from $loadPath", toastType: ToastType.error);
+          showMessage(text: l10n.couldNotLoadImageFrom(loadPath), toastType: ToastType.error);
         }
       });
     }
@@ -138,7 +139,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   }
 
 
-  Row _createSliderRow({required final ReferenceImage? refImg, required final ValueNotifier<double> notifier, required final double min, required final double max, required final double defaultValue, required final String name})
+  Row _createSliderRow({required final ReferenceImage? refImg, required final ValueNotifier<double> notifier, required final double min, required final double max, required final double defaultValue, required final String name, required final AppLocalizations l10n})
   {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -177,16 +178,13 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                 ),
               ),
               const SizedBox(width: ToolSettingsWidgetOptions.padding,),
-              Tooltip(
-                waitDuration: toolTipDuration,
-                message: "Reset $name",
-                child: SizedBox(
-                  height: _resetButtonHeight,
-                  child: IconButton.outlined(
-                    onPressed: refImg == null ? null: (){notifier.value = defaultValue;},
-                    iconSize: _resetIconSize,
-                    icon: const Icon(TablerIcons.restore,),
-                  ),
+              SizedBox(
+                height: _resetButtonHeight,
+                child: IconButton.outlined(
+                  tooltip: l10n.resetSetting(name),
+                  onPressed: refImg == null ? null: (){notifier.value = defaultValue;},
+                  iconSize: _resetIconSize,
+                  icon: const Icon(TablerIcons.restore,),
                 ),
               ),
             ],
@@ -203,6 +201,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Material(
       color: Theme.of(context).primaryColor,
       child: Padding(
@@ -223,7 +222,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "File",
+                            l10n.file,
                             style: Theme.of(context).textTheme.labelLarge,
                           ),
                         ),
@@ -237,7 +236,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               flex: 3,
                               child: Align(
                                 child: Text(
-                                  refImg == null ? "<NO FILE LOADED>" : extractFilenameFromPath(path: refImg.path),
+                                  refImg == null ? "<${l10n.noFileLoaded.toUpperCase()}>" : extractFilenameFromPath(path: refImg.path),
                                   style: Theme.of(context).textTheme.labelSmall,
                                 ),
                               ),
@@ -246,13 +245,10 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               width: ToolSettingsWidgetOptions.padding,
                             ),
                             Expanded(
-                              child: Tooltip(
-                                waitDuration: toolTipDuration,
-                                message: "Open Reference File",
-                                child: IconButton.outlined(
-                                  onPressed: _onLoadPressed,
-                                  icon: const Icon(TablerIcons.folder_open),
-                                ),
+                              child: IconButton.outlined(
+                                tooltip: l10n.openReferenceImage,
+                                onPressed: () {_onLoadPressed(l10n: l10n);},
+                                icon: const Icon(TablerIcons.folder_open),
                               ),
                             ),
                           ],
@@ -267,7 +263,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "Opacity",
+                            l10n.opacity,
                             style: Theme.of(context).textTheme.labelLarge,
                           ),
                         ),
@@ -296,12 +292,13 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     ],
                   ),
                   _createSliderRow(
-                      refImg: refImg,
-                      notifier: widget.referenceState.aspectRatioNotifier,
-                      min: ReferenceLayerConstraints.aspectRatioMin,
-                      max: ReferenceLayerConstraints.aspectRatioMax,
-                      defaultValue: ReferenceLayerConstraints.aspectRatioDefault,
-                      name: "Aspect Ratio",
+                    refImg: refImg,
+                    notifier: widget.referenceState.aspectRatioNotifier,
+                    min: ReferenceLayerConstraints.aspectRatioMin,
+                    max: ReferenceLayerConstraints.aspectRatioMax,
+                    defaultValue: ReferenceLayerConstraints.aspectRatioDefault,
+                    name: l10n.aspectRatio,
+                    l10n: l10n,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -310,7 +307,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "Zoom",
+                            l10n.zoom,
                             style: Theme.of(context).textTheme.labelLarge,
                           ),
                         ),
@@ -341,48 +338,39 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Expanded(
-                        child: Tooltip(
-                          waitDuration: toolTipDuration,
-                          message: "Expand horizontally and center by keeping the current aspect ratio",
-                          child: SizedBox(
-                            height: _resetButtonHeight,
-                            child: IconButton.outlined(
-                              onPressed: refImg == null ? null : _fitHorizontal,
-                              iconSize: _resetIconSize,
-                              icon:
-                                const Icon(TablerIcons.arrows_horizontal),
-                            ),
+                        child: SizedBox(
+                          height: _resetButtonHeight,
+                          child: IconButton.outlined(
+                            tooltip: l10n.expandHorizontallyAndCenter,
+                            onPressed: refImg == null ? null : _fitHorizontal,
+                            iconSize: _resetIconSize,
+                            icon:
+                              const Icon(TablerIcons.arrows_horizontal),
                           ),
                         ),
                       ),
                       const SizedBox(width: ToolSettingsWidgetOptions.padding),
                       Expanded(
-                        child: Tooltip(
-                          waitDuration: toolTipDuration,
-                          message: "Expand vertically and center by keeping the current aspect ratio",
-                          child: SizedBox(
-                            height: _resetButtonHeight,
-                            child: IconButton.outlined(
-                              onPressed: refImg == null ? null : _fitVertical,
-                              iconSize: _resetIconSize,
-                              icon: const Icon(TablerIcons.arrows_vertical),
-                            ),
+                        child: SizedBox(
+                          height: _resetButtonHeight,
+                          child: IconButton.outlined(
+                            tooltip: l10n.expandVerticallyAndCenter,
+                            onPressed: refImg == null ? null : _fitVertical,
+                            iconSize: _resetIconSize,
+                            icon: const Icon(TablerIcons.arrows_vertical),
                           ),
                         ),
                       ),
                       const SizedBox(width: ToolSettingsWidgetOptions.padding),
                       Expanded(
-                        child: Tooltip(
-                          waitDuration: toolTipDuration,
-                          message: "Fits the image into the canvas (changes aspect ratio)",
-                          child: SizedBox(
-                            height: _resetButtonHeight,
-                            child: IconButton.outlined(
-                              onPressed: refImg == null ? null : _fill,
-                              iconSize: _resetIconSize,
-                              icon: const Icon(
-                                TablerIcons.arrows_maximize,
-                              ),
+                        child: SizedBox(
+                          height: _resetButtonHeight,
+                          child: IconButton.outlined(
+                            tooltip: l10n.fitsImageIntoCanvas,
+                            onPressed: refImg == null ? null : _fill,
+                            iconSize: _resetIconSize,
+                            icon: const Icon(
+                              TablerIcons.arrows_maximize,
                             ),
                           ),
                         ),
@@ -396,7 +384,8 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     min: ReferenceLayerConstraints.brightnessMin,
                     max: ReferenceLayerConstraints.brightnessMax,
                     defaultValue: ReferenceLayerConstraints.brightnessDefault,
-                    name: "Brightness",
+                    name: l10n.brightness,
+                    l10n: l10n,
                   ),
                   _createSliderRow(
                     refImg: refImg,
@@ -404,7 +393,8 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     min: ReferenceLayerConstraints.contrastMin,
                     max: ReferenceLayerConstraints.contrastMax,
                     defaultValue: ReferenceLayerConstraints.contrastDefault,
-                    name: "Contrast",
+                    name: l10n.contrast,
+                    l10n: l10n,
                   ),
                   _createSliderRow(
                     refImg: refImg,
@@ -412,7 +402,8 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     min: ReferenceLayerConstraints.saturationMin,
                     max: ReferenceLayerConstraints.saturationMax,
                     defaultValue: ReferenceLayerConstraints.saturationDefault,
-                    name: "Saturation",
+                    name: l10n.saturation,
+                    l10n: l10n,
                   ),
                   _createSliderRow(
                     refImg: refImg,
@@ -420,7 +411,8 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     min: ReferenceLayerConstraints.warmthMin,
                     max: ReferenceLayerConstraints.warmthMax,
                     defaultValue: ReferenceLayerConstraints.warmthDefault,
-                    name: "Warmth",
+                    name: l10n.warmth,
+                    l10n: l10n,
                   ),
                 ],
               );

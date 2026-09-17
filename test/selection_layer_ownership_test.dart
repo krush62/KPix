@@ -62,7 +62,7 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState keeper = layerAt(projectSession: projectSession, index: 0);
-        final DrawingLayerState doomed = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState doomed = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         await _paint(projectSession: projectSession, layer: doomed, coord: pixel, color: color);
 
         GetIt.I.get<DocumentState>().selectionState.selectAll();
@@ -83,7 +83,7 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState keeper = layerAt(projectSession: projectSession, index: 0);
-        final DrawingLayerState doomed = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState doomed = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         await _paint(projectSession: projectSession, layer: keeper, coord: pixel, color: color);
 
         //select on the keeper, so the floating content belongs to it
@@ -174,7 +174,7 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState locked = layerAt(projectSession: projectSession, index: 0);
-        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         await _paint(projectSession: projectSession, layer: owner, coord: pixel, color: color);
 
         locked.lockState.value = LayerLockState.locked;
@@ -195,7 +195,7 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState locked = layerAt(projectSession: projectSession, index: 0);
-        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         await _paint(projectSession: projectSession, layer: owner, coord: pixel, color: color);
 
         locked.lockState.value = LayerLockState.locked;
@@ -217,7 +217,7 @@ void main()
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState owner = layerAt(projectSession: projectSession, index: 0);
         await _paint(projectSession: projectSession, layer: owner, coord: pixel, color: color);
-        final LayerState? shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState);
+        final LayerState? shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState).$2;
         await settle();
 
         GetIt.I.get<LayerManager>().selectLayer(newLayer: owner);
@@ -238,7 +238,7 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState locked = layerAt(projectSession: projectSession, index: 0);
-        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true)! as DrawingLayerState;
+        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
         await _paint(projectSession: projectSession, layer: owner, coord: pixel, color: color);
 
         locked.lockState.value = LayerLockState.locked;

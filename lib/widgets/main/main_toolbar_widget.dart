@@ -70,7 +70,7 @@ class MainToolbarWidget extends StatelessWidget
         children: <Widget>[
           ExcludeFocus(
             child: ShaderWidget(
-              titleStyle: Theme.of(context).textTheme.titleLarge,
+              titleStyle: Theme.of(context).textTheme.titleMedium,
               labelStyle: Theme.of(context).textTheme.bodySmall,
             ),
           ),

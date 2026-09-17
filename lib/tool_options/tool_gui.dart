@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/widgets/controls/kpix_dropdown.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 class ToolSwitchRow extends StatelessWidget
@@ -276,18 +277,10 @@ class ToolDropdownRow<E> extends StatelessWidget
             valueListenable: notifier,
             builder: (final BuildContext context, final E val, final Widget? child)
             {
-              return DropdownButton<E>(
+              return KPixDropdown<E>(
                 value: val,
-                dropdownColor: Theme.of(context).primaryColorDark,
-                focusColor: Theme.of(context).primaryColor,
-                isExpanded: true,
-                onChanged: (final E? newVal) {if (newVal != null) notifier.value = newVal;},
-                items: valueMap.keys.map<DropdownMenuItem<E>>((final E entry) {
-                  return DropdownMenuItem<E>(
-                    value: entry,
-                    child: Text(valueMap[entry]!),
-                  );
-                }).toList(),
+                valueMap: valueMap,
+                onChanged: (final E newVal) {notifier.value = newVal;},
               );
             },
           ),
@@ -347,7 +340,7 @@ class ToolSegmentedIconButtonRow<E> extends StatelessWidget {
                     ButtonSegment<E>(
                       value: entry.key,
                       tooltip: entry.value.label,
-                      label: Icon(
+                      icon: Icon(
                         entry.value.icon,
                         size: iconSize,
                       ),

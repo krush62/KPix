@@ -18,7 +18,6 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/canvas_size_constraints.dart';
 import 'package:kpix/models/constraints/kpal_constraints.dart';
@@ -237,17 +236,14 @@ class _ImportWidgetState extends State<ImportWidget>
                             ),
                           ),
                           Expanded(
-                            child: Tooltip(
-                              message: l10n.chooseImage,
-                              waitDuration: toolTipDuration,
-                              child: IconButton.outlined(
-                                constraints: const BoxConstraints(),
-                                padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                                onPressed: () {_chooseImagePressed(l10n: l10n);},
-                                icon: const Icon(
-                                  TablerIcons.folder_open,
-                                  size: OverlayEntryAlertDialogOptions.iconSize / 2,
-                                ),
+                            child: IconButton.outlined(
+                              tooltip: l10n.chooseImage,
+                              constraints: const BoxConstraints(),
+                              padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                              onPressed: () {_chooseImagePressed(l10n: l10n);},
+                              icon: const Icon(
+                                TablerIcons.folder_open,
+                                size: OverlayEntryAlertDialogOptions.iconSize / 2,
                               ),
                             ),
                           ),
@@ -457,37 +453,27 @@ class _ImportWidgetState extends State<ImportWidget>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Expanded(
-                  child: Tooltip(
-                    waitDuration: toolTipDuration,
-                    message: l10n.close,
-                    child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.x,
-                      ),
-                      onPressed: () {
-                        widget.dismiss();
-                      },
-                    ),
+                  child: IconButton.outlined(
+                    tooltip: l10n.cancel,
+                    icon: const Icon(TablerIcons.x),
+                    onPressed: () {
+                      widget.dismiss();
+                    },
                   ),
                 ),
                 const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
                 Expanded(
-                  child: Tooltip(
-                    waitDuration: toolTipDuration,
-                    message: l10n.import,
-                    child: ValueListenableBuilder<String?>(
-                      valueListenable: _fileNameNotifier,
-                      builder: (final BuildContext context, final String? fileNameValue, final Widget? child) {
-                        return IconButton.outlined(
-                          icon: const Icon(
-                            TablerIcons.check,
-                          ),
-                          onPressed: _fileNameNotifier.value == null ? null : () {
-                            _loadImage();
-                          },
-                        );
-                      },
-                    ),
+                  child: ValueListenableBuilder<String?>(
+                    valueListenable: _fileNameNotifier,
+                    builder: (final BuildContext context, final String? fileNameValue, final Widget? child) {
+                      return IconButton.outlined(
+                        tooltip: l10n.importImage,
+                        icon: const Icon(TablerIcons.check),
+                        onPressed: _fileNameNotifier.value == null ? null : () {
+                          _loadImage();
+                        },
+                      );
+                    },
                   ),
                 ),
               ],

@@ -31,7 +31,6 @@ class ColorPickOptions extends IToolOptions
   })
   {
     return Tooltip(
-          waitDuration: toolTipDuration,
           message: AppLocalizations.of(context)!.rawModeExplanation,
           child: ToolSwitchRow(
             notifier: colorPickOptions.rawMode,

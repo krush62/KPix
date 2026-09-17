@@ -17,7 +17,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -113,7 +112,6 @@ class _ShaderWidgetState extends State<ShaderWidget>
                       ),
                       Expanded(
                         child: Tooltip(
-                          waitDuration: toolTipDuration,
                           message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingToggle, context: context, precededNewLine: false),
                           child: Switch(
                             onChanged: (!isShadingLayer && !isForbiddenLayerType) ? (final bool newState) {
@@ -142,7 +140,6 @@ class _ShaderWidgetState extends State<ShaderWidget>
                           builder: (final BuildContext context, final bool onlyCurrentRampEnabled, final Widget? child)
                           {
                             return Tooltip(
-                              waitDuration: toolTipDuration,
                               message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingCurrentRampOnly, context: context, precededNewLine: false),
                               child: Switch(
                                 onChanged: shouldBeEnabled && !isShadingLayer
@@ -169,7 +166,6 @@ class _ShaderWidgetState extends State<ShaderWidget>
                           builder: (final BuildContext context, final ShaderDirection direction, final Widget? child)
                           {
                             return Tooltip(
-                              waitDuration: toolTipDuration,
                               message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingDirection, context: context, precededNewLine: false),
                               child: Switch(
                                 onChanged: shouldBeEnabled

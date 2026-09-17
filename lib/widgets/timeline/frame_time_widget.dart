@@ -19,7 +19,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/constraints/frame_constraints.dart';
@@ -104,11 +103,33 @@ class _FrameTimeWidgetState extends State<FrameTimeWidget>
                 const SizedBox(height: _padding,),
                 Row(
                   children: <Widget>[
-                    Expanded(child: Tooltip(message: l10n.cancel, waitDuration: toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(TablerIcons.x),))),
+                    Expanded(
+                      child: IconButton(
+                        tooltip: l10n.cancel,
+                        onPressed: () {widget.onDismiss?.call();},
+                        icon: const Icon(TablerIcons.x),
+                      ),
+                    ),
                     const SizedBox(width: _padding,),
-                    Expanded(child: Tooltip(message: l10n.applyToAllFrames, waitDuration: toolTipDuration, child: IconButton(onPressed: () {widget.onConfirmAll?.call(value: widget.valueNotifier.value);}, icon: const Icon(TablerIcons.checks)))),
+                    Expanded(
+                      child: IconButton(
+                        tooltip: l10n.applyToAllFrames,
+                        onPressed: () {widget.onConfirmAll?.call(value: widget.valueNotifier.value);},
+                        icon: const Icon(TablerIcons.checks,
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: _padding,),
-                    Expanded(child: Tooltip(message: l10n.applyToCurrentFrame, waitDuration: toolTipDuration, child: IconButton(onPressed: () {widget.onConfirmSingle?.call(frame: widget.frame, value: widget.valueNotifier.value);}, icon: const Icon(TablerIcons.check)))),
+                    Expanded(
+                      child: IconButton(
+                        tooltip: l10n.applyToCurrentFrame,
+                        onPressed: () {widget.onConfirmSingle?.call(
+                            frame: widget.frame, value: widget.valueNotifier.value,);
+                          },
+                        icon: const Icon(TablerIcons.check,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],

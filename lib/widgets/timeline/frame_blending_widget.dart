@@ -19,7 +19,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/frame_blending_constraints.dart';
 import 'package:kpix/models/frame_blending_options.dart';
@@ -439,7 +438,11 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                   ],
                 ),
                 const SizedBox(height: _padding,),
-                Tooltip(message: l10n.close, waitDuration: toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(TablerIcons.check))),
+                IconButton(
+                  tooltip: l10n.close,
+                  onPressed: () {widget.onDismiss?.call();},
+                  icon: const Icon(TablerIcons.check),
+                ),
               ],
             ),
           ),

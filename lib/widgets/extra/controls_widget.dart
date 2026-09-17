@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -60,6 +59,7 @@ class _ControlsWidgetState extends State<ControlsWidget>
 
   @override
   Widget build(final BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -82,15 +82,12 @@ class _ControlsWidgetState extends State<ControlsWidget>
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                  child: Tooltip(
-                    message: AppLocalizations.of(context)!.close,
-                    waitDuration: toolTipDuration,
-                    child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.x,
-                      ),
-                      onPressed: widget.onDismiss,
+                  child: IconButton.outlined(
+                    tooltip: l10n.close,
+                    icon: const Icon(
+                      TablerIcons.x,
                     ),
+                    onPressed: widget.onDismiss,
                   ),
                 ),
               ),

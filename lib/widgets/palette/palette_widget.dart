@@ -33,7 +33,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_state.dart';
@@ -163,21 +162,18 @@ class _PaletteWidgetState extends State<PaletteWidget>
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Tooltip(
-                  message: l10n.paletteManager,
-                  waitDuration: toolTipDuration,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: _PaletteWidgetOptions.padding, left: _PaletteWidgetOptions.padding, right: _PaletteWidgetOptions.padding),
-                    child: IconButton.outlined(
-                      onPressed: _paletteManagerPressed,
-                      icon: const Icon(Icons.palette),
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        minimumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
-                        maximumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
-                        iconSize: _PaletteWidgetOptions.managerButtonSize - _PaletteWidgetOptions.padding,
-                        padding: EdgeInsets.zero,
-                      ),
+                Padding(
+                  padding: const EdgeInsets.only(top: _PaletteWidgetOptions.padding, left: _PaletteWidgetOptions.padding, right: _PaletteWidgetOptions.padding),
+                  child: IconButton.outlined(
+                    tooltip: l10n.paletteManager,
+                    onPressed: _paletteManagerPressed,
+                    icon: const Icon(Icons.palette),
+                    style: IconButton.styleFrom(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      minimumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
+                      maximumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
+                      iconSize: _PaletteWidgetOptions.managerButtonSize - _PaletteWidgetOptions.padding,
+                      padding: EdgeInsets.zero,
                     ),
                   ),
                 ),
@@ -193,35 +189,32 @@ class _PaletteWidgetState extends State<PaletteWidget>
                     ),
                   ),
                 ),
-                Tooltip(
-                  message: l10n.addNewColorRamp,
-                  waitDuration: toolTipDuration,
-                  child: Padding(
-                    padding: const EdgeInsets.all(_PaletteWidgetOptions.padding),
-                    child: IconButton.outlined(
-                      onPressed: () {
-                        _paletteState.addNewRamp().then
-                          ((final (PaletteActionResult, KPalRampData?) result) {
-                            if (context.mounted)
+                Padding(
+                  padding: const EdgeInsets.all(_PaletteWidgetOptions.padding),
+                  child: IconButton.outlined(
+                    tooltip: l10n.addNewColorRamp,
+                    onPressed: () {
+                      _paletteState.addNewRamp().then
+                        ((final (PaletteActionResult, KPalRampData?) result) {
+                          if (context.mounted)
+                          {
+                            showMessageForPaletteResult(result: result.$1, l10n: AppLocalizations.of(context)!);
+                            final KPalRampData? ramp = result.$2;
+                            if (ramp != null)
                             {
-                              showMessageForPaletteResult(result: result.$1, l10n: AppLocalizations.of(context)!);
-                              final KPalRampData? ramp = result.$2;
-                              if (ramp != null)
-                              {
-                                _createKPal(ramp: ramp);
-                              }
+                              _createKPal(ramp: ramp);
                             }
-                        }
-                        );
-                      },
-                      icon: const Icon(TablerIcons.plus),
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        minimumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
-                        maximumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
-                        iconSize: _PaletteWidgetOptions.managerButtonSize - _PaletteWidgetOptions.padding,
-                        padding: EdgeInsets.zero,
-                      ),
+                          }
+                      }
+                      );
+                    },
+                    icon: const Icon(TablerIcons.plus),
+                    style: IconButton.styleFrom(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      minimumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
+                      maximumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
+                      iconSize: _PaletteWidgetOptions.managerButtonSize - _PaletteWidgetOptions.padding,
+                      padding: EdgeInsets.zero,
                     ),
                   ),
                 ),

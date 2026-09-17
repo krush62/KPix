@@ -563,8 +563,13 @@
   "addNewRamp": "Neue Farbrampe hinzufügen",
   "changeRampOrder": "Reihenfolge der Farbrampen ändern",
   "changeFrameTime": "Framedauer ändern",
-  "changeLoopMarker": "Loop-Markierung ändern"
+  "changeLoopMarker": "Loop-Markierung ändern",
 
+  "apply": "Anwenden",
+  "chooseColor": "Farbauswahl",
+
+  "yes": "Ja",
+  "no": "Nein"
 
 
 

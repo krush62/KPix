@@ -107,6 +107,7 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
 
   @override
   Widget build(final BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -121,7 +122,6 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
           ValueListenableBuilder<PreferenceSectionType>(
             valueListenable: _prefSection,
             builder: (final BuildContext context, final PreferenceSectionType pref, final Widget? child) {
-              final AppLocalizations l10n = AppLocalizations.of(context)!;
               return SegmentedButton<PreferenceSectionType>(
                 segments: <ButtonSegment<PreferenceSectionType>>[
                   _createSegment(section: PreferenceSectionType.gui, l10n: l10n),
@@ -182,10 +182,8 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                 child: Padding(
                   padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                   child: IconButton.outlined(
-                    icon: const Icon(
-                      TablerIcons.x,
-                      //size: _options.iconSize,
-                    ),
+                    tooltip: l10n.cancel,
+                    icon: const Icon(TablerIcons.x),
                     onPressed: widget.dismiss,
                   ),
                 ),
@@ -194,10 +192,8 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                 child: Padding(
                   padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                   child: IconButton.outlined(
-                    icon: const Icon(
-                      TablerIcons.check,
-                      //size: _options.iconSize,
-                    ),
+                    tooltip: l10n.apply,
+                    icon: const Icon(TablerIcons.check),
                     onPressed: widget.accept,
                   ),
                 ),

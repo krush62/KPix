@@ -1,6 +1,6 @@
 {
   "close": "Close",
-  "color": "color",
+  "color": "Color",
 
   "createNewProject": "Create New Project",
   "width": "Width",
@@ -267,6 +267,7 @@
   "flipCanvasVertically": "Flip Canvas Vertically",
   "canvasSize": "Canvas Size",
   "offset": "Offset",
+
 
   "selectAll": "Select All",
   "deselect": "Deselect",
@@ -714,7 +715,12 @@
   "addNewRamp": "Add New Ramp",
   "changeRampOrder": "Change Ramp Order",
   "changeFrameTime": "Change Frame Time",
-  "changeLoopMarker": "Change Loop Marker"
+  "changeLoopMarker": "Change Loop Marker",
+
+  "apply": "Apply",
+  "chooseColor": "Choose Color",
+  "yes": "Yes",
+  "no": "No"
 
 
 }

@@ -19,7 +19,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/symmetry_state.dart';
@@ -104,7 +103,6 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
           children: <Widget>[
             Tooltip(
               message: l10n.symmetryOptions,
-              waitDuration: toolTipDuration,
               child: GestureDetector(
                 onTap: _toggleExpand,
                 child: MouseRegion(
@@ -173,18 +171,15 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                       const Spacer(),
                                       Padding(
                                         padding:  const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
-                                        child: Tooltip(
-                                          message: l10n.centerHorizontalRuler,
-                                          waitDuration: toolTipDuration,
-                                          child: SizedBox(
-                                            width: _SymmetryWidgetOptions.buttonWidth,
-                                            height: _SymmetryWidgetOptions.buttonHeight,
-                                            child: IconButton.outlined(
-                                              onPressed: horActivated ? () {
-                                                widget.state.horizontalValue.value = GetIt.I.get<CanvasState>().canvasSize.x.toDouble() / 2.0;
-                                              } : null,
-                                              icon: const Icon(TablerIcons.layout_align_middle, size: _SymmetryWidgetOptions.buttonHeight,),
-                                            ),
+                                        child: SizedBox(
+                                          width: _SymmetryWidgetOptions.buttonWidth,
+                                          height: _SymmetryWidgetOptions.buttonHeight,
+                                          child: IconButton.outlined(
+                                            tooltip: l10n.centerHorizontalRuler,
+                                            onPressed: horActivated ? () {
+                                              widget.state.horizontalValue.value = GetIt.I.get<CanvasState>().canvasSize.x.toDouble() / 2.0;
+                                            } : null,
+                                            icon: const Icon(TablerIcons.layout_align_middle, size: _SymmetryWidgetOptions.buttonHeight,),
                                           ),
                                         ),
                                       ),
@@ -250,18 +245,15 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                       const Spacer(),
                                       Padding(
                                         padding: const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
-                                        child: Tooltip(
-                                          message: l10n.centerVerticalRuler,
-                                          waitDuration: toolTipDuration,
-                                          child: SizedBox(
-                                            width: _SymmetryWidgetOptions.buttonWidth,
-                                            height: _SymmetryWidgetOptions.buttonHeight,
-                                            child: IconButton.outlined(
-                                              onPressed: vertActivated ? () {
-                                                widget.state.verticalValue.value = GetIt.I.get<CanvasState>().canvasSize.y.toDouble() / 2.0;
-                                              } : null,
-                                              icon: const Icon(TablerIcons.layout_align_center, size: _SymmetryWidgetOptions.buttonHeight,),
-                                            ),
+                                        child: SizedBox(
+                                          width: _SymmetryWidgetOptions.buttonWidth,
+                                          height: _SymmetryWidgetOptions.buttonHeight,
+                                          child: IconButton.outlined(
+                                            tooltip: l10n.centerVerticalRuler,
+                                            onPressed: vertActivated ? () {
+                                              widget.state.verticalValue.value = GetIt.I.get<CanvasState>().canvasSize.y.toDouble() / 2.0;
+                                            } : null,
+                                            icon: const Icon(TablerIcons.layout_align_center, size: _SymmetryWidgetOptions.buttonHeight,),
                                           ),
                                         ),
                                       ),

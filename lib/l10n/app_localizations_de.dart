@@ -1622,4 +1622,16 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get changeLoopMarker => 'Loop-Markierung ändern';
+
+  @override
+  String get apply => 'Anwenden';
+
+  @override
+  String get chooseColor => 'Farbauswahl';
+
+  @override
+  String get yes => 'Ja';
+
+  @override
+  String get no => 'Nein';
 }

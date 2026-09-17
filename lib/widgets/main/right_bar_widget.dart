@@ -34,7 +34,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -274,39 +273,36 @@ class _RightBarWidgetState extends State<RightBarWidget>
                               padding: const EdgeInsets.only(top: LayerWidgetOptions.outerPadding, left: LayerWidgetOptions.outerPadding, right: LayerWidgetOptions.outerPadding),
                               child: OverlayAnchor(
                                 anchorKey: _addLayerAnchorKey,
-                                child: Tooltip(
-                                  message: l10n.addNewLayerDot,
-                                  waitDuration: toolTipDuration,
-                                  child: OverlayPortal(
-                                    controller: _addLayerPortalController,
-                                    overlayChildBuilder: (final BuildContext bcontext) {
-                                      return Stack(
-                                        children: <Widget>[
-                                          ModalBarrier(
-                                            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
-                                            onDismiss: _closeLayerMenu,
-                                          ),
-                                          OverlayAddNewLayerMenu(
-                                            anchorKey: _addLayerAnchorKey,
-                                            onNewDrawingLayer: _newDrawingLayerPressed,
-                                            onNewReferenceLayer: _newReferenceLayerPressed,
-                                            onNewGridLayer: _newGridLayerPressed,
-                                            onNewShadingLayer: _newShadingLayerPressed,
-                                            onNewDitherLayer: _newDitherLayerPressed,
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                    child: IconButton.outlined(
-                                      onPressed: _addLayerPortalController.show,
-                                      icon: const Icon(TablerIcons.plus),
-                                      style: IconButton.styleFrom(
-                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                        minimumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
-                                        maximumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
-                                        iconSize: LayerWidgetOptions.addButtonSize.toDouble() - LayerWidgetOptions.innerPadding,
-                                        padding: EdgeInsets.zero,
-                                      ),
+                                child: OverlayPortal(
+                                  controller: _addLayerPortalController,
+                                  overlayChildBuilder: (final BuildContext bcontext) {
+                                    return Stack(
+                                      children: <Widget>[
+                                        ModalBarrier(
+                                          color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
+                                          onDismiss: _closeLayerMenu,
+                                        ),
+                                        OverlayAddNewLayerMenu(
+                                          anchorKey: _addLayerAnchorKey,
+                                          onNewDrawingLayer: _newDrawingLayerPressed,
+                                          onNewReferenceLayer: _newReferenceLayerPressed,
+                                          onNewGridLayer: _newGridLayerPressed,
+                                          onNewShadingLayer: _newShadingLayerPressed,
+                                          onNewDitherLayer: _newDitherLayerPressed,
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  child: IconButton.outlined(
+                                    tooltip: l10n.addNewLayerDot,
+                                    onPressed: _addLayerPortalController.show,
+                                    icon: const Icon(TablerIcons.plus),
+                                    style: IconButton.styleFrom(
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      minimumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
+                                      maximumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
+                                      iconSize: LayerWidgetOptions.addButtonSize.toDouble() - LayerWidgetOptions.innerPadding,
+                                      padding: EdgeInsets.zero,
                                     ),
                                   ),
                                 ),
@@ -407,27 +403,24 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                         child: settingsWidget,
                                       ),
                                     ),
-                                    Tooltip(
-                                      waitDuration: toolTipDuration,
-                                      message: l10n.close,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: IconButton.outlined(
-                                          onPressed: () {
-                                            GetIt.I.get<ViewState>().layerSettingsVisible = false;
-                                            if (currentLayer != null && currentLayer is RasterableLayerState)
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: IconButton.outlined(
+                                        tooltip: l10n.close,
+                                        onPressed: () {
+                                          GetIt.I.get<ViewState>().layerSettingsVisible = false;
+                                          if (currentLayer != null && currentLayer is RasterableLayerState)
+                                          {
+                                            currentLayer.layerSettings.editStarted = false;
+                                            if (currentLayer.layerSettings.hasChanges)
                                             {
-                                              currentLayer.layerSettings.editStarted = false;
-                                              if (currentLayer.layerSettings.hasChanges)
-                                              {
-                                                final Frame? frame = _documentState.timeline.selectedFrame;
-                                                GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: frame?.layerList.getSelectedLayer());
-                                                currentLayer.layerSettings.hasChanges = false;
-                                              }
+                                              final Frame? frame = _documentState.timeline.selectedFrame;
+                                              GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: frame?.layerList.getSelectedLayer());
+                                              currentLayer.layerSettings.hasChanges = false;
                                             }
-                                          },
-                                          icon: const Icon(TablerIcons.arrow_narrow_right,),
-                                        ),
+                                          }
+                                        },
+                                        icon: const Icon(TablerIcons.arrow_narrow_right,),
                                       ),
                                     ),
                                   ],

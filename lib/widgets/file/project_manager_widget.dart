@@ -19,7 +19,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
@@ -337,7 +336,9 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   }
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context)
+  {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
@@ -353,7 +354,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text(AppLocalizations.of(context)!.projectManager, style: Theme.of(context).textTheme.titleLarge),
+              Text(l10n.projectManager, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
               //an unobtrusive hint that the cache is catching up, used instead of
               //the full spinner whenever there are already entries on screen
@@ -384,7 +385,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   child: Row(
                     children: <Widget>[
                       Text(
-                        AppLocalizations.of(context)!.filter,
+                        l10n.filter,
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
                       const SizedBox(
@@ -419,21 +420,21 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.nameAsc,
                             icon: const Icon(TablerIcons.sort_ascending_letters),
-                            tooltip: AppLocalizations.of(context)!.sortFileNameAsc,
+                            tooltip: l10n.sortFileNameAsc,
                           ),
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.nameDesc,
                             icon:const Icon(TablerIcons.sort_descending_letters),
-                            tooltip: AppLocalizations.of(context)!.sortFileNameDesc,
+                            tooltip: l10n.sortFileNameDesc,
                           ),
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.lastModifiedAsc,
                             icon: const Icon(TablerIcons.sort_ascending_numbers),
-                            tooltip: AppLocalizations.of(context)!.sortDateAsc,
+                            tooltip: l10n.sortDateAsc,
                           ),
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.lastModifiedDesc,
-                            tooltip: AppLocalizations.of(context)!.sortDateDesc,
+                            tooltip: l10n.sortDateDesc,
                             icon: const Icon(TablerIcons.sort_descending_numbers),
                           ),
                         ],
@@ -469,72 +470,52 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               Expanded(
-                child: Tooltip(
-                  message: AppLocalizations.of(context)!.close,
-                  waitDuration: toolTipDuration,
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.x,
-                      ),
-                      onPressed: _dismissPressed,
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                  child: IconButton.outlined(
+                    tooltip: l10n.close,
+                    icon: const Icon(TablerIcons.x),
+                    onPressed: _dismissPressed,
                   ),
                 ),
               ),
               Expanded(
-                child: Tooltip(
-                  message: AppLocalizations.of(context)!.importProject,
-                  waitDuration: toolTipDuration,
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.file_import,
-                      ),
-                      onPressed: kIsWeb ? null : _importProjectPressed,
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                  child: IconButton.outlined(
+                    tooltip: l10n.importProject,
+                    icon: const Icon(TablerIcons.file_import),
+                    onPressed: kIsWeb ? null : _importProjectPressed,
                   ),
                 ),
               ),
               Expanded(
-                child: Tooltip(
-                  message: AppLocalizations.of(context)!.deleteSelectedProject,
-                  waitDuration: toolTipDuration,
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: ValueListenableBuilder<String?>(
-                      valueListenable: _projectManager.selectedPath,
-                      builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
-                        return IconButton.outlined(
-                          icon: const Icon(
-                            TablerIcons.trash,
-                          ),
-                          onPressed: (selectedPath != null) ? _deleteProjectPressed : null,
-                        );
-                      },
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                  child: ValueListenableBuilder<String?>(
+                    valueListenable: _projectManager.selectedPath,
+                    builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
+                      return IconButton.outlined(
+                        tooltip: l10n.deleteSelectedProject,
+                        icon: const Icon(TablerIcons.trash),
+                        onPressed: (selectedPath != null) ? _deleteProjectPressed : null,
+                      );
+                    },
                   ),
                 ),
               ),
               Expanded(
-                child: Tooltip(
-                  message: AppLocalizations.of(context)!.loadSelectedProject,
-                  waitDuration: toolTipDuration,
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: ValueListenableBuilder<String?>(
-                      valueListenable: _projectManager.selectedPath,
-                      builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
-                        return IconButton.outlined(
-                          icon: const Icon(
-                            TablerIcons.check,
-                          ),
-                          onPressed: selectedPath != null ? _loadProject : null,
-                        );
-                      },
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                  child: ValueListenableBuilder<String?>(
+                    valueListenable: _projectManager.selectedPath,
+                    builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
+                      return IconButton.outlined(
+                        tooltip: l10n.loadSelectedProject,
+                        icon: const Icon(TablerIcons.check),
+                        onPressed: selectedPath != null ? _loadProject : null,
+                      );
+                    },
                   ),
                 ),
               ),

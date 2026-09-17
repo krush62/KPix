@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/export_types.dart';
@@ -106,7 +105,6 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                     builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                       return Tooltip(
                         message: status.label(AppLocalizations.of(context)!),
-                        waitDuration: toolTipDuration,
                         child: Icon(
                           status.icon,
                           size: OverlayEntryAlertDialogOptions.iconSize / 2,
@@ -126,10 +124,8 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                 child: Padding(
                   padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                   child: IconButton.outlined(
-                    icon: const Icon(
-                      TablerIcons.x,
-                      //size: _options.iconSize,
-                    ),
+                    tooltip: l10n.close,
+                    icon: const Icon(TablerIcons.x),
                     onPressed: () {
                       widget.dismiss();
                     },
@@ -143,10 +139,8 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                     valueListenable: _fileNameStatus,
                     builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                       return IconButton.outlined(
-                        icon: const Icon(
-                          TablerIcons.check,
-                          //size: _options.iconSize,
-                        ),
+                        tooltip: l10n.savePalette,
+                        icon: const Icon(TablerIcons.check),
                         onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
                             () {
                           widget.accept(saveData: PaletteExportData(extension: fileExtensionKpal, directory: p.join(GetIt.I.get<AppPaths>().internalDir, palettesSubDirName), fileName: _fileName.value, name: "KPAL"), paletteType: PaletteExportType.kpal);

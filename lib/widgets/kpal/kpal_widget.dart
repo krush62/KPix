@@ -39,7 +39,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/kpix_icons.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -158,6 +157,7 @@ class _KPalState extends State<KPal>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return Center(
       child: KPixAnimationWidget(
         constraints: const BoxConstraints(
@@ -179,10 +179,8 @@ class _KPalState extends State<KPal>
                   child: Padding(
                     padding: const EdgeInsets.all(KPalWidgetOptions.insidePadding),
                     child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.x,
-                        //size: _options.iconSize,
-                      ),
+                      tooltip: l10n.cancel,
+                      icon: const Icon(TablerIcons.x),
                       onPressed: _discardChange,
                     ),
                   ),
@@ -191,10 +189,8 @@ class _KPalState extends State<KPal>
                   child: Padding(
                     padding: const EdgeInsets.all(KPalWidgetOptions.insidePadding),
                     child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.trash,
-                        //size: _options.iconSize,
-                      ),
+                      tooltip: l10n.delete,
+                      icon: const Icon(TablerIcons.trash),
                       onPressed: () {
                         _showDeleteDialog();
                       },
@@ -205,10 +201,8 @@ class _KPalState extends State<KPal>
                   child: Padding(
                     padding: const EdgeInsets.all(KPalWidgetOptions.insidePadding),
                     child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.check,
-                        //size: _options.iconSize,
-                      ),
+                      tooltip: l10n.apply,
+                      icon: const Icon(TablerIcons.check),
                       onPressed: _acceptChange,
                     ),
                   ),

@@ -16,7 +16,6 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/preferences/preference_gui.dart';
@@ -41,7 +40,6 @@ class _StylusPreferencesState extends State<StylusPreferences>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Tooltip(
-          waitDuration: toolTipDuration,
           message: l10n.pollingTimeToCheck,
           child: PrefSliderRow<int>(
             text: l10n.pollInterval,
@@ -51,7 +49,6 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: toolTipDuration,
           message: l10n.timeThatNeedsToBeHeldDown,
           child: PrefSliderRow<int>(
             text: l10n.longPressDelay,
@@ -61,7 +58,6 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: toolTipDuration,
           message: l10n.distanceThatMustBeMoved,
           child: PrefSliderRow<double>(
             text: l10n.longPressCancelDistance,
@@ -73,7 +69,6 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: toolTipDuration,
           message: l10n.distanceThatNeedsToBeMovedVertically,
           child: PrefSliderRow<double>(
             text: l10n.zoomStepDistance,
@@ -85,7 +80,6 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: toolTipDuration,
           message: l10n.distanceThatNeedsToBeMovedHorizontally,
           child: PrefSliderRow<double>(
             text: l10n.toolSizeStepDistance,
@@ -97,7 +91,6 @@ class _StylusPreferencesState extends State<StylusPreferences>
           ),
         ),
         Tooltip(
-          waitDuration: toolTipDuration,
           message: l10n.timeoutForPickingAColor,
           child: PrefSliderRow<int>(
             text: l10n.colorPickTimeout,

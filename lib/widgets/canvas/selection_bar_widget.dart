@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/models/document_state.dart';
@@ -152,13 +151,10 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
   {
     return Padding(
       padding: const EdgeInsets.all(_SelectionBarWidgetOptions.padding),
-      child: Tooltip(
-        message: tooltip,
-        waitDuration: toolTipDuration,
-        child: IconButton.outlined(
-          onPressed: isEnabled ? onPressedFunc : null,
-          icon: Icon(icon, size: _SelectionBarWidgetOptions.iconHeight),
-        ),
+      child: IconButton.outlined(
+        tooltip: tooltip,
+        onPressed: isEnabled ? onPressedFunc : null,
+        icon: Icon(icon, size: _SelectionBarWidgetOptions.iconHeight),
       ),
     );
   }
@@ -245,7 +241,6 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   anchorKey: _alignAnchorKey,
                   child: Tooltip(
                     message: l10n.alignDot,
-                    waitDuration: toolTipDuration,
                     child: OverlayPortal(
                       controller: _alignmentController,
                       overlayChildBuilder: (final BuildContext bcontext) {
@@ -281,15 +276,12 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               ),
               Padding(
                 padding: const EdgeInsets.all(_SelectionBarWidgetOptions.padding),
-                child: Tooltip(
-                  message: l10n.delete + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionDelete, context: context),
-                  waitDuration: toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty ? null : _deletePressed,
-                    icon: const Icon(
-                      TablerIcons.trash,
-                      size: _SelectionBarWidgetOptions.iconHeight,
-                    ),
+                child: IconButton.outlined(
+                  tooltip: l10n.delete + _hotkeyManager.getShortcutString(action: HotkeyAction.selectionDelete, context: context),
+                  onPressed: _selectionState.selection.isEmpty ? null : _deletePressed,
+                  icon: const Icon(
+                    TablerIcons.trash,
+                    size: _SelectionBarWidgetOptions.iconHeight,
                   ),
                 ),
               ),

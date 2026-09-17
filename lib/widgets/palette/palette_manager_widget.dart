@@ -20,7 +20,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/color_types.dart';
@@ -259,15 +258,12 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   Expanded _createExpandedButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc, final bool isEnabled = true})
   {
     return Expanded(
-      child: Tooltip(
-        waitDuration: toolTipDuration,
-        message: tooltip,
-        child: Padding(
-          padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-            child: IconButton.outlined(
-              icon: Icon(icon),
-            onPressed: isEnabled ? onPressedFunc : null,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+          child: IconButton.outlined(
+            tooltip: tooltip,
+            icon: Icon(icon),
+          onPressed: isEnabled ? onPressedFunc : null,
         ),
       ),
     );

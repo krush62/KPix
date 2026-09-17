@@ -18,7 +18,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/models/stamp_manager_data.dart';
@@ -137,15 +136,12 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
   Expanded _createExpandedButton({required final String tooltip, required final IconData icon, required final AppLocalizations l10n, required final void Function(AppLocalizations l10n) onPressedFunc, final bool isEnabled = true})
   {
     return Expanded(
-      child: Tooltip(
-        message: tooltip,
-        waitDuration: toolTipDuration,
-        child: Padding(
-          padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-          child: IconButton.outlined(
-            icon: Icon(icon),
-            onPressed: isEnabled ? () {onPressedFunc(l10n);} : null,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+        child: IconButton.outlined(
+          tooltip: tooltip,
+          icon: Icon(icon),
+          onPressed: isEnabled ? () {onPressedFunc(l10n);} : null,
         ),
       ),
     );

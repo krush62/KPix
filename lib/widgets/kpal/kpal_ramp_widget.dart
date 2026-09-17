@@ -357,7 +357,6 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
                                   message: l10n.pressToReset,
                                   child: GestureDetector(
                                     onTap: ()
@@ -394,7 +393,6 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
                                   message: l10n.pressToReset,
                                   child: GestureDetector(
                                     onTap: ()
@@ -428,7 +426,6 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
                                   message: l10n.pressToReset,
                                   child: GestureDetector(
                                     onTap: ()
@@ -461,7 +458,6 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
                                   message: l10n.pressToReset,
                                   child: GestureDetector(
                                     onTap: ()
@@ -499,7 +495,6 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
                                   message: l10n.pressToReset,
                                   child: GestureDetector(
                                     onTap: ()
@@ -531,7 +526,6 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
                                   message: l10n.pressToReset,
                                   child: GestureDetector(
                                     onTap: ()
@@ -564,7 +558,6 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
                                   message: l10n.pressToReset,
                                   child: GestureDetector(
                                       onTap: ()
@@ -614,22 +607,22 @@ class _KPalRampState extends State<KPalRamp>
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.noFlat,
                                       icon: const Icon(KPixIcons.noFlat),
-                                      tooltip: l10n.satCurveNoFlat
+                                      tooltip: l10n.satCurveNoFlat,
                                     ),
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.darkFlat,
                                       icon: const Icon(KPixIcons.darkFlat),
-                                      tooltip: l10n.satCurveDarkFlat
+                                      tooltip: l10n.satCurveDarkFlat,
                                     ),
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.brightFlat,
                                       icon: const Icon(KPixIcons.brightFlat),
-                                      tooltip: l10n.satCurveBrightFlat
+                                      tooltip: l10n.satCurveBrightFlat,
                                     ),
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.linear,
                                       icon: const Icon(KPixIcons.linear),
-                                      tooltip: l10n.satCurveLinear
+                                      tooltip: l10n.satCurveLinear,
                                     ),
                                   ],
                                 ),
@@ -649,7 +642,6 @@ class _KPalRampState extends State<KPalRamp>
                               Expanded(
                                 flex: _KPalRampWidgetOptions.rowLabelFlex,
                                 child: Tooltip(
-                                  waitDuration: toolTipDuration,
                                   message: l10n.pressToReset,
                                   child: GestureDetector(
                                       onTap: ()

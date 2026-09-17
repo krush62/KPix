@@ -363,6 +363,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
@@ -387,9 +388,9 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(AppLocalizations.of(context)!.canvasSize, style: Theme.of(context).textTheme.titleLarge),
+                      Text(l10n.canvasSize, style: Theme.of(context).textTheme.titleLarge),
                       _getSizeRow(
-                          title: AppLocalizations.of(context)!.width,
+                          title: l10n.width,
                           notifier: _width,
                           sliderFunc: _sizeXSliderChanged,
                           changeFunc: _sizeXInputChanged,
@@ -397,7 +398,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                           textController: _textControllerWidth,
                       ),
                       _getSizeRow(
-                        title: AppLocalizations.of(context)!.height,
+                        title: l10n.height,
                         notifier: _height,
                         sliderFunc: _sizeYSliderChanged,
                         changeFunc: _sizeYInputChanged,
@@ -405,7 +406,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                         textController: _textControllerHeight,
                       ),
                       const SizedBox(height: OverlayEntryAlertDialogOptions.padding,),
-                      Text(AppLocalizations.of(context)!.offset, style: Theme.of(context).textTheme.titleLarge),
+                      Text(l10n.offset, style: Theme.of(context).textTheme.titleLarge),
                       _getOffsetRow(
                           title: "X",
                           notifier: _offsetX,
@@ -495,6 +496,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                             child: Padding(
                               padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                               child: IconButton.outlined(
+                                tooltip: l10n.centerHorizontally,
                                 icon: const Icon(
                                   TablerIcons.layout_align_middle,
                                   size: OverlayEntryAlertDialogOptions.iconSize,
@@ -507,6 +509,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                             child: Padding(
                               padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                               child: IconButton.outlined(
+                                tooltip: l10n.centerVertically,
                                 icon: Transform.rotate(
                                   angle: pi / 2,
                                   child: const Icon(
@@ -536,6 +539,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                 child: Padding(
                   padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                   child: IconButton.outlined(
+                    tooltip: l10n.cancel,
                     icon: const Icon(
                       TablerIcons.x,
                       size: OverlayEntryAlertDialogOptions.iconSize,
@@ -550,6 +554,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                 child: Padding(
                   padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                   child: IconButton.outlined(
+                    tooltip: l10n.apply,
                     icon: const Icon(
                       TablerIcons.check,
                       size: OverlayEntryAlertDialogOptions.iconSize,

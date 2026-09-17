@@ -16,7 +16,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -103,7 +102,6 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
                 onPointerDown: _colorPressed,
                 child: Tooltip(
                   message: colorTooltipText(idColor: value),
-                  waitDuration: toolTipDuration,
                   textAlign: TextAlign.center,
                   child: Container(
                     constraints: const BoxConstraints(

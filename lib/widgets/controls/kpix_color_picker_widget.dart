@@ -79,6 +79,7 @@ class KPixColorPickerWidget extends StatelessWidget
   @override
   Widget build(final BuildContext context)
   {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     final List<Widget> rampWidgets = _createRampRows(context: context);
     return Padding(
       padding: EdgeInsets.all(padding * 2),
@@ -101,6 +102,7 @@ class KPixColorPickerWidget extends StatelessWidget
             height: padding,
           ),
           IconButton.outlined(
+            tooltip: l10n.close,
             icon: const Icon(TablerIcons.x,),
             onPressed: () {
               dismiss();

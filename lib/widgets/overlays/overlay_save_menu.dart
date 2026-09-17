@@ -17,7 +17,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -81,17 +80,14 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
   {
     return Padding(
       padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing / 2),
-      child: Tooltip(
-        message: tooltip,
-        waitDuration: toolTipDuration,
-        child: IconButton.outlined(
-          constraints: const BoxConstraints(),
-          padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
-          onPressed: onPressedFunc,
-          icon: Icon(
-            icon,
-            size: OverlayEntrySubMenuOptions.buttonHeight,
-          ),
+      child: IconButton.outlined(
+        tooltip: tooltip,
+        constraints: const BoxConstraints(),
+        padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
+        onPressed: onPressedFunc,
+        icon: Icon(
+          icon,
+          size: OverlayEntrySubMenuOptions.buttonHeight,
         ),
       ),
     );

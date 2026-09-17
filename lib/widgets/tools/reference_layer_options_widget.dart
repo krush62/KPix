@@ -178,16 +178,13 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                 ),
               ),
               const SizedBox(width: ToolSettingsWidgetOptions.padding,),
-              Tooltip(
-                waitDuration: toolTipDuration,
-                message: l10n.resetSetting(name),
-                child: SizedBox(
-                  height: _resetButtonHeight,
-                  child: IconButton.outlined(
-                    onPressed: refImg == null ? null: (){notifier.value = defaultValue;},
-                    iconSize: _resetIconSize,
-                    icon: const Icon(TablerIcons.restore,),
-                  ),
+              SizedBox(
+                height: _resetButtonHeight,
+                child: IconButton.outlined(
+                  tooltip: l10n.resetSetting(name),
+                  onPressed: refImg == null ? null: (){notifier.value = defaultValue;},
+                  iconSize: _resetIconSize,
+                  icon: const Icon(TablerIcons.restore,),
                 ),
               ),
             ],
@@ -248,13 +245,10 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               width: ToolSettingsWidgetOptions.padding,
                             ),
                             Expanded(
-                              child: Tooltip(
-                                waitDuration: toolTipDuration,
-                                message: l10n.openReferenceImage,
-                                child: IconButton.outlined(
-                                  onPressed: () {_onLoadPressed(l10n: l10n);},
-                                  icon: const Icon(TablerIcons.folder_open),
-                                ),
+                              child: IconButton.outlined(
+                                tooltip: l10n.openReferenceImage,
+                                onPressed: () {_onLoadPressed(l10n: l10n);},
+                                icon: const Icon(TablerIcons.folder_open),
                               ),
                             ),
                           ],
@@ -344,48 +338,39 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Expanded(
-                        child: Tooltip(
-                          waitDuration: toolTipDuration,
-                          message: l10n.expandHorizontallyAndCenter,
-                          child: SizedBox(
-                            height: _resetButtonHeight,
-                            child: IconButton.outlined(
-                              onPressed: refImg == null ? null : _fitHorizontal,
-                              iconSize: _resetIconSize,
-                              icon:
-                                const Icon(TablerIcons.arrows_horizontal),
-                            ),
+                        child: SizedBox(
+                          height: _resetButtonHeight,
+                          child: IconButton.outlined(
+                            tooltip: l10n.expandHorizontallyAndCenter,
+                            onPressed: refImg == null ? null : _fitHorizontal,
+                            iconSize: _resetIconSize,
+                            icon:
+                              const Icon(TablerIcons.arrows_horizontal),
                           ),
                         ),
                       ),
                       const SizedBox(width: ToolSettingsWidgetOptions.padding),
                       Expanded(
-                        child: Tooltip(
-                          waitDuration: toolTipDuration,
-                          message: l10n.expandVerticallyAndCenter,
-                          child: SizedBox(
-                            height: _resetButtonHeight,
-                            child: IconButton.outlined(
-                              onPressed: refImg == null ? null : _fitVertical,
-                              iconSize: _resetIconSize,
-                              icon: const Icon(TablerIcons.arrows_vertical),
-                            ),
+                        child: SizedBox(
+                          height: _resetButtonHeight,
+                          child: IconButton.outlined(
+                            tooltip: l10n.expandVerticallyAndCenter,
+                            onPressed: refImg == null ? null : _fitVertical,
+                            iconSize: _resetIconSize,
+                            icon: const Icon(TablerIcons.arrows_vertical),
                           ),
                         ),
                       ),
                       const SizedBox(width: ToolSettingsWidgetOptions.padding),
                       Expanded(
-                        child: Tooltip(
-                          waitDuration: toolTipDuration,
-                          message: l10n.fitsImageIntoCanvas,
-                          child: SizedBox(
-                            height: _resetButtonHeight,
-                            child: IconButton.outlined(
-                              onPressed: refImg == null ? null : _fill,
-                              iconSize: _resetIconSize,
-                              icon: const Icon(
-                                TablerIcons.arrows_maximize,
-                              ),
+                        child: SizedBox(
+                          height: _resetButtonHeight,
+                          child: IconButton.outlined(
+                            tooltip: l10n.fitsImageIntoCanvas,
+                            onPressed: refImg == null ? null : _fill,
+                            iconSize: _resetIconSize,
+                            icon: const Icon(
+                              TablerIcons.arrows_maximize,
                             ),
                           ),
                         ),

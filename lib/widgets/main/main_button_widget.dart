@@ -22,7 +22,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -576,16 +575,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
               Expanded(
                 child: OverlayAnchor(
                   anchorKey: _loadMenuAnchorKey,
-                  child: Tooltip(
-                    message: l10n.newOpenDot,
-                    waitDuration: toolTipDuration,
-                    child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.folder_open,
-                        //size: _options.menuIconSize,
-                      ),
-                      onPressed: _newOpenPressed,
-                    ),
+                  child: IconButton.outlined(
+                    tooltip: l10n.newOpenDot,
+                    icon: const Icon(TablerIcons.folder_open),
+                    onPressed: _newOpenPressed,
                   ),
                 ),
               ),
@@ -593,68 +586,50 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
               Expanded(
                 child: OverlayAnchor(
                   anchorKey: _saveMenuAnchorKey,
-                  child: Tooltip(
-                    message: l10n.saveDot,
-                    waitDuration: toolTipDuration,
-                    child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.device_floppy,
-                        //size: _options.menuIconSize,
-                      ),
-                      onPressed: _savePressed,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: _MainButtonWidgetOptions.padding,),
-              Expanded(
-                child: Tooltip(
-                  message: l10n.preferences,
-                  waitDuration: toolTipDuration,
                   child: IconButton.outlined(
-                    icon: const Icon(
-                      TablerIcons.settings,
-                      //size: _MainButtonWidgetOptions.menuIconSize,
-                    ),
-                    onPressed: _settingsPressed,
+                    tooltip: l10n.saveDot,
+                    icon: const Icon(TablerIcons.device_floppy),
+                    onPressed: _savePressed,
                   ),
                 ),
               ),
               const SizedBox(width: _MainButtonWidgetOptions.padding,),
               Expanded(
-                child: Tooltip(
-                  message: l10n.about,
-                  waitDuration: toolTipDuration,
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    fit: StackFit.passthrough,
-                    children: <Widget>[
-                      IconButton.outlined(
-                        icon: const Icon(
-                          TablerIcons.question_mark,
-                          //size: _MainButtonWidgetOptions.menuIconSize,
-                        ),
-                        onPressed: _questionPressed,
-                      ),
-                      ValueListenableBuilder<bool>(
-                        valueListenable: GetIt.I.get<UpdateState>().hasUpdateNotifier,
-                        builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
+                child: IconButton.outlined(
+                  tooltip: l10n.preferences,
+                  icon: const Icon(TablerIcons.settings),
+                  onPressed: _settingsPressed,
+                ),
+              ),
+              const SizedBox(width: _MainButtonWidgetOptions.padding,),
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.topCenter,
+                  fit: StackFit.passthrough,
+                  children: <Widget>[
+                    IconButton.outlined(
+                      tooltip: l10n.about,
+                      icon: const Icon(TablerIcons.question_mark),
+                      onPressed: _questionPressed,
+                    ),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: GetIt.I.get<UpdateState>().hasUpdateNotifier,
+                      builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
+                      {
+                        if (hasUpdate)
                         {
-                          if (hasUpdate)
-                          {
-                            return Align(
-                              alignment: Alignment.topRight,
-                              child: Text("⬤", textAlign: TextAlign.right, style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen)),
-                            );
-                          }
-                          else
-                          {
-                            return const SizedBox.shrink();
-                          }
-                        },
-                      ),
-                    ],
-                  ),
+                          return Align(
+                            alignment: Alignment.topRight,
+                            child: Text("⬤", textAlign: TextAlign.right, style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen)),
+                          );
+                        }
+                        else
+                        {
+                          return const SizedBox.shrink();
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -676,16 +651,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   child: ValueListenableBuilder<bool>(
                     valueListenable: _historyManager.hasUndo,
                     builder: (final BuildContext context, final bool hasUndo, final Widget? child) {
-                      return Tooltip(
-                        message: l10n.undo + _hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo, context: context),
-                        waitDuration: toolTipDuration,
-                        child: IconButton.outlined(
-                          icon: const Icon(
-                            TablerIcons.arrow_back_up,
-                            //size: _options.menuIconSize,
-                          ),
-                          onPressed: hasUndo ? _undoPressed : null,
-                        ),
+                      return IconButton.outlined(
+                        tooltip: l10n.undo + _hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo, context: context),
+                        icon: const Icon(TablerIcons.arrow_back_up),
+                        onPressed: hasUndo ? _undoPressed : null,
                       );
                     },
                   ),
@@ -697,16 +666,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   child: ValueListenableBuilder<bool>(
                     valueListenable: _historyManager.hasRedo,
                     builder: (final BuildContext context, final bool hasRedo, final Widget? child) {
-                      return Tooltip(
-                        message: l10n.redo + _hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo, context: context),
-                        waitDuration: toolTipDuration,
-                        child: IconButton.outlined(
-                          icon: const Icon(
-                            TablerIcons.arrow_forward_up,
-                            //size: _options.menuIconSize,
-                          ),
-                          onPressed: hasRedo ? _redoPressed : null,
-                        ),
+                      return IconButton.outlined(
+                        tooltip: l10n.redo + _hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo, context: context),
+                        icon: const Icon(TablerIcons.arrow_forward_up),
+                        onPressed: hasRedo ? _redoPressed : null,
                       );
                     },
                   ),

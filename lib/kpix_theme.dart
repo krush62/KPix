@@ -112,6 +112,11 @@ class ColorSet
       bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
     ),
 
+    tooltipTheme: const TooltipThemeData(
+      waitDuration: Duration(milliseconds: 750),
+      showDuration: Duration(seconds: 5),
+    ),
+
     sliderTheme: SliderThemeData(
       activeTrackColor: _lightColors.light,
       inactiveTrackColor: _lightColors.dark,
@@ -243,6 +248,11 @@ class ColorSet
         bodyLarge: monochromeTheme.textTheme.bodyLarge!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
         bodyMedium: monochromeTheme.textTheme.bodyMedium!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
         bodySmall: monochromeTheme.textTheme.bodySmall!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+    ),
+
+    tooltipTheme: const TooltipThemeData(
+      waitDuration: Duration(milliseconds: 750),
+      showDuration: Duration(seconds: 5),
     ),
 
     sliderTheme: SliderThemeData(

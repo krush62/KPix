@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -90,16 +89,12 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
   {
     return Padding(
       padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing / 2),
-      child: Tooltip(
-        message: toolTip,
-        preferBelow: false,
-        waitDuration: toolTipDuration,
-        child: IconButton.outlined(
-          constraints: const BoxConstraints(),
-          padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
-          onPressed: onPressedFunc,
-          icon: Icon(icon) ,
-        ),
+      child: IconButton.outlined(
+        tooltip: toolTip,
+        constraints: const BoxConstraints(),
+        padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
+        onPressed: onPressedFunc,
+        icon: Icon(icon) ,
       ),
     );
   }

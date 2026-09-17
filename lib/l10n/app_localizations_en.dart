@@ -12,7 +12,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get close => 'Close';
 
   @override
-  String get color => 'color';
+  String get color => 'Color';
 
   @override
   String get createNewProject => 'Create New Project';
@@ -1600,4 +1600,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changeLoopMarker => 'Change Loop Marker';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
+  String get chooseColor => 'Choose Color';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
 }

@@ -176,10 +176,11 @@ Widget _centeredOnDesktop({required final Widget child})
 /// One of the buttons in the row below the message of a [_messageDialog].
 class _DialogAction
 {
-  const _DialogAction({required this.icon, required this.onPressed});
+  const _DialogAction({required this.icon, required this.onPressed, required this.tooltip});
 
   final IconData icon;
   final Function() onPressed;
+  final String tooltip;
 }
 
 /// Builds a dialog showing [message] above a row of [actions].
@@ -222,6 +223,7 @@ KPixOverlay _messageDialog({
                     child: Padding(
                       padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                       child: IconButton.outlined(
+                        tooltip: action.tooltip,
                         icon: Icon(action.icon),
                         onPressed: action.onPressed,
                       ),
@@ -385,9 +387,9 @@ KPixOverlay getThreeButtonDialog({
     message: message,
     onBarrierDismiss: outsideCancelable ? onCancel : null,
     actions: <_DialogAction>[
-      _DialogAction(icon: TablerIcons.check, onPressed: onYes),
-      _DialogAction(icon: TablerIcons.x, onPressed: onNo),
-      _DialogAction(icon: TablerIcons.ban, onPressed: onCancel),
+      _DialogAction(icon: TablerIcons.check, onPressed: onYes, tooltip: "Yes"),
+      _DialogAction(icon: TablerIcons.x, onPressed: onNo, tooltip: "No"),
+      _DialogAction(icon: TablerIcons.ban, onPressed: onCancel, tooltip: "Cancel"),
     ],
   );
 }
@@ -407,8 +409,8 @@ KPixOverlay getTwoButtonDialog({
     message: message,
     onBarrierDismiss: outsideCancelable ? onNo : null,
     actions: <_DialogAction>[
-      _DialogAction(icon: TablerIcons.check, onPressed: onYes),
-      _DialogAction(icon: TablerIcons.x, onPressed: onNo),
+      _DialogAction(icon: TablerIcons.check, onPressed: onYes, tooltip: "Yes"),
+      _DialogAction(icon: TablerIcons.x, onPressed: onNo, tooltip: "No"),
     ],
   );
 }
@@ -425,7 +427,7 @@ KPixOverlay getSingleButtonDialog({
   return _messageDialog(
     message: message,
     actions: <_DialogAction>[
-      _DialogAction(icon: TablerIcons.check, onPressed: onAction),
+      _DialogAction(icon: TablerIcons.check, onPressed: onAction, tooltip: "Cancel"),
     ],
   );
 }

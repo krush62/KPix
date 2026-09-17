@@ -489,35 +489,30 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _importImage({required final ImportData importData})
   {
-    //taken now: the import runs past the point where the context could be used
     final AppLocalizations l10n = AppLocalizations.of(context)!;
-    _importLoadingDialog?.show(context: context);
-    try
-    {
-      import(importData: importData, currentRamps: GetIt.I.get<PaletteState>().colorRamps).then((final ImportResult result)
-      {
-        _projectSession.importFile(importResult: result);
-        showMessageForImageImport(result: result.result, l10n: l10n);
-        GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
-        GetIt.I.get<LayerManager>().rasterLayersFrame();
-        _documentState.timeline.layerChangeNotifier.reportChange();
-      });
-    }
-    catch (e, s)
-    {
-      final String failMsg = l10n.errorImportingImage;
-      showMessage(text: failMsg, toastType: ToastType.error);
-      GetIt.I.get<Logger>().w("Error importing image.", error: e, stackTrace: s);
-    }
     _closeAllMenus();
+    _importLoadingDialog?.show(context: context);
+    import(importData: importData, currentRamps: GetIt.I.get<PaletteState>().colorRamps).then((final ImportResult result)
+    {
+      _projectSession.importFile(importResult: result);
+      GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
+      GetIt.I.get<LayerManager>().rasterLayersFrame();
+      _documentState.timeline.layerChangeNotifier.reportChange();
+      _importLoadingDialog?.hide();
+      showMessageForImageImport(result: result.result, l10n: l10n);
+    })
+    .catchError((final Object e, final StackTrace s)
+    {
+      _importLoadingDialog?.hide();
+      showMessage(text: l10n.errorImportingImage, toastType: ToastType.error);
+      GetIt.I.get<Logger>().w("Error importing image.", error: e, stackTrace: s);
+    });
   }
 
   @override
   Widget build(final BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
 
-    //the dialogs are built once and kept, so neither their text nor the
-    //localizations their callbacks work with may be captured here
     _importDialog ??= getImportDialog(
       onDismiss: _closeAllMenus,
       onAcceptImage: ({required final ImportData importData}) {

@@ -20,18 +20,22 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/reference_image_manager.dart';
+import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/constraints/kpal_constraints.dart';
 import 'package:kpix/models/constraints/reference_layer_constraints.dart';
 import 'package:kpix/models/io_types.dart';
+import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/isolate_helper.dart';
+import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:uuid/uuid.dart';
 
 
@@ -41,6 +45,12 @@ const int _halfCircle = 180;
 const int _byteLength = 255;
 
 
+/// Turns an external image into a palette and a drawing layer.
+///
+/// The two expensive steps - finding the color ramps and matching every pixel
+/// against them - run on a background isolate, so the UI keeps painting its
+/// loading dialog while they do. Everything that touches dart:ui, the ramps or
+/// the service locator stays here, and only plain numbers cross over.
 Future<ImportResult> import({required final ImportData importData, required final List<KPalRampData> currentRamps}) async
 {
   final ByteData? imageData = await importData.scaledImage.toByteData();
@@ -50,20 +60,26 @@ Future<ImportResult> import({required final ImportData importData, required fina
   }
   else
   {
+    final Uint8List imgBytes = imageData.buffer.asUint8List(imageData.offsetInBytes, imageData.lengthInBytes);
+    final int width = importData.scaledImage.width;
+    final int height = importData.scaledImage.height;
+
     DrawingLayerState drawingLayer;
     List<KPalRampData> ramps = <KPalRampData>[];
-    // Extracting ALL colors
-    final List<KHSV> colorList = await _extractColorsFromImage(imgBytes: imageData);
     if (importData.createNewPalette)
     {
-      final List<KPalRampSettings> colorRamps = await _extractColorRamps(imgBytes: imageData, maxRamps: importData.maxRamps, maxColors: importData.maxColors);
+      final int maxRamps = importData.maxRamps;
+      final int maxColors = importData.maxColors;
+      final List<KPalRampSettings> colorRamps = await runOffThread<List<KPalRampSettings>>(
+        debugLabel: "image-import-palette",
+        work: () => _extractColorRamps(imgBytes: imgBytes, maxRamps: maxRamps, maxColors: maxColors),
+      );
       for (final KPalRampSettings colorRamp in colorRamps)
       {
         ramps.add(KPalRampData(uuid: const Uuid().v1(), settings: colorRamp));
       }
 
-
-      drawingLayer = await _createDrawingLayer(colorList: colorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
+      drawingLayer = await _createDrawingLayer(imgBytes: imgBytes, width: width, height: height, ramps: ramps);
       await _removeUnusedRamps(ramps: ramps, references: drawingLayer.usedColors());
       if (!ramps.contains(drawingLayer.settings.outerColorReference.value.ramp))
       {
@@ -81,7 +97,7 @@ Future<ImportResult> import({required final ImportData importData, required fina
     else
     {
       ramps = currentRamps;
-      drawingLayer = await _createDrawingLayer(colorList: colorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
+      drawingLayer = await _createDrawingLayer(imgBytes: imgBytes, width: width, height: height, ramps: ramps);
     }
 
     ReferenceLayerState? referenceLayer;
@@ -93,7 +109,7 @@ Future<ImportResult> import({required final ImportData importData, required fina
       referenceLayer.setZoomSliderFromZoomFactor(factor: (targetZoomWidth + targetZoomHeight) / 2.0);
     }
 
-    final ImportDataSet importDataSet = ImportDataSet(rampDataList: ramps, drawingLayer: drawingLayer, referenceLayer: referenceLayer, canvasSize: CoordinateSetI(x: importData.scaledImage.width, y: importData.scaledImage.height));
+    final ImportDataSet importDataSet = ImportDataSet(rampDataList: ramps, drawingLayer: drawingLayer, referenceLayer: referenceLayer, canvasSize: CoordinateSetI(x: width, y: height));
     return ImportResult(result: ImageImportResult.success, data: importDataSet);
 
   }
@@ -151,57 +167,94 @@ Future<ReferenceLayerState> _getReferenceLayer({required final ui.Image img, req
   return refState;
 }
 
-Future<DrawingLayerState> _createDrawingLayer({required final List<KHSV> colorList, required final int width, required final int height, required final List<KPalRampData> ramps}) async
+class _PaletteLab
 {
-  final HashMap<CoordinateSetI, ColorReference?> layerContent = HashMap<CoordinateSetI, ColorReference?>();
-  int row = 0;
-  int col = 0;
-  for (int i = 0; i < colorList.length; i++)
+  final Uint16List codes;
+  final Float64List labs;
+
+  _PaletteLab({required this.codes, required this.labs});
+
+  factory _PaletteLab.fromRamps({required final List<KPalRampData> ramps})
   {
-    if (col >= width)
+    final List<int> codes = <int>[];
+    final List<double> labs = <double>[];
+    for (int rampIndex = 0; rampIndex < ramps.length; rampIndex++)
     {
-      col = 0;
-      row++;
-    }
-    final CoordinateSetI coord = CoordinateSetI(x: col, y: row);
-    final ColorReference reference = _findClosestColor(color: colorList[i], ramps: ramps);
-    layerContent[coord] = reference;
-    col++;
-  }
-  return DrawingLayerState(size: CoordinateSetI(x: width, y: height), content: layerContent, ramps: ramps);
-}
-
-
-ColorReference _findClosestColor({required final KHSV color, required final List<KPalRampData> ramps,})
-{
-  final Color pixelColor = color.toColor();
-
-  ColorReference? closestReference;
-  double closestDelta = double.infinity;
-
-  for (final KPalRampData ramp in ramps)
-  {
-    for (final ColorReference reference in ramp.references)
-    {
-      final Color refColor = reference.getIdColor().color;
-
-      final double delta = getDeltaE00(
-        redA: refColor.r,
-        greenA: refColor.g,
-        blueA: refColor.b,
-        redB: pixelColor.r,
-        greenB: pixelColor.g,
-        blueB: pixelColor.b,
-      );
-
-      if (delta < closestDelta) {
-        closestReference = reference;
-        closestDelta = delta;
+      final List<ColorReference> references = ramps[rampIndex].references;
+      for (int colorIndex = 0; colorIndex < references.length; colorIndex++)
+      {
+        final Color refColor = references[colorIndex].getIdColor().color;
+        final LabColor lab = rgb2lab(r: refColor.r, g: refColor.g, b: refColor.b);
+        codes.add(PaletteCodec.codeOf(rampIndex: rampIndex, colorIndex: colorIndex));
+        labs..add(lab.L)..add(lab.A)..add(lab.B);
       }
     }
+    return _PaletteLab(codes: Uint16List.fromList(codes), labs: Float64List.fromList(labs));
   }
-  // closestReference is guaranteed non-null if ramps has at least one reference
-  return closestReference!;
+
+  int get length
+  {
+    return codes.length;
+  }
+}
+
+Future<DrawingLayerState> _createDrawingLayer({required final Uint8List imgBytes, required final int width, required final int height, required final List<KPalRampData> ramps}) async
+{
+  final _PaletteLab palette = _PaletteLab.fromRamps(ramps: ramps);
+  final PixelGrid pixels = await runOffThread<PixelGrid>(
+    debugLabel: "image-import-match",
+    work: () => _matchImageToPalette(imgBytes: imgBytes, width: width, height: height, palette: palette),
+  );
+  final DrawingLayerSettings settings = DrawingLayerSettings.defaultValues(
+    startingColor: ramps.first.references.first,
+    constraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
+  );
+  return DrawingLayerState.fromPixels(pixels: pixels, codec: PaletteCodec(ramps: ramps), drawingLayerSettings: settings);
+}
+
+PixelGrid _matchImageToPalette({required final Uint8List imgBytes, required final int width, required final int height, required final _PaletteLab palette, final int alphaThreshold = 0})
+{
+  final PixelGrid pixels = PixelGrid(width: width, height: height);
+  if (palette.length == 0)
+  {
+    return pixels;
+  }
+  final HashMap<int, int> codeOfColor = HashMap<int, int>();
+  final int pixelCount = imgBytes.length ~/ 4;
+  for (int i = 0; i < pixelCount; i++)
+  {
+    final int base = i * 4;
+    if (imgBytes[base + 3] <= alphaThreshold) continue;
+    final int r = imgBytes[base];
+    final int g = imgBytes[base + 1];
+    final int b = imgBytes[base + 2];
+    final int code = codeOfColor[(r << 16) | (g << 8) | b] ??= _closestCode(r: r, g: g, b: b, palette: palette);
+    pixels.set(x: i % width, y: i ~/ width, value: code);
+  }
+  return pixels;
+}
+
+int _closestCode({required final int r, required final int g, required final int b, required final _PaletteLab palette})
+{
+  final Color pixelColor = _hsvOfBytes(r: r, g: g, b: b).toColor();
+  final LabColor pixelLab = rgb2lab(r: pixelColor.r, g: pixelColor.g, b: pixelColor.b);
+
+  int closestCode = palette.codes[0];
+  double closestDelta = double.infinity;
+  for (int i = 0; i < palette.codes.length; i++)
+  {
+    final int base = i * 3;
+    final double delta = getDeltaE00Lab(
+      labA: LabColor(L: palette.labs[base], A: palette.labs[base + 1], B: palette.labs[base + 2]),
+      labB: pixelLab,
+    );
+    if (delta < closestDelta)
+    {
+      closestCode = palette.codes[i];
+      closestDelta = delta;
+    }
+  }
+  return closestCode;
 }
 
 
@@ -233,62 +286,44 @@ Future<ui.Image?> loadImage({required final String path, final Uint8List? bytes}
 
 
 
-Future<List<KHSV>> _extractColorsFromImage({required final ByteData imgBytes, final int alphaThreshold = 0}) async
+/// Inline RGB -> HSV (same math as elsewhere), for a pixel's byte channels.
+KHSV _hsvOfBytes({required final int r, required final int g, required final int b})
 {
-  final Uint8List u8 = imgBytes.buffer.asUint8List(
-    imgBytes.offsetInBytes,
-    imgBytes.lengthInBytes,
-  );
-  final int pixelCount = u8.length ~/ 4;
+  final double rf = r / _byteLength;
+  final double gf = g / _byteLength;
+  final double bf = b / _byteLength;
+  double maxc = rf;
+  double minc = rf;
+  if (gf > maxc) maxc = gf; if (bf > maxc) maxc = bf;
+  if (gf < minc) minc = gf; if (bf < minc) minc = bf;
+  final double delta = maxc - minc;
 
-  final List<KHSV>colors = <KHSV>[];
-  for (int i = 0; i < pixelCount; i++)
+  double h;
+  double s;
+  final double v = maxc;
+  if (delta == 0.0)
   {
-    final int base = i * 4;
-    final int r = u8[base + 0];
-    final int g = u8[base + 1];
-    final int b = u8[base + 2];
-    final int a = u8[base + 3];
-    if (a <= alphaThreshold) continue;
-
-    // Inline RGB -> HSV (same math you use elsewhere)
-    final double rf = r / _byteLength;
-    final double gf = g / _byteLength;
-    final double bf = b / _byteLength;
-    double maxc = rf;
-    double minc = rf;
-    if (gf > maxc) maxc = gf; if (bf > maxc) maxc = bf;
-    if (gf < minc) minc = gf; if (bf < minc) minc = bf;
-    final double delta = maxc - minc;
-
-    double h;
-    double s;
-    final double v = maxc;
-    if (delta == 0.0)
+    h = 0.0; s = 0.0;
+  }
+  else
+  {
+    s = (maxc == 0.0) ? 0.0 : delta / maxc;
+    if (maxc == rf)
     {
-      h = 0.0; s = 0.0;
+      h = 60.0 * (((gf - bf) / delta) % 6.0);
+    }
+    else if (maxc == gf)
+    {
+      h = 60.0 * (((bf - rf) / delta) + 2.0);
     }
     else
     {
-      s = (maxc == 0.0) ? 0.0 : delta / maxc;
-      if (maxc == rf)
-      {
-        h = 60.0 * (((gf - bf) / delta) % 6.0);
-      }
-      else if (maxc == gf)
-      {
-        h = 60.0 * (((bf - rf) / delta) + 2.0);
-      }
-      else
-      {
-        h = 60.0 * (((rf - gf) / delta) + 4.0);
-      }
-      if (h < 0) h += _fullCircle;
-      if (h >= _fullCircle) h -= _fullCircle;
+      h = 60.0 * (((rf - gf) / delta) + 4.0);
     }
-    colors.add(KHSV(h: h, s: s, v: v));
+    if (h < 0) h += _fullCircle;
+    if (h >= _fullCircle) h -= _fullCircle;
   }
-  return colors;
+  return KHSV(h: h, s: s, v: v);
 }
 
 
@@ -357,13 +392,13 @@ class _QuantizeResult {
 }
 
 _QuantizeResult quantizeHSVFromRGBABytes({
-      required final ByteData imgBytes,
+      required final Uint8List imgBytes,
       final int hBins = 36,
       final int sBins = 16,
       final int vBins = 16,
       final int alphaThreshold = 16,
     }) {
-  final Uint8List u8 = imgBytes.buffer.asUint8List(imgBytes.offsetInBytes, imgBytes.lengthInBytes);
+  final Uint8List u8 = imgBytes;
   final int pixelCount = u8.lengthInBytes ~/ 4;
 
   final int binsLen = hBins * sBins * vBins;
@@ -855,11 +890,11 @@ _SignedPowerFit _fitSignedPowerModelWeighted({
 }
 
 
-Future<List<KPalRampSettings>> _extractColorRamps({
-  required final ByteData imgBytes,
+List<KPalRampSettings> _extractColorRamps({
+  required final Uint8List imgBytes,
   required final int maxRamps,
   required final int maxColors,
-}) async {
+}) {
   final _QuantizeResult q = quantizeHSVFromRGBABytes(
     imgBytes: imgBytes,
   );

@@ -51,6 +51,7 @@ class _ImportWidgetState extends State<ImportWidget>
   final ValueNotifier<String> _messageNotifier = ValueNotifier<String>("");
   final ValueNotifier<ui.Image?> _imageNotifier = ValueNotifier<ui.Image?>(null);
   final ValueNotifier<int> _scaleDownNotifier = ValueNotifier<int>(1);
+  final KPixOverlay _loadingDialog = getLoadingDialog(message: (final AppLocalizations l10n) => l10n.openingImageDot);
   static const int _maximumScale = 16;
   int _currentMinScale = 1;
   int _currentMaxScale = 1;
@@ -59,6 +60,7 @@ class _ImportWidgetState extends State<ImportWidget>
   void dispose()
   {
     super.dispose();
+    _loadingDialog.hide();
     _maxRampsNotifier.dispose();
     _maxColorsPerRampNotifier.dispose();
     _fileNameNotifier.dispose();
@@ -77,6 +79,10 @@ class _ImportWidgetState extends State<ImportWidget>
   void _chooseImagePressed({required final AppLocalizations l10n})
   {
     getPathAndDataForImage().then((final (String?, Uint8List?) loadData) {
+      if (!mounted)
+      {
+        return;
+      }
       _prepareImageData(loadData: loadData, l10n: l10n);
     });
   }
@@ -85,8 +91,14 @@ class _ImportWidgetState extends State<ImportWidget>
   {
     if (loadData.$1 != null || loadData.$2 != null)
     {
+      _loadingDialog.show(context: context);
       loadImage(path: loadData.$1!, bytes: loadData.$2).then((final ui.Image? img)
       {
+        _loadingDialog.hide();
+        if (!mounted)
+        {
+          return;
+        }
         if (img != null)
         {
           if ((img.width ~/ _maximumScale) > CanvasSizeConstraints.sizeMax || (img.height ~/ _maximumScale) > CanvasSizeConstraints.sizeMax || img.width < CanvasSizeConstraints.sizeMin || img.height < CanvasSizeConstraints.sizeMin)
@@ -136,6 +148,10 @@ class _ImportWidgetState extends State<ImportWidget>
           _imageNotifier.value = null;
           _fileNameNotifier.value = null;
         }
+      },)
+      .catchError((final Object e)
+      {
+        _loadingDialog.hide();
       },);
     }
     else

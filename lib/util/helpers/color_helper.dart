@@ -323,10 +323,23 @@ double getDeltaE00({
   final double kH = 1.0,
 })
 {
-  // Convert to Lab
-  final LabColor labA = rgb2lab(r: redA, g: greenA, b: blueA);
-  final LabColor labB = rgb2lab(r: redB, g: greenB, b: blueB);
+  return getDeltaE00Lab(
+    labA: rgb2lab(r: redA, g: greenA, b: blueA),
+    labB: rgb2lab(r: redB, g: greenB, b: blueB),
+    kL: kL,
+    kC: kC,
+    kH: kH,
+  );
+}
 
+double getDeltaE00Lab({
+  required final LabColor labA,
+  required final LabColor labB,
+  final double kL = 1.0,
+  final double kC = 1.0,
+  final double kH = 1.0,
+})
+{
   // Unpack
   final double l1 = labA.L;
   final double a1 = labA.A;

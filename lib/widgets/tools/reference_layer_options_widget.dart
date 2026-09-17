@@ -33,6 +33,7 @@ import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class ReferenceLayerOptionsWidget extends StatefulWidget
 {
@@ -49,9 +50,22 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   final double _resetButtonHeight = 28;
   final double _resetIconSize = 16;
 
+  final KPixOverlay _loadingDialog = getLoadingDialog(message: (final AppLocalizations l10n) => l10n.openingImageDot);
+
+  @override
+  void dispose()
+  {
+    _loadingDialog.hide();
+    super.dispose();
+  }
+
   void _onLoadPressed({required final AppLocalizations l10n})
   {
     getPathAndDataForImage().then((final (String?, Uint8List?) loadData,) {
+      if (!mounted)
+      {
+        return;
+      }
       _loadPathChosen(loadPath: loadData.$1, imageData: loadData.$2, l10n: l10n);
     });
   }
@@ -60,8 +74,10 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   {
     if (loadPath != null && loadPath.isNotEmpty)
     {
+      _loadingDialog.show(context: context);
       _refManager.loadImageFile(path: loadPath, imageData: imageData).then((final ReferenceImage? img)
       {
+        _loadingDialog.hide();
         if (img != null)
         {
           final ReferenceImage? oldImage = widget.referenceState.imageNotifier.value;

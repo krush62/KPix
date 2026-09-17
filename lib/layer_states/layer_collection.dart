@@ -946,6 +946,37 @@ class LayerCollection with ChangeNotifier {
     return true;
   }
 
+  List<RasterableLayerState> _pendingDependents({required final RasterableLayerState layer})
+  {
+    final List<RasterableLayerState> pending = <RasterableLayerState>[];
+    for (final RasterableLayerState dependent in _getDependents(layer: layer))
+    {
+      if (!dependent.isDisposed && (dependent.isRasterizing || dependent.doManualRaster))
+      {
+        pending.add(dependent);
+      }
+    }
+    return pending;
+  }
+
+  bool areDependentsComplete({required final RasterableLayerState layer})
+  {
+    return _pendingDependents(layer: layer).isEmpty;
+  }
+
+  Future<void> waitForDependents({required final RasterableLayerState layer}) async
+  {
+    for (int round = 0; round <= _layers.length; round++)
+    {
+      final List<RasterableLayerState> pending = _pendingDependents(layer: layer);
+      if (pending.isEmpty)
+      {
+        return;
+      }
+      await Future.wait<void>(pending.map((final RasterableLayerState dependent) => dependent.rasterizationComplete));
+    }
+  }
+
   void invalidateDependents({required final RasterableLayerState layer})
   {
     final Set<RasterableLayerState> dependents = _getDependents(layer: layer);

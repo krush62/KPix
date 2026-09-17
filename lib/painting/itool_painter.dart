@@ -496,6 +496,21 @@ abstract class IToolPainter
     unawaited(preview.render());
   }
 
+  bool isLayerStackSettled({required final RasterableLayerState? layer})
+  {
+    if (layer == null)
+    {
+      return true;
+    }
+    if (layer.doManualRaster || layer.isRasterizing || (layer is DrawingLayerState && layer.rasterQueue.isNotEmpty))
+    {
+      return false;
+    }
+    //only the selected frame is on the canvas, so only its layers can flicker
+    final Frame? frame = documentState.timeline.selectedFrame;
+    return frame == null || !frame.layerList.contains(layer: layer) || frame.layerList.areDependentsComplete(layer: layer);
+  }
+
   /// Throws away the preview of the stroke being drawn, which never lands.
   void discardStrokePreview()
   {
@@ -540,6 +555,16 @@ abstract class IToolPainter
     {
       GetIt.I.get<Logger>().w("Timed out waiting for a layer to finish rasterizing.");
     },);
+
+    final Frame? frame = documentState.timeline.selectedFrame;
+    if (currentLayer is RasterableLayerState && frame != null && frame.layerList.contains(layer: currentLayer))
+    {
+      //only the selected frame is on the canvas, so only its layers can flicker
+      await frame.layerList.waitForDependents(layer: currentLayer).timeout(rasterSettleTimeout, onTimeout: ()
+      {
+        GetIt.I.get<Logger>().w("Timed out waiting for the layers above to finish rasterizing.");
+      },);
+    }
   }
 
   /// How pixels drawn on [currentLayer] show through the layers above it in

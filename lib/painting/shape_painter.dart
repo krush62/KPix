@@ -195,7 +195,8 @@ class ShapePainter extends IToolPainter
         _waitingForRasterization = false;
 
       }
-      if (!drawParams.primaryDown && !_waitingForRasterization)
+
+      if (!drawParams.primaryDown && !_waitingForRasterization && isLayerStackSettled(layer: rasterLayer))
       {
         cursorRaster = null;
       }

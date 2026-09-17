@@ -383,6 +383,62 @@ void main()
     },);
   });
 
+  testWidgets("a landing stroke stays on the canvas until the shading above it has caught up", (final WidgetTester tester) async {
+    await withProject(tester: tester, canvasSize: _canvasSize, body: (final ProjectSession projectSession) async {
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references[2];
+      GetIt.I.get<PaletteState>().colorSelected(color: color);
+      final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, addToHistoryStack: false).$2! as ShadingLayerState;
+      final HashMap<CoordinateSetI, int> shades = HashMap<CoordinateSetI, int>();
+      for (int x = 100; x < 200; x++)
+      {
+        for (int y = 100; y < 200; y++)
+        {
+          shades[CoordinateSetI(x: x, y: y)] = 1;
+        }
+      }
+      shading.addCoords(coords: shades);
+      await settle();
+      await _waitFor(condition: () => !shading.doManualRaster && !shading.isRasterizing);
+      expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), same(layer), reason: "setup: the shading went above the drawn layer");
+
+      GetIt.I.get<ToolOptions>().pencilOptions.size.value = 3;
+      final PencilPainter painter = PencilPainter(painterOptions: _painterOptions());
+      for (int x = 120; x < 160; x++)
+      {
+        painter.calculate(drawParams: _params(layer: layer, cursor: CoordinateSetI(x: x, y: 150), primaryDown: true));
+      }
+      await _waitFor(condition: () => painter.contentRasters.isNotEmpty);
+      expect(painter.contentRasters, isNotEmpty, reason: "setup: the stroke shows");
+
+      //the stroke lands: the layer takes the pixels, and the shading above is
+      //asked for a raster once the layer has stored its own
+      painter.calculate(drawParams: _params(layer: layer, cursor: CoordinateSetI(x: 159, y: 150), primaryDown: false));
+
+      //the content is what shows the stroke shaded while the shading above still
+      //shows what it made of the layer as it was, so it may not go before that
+      //raster is in; a moment where neither is there is the flicker
+      int flickers = 0;
+      for (int i = 0; i < 400; i++)
+      {
+        final bool shadingPending = shading.doManualRaster || shading.isRasterizing;
+        final bool contentGone = painter.contentRasters.isEmpty;
+        if (contentGone && shadingPending)
+        {
+          flickers++;
+        }
+        if (contentGone && !shadingPending && layer.rasterQueue.isEmpty && !layer.doManualRaster && !layer.isRasterizing)
+        {
+          break;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+
+      expect(painter.contentRasters, isEmpty, reason: "the content is taken off the canvas once everything shows the stroke");
+      expect(flickers, 0);
+    },);
+  });
+
   testWidgets("switching tools throws the preview of an unfinished stroke away", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: _canvasSize, body: (final ProjectSession projectSession) async {
       final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);

@@ -45,8 +45,9 @@ class LinePainter extends IToolPainter
   final CoordinateSetI _lineEndPos1 = CoordinateSetI.zero();
   final CoordinateSetI _lineEndPos2 = CoordinateSetI.zero();
   bool _isDown = false;
-  //keeps the committed line preview visible until the target layer has
-  //rasterized it (otherwise the line vanishes for one raster cycle)
+  //keeps the committed line preview visible until the target layer and the
+  //layers reading it have rasterized it (otherwise the line vanishes, or shows
+  //unshaded, for a raster cycle)
   bool _waitingForRasterization = false;
   RasterableLayerState? _dumpLayer;
 
@@ -208,17 +209,7 @@ class LinePainter extends IToolPainter
 
     if (_waitingForRasterization)
     {
-      final RasterableLayerState? dumpLayer = _dumpLayer;
-      bool layerBusy = false;
-      if (dumpLayer is DrawingLayerState)
-      {
-        layerBusy = dumpLayer.rasterQueue.isNotEmpty || dumpLayer.doManualRaster || dumpLayer.isRasterizing;
-      }
-      else if (dumpLayer != null)
-      {
-        layerBusy = dumpLayer.doManualRaster || dumpLayer.isRasterizing;
-      }
-      if (!layerBusy)
+      if (isLayerStackSettled(layer: _dumpLayer))
       {
         _waitingForRasterization = false;
         _dumpLayer = null;

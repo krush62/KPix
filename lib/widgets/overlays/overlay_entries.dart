@@ -180,7 +180,10 @@ class _DialogAction
 
   final IconData icon;
   final Function() onPressed;
-  final String tooltip;
+
+  /// Resolved when the dialog is built, so a cached dialog follows a locale
+  /// change like its message does.
+  final LocalizedMessageFn tooltip;
 }
 
 /// Builds a dialog showing [message] above a row of [actions].
@@ -196,45 +199,49 @@ KPixOverlay _messageDialog({
   return _barrierOverlay(
     smokeOpacity: OverlayEntryAlertDialogOptions.smokeOpacity,
     onDismiss: onBarrierDismiss,
-    content: (final BuildContext context) => Center(
-      child: KPixAnimationWidget(
-        constraints: const BoxConstraints(
-          minHeight: OverlayEntryAlertDialogOptions.minHeight,
-          minWidth: OverlayEntryAlertDialogOptions.minWidth,
-          maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
-          maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                child: Text(message(AppLocalizations.of(context)!), style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
+    content: (final BuildContext context)
+    {
+      final AppLocalizations l10n = AppLocalizations.of(context)!;
+      return Center(
+        child: KPixAnimationWidget(
+          constraints: const BoxConstraints(
+            minHeight: OverlayEntryAlertDialogOptions.minHeight,
+            minWidth: OverlayEntryAlertDialogOptions.minWidth,
+            maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+            maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                  child: Text(message(l10n), style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
+                ),
               ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                for (final _DialogAction action in actions)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                      child: IconButton.outlined(
-                        tooltip: action.tooltip,
-                        icon: Icon(action.icon),
-                        onPressed: action.onPressed,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  for (final _DialogAction action in actions)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                        child: IconButton.outlined(
+                          tooltip: action.tooltip(l10n),
+                          icon: Icon(action.icon),
+                          onPressed: action.onPressed,
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-    ),
+      );
+    },
   );
 }
 
@@ -387,9 +394,9 @@ KPixOverlay getThreeButtonDialog({
     message: message,
     onBarrierDismiss: outsideCancelable ? onCancel : null,
     actions: <_DialogAction>[
-      _DialogAction(icon: TablerIcons.check, onPressed: onYes, tooltip: "Yes"),
-      _DialogAction(icon: TablerIcons.x, onPressed: onNo, tooltip: "No"),
-      _DialogAction(icon: TablerIcons.ban, onPressed: onCancel, tooltip: "Cancel"),
+      _DialogAction(icon: TablerIcons.check, onPressed: onYes, tooltip: (final AppLocalizations l10n) => l10n.yes),
+      _DialogAction(icon: TablerIcons.x, onPressed: onNo, tooltip: (final AppLocalizations l10n) => l10n.no),
+      _DialogAction(icon: TablerIcons.ban, onPressed: onCancel, tooltip: (final AppLocalizations l10n) => l10n.cancel),
     ],
   );
 }
@@ -409,8 +416,8 @@ KPixOverlay getTwoButtonDialog({
     message: message,
     onBarrierDismiss: outsideCancelable ? onNo : null,
     actions: <_DialogAction>[
-      _DialogAction(icon: TablerIcons.check, onPressed: onYes, tooltip: "Yes"),
-      _DialogAction(icon: TablerIcons.x, onPressed: onNo, tooltip: "No"),
+      _DialogAction(icon: TablerIcons.check, onPressed: onYes, tooltip: (final AppLocalizations l10n) => l10n.yes),
+      _DialogAction(icon: TablerIcons.x, onPressed: onNo, tooltip: (final AppLocalizations l10n) => l10n.no),
     ],
   );
 }
@@ -427,7 +434,7 @@ KPixOverlay getSingleButtonDialog({
   return _messageDialog(
     message: message,
     actions: <_DialogAction>[
-      _DialogAction(icon: TablerIcons.check, onPressed: onAction, tooltip: "Cancel"),
+      _DialogAction(icon: TablerIcons.check, onPressed: onAction, tooltip: (final AppLocalizations l10n) => l10n.close),
     ],
   );
 }

@@ -134,11 +134,8 @@ class _ExportWidgetState extends State<ExportWidget>
     return ButtonSegment<ExportSectionType>(
       enabled: isEnabled,
       value: type,
-      label: Tooltip(
-        message: tooltip,
-        waitDuration: toolTipDuration,
-        child: Icon(icon),
-      ),
+      tooltip: tooltip,
+      icon: Icon(icon),
     );
   }
 

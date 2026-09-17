@@ -367,6 +367,10 @@
   "baseSat": "Base Sat",
   "satShift": "Sat Shift",
   "satCurve": "Sat Curve",
+  "satCurveNoFlat": "Decreased Saturation for Dark and Bright Values",
+  "satCurveDarkFlat": "Decreased Saturation for Bright Values",
+  "satCurveBrightFlat": "Decreased Saturation for Dark Values",
+  "satCurveLinear": "Linear Saturation Progression",
   "valueRange": "Value Range",
   "deleteColorRampQuestion": "Do you really want to delete this color ramp?\n{amount} pixel(s) will be deleted",
   "@deleteColorRampQuestion": {

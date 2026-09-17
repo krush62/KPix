@@ -138,11 +138,8 @@ class LineOptions extends IToolOptions
                       segList.add(
                         ButtonSegment<SegmentSortStyle>(
                           value: sortStyle,
-                          label: Tooltip(
-                            message: sortStyle.label(AppLocalizations.of(context)!),
-                            waitDuration: toolTipDuration,
-                            child: Text(sortStyle.iconText),
-                          ),
+                          tooltip: sortStyle.label(AppLocalizations.of(context)!),
+                          label: Text(sortStyle.iconText),
                         ),
                       );
                     }

@@ -93,13 +93,10 @@ class SelectOptions extends IToolOptions
                                   segList.add(
                                       ButtonSegment<SelectMode>(
                                         value: sMode,
-                                        label: Tooltip(
-                                          showDuration: toolTipDuration,
-                                          message: sMode.label(AppLocalizations.of(context)!),
-                                          child: Icon(
-                                              sMode.icon,
-                                              size: ToolSettingsWidgetOptions.smallIconSize,
-                                          ),
+                                        tooltip: sMode.label(AppLocalizations.of(context)!),
+                                        icon: Icon(
+                                          sMode.icon,
+                                          size: ToolSettingsWidgetOptions.smallIconSize,
                                         ),
                                       ),
                                   );

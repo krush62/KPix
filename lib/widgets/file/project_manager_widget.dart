@@ -418,35 +418,23 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                         segments: <ButtonSegment<ProjectViewOrder>>[
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.nameAsc,
-                            label: Tooltip(
-                              message: AppLocalizations.of(context)!.sortFileNameAsc,
-                              waitDuration: toolTipDuration,
-                              child: const Icon(TablerIcons.sort_ascending_letters),
-                            ),
+                            icon: const Icon(TablerIcons.sort_ascending_letters),
+                            tooltip: AppLocalizations.of(context)!.sortFileNameAsc,
                           ),
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.nameDesc,
-                            label: Tooltip(
-                              message: AppLocalizations.of(context)!.sortFileNameDesc,
-                              waitDuration: toolTipDuration,
-                              child: const Icon(TablerIcons.sort_descending_letters),
-                            ),
+                            icon:const Icon(TablerIcons.sort_descending_letters),
+                            tooltip: AppLocalizations.of(context)!.sortFileNameDesc,
                           ),
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.lastModifiedAsc,
-                            label: Tooltip(
-                              message: AppLocalizations.of(context)!.sortDateAsc,
-                              waitDuration: toolTipDuration,
-                              child: const Icon(TablerIcons.sort_ascending_numbers),
-                            ),
+                            icon: const Icon(TablerIcons.sort_ascending_numbers),
+                            tooltip: AppLocalizations.of(context)!.sortDateAsc,
                           ),
                           ButtonSegment<ProjectViewOrder>(
                             value: ProjectViewOrder.lastModifiedDesc,
-                            label: Tooltip(
-                              message: AppLocalizations.of(context)!.sortDateDesc,
-                              waitDuration: toolTipDuration,
-                              child: const Icon(TablerIcons.sort_descending_numbers),
-                            ),
+                            tooltip: AppLocalizations.of(context)!.sortDateDesc,
+                            icon: const Icon(TablerIcons.sort_descending_numbers),
                           ),
                         ],
                         selected: <ProjectViewOrder>{viewOrder},

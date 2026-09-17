@@ -136,13 +136,10 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
           segments.add(
             ButtonSegment<T>(
               value: option,
-              label: Tooltip(
-                waitDuration: toolTipDuration,
-                message: option.description(AppLocalizations.of(context)!),
-                child: Text(
-                  option.label(AppLocalizations.of(context)!),
-                  style: Theme.of(context).textTheme.bodySmall!.apply(color: selected == option ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
-                ),
+              tooltip: option.description(AppLocalizations.of(context)!),
+              label: Text(
+                option.label(AppLocalizations.of(context)!),
+                style: Theme.of(context).textTheme.bodySmall!.apply(color: selected == option ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
               ),
             ),
           );

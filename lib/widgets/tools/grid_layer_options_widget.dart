@@ -102,11 +102,13 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                     segments: <ButtonSegment<bool>>[
                       ButtonSegment<bool>(
                         value: false,
-                        label: Tooltip(waitDuration: toolTipDuration, message: l10n.grid, child: Text(l10n.gridButton, style: Theme.of(context).textTheme.labelSmall!.apply(color: !isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                        tooltip: l10n.grid,
+                        label: Text(l10n.gridButton, style: Theme.of(context).textTheme.labelSmall!.apply(color: !isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)),
                       ),
                       ButtonSegment<bool>(
                         value: true,
-                        label: Tooltip(waitDuration: toolTipDuration, message: l10n.perspective, child: Text(l10n.perspectiveButton, style: Theme.of(context).textTheme.labelSmall!.apply(color: isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                        tooltip: l10n.perspective,
+                        label: Text(l10n.perspectiveButton, style: Theme.of(context).textTheme.labelSmall!.apply(color: isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)),
                       ),
                     ],
                   ),
@@ -116,7 +118,8 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         if (isPerspectiveGridType(gridType: g) == isPerspective)
                           ButtonSegment<GridType>(
                             value: g,
-                            label: Tooltip(waitDuration: toolTipDuration, message: g.desc(l10n), child: Text(g.label(l10n), style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                            tooltip: g.desc(l10n),
+                            label: Text(g.label(l10n), style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)),
                           ),
                     ],
                     selected: <GridType>{gridType},

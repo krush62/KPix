@@ -340,7 +340,7 @@ class ToolSegmentedIconButtonRow<E> extends StatelessWidget {
                     ButtonSegment<E>(
                       value: entry.key,
                       tooltip: entry.value.label,
-                      label: Icon(
+                      icon: Icon(
                         entry.value.icon,
                         size: iconSize,
                       ),

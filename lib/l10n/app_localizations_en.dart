@@ -863,6 +863,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get satCurve => 'Sat Curve';
 
   @override
+  String get satCurveNoFlat =>
+      'Decreased Saturation for Dark and Bright Values';
+
+  @override
+  String get satCurveDarkFlat => 'Decreased Saturation for Bright Values';
+
+  @override
+  String get satCurveBrightFlat => 'Decreased Saturation for Dark Values';
+
+  @override
+  String get satCurveLinear => 'Linear Saturation Progression';
+
+  @override
   String get valueRange => 'Value Range';
 
   @override

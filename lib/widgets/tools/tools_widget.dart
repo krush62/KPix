@@ -17,7 +17,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
@@ -107,14 +106,11 @@ class _ToolsWidgetState extends State<ToolsWidget>
       final ButtonSegment<ToolType> segment = ButtonSegment<ToolType>(
         value: buttonData.toolType,
         enabled: !shouldBeDisabled,
-        label: Tooltip(
-          message: buttonData.toolType.label(AppLocalizations.of(context)!) + buttonData.toolTipExtraText,
-          waitDuration: toolTipDuration,
-          child: Icon(
-            buttonData.toolType.icon,
-            color: shouldBeDisabled ? Theme.of(context).primaryColorDark : null,
-            size: _ToolsWidgetOptions.iconSize,
-          ),
+        tooltip: buttonData.toolType.label(AppLocalizations.of(context)!) + buttonData.toolTipExtraText,
+        icon: Icon(
+          buttonData.toolType.icon,
+          color: shouldBeDisabled ? Theme.of(context).primaryColorDark : null,
+          size: _ToolsWidgetOptions.iconSize,
         ),
       );
       segments.add(segment);

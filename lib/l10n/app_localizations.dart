@@ -1700,6 +1700,30 @@ abstract class AppLocalizations {
   /// **'Sat Curve'**
   String get satCurve;
 
+  /// No description provided for @satCurveNoFlat.
+  ///
+  /// In en, this message translates to:
+  /// **'Decreased Saturation for Dark and Bright Values'**
+  String get satCurveNoFlat;
+
+  /// No description provided for @satCurveDarkFlat.
+  ///
+  /// In en, this message translates to:
+  /// **'Decreased Saturation for Bright Values'**
+  String get satCurveDarkFlat;
+
+  /// No description provided for @satCurveBrightFlat.
+  ///
+  /// In en, this message translates to:
+  /// **'Decreased Saturation for Dark Values'**
+  String get satCurveBrightFlat;
+
+  /// No description provided for @satCurveLinear.
+  ///
+  /// In en, this message translates to:
+  /// **'Linear Saturation Progression'**
+  String get satCurveLinear;
+
   /// No description provided for @valueRange.
   ///
   /// In en, this message translates to:

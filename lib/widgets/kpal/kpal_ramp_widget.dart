@@ -610,22 +610,26 @@ class _KPalRampState extends State<KPalRamp>
                                       _satCurveModeChanged(newCurve: curves.first);
                                     }
                                   },
-                                  segments: const <ButtonSegment<SatCurve>>[
+                                  segments: <ButtonSegment<SatCurve>>[
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.noFlat,
-                                      label: Icon(KPixIcons.noFlat),
+                                      icon: const Icon(KPixIcons.noFlat),
+                                      tooltip: l10n.satCurveNoFlat
                                     ),
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.darkFlat,
-                                      label: Icon(KPixIcons.darkFlat),
+                                      icon: const Icon(KPixIcons.darkFlat),
+                                      tooltip: l10n.satCurveDarkFlat
                                     ),
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.brightFlat,
-                                      label: Icon(KPixIcons.brightFlat),
+                                      icon: const Icon(KPixIcons.brightFlat),
+                                      tooltip: l10n.satCurveBrightFlat
                                     ),
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.linear,
-                                      label: Icon(KPixIcons.linear),
+                                      icon: const Icon(KPixIcons.linear),
+                                      tooltip: l10n.satCurveLinear
                                     ),
                                   ],
                                 ),

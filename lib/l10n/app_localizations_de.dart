@@ -881,6 +881,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get satCurve => 'Sättigungskurve';
 
   @override
+  String get satCurveNoFlat =>
+      'Verringerte Sättigung fur geringe und hohe Helligkeiten ';
+
+  @override
+  String get satCurveDarkFlat => 'Verringerte Sättigung fur hohe Helligkeiten';
+
+  @override
+  String get satCurveBrightFlat =>
+      'Verringerte Sättigung for geringe Helligkeiten';
+
+  @override
+  String get satCurveLinear => 'Linearer Sättigungsverlauf';
+
+  @override
   String get valueRange => 'Helligkeits-\nbereich';
 
   @override
@@ -902,7 +916,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shadingRange => 'Schattierungsumfang';
 
   @override
-  String get maxDarken => 'Max. Absunkeln';
+  String get maxDarken => 'Max. Abdunkeln';
 
   @override
   String get maxBrighten => 'Max. Aufhellen';

@@ -1,4 +1,4 @@
-# kpix File Format Description v5
+# kpix File Format Description v6
 
 This document describes the structure of the kpix file format which is used to save/load project files for the KPix software.
 
@@ -31,11 +31,13 @@ Strings (``string``) are represented by an ``ushort`` for the length of the stri
 
 ## File Structure
 
-The kpix file format consists of the following three consecutive sections:
+The kpix file format consists of a header followed by three consecutive sections (palette, image and timeline).
+
+From v6 on, everything after the header is compressed as a single zlib stream (RFC 1950). The sections below describe the data after decompression. Before v6, the sections follow the header uncompressed.
 
 ### Header
 * magic_number ``ubyte (4)`` //``4B 50 49 58``
-* file_format_version ``ubyte (1)`` // currently: ``05``
+* file_format_version ``ubyte (1)`` // currently: ``06``
 
 ### Palette
 * ramp_count ``ubyte (1)`` // how many color ramps in the palette
@@ -87,12 +89,24 @@ The kpix file format consists of the following three consecutive sections:
   * drop_shadow_offset_x ``byte (1)`` // -16...16
   * drop_shadow_offset_y ``byte (1)`` // -16...16
   * drop_shadow_darken_brighten ``byte (1)`` // shading amount for shade -5...5
+  * left ``ushort (1)`` // x position of the smallest box around all pixels of the layer
+  * top ``ushort (1)`` // y position of the box
+  * width ``ushort (1)`` // width of the box, ``0`` if the layer is empty (nothing else follows then)
+  * height ``ushort (1)`` // height of the box, ``0`` if the layer is empty
+  * color_count ``ushort (1)`` // how many colors the layer uses
+  * Colors ``(color_count)``
+    * color_ramp_index ``ubyte (1)`` // color ramp index
+    * color_index ``ubyte (1)`` // index in color ramp
+  * Image_Data ``(width * height)`` // every pixel of the box, row by row from the top left
+    * color ``ubyte (1)``, ``ushort (1)`` if color_count > 255 // ``0`` = transparent, otherwise the position in Colors (starting at ``1``)
+
+  // before v6, the pixel data of a drawing layer was instead:
   * data_count ``uint (1)`` // how many non-transparent pixels on layer
   * Image_Data ``(data_count)``
     * x ``ushort (1)`` // x position
     * y ``ushort (1)`` // y position
     * color_ramp_index ``ubyte (1)`` // color ramp index
-    * color_index ``ubyte (1)`` // index in color ramp\
+    * color_index ``ubyte (1)`` // index in color ramp
     
   // data for type ``02`` (reference layer)
   * path (string)  
@@ -121,6 +135,14 @@ The kpix file format consists of the following three consecutive sections:
   * lock_type ``ubyte (1)`` // ``00``= unlocked, ``02`` = locked
   * shading_step_limit_low ``ubyte (1)`` // 1...16
   * shading_step_limit_high ``ubyte (1)`` // 1...16
+  * left ``ushort (1)`` // x position of the smallest box around all shading pixels of the layer
+  * top ``ushort (1)`` // y position of the box
+  * width ``ushort (1)`` // width of the box, ``0`` if the layer is empty
+  * height ``ushort (1)`` // height of the box, ``0`` if the layer is empty
+  * Image_Data ``(width * height)`` // every pixel of the box, row by row from the top left
+    * shading ``ubyte (1)`` // ``0`` = no shading, otherwise how many shading steps + 128
+
+  // before v6, the pixel data of a shading/dither layer was instead:
   * data_count ``uint (1)`` //how many shading pixels exist on the layer
   * Image_Data ``(data_count)``
     * x ``ushort (1)`` // x position

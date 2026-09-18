@@ -123,6 +123,62 @@ class _ImportGuard
   }
 }
 
+typedef _PixelBounds = ({int left, int top, int width, int height});
+
+_PixelBounds _readBounds({required final FileByteReader reader})
+{
+  return (left: reader.getUint16(), top: reader.getUint16(), width: reader.getUint16(), height: reader.getUint16());
+}
+
+void _readDrawingPixels({required final FileByteReader reader, required final PixelGrid data, required final List<HistoryRampData> rampList, required final int layerIndex})
+{
+  final _PixelBounds bounds = _readBounds(reader: reader);
+  if (bounds.width == 0 || bounds.height == 0)
+  {
+    return;
+  }
+  final int colorCount = reader.getUint16();
+  //index 0 is transparent
+  final Uint16List codes = Uint16List(colorCount + 1);
+  for (int i = 1; i <= colorCount; i++)
+  {
+    final int rampIndex = reader.getUint8();
+    if (rampIndex >= rampList.length) throw _ImportRejected("Color Ramp index out of range for layer $layerIndex : $rampIndex");
+    final int colorIndex = reader.getUint8();
+    if (colorIndex >= rampList[rampIndex].settings.colorCount) throw _ImportRejected("Color index out of range for layer $layerIndex: $colorIndex");
+    codes[i] = PaletteCodec.codeOf(rampIndex: rampIndex, colorIndex: colorIndex);
+  }
+  final bool wideIndices = colorCount > 255;
+  for (int y = bounds.top; y < bounds.top + bounds.height; y++)
+  {
+    for (int x = bounds.left; x < bounds.left + bounds.width; x++)
+    {
+      final int index = wideIndices ? reader.getUint16() : reader.getUint8();
+      if (index > colorCount) throw _ImportRejected("Color table index out of range for layer $layerIndex: $index");
+      if (index != 0)
+      {
+        data.set(x: x, y: y, value: codes[index]);
+      }
+    }
+  }
+}
+
+void _readShadingPixels({required final FileByteReader reader, required final PixelGrid data})
+{
+  final _PixelBounds bounds = _readBounds(reader: reader);
+  for (int y = bounds.top; y < bounds.top + bounds.height; y++)
+  {
+    for (int x = bounds.left; x < bounds.left + bounds.width; x++)
+    {
+      final int stored = reader.getUint8();
+      if (stored != 0)
+      {
+        data.setSigned(x: x, y: y, value: stored - shadingValueOffset);
+      }
+    }
+  }
+}
+
 //TODO strict parameter could be a (dev) setting
 /// Reads a kpix file and turns it into a restorable history state.
 ///
@@ -162,12 +218,17 @@ LoadFileSet _parseKPixFile({required final Uint8List bytes, required final Strin
   final _ImportGuard guard = _ImportGuard(strict: strict, warnings: returnString);
   try
   {
-    final FileByteReader reader = FileByteReader(bytes);
+    FileByteReader reader = FileByteReader(bytes);
     final int mNumber = reader.getUint32();
     final int fVersion = reader.getUint8();
 
     if (mNumber != int.parse(magicNumber, radix: 16)) return LoadFileSet(status: "Wrong magic number: $mNumber");
     if (fVersion > fileVersion) return LoadFileSet(status: "File Version: $fVersion");
+    if (fVersion >= 6)
+    {
+      //everything after the header is compressed
+      reader = FileByteReader(const ZLibDecoder().decodeBytes(Uint8List.sublistView(bytes, reader.offset), verify: true));
+    }
 
     final int rampCount = reader.getUint8();
     if (rampCount < 1) return LoadFileSet(status: "No color ramp found");
@@ -559,18 +620,25 @@ LoadFileSet _parseKPixFile({required final Uint8List bytes, required final Strin
             dropShadowOffset: CoordinateSetI(x: dropShadowOffsetX, y: dropShadowOffsetY),
             dropShadowDarkenBrighten: dropShadowDarkenBrighten,);
         }
-        final int dataCount = reader.getUint32();
         //a pixel outside the canvas is dropped by the grid
         final PixelGrid data = PixelGrid(width: canvasSize.x, height: canvasSize.y);
-        for (int j = 0; j < dataCount; j++)
+        if (fVersion >= 6)
         {
-          final int x = reader.getUint16();
-          final int y = reader.getUint16();
-          final int colorRampIndex = reader.getUint8();
-          if (colorRampIndex >= rampList.length) return LoadFileSet(status: "Color Ramp index out of range for layer $i : $colorRampIndex");
-          final int colorIndex = reader.getUint8();
-          if (colorIndex >= rampList[colorRampIndex].settings.colorCount) return LoadFileSet(status: "Color index out of range for layer $i: $colorIndex");
-          data.set(x: x, y: y, value: PaletteCodec.codeOf(rampIndex: colorRampIndex, colorIndex: colorIndex));
+          _readDrawingPixels(reader: reader, data: data, rampList: rampList, layerIndex: i);
+        }
+        else
+        {
+          final int dataCount = reader.getUint32();
+          for (int j = 0; j < dataCount; j++)
+          {
+            final int x = reader.getUint16();
+            final int y = reader.getUint16();
+            final int colorRampIndex = reader.getUint8();
+            if (colorRampIndex >= rampList.length) return LoadFileSet(status: "Color Ramp index out of range for layer $i : $colorRampIndex");
+            final int colorIndex = reader.getUint8();
+            if (colorIndex >= rampList[colorRampIndex].settings.colorCount) return LoadFileSet(status: "Color index out of range for layer $i: $colorIndex");
+            data.set(x: x, y: y, value: PaletteCodec.codeOf(rampIndex: colorRampIndex, colorIndex: colorIndex));
+          }
         }
         layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, pixels: data.snapshot(), settings: drawingLayerSettings, layerIdentity: i));
       }
@@ -798,16 +866,23 @@ LoadFileSet _parseKPixFile({required final Uint8List bytes, required final Strin
           shadingLayerSettings = HistoryShadingLayerSettings(constraints: shadingLayerSettingsConstraints, shadingLow: shadingStepLimitLow, shadingHigh: shadingStepLimitHigh);
         }
 
-        final int dataCount = reader.getUint32();
         //a pixel outside the canvas is dropped by the grid
         final PixelGrid data = PixelGrid(width: canvasSize.x, height: canvasSize.y);
-        for (int j = 0; j < dataCount; j++)
+        if (fVersion >= 6)
         {
-          final int x = reader.getUint16();
-          final int y = reader.getUint16();
-          //-128, which one byte can hold, is beyond any shading limit and beyond what a signed pixel can store
-          final int shading = reader.getInt8().clamp(-SignedPixels.maxMagnitude, SignedPixels.maxMagnitude);
-          data.setSigned(x: x, y: y, value: shading);
+          _readShadingPixels(reader: reader, data: data);
+        }
+        else
+        {
+          final int dataCount = reader.getUint32();
+          for (int j = 0; j < dataCount; j++)
+          {
+            final int x = reader.getUint16();
+            final int y = reader.getUint16();
+            //-128, which one byte can hold, is beyond any shading limit and beyond what a signed pixel can store
+            final int shading = reader.getInt8().clamp(-SignedPixels.maxMagnitude, SignedPixels.maxMagnitude);
+            data.setSigned(x: x, y: y, value: shading);
+          }
         }
 
         if (layerType == HistoryShadingLayer)

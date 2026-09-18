@@ -88,4 +88,49 @@ void main()
       expect(bottom.settings.outerStrokeStyle, OuterStrokeStyle.solid, reason: "the solid outer stroke it was saved with");
     },);
   });
+
+  testWidgets("a file written before the compression still loads", (final WidgetTester tester) async
+  {
+    await withProject(tester: tester, canvasSize: CoordinateSetI(x: 4, y: 4), body: (final ProjectSession projectSession) async
+    {
+      const String fixture = "test/assets/pixel_list_v5.kpix";
+      final Uint8List bytes = await File(fixture).readAsBytes();
+      expect(bytes[4], 5, reason: "setup: a version 5 file");
+      final PreferenceManager prefs = GetIt.I.get<PreferenceManager>();
+      final LoadFileSet loaded = await loadKPixFile(
+        fileData: bytes,
+        path: fixture,
+        drawingLayerSettingsConstraints: prefs.drawingLayerSettingsConstraints,
+        shadingLayerSettingsConstraints: prefs.shadingLayerSettingsConstraints,
+        frameConstraints: prefs.frameConstraints,
+      );
+      expect(loaded.historyState, isNotNull, reason: loaded.status);
+
+      final List<HistoryLayer> layers = loaded.historyState!.timeline.allLayers.toList();
+      expect(loaded.historyState!.canvasSize, CoordinateSetI(x: 8, y: 6));
+      expect(layers.map((final HistoryLayer layer) => layer.runtimeType).toList(),
+          <Type>[HistoryDrawingLayer, HistoryDitherLayer, HistoryShadingLayer, HistoryDrawingLayer],
+          reason: "top to bottom: drawing, dither, shading, drawing",);
+
+      final HistoryDrawingLayer top = layers[0] as HistoryDrawingLayer;
+      expect(top.pixels.get(x: 7, y: 5), PaletteCodec.codeOf(rampIndex: 3, colorIndex: 0));
+      expect(top.pixels.nonZeroCount, 1);
+
+      final HistoryShadingLayer dither = layers[1] as HistoryShadingLayer;
+      expect(dither.pixels.getSigned(x: 5, y: 5), 2);
+      expect(dither.pixels.nonZeroCount, 1);
+
+      final HistoryShadingLayer shading = layers[2] as HistoryShadingLayer;
+      expect(shading.pixels.getSigned(x: 4, y: 2), 1);
+      expect(shading.pixels.getSigned(x: 4, y: 3), -1);
+      expect(shading.pixels.getSigned(x: 0, y: 0), 0);
+      expect(shading.pixels.nonZeroCount, 3);
+
+      final HistoryDrawingLayer bottom = layers[3] as HistoryDrawingLayer;
+      expect(bottom.pixels.get(x: 1, y: 1), PaletteCodec.codeOf(rampIndex: 0, colorIndex: 1));
+      expect(bottom.pixels.get(x: 2, y: 1), PaletteCodec.codeOf(rampIndex: 1, colorIndex: 2));
+      expect(bottom.pixels.get(x: 6, y: 4), PaletteCodec.codeOf(rampIndex: 2, colorIndex: 3));
+      expect(bottom.pixels.nonZeroCount, 3);
+    },);
+  });
 }

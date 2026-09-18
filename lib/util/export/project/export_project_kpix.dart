@@ -43,11 +43,122 @@ PixelGridView _layerPixelsForSaving({
   return merged;
 }
 
+typedef _PixelBounds = ({int left, int top, int width, int height});
+
+/// The smallest box around the non-zero pixels; width and height are 0 when there are none.
+_PixelBounds _boundsOf({required final PixelGridView pixels})
+{
+  if (pixels.isEmpty)
+  {
+    return (left: 0, top: 0, width: 0, height: 0);
+  }
+  int left = pixels.width;
+  int top = pixels.height;
+  int right = 0;
+  int bottom = 0;
+  pixels.forEachNonZero(action: (final int x, final int y, final int _)
+  {
+    left = min(left, x);
+    top = min(top, y);
+    right = max(right, x);
+    bottom = max(bottom, y);
+  },);
+  return (left: left, top: top, width: right - left + 1, height: bottom - top + 1);
+}
+
+void _writeBounds({required final ByteData block, required final _PixelBounds bounds})
+{
+  block.setUint16(0, bounds.left);
+  block.setUint16(2, bounds.top);
+  block.setUint16(4, bounds.width);
+  block.setUint16(6, bounds.height);
+}
+
+Uint8List _encodeDrawingPixels({required final PixelGridView pixels})
+{
+  final _PixelBounds bounds = _boundsOf(pixels: pixels);
+  final Set<int> usedCodes = <int>{};
+  pixels.forEachNonZero(action: (final int x, final int y, final int code) => usedCodes.add(code));
+  final List<int> colors = usedCodes.toList()..sort();
+  final bool wideIndices = colors.length > 255;
+
+  final ByteData block = ByteData(8 + (colors.isEmpty ? 0 : 2 + colors.length * 2 + bounds.width * bounds.height * (wideIndices ? 2 : 1)));
+  _writeBounds(block: block, bounds: bounds);
+  if (colors.isEmpty)
+  {
+    return block.buffer.asUint8List();
+  }
+  int offset = 8;
+  block.setUint16(offset, colors.length);
+  offset += 2;
+  final Uint16List colorIndices = Uint16List(colors.last + 1);
+  for (int i = 0; i < colors.length; i++)
+  {
+    block.setUint8(offset++, PaletteCodec.rampIndexOf(code: colors[i]));
+    block.setUint8(offset++, PaletteCodec.colorIndexOf(code: colors[i]));
+    colorIndices[colors[i]] = i + 1;
+  }
+  final int pixelStart = offset;
+  pixels.forEachNonZero(action: (final int x, final int y, final int code)
+  {
+    final int pixel = (y - bounds.top) * bounds.width + (x - bounds.left);
+    if (wideIndices)
+    {
+      block.setUint16(pixelStart + pixel * 2, colorIndices[code]);
+    }
+    else
+    {
+      block.setUint8(pixelStart + pixel, colorIndices[code]);
+    }
+  },);
+  return block.buffer.asUint8List();
+}
+
+Uint8List _encodeShadingPixels({required final PixelGridView pixels})
+{
+  final _PixelBounds bounds = _boundsOf(pixels: pixels);
+  final Uint8List block = Uint8List(8 + bounds.width * bounds.height);
+  _writeBounds(block: ByteData.sublistView(block), bounds: bounds);
+  pixels.forEachSigned(action: (final int x, final int y, final int value)
+  {
+    block[8 + (y - bounds.top) * bounds.width + (x - bounds.left)] = value + shadingValueOffset;
+  },);
+  return block;
+}
+
+/// The encoded pixel data of every drawing, shading and dither layer.
+Map<HistoryLayer, Uint8List> _encodePixelBlocks({required final HistoryState saveData})
+{
+  final LinkedHashSet<HistoryLayer> allLayers = saveData.timeline.allLayers;
+  final HistoryFrame currentlySelectedFrame = saveData.timeline.frames[saveData.timeline.selectedFrameIndex];
+  final HistoryLayer currentlySelectedLayer = allLayers.elementAt(currentlySelectedFrame.layerIndices.elementAt(currentlySelectedFrame.selectedLayerIndex));
+  final Map<HistoryLayer, Uint8List> blocks = HashMap<HistoryLayer, Uint8List>.identity();
+  for (final HistoryLayer layer in allLayers)
+  {
+    if (layer is HistoryDrawingLayer)
+    {
+      blocks[layer] = _encodeDrawingPixels(pixels: _layerPixelsForSaving(
+        layer: layer,
+        selection: saveData.selectionState,
+        isSelectedLayer: currentlySelectedLayer == layer,
+      ),);
+    }
+    else if (layer is HistoryShadingLayer)
+    {
+      //a selection holds color references, which mean nothing on a shading layer
+      blocks[layer] = _encodeShadingPixels(pixels: layer.pixels);
+    }
+  }
+  return blocks;
+}
+
 /// Serialises [state], or the live document when none is given.
 Future<ByteData> createKPixData({final HistoryState? state}) async
 {
   final HistoryState saveData = state ?? HistoryState.fromDocument(identifier: HistoryStateTypeIdentifier.saveData);
-  final ByteData byteData = ByteData(_calculateKPixFileSize(saveData: saveData));
+  final Map<HistoryLayer, Uint8List> pixelBlocks = _encodePixelBlocks(saveData: saveData);
+  final ByteData byteData = ByteData(_calculateKPixFileSize(saveData: saveData, pixelBlocks: pixelBlocks));
+  final Uint8List bytes = byteData.buffer.asUint8List();
 
   int offset = 0;
 
@@ -59,6 +170,7 @@ Future<ByteData> createKPixData({final HistoryState? state}) async
   offset+=4;
   //file version
   byteData.setUint8(offset++, fileVersion);
+  final int headerLength = offset;
 
 
   //PALETTE
@@ -120,9 +232,6 @@ Future<ByteData> createKPixData({final HistoryState? state}) async
 
   //LAYERS
   final LinkedHashSet<HistoryLayer> allHLayers = saveData.timeline.allLayers;
-
-  final HistoryFrame currentlySelectedFrame = saveData.timeline.frames[saveData.timeline.selectedFrameIndex];
-  final HistoryLayer currentlySelectedLayer = allHLayers.elementAt(currentlySelectedFrame.layerIndices.elementAt(currentlySelectedFrame.selectedLayerIndex));
 
   for (int i = 0; i < allHLayers.length; i++)
   {
@@ -186,30 +295,9 @@ Future<ByteData> createKPixData({final HistoryState? state}) async
         //* drop_shadow_darken_brighten ``byte (1)`` // shading amount for shade -5...5
         byteData.setInt8(offset++, cLayer.settings.dropShadowDarkenBrighten);
       }
-      //data count
-      final PixelGridView layerPixels = _layerPixelsForSaving(
-        layer: cLayer,
-        selection: saveData.selectionState,
-        isSelectedLayer: currentlySelectedLayer == cLayer,
-      );
-      byteData.setUint32(offset, layerPixels.nonZeroCount);
-      offset+=4;
       //image data
-      layerPixels.forEachNonZero(action: (final int x, final int y, final int code)
-      {
-        //x
-        byteData.setUint16(offset, x);
-        offset+=2;
-        //y
-        byteData.setUint16(offset, y);
-        offset+=2;
-
-        //ramp index
-        byteData.setUint8(offset++, PaletteCodec.rampIndexOf(code: code));
-
-        //color index
-        byteData.setUint8(offset++, PaletteCodec.colorIndexOf(code: code));
-      },);
+      bytes.setAll(offset, pixelBlocks[cLayer]!);
+      offset += pixelBlocks[cLayer]!.length;
     }
     else if (cLayer.runtimeType == HistoryReferenceLayer)
     {
@@ -289,21 +377,9 @@ Future<ByteData> createKPixData({final HistoryState? state}) async
         byteData.setUint8(offset++, cLayer.settings.shadingHigh);
       }
 
-      //data count
-      byteData.setUint32(offset, cLayer.pixels.nonZeroCount);
-      offset+=4;
-
-      cLayer.pixels.forEachSigned(action: (final int x, final int y, final int value)
-      {
-        //x
-        byteData.setUint16(offset, x);
-        offset+=2;
-        //y
-        byteData.setUint16(offset, y);
-        offset+=2;
-        //shading
-        byteData.setInt8(offset++, value);
-      },);
+      //image data
+      bytes.setAll(offset, pixelBlocks[cLayer]!);
+      offset += pixelBlocks[cLayer]!.length;
     }
   }
 
@@ -335,7 +411,12 @@ Future<ByteData> createKPixData({final HistoryState? state}) async
     }
   }
 
-  return byteData;
+  //everything after the header is compressed
+  final Uint8List body = const ZLibEncoder().encodeBytes(Uint8List.sublistView(bytes, headerLength));
+  final Uint8List file = Uint8List(headerLength + body.length)
+    ..setAll(0, Uint8List.sublistView(bytes, 0, headerLength))
+    ..setAll(headerLength, body);
+  return ByteData.sublistView(file);
 }
 
 int _packAlignments({required final HashMap<Alignment, bool> alignments})
@@ -356,7 +437,7 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
   return byte;
 }
 
-int _calculateKPixFileSize({required final HistoryState saveData})
+int _calculateKPixFileSize({required final HistoryState saveData, required final Map<HistoryLayer, Uint8List> pixelBlocks})
 {
   int size = 0;
 
@@ -411,8 +492,6 @@ int _calculateKPixFileSize({required final HistoryState saveData})
   //LAYERS
 
   final LinkedHashSet<HistoryLayer> allLayers = saveData.timeline.allLayers;
-  final HistoryFrame currentlySelectedFrame = saveData.timeline.frames[saveData.timeline.selectedFrameIndex];
-  final HistoryLayer currentlySelectedLayer = allLayers.elementAt(currentlySelectedFrame.layerIndices.elementAt(currentlySelectedFrame.selectedLayerIndex));
   for (final HistoryLayer cLayer in allLayers)
   {
     //type
@@ -421,7 +500,6 @@ int _calculateKPixFileSize({required final HistoryState saveData})
     size += 1;
     if (cLayer.runtimeType == HistoryDrawingLayer)
     {
-      final HistoryDrawingLayer drawingLayer = cLayer as HistoryDrawingLayer;
       //lock type
       size += 1;
 
@@ -472,14 +550,8 @@ int _calculateKPixFileSize({required final HistoryState saveData})
         //* drop_shadow_darken_brighten ``byte (1)`` // shading amount for shade -5...5
         size += 1;
       }
-      //data count
-      size += 4;
-      //x (2) + y (2) + color ramp index (1) + color index (1) per pixel, counted from the very same merge the writer emits
-      size += _layerPixelsForSaving(
-        layer: drawingLayer,
-        selection: saveData.selectionState,
-        isSelectedLayer: currentlySelectedLayer == cLayer,
-      ).nonZeroCount * 6;
+      //image data
+      size += pixelBlocks[cLayer]!.length;
     }
     else if (cLayer.runtimeType == HistoryReferenceLayer)
     {
@@ -539,11 +611,8 @@ int _calculateKPixFileSize({required final HistoryState saveData})
         size += 1;
       }
 
-      //data count
-      size += 4;
-      //x (2) + y (2) + shading (1) per pixel. A selection holds color references,
-      // which mean nothing on a shading layer, so the writer never merges one in here and neither does this count.
-      size += cLayer.pixels.nonZeroCount * 5;
+      //image data
+      size += pixelBlocks[cLayer]!.length;
     }
   }
 

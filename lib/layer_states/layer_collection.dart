@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
 import 'dart:collection';
 import 'dart:ui' as ui;
 
@@ -66,6 +67,8 @@ class LayerCollection with ChangeNotifier {
   final List<LayerState> _layers = <LayerState>[];
   ui.Image? _rasterImage;
   int _rasterImageGeneration = 0;
+  static const int _compositeDelayMs = 150;
+  Timer? _compositeTimer;
 
   ui.Image? get rasterImage => _rasterImage;
 
@@ -183,6 +186,8 @@ class LayerCollection with ChangeNotifier {
     //the composite belongs to a stack that is gone; the raised generation also
     //keeps a composite still being made from being taken on
     _rasterImageGeneration++;
+    _compositeTimer?.cancel();
+    _compositeTimer = null;
     _retireRasterImage(image: _rasterImage);
     _rasterImage = null;
     GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: removed);
@@ -784,28 +789,45 @@ class LayerCollection with ChangeNotifier {
 
     if (!anyLayerStillPending)
     {
-      final DocumentState documentState = GetIt.I.get<DocumentState>();
-      final CanvasState canvasState = GetIt.I.get<CanvasState>();
-      final Frame? frame = documentState.timeline.findFrameForCollection(collection: this,);
-      final int generation = ++_rasterImageGeneration;
-      getImageFromLayers(
-          layerCollection: this,
-          canvasSize: canvasState.canvasSize,
-          selection: documentState.selectionState.selection,
-          frame: frame,
-      ).then((final ui.Image img) {
-        //only accept the result if no newer composite was requested in the meantime
-        if (generation == _rasterImageGeneration)
-        {
-          _retireRasterImage(image: _rasterImage);
-          _rasterImage = img;
-        }
-        else
-        {
-          _retireRasterImage(image: img);
-        }
-      });
+      final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
+      _compositeTimer?.cancel();
+      //the selected frame's composite only serves playback, so a drag does not
+      //rebuild it after every batch; other frames' also serve frame blending
+      if (timeline.findFrameForCollection(collection: this) == timeline.selectedFrame && !timeline.isPlaying.value)
+      {
+        _compositeTimer = Timer(const Duration(milliseconds: _compositeDelayMs), _rebuildComposite);
+      }
+      else
+      {
+        _rebuildComposite();
+      }
     }
+  }
+
+  void _rebuildComposite()
+  {
+    _compositeTimer = null;
+    final DocumentState documentState = GetIt.I.get<DocumentState>();
+    final CanvasState canvasState = GetIt.I.get<CanvasState>();
+    final Frame? frame = documentState.timeline.findFrameForCollection(collection: this,);
+    final int generation = ++_rasterImageGeneration;
+    getImageFromLayers(
+        layerCollection: this,
+        canvasSize: canvasState.canvasSize,
+        selection: documentState.selectionState.selection,
+        frame: frame,
+    ).then((final ui.Image img) {
+      //only accept the result if no newer composite was requested in the meantime
+      if (generation == _rasterImageGeneration)
+      {
+        _retireRasterImage(image: _rasterImage);
+        _rasterImage = img;
+      }
+      else
+      {
+        _retireRasterImage(image: img);
+      }
+    });
   }
 
   void onLayerVisibilityChanged({required final LayerState layer})

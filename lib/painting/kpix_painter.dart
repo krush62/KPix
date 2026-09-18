@@ -703,7 +703,7 @@ class KPixPainter extends CustomPainter
 
   void _captureTimeout()
   {
-    if (_shouldCapture())
+    if (!_primaryDown.value && _shouldCapture())
     {
       getImageFromLayers(canvasSize: _canvasState.canvasSize, layerCollection: _documentState.timeline.selectedFrame!.layerList, selection: _documentState.selectionState.selection, frame: _documentState.timeline.selectedFrame).then((final ui.Image img) {
         if (_isDisposed)

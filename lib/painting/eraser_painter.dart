@@ -57,41 +57,36 @@ class EraserPainter extends IToolPainter
             pixelsToDelete.addAll(bresenham(start: _previousCursorPosNorm, end: drawParams.cursorPosNorm!).sublist(1));
           }
           final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
-          for (final CoordinateSetI delCoord in pixelsToDelete)
+          final SelectionState selection = GetIt.I.get<DocumentState>().selectionState;
+          final Set<CoordinateSetI> content = getStampedContentPoints(shape: _options.shape.value, size: _options.size.value, positions: pixelsToDelete);
+          final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: content, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
+          for (final CoordinateSetI coord in mirrorPoints)
           {
-            final Set<CoordinateSetI> content = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: delCoord);
-            final SelectionState selection = GetIt.I.get<DocumentState>().selectionState;
-
-            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: content, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
-
-            for (final CoordinateSetI coord in mirrorPoints)
+            if (coord.x >= 0 && coord.y >= 0 &&
+                coord.x < drawParams.canvasSize.x &&
+                coord.y < drawParams.canvasSize.y)
             {
-              if (coord.x >= 0 && coord.y >= 0 &&
-                  coord.x < drawParams.canvasSize.x &&
-                  coord.y < drawParams.canvasSize.y)
+              if (rasterLayer.runtimeType == DrawingLayerState)
               {
-                if (rasterLayer.runtimeType == DrawingLayerState)
+                final DrawingLayerState drawingLayer = rasterLayer as DrawingLayerState;
+                if (selection.selection.isEmpty)
                 {
-                  final DrawingLayerState drawingLayer = rasterLayer as DrawingLayerState;
-                  if (selection.selection.isEmpty)
-                  {
-                    if (drawingLayer.getDataEntry(coord: coord) != null)
-                    {
-                      refs[coord] = null;
-                    }
-                  }
-                  else if (selection.selection.getColorReference(coord: coord) != null)
-                  {
-                    selection.selection.deleteDirectly(coord: coord);
-                    _hasErasedPixels = true;
-                  }
-                }
-                else if (drawParams.primaryDown && rasterLayer is ShadingLayerState)
-                {
-                  if (rasterLayer.hasCoord(coord: coord))
+                  if (drawingLayer.getDataEntry(coord: coord) != null)
                   {
                     refs[coord] = null;
                   }
+                }
+                else if (selection.selection.getColorReference(coord: coord) != null)
+                {
+                  selection.selection.deleteDirectly(coord: coord);
+                  _hasErasedPixels = true;
+                }
+              }
+              else if (drawParams.primaryDown && rasterLayer is ShadingLayerState)
+              {
+                if (rasterLayer.hasCoord(coord: coord))
+                {
+                  refs[coord] = null;
                 }
               }
             }

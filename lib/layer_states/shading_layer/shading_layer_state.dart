@@ -57,6 +57,8 @@ class ShadingLayerState extends RasterableLayerState
   bool _isUpdateScheduled = false;
   final List<DirtyRegion> _dirtyRegions = <DirtyRegion>[];
   bool _forceFullRender = false;
+  //the thumbnail only shows the steps, so it is kept while they do not change
+  bool _thumbnailStale = true;
 
   @override IconData get icon => TablerIcons.exposure;
   @override LayerMenuKind get menuKind => LayerMenuKind.raster;
@@ -111,6 +113,7 @@ class ShadingLayerState extends RasterableLayerState
   @protected
   void update()
   {
+    _thumbnailStale = true;
     int counter = 0;
     final int brightnessStep = 255 ~/ (settings.shadingStepsMinus.value + settings.shadingStepsPlus.value + 1);
     for (int i = -settings.shadingStepsMinus.value; i <= settings.shadingStepsPlus.value; i++)
@@ -144,6 +147,7 @@ class ShadingLayerState extends RasterableLayerState
     {
       shadingValues.setSigned(x: x, y: y, value: value);
     }
+    _thumbnailStale = true;
     if (isRasterizing) {
       forceFullRender();
       return;
@@ -215,6 +219,7 @@ class ShadingLayerState extends RasterableLayerState
       {
         shadingValues.setSigned(x: coord.x, y: coord.y, value: null);
       }
+      _thumbnailStale = true;
       _trackDirtyRegions(changedCoords: coords);
       doManualRaster = true;
 
@@ -244,6 +249,7 @@ class ShadingLayerState extends RasterableLayerState
         //the grid drops pixels off the canvas
         shadingValues.setSigned(x: entry.key.x, y: entry.key.y, value: entry.value.clamp(-settings.shadingStepsMinus.value, settings.shadingStepsPlus.value));
       }
+      _thumbnailStale = true;
       _trackDirtyRegions(changedCoords: coords.keys);
       doManualRaster = true;
 
@@ -284,6 +290,29 @@ class ShadingLayerState extends RasterableLayerState
   }
 
   @protected
+  bool takeThumbnailStale()
+  {
+    final bool stale = _thumbnailStale;
+    _thumbnailStale = false;
+    return stale;
+  }
+
+  @protected
+  ui.Image? keptThumbnail({required final Frame? frame, required final bool stale, required final CoordinateSetI canvasSize})
+  {
+    if (stale)
+    {
+      return null;
+    }
+    final ui.Image? current = (frame != null ? rasterImageMap.value[frame]?.thumbnail : null) ?? thumbnail.value;
+    if (current == null || current.width != canvasSize.x || current.height != canvasSize.y)
+    {
+      return null;
+    }
+    return current.clone();
+  }
+
+  @protected
   void writeThumbnailBrightness({required final Uint8List bytes, required final int index, required final int value})
   {
     final int brightVal = thumbnailBrightnessMap[value] ?? 0;
@@ -303,6 +332,7 @@ class ShadingLayerState extends RasterableLayerState
     //changes that are not part of this render and must survive it
     final bool fullRenderForced = _forceFullRender;
     final List<DirtyRegion> renderRegions = List<DirtyRegion>.from(_dirtyRegions);
+    final bool thumbnailStale = takeThumbnailStale();
     _forceFullRender = false;
     _dirtyRegions.clear();
 
@@ -319,7 +349,7 @@ class ShadingLayerState extends RasterableLayerState
       }
       if (currentIndex != null)
       {
-        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, rasterLayers: layerStack!, currentIndex: currentIndex, fullRenderForced: fullRenderForced, renderRegions: renderRegions, frame: null);
+        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, rasterLayers: layerStack!, currentIndex: currentIndex, fullRenderForced: fullRenderForced, renderRegions: renderRegions, frame: null, thumbnailStale: thumbnailStale);
         return DualRasterResult(rasterImages: rasterImages, externalStackImages: externalStackImages);
       }
       else
@@ -345,7 +375,7 @@ class ShadingLayerState extends RasterableLayerState
         }
         if (frameLayerIndex != null)
         {
-          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, rasterLayers: rasterLayers, currentIndex: frameLayerIndex, fullRenderForced: fullRenderForced, renderRegions: renderRegions, frame: frame);
+          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, rasterLayers: rasterLayers, currentIndex: frameLayerIndex, fullRenderForced: fullRenderForced, renderRegions: renderRegions, frame: frame, thumbnailStale: thumbnailStale);
           rasterImages[frame] = rasterImagePair;
         }
       }
@@ -360,6 +390,7 @@ class ShadingLayerState extends RasterableLayerState
     required final bool fullRenderForced,
     required final List<DirtyRegion> renderRegions,
     required final Frame? frame,
+    required final bool thumbnailStale,
   }) async
   {
     final List<DirtyRegion> combined = _getCombinedDirtyRegions(
@@ -380,6 +411,7 @@ class ShadingLayerState extends RasterableLayerState
         rasterLayers: rasterLayers,
         currentIndex: currentIndex,
         frame: frame,
+        thumbnailStale: thumbnailStale,
       );
     }
     else
@@ -399,9 +431,11 @@ class ShadingLayerState extends RasterableLayerState
     required final List<RasterableLayerState> rasterLayers,
     required final int currentIndex,
     required final Frame? frame,
+    final bool thumbnailStale = true,
   }) async
   {
-    final Uint8List byteDataThb = neutralThumbnailBytes(pixelCount: canvasSize.x * canvasSize.y);
+    final ui.Image? kept = keptThumbnail(frame: frame, stale: thumbnailStale, canvasSize: canvasSize);
+    final Uint8List? byteDataThb = kept == null ? neutralThumbnailBytes(pixelCount: canvasSize.x * canvasSize.y) : null;
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final RasterPixels allColorPixels = RasterPixels.empty(width: canvasSize.x, height: canvasSize.y);
     final List<RasterPixels> below = pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
@@ -410,7 +444,10 @@ class ShadingLayerState extends RasterableLayerState
     //brightness, so only the ones that carry a step are worth walking
     shadingValues.forEachSigned(action: (final int x, final int y, final int valAt)
     {
-      writeThumbnailBrightness(bytes: byteDataThb, index: (y * canvasSize.x + x) * 4, value: valAt);
+      if (byteDataThb != null)
+      {
+        writeThumbnailBrightness(bytes: byteDataThb, index: (y * canvasSize.x + x) * 4, value: valAt);
+      }
       final ColorReference? refCol = colorAmong(pixels: below, x: x, y: y);
       if (refCol != null)
       {
@@ -424,17 +461,21 @@ class ShadingLayerState extends RasterableLayerState
     allColorPixels.writeRgba(target: byteDataImg, width: canvasSize.x, height: canvasSize.y);
     setRasterPixels(pixels: allColorPixels, frame: frame);
 
-    final Completer<ui.Image> completerThb = Completer<ui.Image>();
-    ui.decodeImageFromPixels(
-      byteDataThb,
-      canvasSize.x,
-      canvasSize.y,
-      ui.PixelFormat.rgba8888,
-          (final ui.Image convertedImage) {
-        completerThb.complete(convertedImage);
-      },
-    );
-    final ui.Image thbImg = await completerThb.future;
+    ui.Image? thbImg = kept;
+    if (byteDataThb != null)
+    {
+      final Completer<ui.Image> completerThb = Completer<ui.Image>();
+      ui.decodeImageFromPixels(
+        byteDataThb,
+        canvasSize.x,
+        canvasSize.y,
+        ui.PixelFormat.rgba8888,
+            (final ui.Image convertedImage) {
+          completerThb.complete(convertedImage);
+        },
+      );
+      thbImg = await completerThb.future;
+    }
 
     final Completer<ui.Image> completerImg = Completer<ui.Image>();
     ui.decodeImageFromPixels(
@@ -448,7 +489,7 @@ class ShadingLayerState extends RasterableLayerState
     );
     final ui.Image rasterImg = await completerImg.future;
 
-    return RasterImagePair(raster: rasterImg, thumbnail: thbImg);
+    return RasterImagePair(raster: rasterImg, thumbnail: thbImg!);
   }
 
   Future<RasterImagePair> _regionalRender({
@@ -695,6 +736,7 @@ class ShadingLayerState extends RasterableLayerState
   void resizeLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
     shadingValues = shadingValues.resized(newWidth: newSize.x, newHeight: newSize.y, offsetX: offset.x, offsetY: offset.y);
+    _thumbnailStale = true;
     forceFullRender();
   }
 
@@ -712,6 +754,7 @@ class ShadingLayerState extends RasterableLayerState
       case CanvasTransformation.flipV:
         shadingValues = shadingValues.flippedVertically();
     }
+    _thumbnailStale = true;
     forceFullRender();
   }
 

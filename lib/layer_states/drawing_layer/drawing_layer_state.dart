@@ -227,7 +227,7 @@ class DrawingLayerState extends RasterableLayerState
       _isUpdateScheduled = true;
       isRasterizing = true;
       //consume the pending request now; requests arriving during rasterization
-      //set the flag again and are serviced on the next timer tick
+      //set the flag again and are serviced right after it
       doManualRaster = false;
 
 
@@ -238,6 +238,7 @@ class DrawingLayerState extends RasterableLayerState
         frame.layerList.lockLayerAndDependenciesForRendering(layer: this);
       }
 
+      bool failed = false;
       try {
         final DualRasterResult rasterResult = await _createRaster();
 
@@ -251,6 +252,7 @@ class DrawingLayerState extends RasterableLayerState
         }
       } catch (e, s) {
         GetIt.I.get<Logger>().e("Error during drawing layer rasterization", error: e, stackTrace: s);
+        failed = true;
         doManualRaster = true;
       } finally {
         _isUpdateScheduled = false;
@@ -258,6 +260,10 @@ class DrawingLayerState extends RasterableLayerState
         //whichever way the cycle ended
         isRasterizing = false;
         settleRaster();
+        if (!failed && !isDisposed && hasPendingRaster)
+        {
+          _rasterSoon();
+        }
 
         for (final Frame frame in frames) {
           frame.layerList.unlockLayerAndDependenciesFromRendering(layer: this);
@@ -850,6 +856,23 @@ class DrawingLayerState extends RasterableLayerState
   void _requestRegionalRaster()
   {
     super.doManualRaster = true;
+    _rasterSoon();
+  }
+
+  bool _rasterSoonScheduled = false;
+
+  void _rasterSoon()
+  {
+    if (_rasterSoonScheduled)
+    {
+      return;
+    }
+    _rasterSoonScheduled = true;
+    scheduleMicrotask(()
+    {
+      _rasterSoonScheduled = false;
+      pollRaster();
+    },);
   }
 
   @override

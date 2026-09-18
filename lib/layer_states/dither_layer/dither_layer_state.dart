@@ -215,6 +215,7 @@ class DitherLayerState extends ShadingLayerState
     final DocumentState documentState = GetIt.I.get<DocumentState>();
     final CanvasState canvasState = GetIt.I.get<CanvasState>();
     final Map<Frame, RasterImagePair> rasterImages = <Frame, RasterImagePair>{};
+    final bool thumbnailStale = takeThumbnailStale();
 
     int? currentIndex;
     if (layerStack != null)
@@ -229,7 +230,7 @@ class DitherLayerState extends ShadingLayerState
       }
       if (currentIndex != null)
       {
-        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, rasterLayers: layerStack!, currentIndex: currentIndex, frame: null);
+        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, rasterLayers: layerStack!, currentIndex: currentIndex, frame: null, thumbnailStale: thumbnailStale);
         return DualRasterResult(rasterImages: rasterImages, externalStackImages: externalStackImages);
       }
       else
@@ -254,7 +255,7 @@ class DitherLayerState extends ShadingLayerState
         }
         if (frameLayerIndex != null)
         {
-          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, rasterLayers: rasterLayers, currentIndex: frameLayerIndex, frame: frame);
+          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, rasterLayers: rasterLayers, currentIndex: frameLayerIndex, frame: frame, thumbnailStale: thumbnailStale);
           rasterImages[frame] = rasterImagePair;
         }
       }
@@ -262,16 +263,20 @@ class DitherLayerState extends ShadingLayerState
     }
   }
 
-  Future<RasterImagePair> _createRasterFromLayers({required final CoordinateSetI canvasSize, required final List<RasterableLayerState> rasterLayers, required final int currentIndex, required final Frame? frame}) async
+  Future<RasterImagePair> _createRasterFromLayers({required final CoordinateSetI canvasSize, required final List<RasterableLayerState> rasterLayers, required final int currentIndex, required final Frame? frame, required final bool thumbnailStale}) async
   {
-    final Uint8List byteDataThb = neutralThumbnailBytes(pixelCount: canvasSize.x * canvasSize.y);
+    final ui.Image? kept = keptThumbnail(frame: frame, stale: thumbnailStale, canvasSize: canvasSize);
+    final Uint8List? byteDataThb = kept == null ? neutralThumbnailBytes(pixelCount: canvasSize.x * canvasSize.y) : null;
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final RasterPixels allColorPixels = RasterPixels.empty(width: canvasSize.x, height: canvasSize.y);
     final List<RasterPixels> below = pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
 
     shadingValues.forEachSigned(action: (final int x, final int y, final int valAt)
     {
-      writeThumbnailBrightness(bytes: byteDataThb, index: (y * canvasSize.x + x) * 4, value: valAt);
+      if (byteDataThb != null)
+      {
+        writeThumbnailBrightness(bytes: byteDataThb, index: (y * canvasSize.x + x) * 4, value: valAt);
+      }
       final ColorReference? refCol = ShadingLayerState.colorAmong(pixels: below, x: x, y: y);
       if (refCol != null)
       {
@@ -287,17 +292,21 @@ class DitherLayerState extends ShadingLayerState
 
 
 
-    final Completer<ui.Image> completerThb = Completer<ui.Image>();
-    ui.decodeImageFromPixels(
-        byteDataThb,
-        canvasSize.x,
-        canvasSize.y,
-        ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
+    ui.Image? thbImg = kept;
+    if (byteDataThb != null)
     {
-      completerThb.complete(convertedImage);
+      final Completer<ui.Image> completerThb = Completer<ui.Image>();
+      ui.decodeImageFromPixels(
+          byteDataThb,
+          canvasSize.x,
+          canvasSize.y,
+          ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
+      {
+        completerThb.complete(convertedImage);
+      }
+      );
+      thbImg = await completerThb.future;
     }
-    );
-    final ui.Image thbImg = await completerThb.future;
 
     final Completer<ui.Image> completerImg = Completer<ui.Image>();
     ui.decodeImageFromPixels(
@@ -310,7 +319,7 @@ class DitherLayerState extends ShadingLayerState
     }
     );
     final ui.Image rasterImg = await completerImg.future;
-    return RasterImagePair(raster: rasterImg, thumbnail: thbImg);
+    return RasterImagePair(raster: rasterImg, thumbnail: thbImg!);
   }
 
 

@@ -1204,6 +1204,7 @@ class SelectionList
       _pixels.select(x: coord.x, y: coord.y, code: PaletteCodec.transparent);
     }
     _touch();
+    _rasterCurrentLayer();
   }
 
   void delete({required final bool keepSelection})

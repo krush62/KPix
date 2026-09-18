@@ -205,6 +205,10 @@ class ShadingLayerState extends RasterableLayerState
 
   void removeCoords({required final Iterable<CoordinateSetI> coords})
   {
+    if (coords.isEmpty)
+    {
+      return;
+    }
     if (lockState.value == LayerLockState.unlocked)
     {
       for (final CoordinateSetI coord in coords)
@@ -229,6 +233,10 @@ class ShadingLayerState extends RasterableLayerState
 
   void addCoords({required final HashMap<CoordinateSetI, int> coords})
   {
+    if (coords.isEmpty)
+    {
+      return;
+    }
     if (lockState.value == LayerLockState.unlocked)
     {
       for (final MapEntry<CoordinateSetI, int> entry in coords.entries)
@@ -250,6 +258,38 @@ class ShadingLayerState extends RasterableLayerState
         frame.layerList.invalidateDependents(layer: this);
       }
     }
+  }
+
+  @protected
+  Uint8List neutralThumbnailBytes({required final int pixelCount})
+  {
+    final Uint8List bytes = Uint8List(pixelCount * 4);
+    if (bytes.isEmpty)
+    {
+      return bytes;
+    }
+    final int neutral = thumbnailBrightnessMap[0]!;
+    bytes[0] = neutral;
+    bytes[1] = neutral;
+    bytes[2] = neutral;
+    bytes[3] = 255;
+    int filled = 4;
+    while (filled < bytes.length)
+    {
+      final int chunk = min(filled, bytes.length - filled);
+      bytes.setRange(filled, filled + chunk, bytes);
+      filled += chunk;
+    }
+    return bytes;
+  }
+
+  @protected
+  void writeThumbnailBrightness({required final Uint8List bytes, required final int index, required final int value})
+  {
+    final int brightVal = thumbnailBrightnessMap[value] ?? 0;
+    bytes[index] = brightVal;
+    bytes[index + 1] = brightVal;
+    bytes[index + 2] = brightVal;
   }
 
   @protected
@@ -361,45 +401,32 @@ class ShadingLayerState extends RasterableLayerState
     required final Frame? frame,
   }) async
   {
-    final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
+    final Uint8List byteDataThb = neutralThumbnailBytes(pixelCount: canvasSize.x * canvasSize.y);
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final RasterPixels allColorPixels = RasterPixels.empty(width: canvasSize.x, height: canvasSize.y);
     final List<RasterPixels> below = pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
 
-    for (int x = 0; x < canvasSize.x; x++)
+    //a pixel without a shading step shows nothing and keeps the neutral
+    //brightness, so only the ones that carry a step are worth walking
+    shadingValues.forEachSigned(action: (final int x, final int y, final int valAt)
     {
-      for (int y = 0; y < canvasSize.y; y++)
+      writeThumbnailBrightness(bytes: byteDataThb, index: (y * canvasSize.x + x) * 4, value: valAt);
+      final ColorReference? refCol = colorAmong(pixels: below, x: x, y: y);
+      if (refCol != null)
       {
-        final int? valAt = shadingValues.getSigned(x: x, y: y);
-        int brightVal = thumbnailBrightnessMap[0]!;
-
-        if (valAt != null)
-        {
-          brightVal = thumbnailBrightnessMap[valAt] ?? 0;
-          final ColorReference? refCol = colorAmong(pixels: below, x: x, y: y);
-          if (refCol != null)
-          {
-            final int currentColorIndex = refCol.colorIndex;
-            final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
-            final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
-            allColorPixels.setColorAt(x: x, y: y, color: targetColor);
-          }
-        }
-
-        final int pixelIndex = (y * canvasSize.x + x) * 4;
-        byteDataThb.setUint8(pixelIndex + 0, brightVal);
-        byteDataThb.setUint8(pixelIndex + 1, brightVal);
-        byteDataThb.setUint8(pixelIndex + 2, brightVal);
-        byteDataThb.setUint8(pixelIndex + 3, 255);
+        final int currentColorIndex = refCol.colorIndex;
+        final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
+        final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
+        allColorPixels.setColorAt(x: x, y: y, color: targetColor);
       }
-    }
+    },);
 
     allColorPixels.writeRgba(target: byteDataImg, width: canvasSize.x, height: canvasSize.y);
     setRasterPixels(pixels: allColorPixels, frame: frame);
 
     final Completer<ui.Image> completerThb = Completer<ui.Image>();
     ui.decodeImageFromPixels(
-      byteDataThb.buffer.asUint8List(),
+      byteDataThb,
       canvasSize.x,
       canvasSize.y,
       ui.PixelFormat.rgba8888,

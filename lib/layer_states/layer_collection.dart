@@ -18,6 +18,7 @@ import 'dart:collection';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -179,6 +180,11 @@ class LayerCollection with ChangeNotifier {
     final List<LayerState> removed = List<LayerState>.of(_layers);
     _layers.clear();
     _clearDependencies();
+    //the composite belongs to a stack that is gone; the raised generation also
+    //keeps a composite still being made from being taken on
+    _rasterImageGeneration++;
+    _retireRasterImage(image: _rasterImage);
+    _rasterImage = null;
     GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: removed);
     _selectedLayerIndexNotifier.value = null;
     if (notify) {
@@ -739,6 +745,16 @@ class LayerCollection with ChangeNotifier {
     }
   }
 
+  void _retireRasterImage({required final ui.Image? image})
+  {
+    if (image == null)
+    {
+      return;
+    }
+    SchedulerBinding.instance.addPostFrameCallback((final Duration _) => image.dispose());
+    SchedulerBinding.instance.scheduleFrame();
+  }
+
   void layerRasterDone({required final LayerState layer})
   {
     if (layer is! RasterableLayerState) return;
@@ -748,10 +764,8 @@ class LayerCollection with ChangeNotifier {
     {
       if (areDependenciesComplete(layer: dependent))
       {
-        //a dependency changed; the dependent's own dirty regions do not cover
-        //the changed area, so a full render is required
-        //(this also upgrades an already pending regional render to a full one)
         dependent.forceFullRender();
+        dependent.pollRaster();
       }
     }
 
@@ -783,7 +797,12 @@ class LayerCollection with ChangeNotifier {
         //only accept the result if no newer composite was requested in the meantime
         if (generation == _rasterImageGeneration)
         {
+          _retireRasterImage(image: _rasterImage);
           _rasterImage = img;
+        }
+        else
+        {
+          _retireRasterImage(image: img);
         }
       });
     }

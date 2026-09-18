@@ -264,37 +264,24 @@ class DitherLayerState extends ShadingLayerState
 
   Future<RasterImagePair> _createRasterFromLayers({required final CoordinateSetI canvasSize, required final List<RasterableLayerState> rasterLayers, required final int currentIndex, required final Frame? frame}) async
   {
-    final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
+    final Uint8List byteDataThb = neutralThumbnailBytes(pixelCount: canvasSize.x * canvasSize.y);
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final RasterPixels allColorPixels = RasterPixels.empty(width: canvasSize.x, height: canvasSize.y);
     final List<RasterPixels> below = pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
 
-    for (int x = 0; x < canvasSize.x; x++)
+    shadingValues.forEachSigned(action: (final int x, final int y, final int valAt)
     {
-      for (int y = 0; y < canvasSize.y; y++)
+      writeThumbnailBrightness(bytes: byteDataThb, index: (y * canvasSize.x + x) * 4, value: valAt);
+      final ColorReference? refCol = ShadingLayerState.colorAmong(pixels: below, x: x, y: y);
+      if (refCol != null)
       {
-        final int? valAt = shadingValues.getSigned(x: x, y: y);
-        int brightVal = thumbnailBrightnessMap[0]!;
-        if (valAt != null)
-        {
-          brightVal = thumbnailBrightnessMap[valAt]?? 0;
-          final ColorReference? refCol = ShadingLayerState.colorAmong(pixels: below, x: x, y: y);
-          if (refCol != null)
-          {
-            final int currentColorIndex = refCol.colorIndex;
-            final int ditherVal = _ditherValue(value: valAt, x: x, y: y);
-            final int targetColorIndex = (currentColorIndex + ditherVal).clamp(0, refCol.ramp.references.length - 1);
-            final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
-            allColorPixels.setColorAt(x: x, y: y, color: targetColor);
-          }
-        }
-        final int pixelIndex = (y * canvasSize.x + x) * 4;
-        byteDataThb.setUint8(pixelIndex + 0, brightVal);
-        byteDataThb.setUint8(pixelIndex + 1, brightVal);
-        byteDataThb.setUint8(pixelIndex + 2, brightVal);
-        byteDataThb.setUint8(pixelIndex + 3, 255);
+        final int currentColorIndex = refCol.colorIndex;
+        final int ditherVal = _ditherValue(value: valAt, x: x, y: y);
+        final int targetColorIndex = (currentColorIndex + ditherVal).clamp(0, refCol.ramp.references.length - 1);
+        final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
+        allColorPixels.setColorAt(x: x, y: y, color: targetColor);
       }
-    }
+    },);
     allColorPixels.writeRgba(target: byteDataImg, width: canvasSize.x, height: canvasSize.y);
     setRasterPixels(pixels: allColorPixels, frame: frame);
 
@@ -302,7 +289,7 @@ class DitherLayerState extends ShadingLayerState
 
     final Completer<ui.Image> completerThb = Completer<ui.Image>();
     ui.decodeImageFromPixels(
-        byteDataThb.buffer.asUint8List(),
+        byteDataThb,
         canvasSize.x,
         canvasSize.y,
         ui.PixelFormat.rgba8888, (final ui.Image convertedImage)

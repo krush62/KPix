@@ -821,29 +821,45 @@ class DrawingLayerState extends RasterableLayerState
 
   void setDataAll({required final CoordinateColorMapNullable list})
   {
-    if (isRasterizing)
+    //a write of nothing would still ask for a raster; tools that run per frame
+    //(the eraser most of all) hand over an empty list whenever the cursor covers
+    //nothing to change
+    if (list.isEmpty)
     {
-      rasterQueue.addAll(list);
-      requestRaster();
-      doManualRaster = true;
+      return;
     }
-    else
-    {
-      rasterQueue.addAll(list);
-      requestRaster();
-      _trackDirtyRegions(changedCoords: list.keys);
-      doManualRaster = true;
-    }
+    rasterQueue.addAll(list);
+    _trackDirtyRegions(changedCoords: list.keys);
+    _requestRegionalRaster();
   }
 
   void removeDataAll({required final Set<CoordinateSetI> removeCoordList})
   {
+    if (removeCoordList.isEmpty)
+    {
+      return;
+    }
     for (final CoordinateSetI coord in removeCoordList)
     {
       rasterQueue[coord] = null;
     }
-    requestRaster();
-    doManualRaster = true;
+    _trackDirtyRegions(changedCoords: removeCoordList);
+    _requestRegionalRaster();
+  }
+
+  void _requestRegionalRaster()
+  {
+    super.doManualRaster = true;
+  }
+
+  @override
+  set doManualRaster(final bool value)
+  {
+    if (value)
+    {
+      _forceFullRender = true;
+    }
+    super.doManualRaster = value;
   }
 
 

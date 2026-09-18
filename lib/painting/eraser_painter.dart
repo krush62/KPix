@@ -80,9 +80,10 @@ class EraserPainter extends IToolPainter
                       refs[coord] = null;
                     }
                   }
-                  else
+                  else if (selection.selection.getColorReference(coord: coord) != null)
                   {
                     selection.selection.deleteDirectly(coord: coord);
+                    _hasErasedPixels = true;
                   }
                 }
                 else if (drawParams.primaryDown && rasterLayer is ShadingLayerState)
@@ -93,16 +94,19 @@ class EraserPainter extends IToolPainter
                   }
                 }
               }
-              _hasErasedPixels = true;
             }
           }
-          if (rasterLayer is DrawingLayerState)
+          if (refs.isNotEmpty)
           {
-            rasterLayer.setDataAll(list: refs);
-          }
-          else if (rasterLayer is ShadingLayerState)
-          {
-            rasterLayer.removeCoords(coords: refs.keys);
+            _hasErasedPixels = true;
+            if (rasterLayer is DrawingLayerState)
+            {
+              rasterLayer.setDataAll(list: refs);
+            }
+            else if (rasterLayer is ShadingLayerState)
+            {
+              rasterLayer.removeCoords(coords: refs.keys);
+            }
           }
         }
         _previousCursorPosNorm.x = drawParams.cursorPosNorm!.x;

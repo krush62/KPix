@@ -71,7 +71,8 @@ fi
 
 cat > "$DESKTOP_FILE" << EOF
 [Desktop Entry]
-Version=$VERSION
+Version=1.5
+X-AppImage-Version=$VERSION
 Type=Application
 Terminal=false
 Name=KPix

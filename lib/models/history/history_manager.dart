@@ -16,7 +16,7 @@
 
 import 'dart:math';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -170,6 +170,12 @@ class HistoryManager
     hasRedo.value = _curPos < _states.length - 1;
   }
 
+  bool _canMerge({required final HistoryState older, required final HistoryState newer})
+  {
+    return older.type.identifier == newer.type.identifier &&
+        (newer.type.group != HistoryStateTypeGroup.layerFull || setEquals(older.restoreLayerIndices, newer.restoreLayerIndices));
+  }
+
   void _compressHistory()
   {
     final int maxIndex = min(_curPos - 1, _states.length - 1 - _minEntries);
@@ -198,8 +204,7 @@ class HistoryManager
 
       if (state.type.isMergeCompression)
       {
-        if (previousMergeState != null &&
-            previousMergeState.type.identifier == state.type.identifier)
+        if (previousMergeState != null && _canMerge(older: previousMergeState, newer: state))
         {
           final int removeIdx = previousMergeStateIndex!;
           _states.removeAt(removeIdx);

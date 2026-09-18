@@ -64,6 +64,21 @@ class HistoryReferenceLayer extends HistoryLayer
         warmth: referenceState.warmthNotifier.value,
     );
   }
+
+  bool hasSameProperties({required final ReferenceLayerState referenceState})
+  {
+    return path == (referenceState.image?.path ?? "") &&
+        opacity == referenceState.opacityNotifier.value &&
+        offsetX == referenceState.offsetXNotifier.value &&
+        offsetY == referenceState.offsetYNotifier.value &&
+        zoom == referenceState.zoomNotifier.value &&
+        aspectRatio == referenceState.aspectRatioNotifier.value &&
+        brightness == referenceState.brightnessNotifier.value &&
+        saturation == referenceState.saturationNotifier.value &&
+        contrast == referenceState.contrastNotifier.value &&
+        warmth == referenceState.warmthNotifier.value;
+  }
+
   @override
   Future<ReferenceLayerState> toLayerState({
     required final CoordinateSetI canvasSize,

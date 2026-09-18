@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:collection';
+
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
@@ -25,7 +27,10 @@ import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_reference_layer.dart';
+import 'package:kpix/models/history/history_state.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -255,6 +260,36 @@ class LayerManager
     }
   }
 
+
+  void commitReferenceLayerChange({required final ReferenceLayerState layer})
+  {
+    if (layer.isDisposed)
+    {
+      return;
+    }
+    final LinkedHashSet<LayerState> liveLayers = LinkedHashSet<LayerState>();
+    for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
+    {
+      liveLayers.addAll(frame.layerList.getAllLayers());
+    }
+    final int layerIndex = liveLayers.toList().indexOf(layer);
+    if (layerIndex < 0)
+    {
+      return;
+    }
+
+    final HistoryManager historyManager = GetIt.I.get<HistoryManager>();
+    final HistoryState? currentState = historyManager.getCurrentState();
+    if (currentState != null && currentState.timeline.allLayers.length == liveLayers.length)
+    {
+      final HistoryLayer historyLayer = currentState.timeline.allLayers.elementAt(layerIndex);
+      if (historyLayer is HistoryReferenceLayer && historyLayer.hasSameProperties(referenceState: layer))
+      {
+        return;
+      }
+    }
+    historyManager.addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: layer);
+  }
 
   void selectLayerAbove()
   {

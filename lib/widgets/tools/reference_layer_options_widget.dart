@@ -28,6 +28,7 @@ import 'package:kpix/models/constraints/reference_layer_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state_type.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -105,6 +106,11 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
         }
       });
     }
+  }
+
+  void _commitChange()
+  {
+    GetIt.I.get<LayerManager>().commitReferenceLayerChange(layer: widget.referenceState);
   }
 
   void _fitHorizontal()
@@ -187,6 +193,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                       onChanged: refImg == null ? null : (final double newVal) {
                         notifier.value = newVal;
                       },
+                      onChangedEnd: (final double value) {_commitChange();},
                       decimals: 2,
                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
@@ -198,7 +205,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                 height: _resetButtonHeight,
                 child: IconButton.outlined(
                   tooltip: l10n.resetSetting(name),
-                  onPressed: refImg == null ? null: (){notifier.value = defaultValue;},
+                  onPressed: refImg == null ? null: (){notifier.value = defaultValue; _commitChange();},
                   iconSize: _resetIconSize,
                   icon: const Icon(TablerIcons.restore,),
                 ),
@@ -300,6 +307,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               onChanged: refImg == null ? null : (final double newVal) {
                                 widget.referenceState.opacityNotifier.value = newVal.round();
                               },
+                              onChangedEnd: (final double value) {_commitChange();},
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
                           },
@@ -342,6 +350,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               onChanged: refImg == null ? null : (final double newVal) {
                                 widget.referenceState.zoomNotifier.value = newVal.round();
                               },
+                              onChangedEnd: (final double value) {_commitChange();},
                               label: "${(zoom / 10.0).toStringAsFixed(1)}%",
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
@@ -358,7 +367,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                           height: _resetButtonHeight,
                           child: IconButton.outlined(
                             tooltip: l10n.expandHorizontallyAndCenter,
-                            onPressed: refImg == null ? null : _fitHorizontal,
+                            onPressed: refImg == null ? null : () {_fitHorizontal(); _commitChange();},
                             iconSize: _resetIconSize,
                             icon:
                               const Icon(TablerIcons.arrows_horizontal),
@@ -371,7 +380,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                           height: _resetButtonHeight,
                           child: IconButton.outlined(
                             tooltip: l10n.expandVerticallyAndCenter,
-                            onPressed: refImg == null ? null : _fitVertical,
+                            onPressed: refImg == null ? null : () {_fitVertical(); _commitChange();},
                             iconSize: _resetIconSize,
                             icon: const Icon(TablerIcons.arrows_vertical),
                           ),
@@ -383,7 +392,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                           height: _resetButtonHeight,
                           child: IconButton.outlined(
                             tooltip: l10n.fitsImageIntoCanvas,
-                            onPressed: refImg == null ? null : _fill,
+                            onPressed: refImg == null ? null : () {_fill(); _commitChange();},
                             iconSize: _resetIconSize,
                             icon: const Icon(
                               TablerIcons.arrows_maximize,

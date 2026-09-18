@@ -39,6 +39,7 @@ import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:logger/logger.dart';
 
@@ -235,14 +236,19 @@ class HistoryController
           final List<int> rasterIndices = restoreIndices.where((final int index) => index >= 0 && index < allLayers.length).toList();
           final bool canRasterSelectively = typeGroup == HistoryStateTypeGroup.layerFull &&
               rasterIndices.isNotEmpty &&
-              rasterIndices.length == restoreIndices.length &&
-              rasterIndices.every((final int index) => allLayers[index] is RasterableLayerState);
+              rasterIndices.length == restoreIndices.length;
           if (canRasterSelectively)
           {
             for (final int index in rasterIndices)
             {
-              (allLayers[index] as RasterableLayerState).doManualRaster = true;
+              //reference and grid layers are not part of any other layer's raster
+              final LayerState layer = allLayers[index];
+              if (layer is RasterableLayerState)
+              {
+                layer.doManualRaster = true;
+              }
             }
+            GetIt.I.get<ViewState>().repaintNotifier.repaint();
           }
           else
           {

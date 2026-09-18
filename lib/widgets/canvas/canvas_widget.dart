@@ -70,6 +70,7 @@ import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 abstract final class _CanvasOptions
 {
   static const int historyCheckPollRate = 250;
+  static const int referenceCommitDelay = 500;
   static const double minVisibilityFactor = 0.1;
   static const int idleTimerRate = 15;
   static const int opacityDuration = 150;
@@ -170,6 +171,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   final List<Timer> _timers = <Timer>[];
   final ValueNotifier<double> _selectionPulse = ValueNotifier<double>(1.0);
 
+  //wheel zoom of a reference layer is committed once the wheel rests
+  ReferenceLayerState? _pendingReferenceLayer;
+  Timer? _referenceCommitTimer;
+
   late KPixPainter kPixPainter = KPixPainter(
     offset: _canvasOffset,
     coords: _cursorPos,
@@ -225,6 +230,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       timer.cancel();
     }
     _timers.clear();
+    _referenceCommitTimer?.cancel();
 
     _desktopPrefs.cursorType.removeListener(_setDefaultCursor);
     _stylusPrefs.stylusLongPressDelay.removeListener(_stylusLongPressDelayChanged);
@@ -248,7 +254,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     GetIt.I.get<SymmetryState>().verticalValue.removeListener(_updateFromChange);
 
     //the global app state holds this callback, so it has to let go of it too
-    if (GetIt.I.get<HistoryController>().flushHistoryData == _flushHistoryData)
+    if (GetIt.I.get<HistoryController>().flushHistoryData == _flushPendingHistory)
     {
       GetIt.I.get<HistoryController>().flushHistoryData = null;
     }
@@ -275,7 +281,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _timers.add(Timer.periodic(Duration(milliseconds: _stylusPrefs.stylusPollInterval.value), (final Timer t) {_stylusBtnTimeout(t: t);}));
     _timers.add(Timer.periodic(const Duration(milliseconds: _CanvasOptions.historyCheckPollRate), (final Timer t) {_checkHistoryData(t: t);}));
     _timers.add(Timer.periodic(const Duration(milliseconds: _CanvasOptions.idleTimerRate), (final Timer t) {_idleTimeout(t: t);}));
-    GetIt.I.get<HistoryController>().flushHistoryData = _flushHistoryData;
+    GetIt.I.get<HistoryController>().flushHistoryData = _flushPendingHistory;
     _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
     WidgetsBinding.instance.addPostFrameCallback((final _)
     {
@@ -445,6 +451,36 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _flushHistoryData();
   }
 
+  void _scheduleReferenceLayerCommit({required final ReferenceLayerState layer})
+  {
+    if (_pendingReferenceLayer != null && _pendingReferenceLayer != layer)
+    {
+      _commitPendingReferenceLayer();
+    }
+    _pendingReferenceLayer = layer;
+    _referenceCommitTimer?.cancel();
+    _referenceCommitTimer = Timer(const Duration(milliseconds: _CanvasOptions.referenceCommitDelay), _commitPendingReferenceLayer);
+  }
+
+  void _commitPendingReferenceLayer()
+  {
+    _referenceCommitTimer?.cancel();
+    _referenceCommitTimer = null;
+    final ReferenceLayerState? layer = _pendingReferenceLayer;
+    _pendingReferenceLayer = null;
+    if (layer != null)
+    {
+      GetIt.I.get<LayerManager>().commitReferenceLayerChange(layer: layer);
+    }
+  }
+
+  //runs before undo/redo, so pending changes become their own step first
+  void _flushPendingHistory()
+  {
+    _commitPendingReferenceLayer();
+    _flushHistoryData();
+  }
+
   void _flushHistoryData()
   {
     if (kPixPainter.toolPainter != null && kPixPainter.toolPainter!.hasHistoryData)
@@ -579,6 +615,11 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       //print("PRIMARY UP");
       _timerLongPress.cancel();
       _primaryIsDown.value = false;
+      final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
+      if (currentLayer is ReferenceLayerState)
+      {
+        GetIt.I.get<LayerManager>().commitReferenceLayerChange(layer: currentLayer);
+      }
     }
     else if (_secondaryIsDown.value && details.kind == PointerDeviceKind.mouse)
     {
@@ -848,6 +889,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
             {
               final ReferenceLayerState refLayer = _documentState.timeline.getCurrentLayer()! as ReferenceLayerState;
               refLayer.increaseZoom();
+              _scheduleReferenceLayerCommit(layer: refLayer);
             }
           }
         }
@@ -863,6 +905,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
             {
               final ReferenceLayerState refLayer = _documentState.timeline.getCurrentLayer()! as ReferenceLayerState;
               refLayer.decreaseZoom();
+              _scheduleReferenceLayerCommit(layer: refLayer);
             }
           }
         }
@@ -981,6 +1024,11 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       _stylusButtonDown.value = false;
       _timerStylusBtnLongPress.cancel();
       _timerStylusRunning = false;
+      final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
+      if (_stylusLongMoveHorizontal.value && currentLayer is ReferenceLayerState)
+      {
+        GetIt.I.get<LayerManager>().commitReferenceLayerChange(layer: currentLayer);
+      }
       _stylusLongMoveStarted.value = false;
       _stylusLongMoveVertical.value = false;
       _stylusLongMoveHorizontal.value = false;

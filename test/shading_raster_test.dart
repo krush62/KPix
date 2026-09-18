@@ -24,9 +24,11 @@ import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -191,6 +193,56 @@ void main()
       expect(thumbnail["3|2"], _greyFor(layer: shading, value: -1));
       expect(thumbnail["1|0"], _greyFor(layer: shading, value: 1));
       before.dispose();
+    },);
+  });
+
+  testWidgets("a shading layer linked into two frames keeps shading what is below it in each after a regional render", (final WidgetTester tester) async {
+    await withProject(tester: tester, canvasSize: _canvasSize, body: (final ProjectSession projectSession) async {
+      final KPalRampData ramp = GetIt.I.get<PaletteState>().colorRamps.first;
+      final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
+      final CoordinateSetI dot = CoordinateSetI(x: 1, y: 1);
+      final DrawingLayerState shared = layerAt(projectSession: projectSession, index: 0);
+      shared.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: ramp.references[1]}));
+      await settle();
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, addToHistoryStack: false).$2! as ShadingLayerState;
+      shading.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{dot: 1}));
+      await settle();
+      await _settleShading(layer: shading);
+
+      timeline.linkFrameRight();
+      await settle();
+      await _settleShading(layer: shading);
+      final Frame frameOne = timeline.frames.value[0];
+      final Frame frameTwo = timeline.frames.value[1];
+      expect(frameTwo.layerList.getLayer(index: 0), same(shading), reason: "setup: the shading layer is in both frames");
+
+      //only the second frame gets a different color below the shading
+      timeline.selectFrame(frame: frameTwo, layerIndex: 1);
+      final DrawingLayerState between = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, addToHistoryStack: false, content: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: ramp.references[2]})).$2! as DrawingLayerState;
+      await settle();
+      await _settleShading(layer: shading);
+      expect(frameTwo.layerList.getLayer(index: 1), same(between), reason: "setup: the new layer sits between the shading and the shared layer");
+      expect(frameOne.layerList.contains(layer: between), isFalse, reason: "setup: and only in the second frame");
+
+      Future<Map<String, int>> shown({required final Frame frame}) => _pixels(image: shading.rasterImageMap.value[frame]!.raster);
+      int shaded({required final int colorIndex}) => argbToRgba(argb: ramp.references[colorIndex.clamp(0, ramp.references.length - 1)].getIdColor().color.toARGB32());
+      expect((await shown(frame: frameOne))["1|1"], shaded(colorIndex: 2), reason: "setup: the first frame shades the shared layer");
+      expect((await shown(frame: frameTwo))["1|1"], shaded(colorIndex: 3), reason: "setup: the second frame shades the layer in between");
+
+      //a step far from the dot only renders its own region
+      shading.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{CoordinateSetI(x: 4, y: 2): 1}));
+      await settle();
+      await _settleShading(layer: shading);
+      final Map<String, int> regionalOne = await shown(frame: frameOne);
+      final Map<String, int> regionalTwo = await shown(frame: frameTwo);
+
+      expect(regionalTwo["1|1"], shaded(colorIndex: 3), reason: "the second frame still shades what is below it there, not what the first frame shows");
+      expect(regionalOne["1|1"], shaded(colorIndex: 2));
+
+      shading.forceFullRender();
+      await _settleShading(layer: shading);
+      expect(regionalOne, await shown(frame: frameOne), reason: "the regional render of the first frame matches a full one");
+      expect(regionalTwo, await shown(frame: frameTwo), reason: "the regional render of the second frame matches a full one");
     },);
   });
 }

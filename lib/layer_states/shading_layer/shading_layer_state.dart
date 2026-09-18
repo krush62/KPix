@@ -502,11 +502,12 @@ class ShadingLayerState extends RasterableLayerState
   {
     final List<DirtyRegion> mergedRegions = mergeOverlappingRegions(regions: dirtyRegions);
 
-    final ui.Image? baseRaster = rasterImage.value;
-    final ui.Image? baseThumbnail = thumbnail.value;
-
-    //the regions are patched into the frame's pixels, so those have to exist
-    final RasterPixels? framePixels = pixelsForFrame(frame: frame);
+    //each frame shades what is below it there, so only its own image and pixels
+    //can be the base; a frame without them yet gets a full render
+    final RasterImagePair? framePair = frame != null ? rasterImageMap.value[frame] : null;
+    final ui.Image? baseRaster = frame != null ? framePair?.raster : rasterImage.value;
+    final ui.Image? baseThumbnail = frame != null ? framePair?.thumbnail : thumbnail.value;
+    final RasterPixels? framePixels = frame != null ? rasterPixelsByFrame[frame] : rasterPixels;
     if (baseRaster == null || baseThumbnail == null || framePixels == null)
     {
       return await _fullRender(

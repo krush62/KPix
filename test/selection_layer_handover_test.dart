@@ -150,7 +150,7 @@ void main()
       GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);
       await settle();
 
-      expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), HistoryStateTypeIdentifier.selectionNew,
+      expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), HistoryStateTypeIdentifier.layerChange,
           reason: "with nothing floating the switch really does only move the selected index",);
     },);
   });

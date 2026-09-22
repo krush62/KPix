@@ -62,7 +62,7 @@ class ColorSet
 
 
   const Color notificationGreen = Color.fromARGB(200, 50, 200, 50);
-  ColorSet _lightColors = ColorSet(normal: Colors.grey[400]!, light: Colors.grey[700]!, dark: Colors.grey[350]!);
+  ColorSet _lightColors = ColorSet(normal: Colors.grey[350]!, light: Colors.grey[600]!, dark: Colors.grey[100]!);
 
   ButtonStyle _generalButtonStyle = ButtonStyle(
     foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => (states.contains(WidgetState.disabled) ? _lightColors.normal : _lightColors.light)),

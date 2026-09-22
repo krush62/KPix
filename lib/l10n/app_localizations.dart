@@ -2000,6 +2000,72 @@ abstract class AppLocalizations {
   /// **'Add New Color Ramp'**
   String get addNewColorRamp;
 
+  /// No description provided for @paletteAdjustments.
+  ///
+  /// In en, this message translates to:
+  /// **'Palette Adjustments'**
+  String get paletteAdjustments;
+
+  /// No description provided for @adjustPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust Palette'**
+  String get adjustPalette;
+
+  /// No description provided for @whiteBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'White Balance'**
+  String get whiteBalance;
+
+  /// No description provided for @tint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tint'**
+  String get tint;
+
+  /// No description provided for @hueSpread.
+  ///
+  /// In en, this message translates to:
+  /// **'Hue Spread'**
+  String get hueSpread;
+
+  /// No description provided for @includeRampInAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Include ramp in the adjustment'**
+  String get includeRampInAdjustment;
+
+  /// No description provided for @resetAllAdjustments.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset All Adjustments'**
+  String get resetAllAdjustments;
+
+  /// No description provided for @resetValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Value'**
+  String get resetValue;
+
+  /// No description provided for @holdToShowOriginal.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold to Show the Original'**
+  String get holdToShowOriginal;
+
+  /// No description provided for @valueClipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Value clipping'**
+  String get valueClipping;
+
+  /// No description provided for @saturationClipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturation clipping'**
+  String get saturationClipping;
+
   /// No description provided for @savePalette.
   ///
   /// In en, this message translates to:

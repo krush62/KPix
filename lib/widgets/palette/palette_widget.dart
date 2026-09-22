@@ -43,11 +43,20 @@ import 'package:kpix/widgets/palette_action_messages.dart';
 abstract final class _PaletteWidgetOptions
 {
   static const double padding = 8.0;
-  static const double managerButtonSize = 32.0;
+  /// Matches the height of the ramp settings buttons of the rows in between.
+  static const double paletteButtonHeight = 32.0;
   static const double borderRadius = 8.0;
   static const double dropTargetHeight = 32.0;
   static const int dropTargetAnimationLength = 100;
 }
+
+final ButtonStyle _paletteButtonStyle = IconButton.styleFrom(
+  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  minimumSize: const Size(_PaletteWidgetOptions.paletteButtonHeight, _PaletteWidgetOptions.paletteButtonHeight),
+  maximumSize: const Size(double.infinity, _PaletteWidgetOptions.paletteButtonHeight),
+  iconSize: _PaletteWidgetOptions.paletteButtonHeight - _PaletteWidgetOptions.padding,
+  padding: EdgeInsets.zero,
+);
 
 class PaletteWidget extends StatefulWidget
 {
@@ -64,6 +73,7 @@ class PaletteWidget extends StatefulWidget
 class _PaletteWidgetState extends State<PaletteWidget>
 {
   late KPixOverlay _paletteManager;
+  late KPixOverlay _paletteAdjustment;
   late KPixOverlay _kPal;
   late PaletteState _paletteState;
 
@@ -74,6 +84,8 @@ class _PaletteWidgetState extends State<PaletteWidget>
     _paletteState = GetIt.I.get<PaletteState>();
     _paletteManager = getPaletteManagerDialog(
         onDismiss: _paletteManagerClosed,);
+    _paletteAdjustment = getPaletteAdjustmentDialog(
+        onDismiss: _paletteAdjustmentClosed,);
   }
 
   void _paletteManagerPressed()
@@ -84,6 +96,16 @@ class _PaletteWidgetState extends State<PaletteWidget>
   void _paletteManagerClosed()
   {
     _paletteManager.hide();
+  }
+
+  void _paletteAdjustmentPressed()
+  {
+    _paletteAdjustment.show(context: context);
+  }
+
+  void _paletteAdjustmentClosed()
+  {
+    _paletteAdjustment.hide();
   }
 
 
@@ -168,13 +190,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                     tooltip: l10n.paletteManager,
                     onPressed: _paletteManagerPressed,
                     icon: const Icon(Icons.palette),
-                    style: IconButton.styleFrom(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      minimumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
-                      maximumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
-                      iconSize: _PaletteWidgetOptions.managerButtonSize - _PaletteWidgetOptions.padding,
-                      padding: EdgeInsets.zero,
-                    ),
+                    style: _paletteButtonStyle,
                   ),
                 ),
                 Expanded(
@@ -191,31 +207,40 @@ class _PaletteWidgetState extends State<PaletteWidget>
                 ),
                 Padding(
                   padding: const EdgeInsets.all(_PaletteWidgetOptions.padding),
-                  child: IconButton.outlined(
-                    tooltip: l10n.addNewColorRamp,
-                    onPressed: () {
-                      _paletteState.addNewRamp().then
-                        ((final (PaletteActionResult, KPalRampData?) result) {
-                          if (context.mounted)
-                          {
-                            showMessageForPaletteResult(result: result.$1, l10n: AppLocalizations.of(context)!);
-                            final KPalRampData? ramp = result.$2;
-                            if (ramp != null)
-                            {
-                              _createKPal(ramp: ramp);
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: IconButton.outlined(
+                          tooltip: l10n.addNewColorRamp,
+                          onPressed: () {
+                            _paletteState.addNewRamp().then
+                              ((final (PaletteActionResult, KPalRampData?) result) {
+                                if (context.mounted)
+                                {
+                                  showMessageForPaletteResult(result: result.$1, l10n: AppLocalizations.of(context)!);
+                                  final KPalRampData? ramp = result.$2;
+                                  if (ramp != null)
+                                  {
+                                    _createKPal(ramp: ramp);
+                                  }
+                                }
                             }
-                          }
-                      }
-                      );
-                    },
-                    icon: const Icon(TablerIcons.plus),
-                    style: IconButton.styleFrom(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      minimumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
-                      maximumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
-                      iconSize: _PaletteWidgetOptions.managerButtonSize - _PaletteWidgetOptions.padding,
-                      padding: EdgeInsets.zero,
-                    ),
+                            );
+                          },
+                          icon: const Icon(TablerIcons.plus),
+                          style: _paletteButtonStyle,
+                        ),
+                      ),
+                      const SizedBox(width: _PaletteWidgetOptions.padding),
+                      Expanded(
+                        child: IconButton.outlined(
+                          tooltip: l10n.paletteAdjustments,
+                          onPressed: _paletteAdjustmentPressed,
+                          icon: const Icon(TablerIcons.photo_cog),
+                          style: _paletteButtonStyle,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

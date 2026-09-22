@@ -1045,6 +1045,40 @@ class AppLocalizationsDe extends AppLocalizations {
   String get addNewColorRamp => 'Neue Farbrampe hinzufügen';
 
   @override
+  String get paletteAdjustments => 'Palette anpassen';
+
+  @override
+  String get adjustPalette => 'Palette anpassen';
+
+  @override
+  String get whiteBalance => 'Weißabgleich';
+
+  @override
+  String get tint => 'Farbstich';
+
+  @override
+  String get hueSpread => 'Farbwert-\nspreizung';
+
+  @override
+  String get includeRampInAdjustment =>
+      'Farbrampe in die Anpassung einbeziehen';
+
+  @override
+  String get resetAllAdjustments => 'Alle Anpassungen zurücksetzen';
+
+  @override
+  String get resetValue => 'Wert zurücksetzen';
+
+  @override
+  String get holdToShowOriginal => 'Halten, um das Original zu zeigen';
+
+  @override
+  String get valueClipping => 'Helligkeit beschnitten';
+
+  @override
+  String get saturationClipping => 'Sättigung beschnitten';
+
+  @override
   String get savePalette => 'Palette speichern';
 
   @override

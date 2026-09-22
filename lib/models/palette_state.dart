@@ -209,6 +209,17 @@ class PaletteState
     }
   }
 
+  void paletteAdjusted({final bool addToHistoryStack = true})
+  {
+    _colorRamps.value = List<KPalRampData>.from(colorRamps);
+    GetIt.I.get<LayerManager>().rasterLayersAll();
+    GetIt.I.get<ViewState>().repaintNotifier.repaint();
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalAdjust);
+    }
+  }
+
   Future<(PaletteActionResult, KPalRampData?)> addNewRamp({final bool addToHistoryStack = true}) async
   {
     if (colorRamps.length < KPalConstraints.rampCountMax)

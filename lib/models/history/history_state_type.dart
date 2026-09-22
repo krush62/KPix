@@ -75,6 +75,7 @@ const Map<HistoryStateTypeIdentifier, HistoryStateType> allStateTypeMap =
   HistoryStateTypeIdentifier.kPalPaletteReplace: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalPaletteReplace, compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.kPalAdd: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalAdd, compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.kPalOrderChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalOrderChange, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.kPalAdjust: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalAdjust, compressionBehavior: HistoryStateCompressionBehavior.leave),
 
   HistoryStateTypeIdentifier.timelineFrameAdd: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameAdd, compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.timelineFrameDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameDelete, compressionBehavior: HistoryStateCompressionBehavior.leave),
@@ -144,6 +145,7 @@ enum HistoryStateTypeIdentifier
   kPalPaletteReplace,
   kPalAdd,
   kPalOrderChange,
+  kPalAdjust,
 
   timelineFrameAdd,
   timelineFrameDelete,
@@ -227,6 +229,7 @@ const Map<HistoryStateTypeIdentifier, HistoryStateTypeGroup> _stateTypeGroupMap 
   HistoryStateTypeIdentifier.kPalPaletteReplace: HistoryStateTypeGroup.full, //full
   HistoryStateTypeIdentifier.kPalAdd: HistoryStateTypeGroup.full, //full
   HistoryStateTypeIdentifier.kPalOrderChange: HistoryStateTypeGroup.full, //full
+  HistoryStateTypeIdentifier.kPalAdjust: HistoryStateTypeGroup.full, //full
 
   HistoryStateTypeIdentifier.timelineFrameAdd: HistoryStateTypeGroup.full, //frame add
   HistoryStateTypeIdentifier.timelineFrameDelete: HistoryStateTypeGroup.full, //frame delete

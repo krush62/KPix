@@ -74,6 +74,7 @@ String _getMessageForHistoryState({
   HistoryStateTypeIdentifier.kPalPaletteReplace => l10n.replacePalette,
   HistoryStateTypeIdentifier.kPalAdd => l10n.addNewRamp,
   HistoryStateTypeIdentifier.kPalOrderChange => l10n.changeRampOrder,
+  HistoryStateTypeIdentifier.kPalAdjust => l10n.adjustPalette,
   HistoryStateTypeIdentifier.timelineFrameAdd => l10n.addFrame,
   HistoryStateTypeIdentifier.timelineFrameDelete => l10n.deleteFrame,
   HistoryStateTypeIdentifier.timelineFrameMove => l10n.moveFrame,

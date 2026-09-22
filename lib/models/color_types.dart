@@ -69,17 +69,22 @@ class KPalRampSettings
   factory KPalRampSettings.from({required final KPalRampSettings other})
   {
     final KPalRampSettings newSettings = KPalRampSettings();
-    newSettings.colorCount = other.colorCount;
-    newSettings.baseHue = other.baseHue;
-    newSettings.baseSat = other.baseSat;
-    newSettings.hueShift = other.hueShift;
-    newSettings.hueShiftExp = other.hueShiftExp;
-    newSettings.satShift = other.satShift;
-    newSettings.satShiftExp = other.satShiftExp;
-    newSettings.valueRangeMin = other.valueRangeMin;
-    newSettings.valueRangeMax = other.valueRangeMax;
-    newSettings.satCurve = other.satCurve;
+    newSettings.setFrom(other: other);
     return newSettings;
+  }
+
+  void setFrom({required final KPalRampSettings other})
+  {
+    colorCount = other.colorCount;
+    baseHue = other.baseHue;
+    baseSat = other.baseSat;
+    hueShift = other.hueShift;
+    hueShiftExp = other.hueShiftExp;
+    satShift = other.satShift;
+    satShiftExp = other.satShiftExp;
+    valueRangeMin = other.valueRangeMin;
+    valueRangeMax = other.valueRangeMax;
+    satCurve = other.satCurve;
   }
 }
 
@@ -96,6 +101,9 @@ class KPalRampData
   final KPalRampSettings settings;
   final String uuid;
   final List<KHSV> _originalColors = <KHSV>[];
+
+  List<KHSV> get baseColors => _originalColors;
+
   final List<ValueNotifier<IdColor>> shiftedColors = <ValueNotifier<IdColor>>[];
   final List<ColorReference> references = <ColorReference>[];
   final List<ShiftSet> shifts = <ShiftSet>[];
@@ -136,16 +144,7 @@ class KPalRampData
   {
     final bool colorChange = (settings.colorCount != other.settings.colorCount);
     //SETTINGS
-    settings.satShift = other.settings.satShift;
-    settings.hueShift = other.settings.hueShift;
-    settings.colorCount = other.settings.colorCount;
-    settings.valueRangeMax = other.settings.valueRangeMax;
-    settings.valueRangeMin = other.settings.valueRangeMin;
-    settings.baseSat = other.settings.baseSat;
-    settings.baseHue = other.settings.baseHue;
-    settings.satCurve = other.settings.satCurve;
-    settings.satShiftExp = other.settings.satShiftExp;
-    settings.hueShiftExp = other.settings.hueShiftExp;
+    settings.setFrom(other: other.settings);
 
     //SHIFTS
     for (int i = 0; i < settings.colorCount; i++)

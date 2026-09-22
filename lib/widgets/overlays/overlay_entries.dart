@@ -45,6 +45,7 @@ import 'package:kpix/widgets/overlays/overlay_load_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_raster_layer_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_reduced_layer_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_save_menu.dart';
+import 'package:kpix/widgets/palette/palette_adjustment_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/save_palette_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
@@ -648,6 +649,22 @@ KPixOverlay getPaletteManagerDialog({required final Function() onDismiss})
     smokeOpacity: OverlayEntryAlertDialogOptions.smokeOpacity,
     content: (final BuildContext context) => Center(
       child: PaletteManagerWidget(dismiss: onDismiss,),
+    ),
+  );
+}
+
+/// An overlay holding the palette adjustments.
+///
+/// The barrier ignores taps, so the dialog can only be left through its own
+/// buttons; a tap outside would leave the adjusted palette behind without the
+/// user ever having accepted it.
+KPixOverlay getPaletteAdjustmentDialog({required final Function() onDismiss})
+{
+  return _barrierOverlay(
+    smokeOpacity: PaletteAdjustmentWidgetOptions.smokeOpacity,
+    content: (final BuildContext context) => Padding(
+      padding: const EdgeInsets.all(PaletteAdjustmentWidgetOptions.outsidePadding),
+      child: PaletteAdjustmentWidget(dismiss: onDismiss),
     ),
   );
 }

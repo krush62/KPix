@@ -1026,6 +1026,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addNewColorRamp => 'Add New Color Ramp';
 
   @override
+  String get paletteAdjustments => 'Palette Adjustments';
+
+  @override
+  String get adjustPalette => 'Adjust Palette';
+
+  @override
+  String get whiteBalance => 'White Balance';
+
+  @override
+  String get tint => 'Tint';
+
+  @override
+  String get hueSpread => 'Hue Spread';
+
+  @override
+  String get includeRampInAdjustment => 'Include ramp in the adjustment';
+
+  @override
+  String get resetAllAdjustments => 'Reset All Adjustments';
+
+  @override
+  String get resetValue => 'Reset Value';
+
+  @override
+  String get holdToShowOriginal => 'Hold to Show the Original';
+
+  @override
+  String get valueClipping => 'Value clipping';
+
+  @override
+  String get saturationClipping => 'Saturation clipping';
+
+  @override
   String get savePalette => 'Save Palette';
 
   @override

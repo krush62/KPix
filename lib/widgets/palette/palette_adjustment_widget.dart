@@ -54,6 +54,8 @@ abstract final class PaletteAdjustmentWidgetOptions
   static const double swatchMargin = 2.0;
   static const double swatchRadius = 4.0;
   static const double indicatorSize = 14.0;
+  static const double previewHintSize = 32.0;
+  static const double previewHintBlur = 3.0;
 }
 
 class PaletteAdjustmentWidget extends StatefulWidget
@@ -439,6 +441,9 @@ class _PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
         //a long press is how the original is asked for, the hover is left
         triggerMode: TooltipTriggerMode.manual,
         child: GestureDetector(
+          //the image leaves the bars beside it unpainted, and they are part of
+          //the target as much as the image itself
+          behavior: HitTestBehavior.opaque,
           onTapDown: (final TapDownDetails details) {_showOriginal.value = true;},
           onTapUp: (final TapUpDetails details) {_showOriginal.value = false;},
           onTapCancel: () {_showOriginal.value = false;},
@@ -448,14 +453,45 @@ class _PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
               return ValueListenableBuilder<ui.Image?>(
                 valueListenable: _previewImage,
                 builder: (final BuildContext context, final ui.Image? img, final Widget? child) {
-                  return ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(PaletteAdjustmentWidgetOptions.borderRadius)),
-                    child: RawImage(
-                      fit: BoxFit.contain,
-                      filterQuality: ui.FilterQuality.none,
-                      color: Theme.of(context).primaryColorDark,
-                      colorBlendMode: ui.BlendMode.dstATop,
-                      image: showOriginal ? (_originalImage ?? img) : img,
+                  final ui.Image? shownImage = showOriginal ? (_originalImage ?? img) : img;
+                  //giving the box the shape of the image leaves no bars beside
+                  //it, so the corner of the box is the corner of the image
+                  return Center(
+                    child: AspectRatio(
+                      aspectRatio: shownImage != null
+                          ? shownImage.width / shownImage.height
+                          : _canvasState.canvasSize.x / _canvasState.canvasSize.y,
+                      child: Stack(
+                        children: <Widget>[
+                          Positioned.fill(
+                            child: ClipRRect(
+                              borderRadius: const BorderRadius.all(Radius.circular(PaletteAdjustmentWidgetOptions.borderRadius)),
+                              child: RawImage(
+                                fit: BoxFit.contain,
+                                filterQuality: ui.FilterQuality.none,
+                                color: Theme.of(context).primaryColorDark,
+                                colorBlendMode: ui.BlendMode.dstATop,
+                                image: shownImage,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: PaletteAdjustmentWidgetOptions.padding / 2.0,
+                            right: PaletteAdjustmentWidgetOptions.padding / 2.0,
+                            //shows that there is something to press here; the
+                            //image below it can be any color, so the icon
+                            //carries its own outline
+                            child: Icon(
+                              TablerIcons.click,
+                              size: PaletteAdjustmentWidgetOptions.previewHintSize,
+                              color: Theme.of(context).primaryColorLight,
+                              shadows: <Shadow>[
+                                Shadow(color: Theme.of(context).primaryColorDark, blurRadius: PaletteAdjustmentWidgetOptions.previewHintBlur),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },

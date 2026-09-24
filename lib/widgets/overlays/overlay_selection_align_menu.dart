@@ -111,6 +111,7 @@ class OverlaySelectionAlignMenu extends StatefulWidget
      return AnchoredOverlayBox(
        anchorKey: widget.anchorKey,
        width: OverlayEntrySubMenuOptions.width / 3,
+       centerHorizontally: true,
        offset: const Offset(
          OverlayEntrySubMenuOptions.offsetX,
          -(_entryCount + 1) *  (OverlayEntrySubMenuOptions.offsetY + OverlayEntrySubMenuOptions.buttonSpacing) - OverlayEntrySubMenuOptions.buttonSpacing,

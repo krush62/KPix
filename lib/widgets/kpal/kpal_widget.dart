@@ -92,10 +92,10 @@ class KPal extends StatefulWidget
   }) : _delete = delete, _accept = accept, _colorRamp = colorRamp, _usage = usage;
 
   @override
-  State<KPal> createState() => _KPalState();
+  State<KPal> createState() => KPalState();
 }
 
-class _KPalState extends State<KPal>
+class KPalState extends State<KPal>
 {
   late KPixOverlay _alertDialog;
   late KPalRampData _originalData;
@@ -121,12 +121,12 @@ class _KPalState extends State<KPal>
     return message.toString();
   }
 
-  void _acceptChange()
+  void acceptChange()
   {
     widget._accept(ramp: widget._colorRamp, originalData: _originalData);
   }
 
-  void _discardChange()
+  void discardChange()
   {
     widget._colorRamp.updateFromOther(other: _originalData);
     widget._accept(ramp: widget._colorRamp, originalData: _originalData);
@@ -181,7 +181,7 @@ class _KPalState extends State<KPal>
                     child: IconButton.outlined(
                       tooltip: l10n.cancel,
                       icon: const Icon(TablerIcons.x),
-                      onPressed: _discardChange,
+                      onPressed: discardChange,
                     ),
                   ),
                 ),
@@ -203,7 +203,7 @@ class _KPalState extends State<KPal>
                     child: IconButton.outlined(
                       tooltip: l10n.apply,
                       icon: const Icon(TablerIcons.check),
-                      onPressed: _acceptChange,
+                      onPressed: acceptChange,
                     ),
                   ),
                 ),

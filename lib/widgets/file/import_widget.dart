@@ -38,10 +38,10 @@ class ImportWidget extends StatefulWidget
   const ImportWidget({super.key, required this.dismiss, required this.import});
 
   @override
-  State<ImportWidget> createState() => _ImportWidgetState();
+  State<ImportWidget> createState() => ImportWidgetState();
 }
 
-class _ImportWidgetState extends State<ImportWidget>
+class ImportWidgetState extends State<ImportWidget>
 {
   late ValueNotifier<int> _maxRampsNotifier;
   late ValueNotifier<int> _maxColorsPerRampNotifier;
@@ -162,6 +162,15 @@ class _ImportWidgetState extends State<ImportWidget>
       _messageNotifier.value = l10n.couldNotLoadFile;
       _imageNotifier.value = null;
       _fileNameNotifier.value = null;
+    }
+  }
+
+  /// Does nothing until an image was chosen, like the disabled import button.
+  void accept()
+  {
+    if (_fileNameNotifier.value != null)
+    {
+      _loadImage();
     }
   }
 
@@ -485,9 +494,7 @@ class _ImportWidgetState extends State<ImportWidget>
                       return IconButton.outlined(
                         tooltip: l10n.importImage,
                         icon: const Icon(TablerIcons.check),
-                        onPressed: _fileNameNotifier.value == null ? null : () {
-                          _loadImage();
-                        },
+                        onPressed: _fileNameNotifier.value == null ? null : accept,
                       );
                     },
                   ),

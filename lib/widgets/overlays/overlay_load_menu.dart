@@ -91,6 +91,7 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
     return AnchoredOverlayBox(
       anchorKey: widget.anchorKey,
       width: OverlayEntrySubMenuOptions.width / 2,
+      centerHorizontally: true,
       offset: const Offset(
         OverlayEntrySubMenuOptions.offsetX,
         OverlayEntrySubMenuOptions.offsetY + OverlayEntrySubMenuOptions.buttonSpacing,

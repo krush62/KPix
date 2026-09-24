@@ -106,6 +106,7 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
     return AnchoredOverlayBox(
       anchorKey: widget.anchorKey,
       width: OverlayEntrySubMenuOptions.width / 2,
+      centerHorizontally: true,
       offset: const Offset(
         OverlayEntrySubMenuOptions.offsetX,
         OverlayEntrySubMenuOptions.offsetY + OverlayEntrySubMenuOptions.buttonSpacing,

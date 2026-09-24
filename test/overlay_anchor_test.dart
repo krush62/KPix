@@ -35,6 +35,18 @@ void main()
     expect(tester.getTopLeft(find.byKey(_menuKey)), _anchorPosition + _menuOffset);
   });
 
+  testWidgets("a centred menu shares the horizontal centre of its anchor", (final WidgetTester tester) async {
+    const double menuWidth = 100.0;
+    await tester.pumpWidget(const MaterialApp(home: _MenuHost(menuWidth: menuWidth, centerHorizontally: true)));
+    await tester.tap(find.byType(ElevatedButton));
+    await tester.pumpAndSettle();
+
+    final Rect menu = tester.getRect(find.byKey(_menuKey));
+    expect(menu.width, menuWidth);
+    expect(menu.center.dx, _anchorPosition.dx + _anchorSize.width / 2.0 + _menuOffset.dx);
+    expect(menu.top, _anchorPosition.dy + _menuOffset.dy);
+  });
+
   testWidgets("tooltips inside an anchored menu can be shown", (final WidgetTester tester) async {
     await tester.pumpWidget(const MaterialApp(home: _MenuHost()));
     await tester.tap(find.byType(ElevatedButton));
@@ -55,7 +67,10 @@ void main()
 /// the menus in `lib/widgets/overlays`.
 class _MenuHost extends StatefulWidget
 {
-  const _MenuHost();
+  const _MenuHost({this.menuWidth, this.centerHorizontally = false});
+
+  final double? menuWidth;
+  final bool centerHorizontally;
 
   @override
   State<_MenuHost> createState() => _MenuHostState();
@@ -86,6 +101,8 @@ class _MenuHostState extends State<_MenuHost>
                     AnchoredOverlayBox(
                       anchorKey: _anchorKey,
                       offset: _menuOffset,
+                      width: widget.menuWidth,
+                      centerHorizontally: widget.centerHorizontally,
                       child: Material(
                         key: _menuKey,
                         color: Colors.transparent,

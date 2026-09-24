@@ -57,7 +57,6 @@ import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/layer_action_messages.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
-import 'package:kpix/widgets/overlays/overlay_add_new_layer_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
@@ -80,8 +79,16 @@ class _RightBarWidgetState extends State<RightBarWidget>
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
 
-  final OverlayPortalController _addLayerPortalController = OverlayPortalController();
   final GlobalKey _addLayerAnchorKey = GlobalKey();
+  late final KPixOverlay _addLayerMenu = getAddNewLayerMenu(
+    onDismiss: _closeLayerMenu,
+    onNewDrawingLayer: _newDrawingLayerPressed,
+    onNewReferenceLayer: _newReferenceLayerPressed,
+    onNewGridLayer: _newGridLayerPressed,
+    onNewShadingLayer: _newShadingLayerPressed,
+    onNewDitherLayer: _newDitherLayerPressed,
+    anchorKey: _addLayerAnchorKey,
+  );
 
 
   @override
@@ -107,6 +114,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
     _hotkeyManager.removeListener(func: _duplicateLayerHotkey, action: HotkeyAction.layersDuplicate);
     _hotkeyManager.removeListener(func: _deleteLayerHotkey, action: HotkeyAction.layersDelete);
     _hotkeyManager.removeListener(func: _mergeLayerHotkey, action: HotkeyAction.layersMerge);
+    _closeLayerMenu();
     super.dispose();
   }
 
@@ -157,7 +165,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
 
   void _closeLayerMenu()
   {
-    _addLayerPortalController.hide();
+    _addLayerMenu.hide();
   }
 
   void _newDrawingLayerPressed()
@@ -273,37 +281,16 @@ class _RightBarWidgetState extends State<RightBarWidget>
                               padding: const EdgeInsets.only(top: LayerWidgetOptions.outerPadding, left: LayerWidgetOptions.outerPadding, right: LayerWidgetOptions.outerPadding),
                               child: OverlayAnchor(
                                 anchorKey: _addLayerAnchorKey,
-                                child: OverlayPortal(
-                                  controller: _addLayerPortalController,
-                                  overlayChildBuilder: (final BuildContext bcontext) {
-                                    return Stack(
-                                      children: <Widget>[
-                                        ModalBarrier(
-                                          color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
-                                          onDismiss: _closeLayerMenu,
-                                        ),
-                                        OverlayAddNewLayerMenu(
-                                          anchorKey: _addLayerAnchorKey,
-                                          onNewDrawingLayer: _newDrawingLayerPressed,
-                                          onNewReferenceLayer: _newReferenceLayerPressed,
-                                          onNewGridLayer: _newGridLayerPressed,
-                                          onNewShadingLayer: _newShadingLayerPressed,
-                                          onNewDitherLayer: _newDitherLayerPressed,
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                  child: IconButton.outlined(
-                                    tooltip: l10n.addNewLayerDot,
-                                    onPressed: _addLayerPortalController.show,
-                                    icon: const Icon(TablerIcons.plus),
-                                    style: IconButton.styleFrom(
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      minimumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
-                                      maximumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
-                                      iconSize: LayerWidgetOptions.addButtonSize.toDouble() - LayerWidgetOptions.innerPadding,
-                                      padding: EdgeInsets.zero,
-                                    ),
+                                child: IconButton.outlined(
+                                  tooltip: l10n.addNewLayerDot,
+                                  onPressed: () {_addLayerMenu.show(context: context);},
+                                  icon: const Icon(TablerIcons.plus),
+                                  style: IconButton.styleFrom(
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    minimumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
+                                    maximumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
+                                    iconSize: LayerWidgetOptions.addButtonSize.toDouble() - LayerWidgetOptions.innerPadding,
+                                    padding: EdgeInsets.zero,
                                   ),
                                 ),
                               ),

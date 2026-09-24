@@ -38,10 +38,10 @@ class NewProjectWidget extends StatefulWidget
   const NewProjectWidget({super.key, this.dismiss, required this.accept, required this.open});
 
   @override
-  State<NewProjectWidget> createState() => _NewProjectWidgetState();
+  State<NewProjectWidget> createState() => NewProjectWidgetState();
 }
 
-class _NewProjectWidgetState extends State<NewProjectWidget>
+class NewProjectWidgetState extends State<NewProjectWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<int> _width = ValueNotifier<int>(64);
@@ -185,6 +185,11 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
         ),
       ],
     );
+  }
+
+  void accept()
+  {
+    widget.accept(size: CoordinateSetI(x: _width.value, y: _height.value));
   }
 
   @override
@@ -376,9 +381,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                 child: IconButton.outlined(
                   tooltip: l10n.createProject,
                   icon: const Icon(TablerIcons.check),
-                  onPressed: () {
-                    widget.accept(size: CoordinateSetI(x: _width.value, y: _height.value));
-                  },
+                  onPressed: accept,
                 ),
               ),
             ],

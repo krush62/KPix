@@ -36,10 +36,10 @@ class SavePaletteWidget extends StatefulWidget
   const SavePaletteWidget({super.key, required this.dismiss, required this.accept});
 
   @override
-  State<SavePaletteWidget> createState() => _SavePaletteWidgetState();
+  State<SavePaletteWidget> createState() => SavePaletteWidgetState();
 }
 
-class _SavePaletteWidgetState extends State<SavePaletteWidget>
+class SavePaletteWidgetState extends State<SavePaletteWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier<FileNameStatus>(FileNameStatus.forbidden);
@@ -48,6 +48,17 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
   void _updateFileNameStatus()
   {
     _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: p.join(GetIt.I.get<AppPaths>().internalDir, palettesSubDirName), extension: fileExtensionKpal);
+  }
+
+  /// Does nothing for an unusable name; an existing palette is only replaced
+  /// with [allowOverwrite].
+  void accept({final bool allowOverwrite = true})
+  {
+    final FileNameStatus status = _fileNameStatus.value;
+    if (status == FileNameStatus.available || (allowOverwrite && status == FileNameStatus.overwrite))
+    {
+      widget.accept(saveData: PaletteExportData(extension: fileExtensionKpal, directory: p.join(GetIt.I.get<AppPaths>().internalDir, palettesSubDirName), fileName: _fileName.value, name: "KPAL"), paletteType: PaletteExportType.kpal);
+    }
   }
 
   @override
@@ -141,10 +152,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                       return IconButton.outlined(
                         tooltip: l10n.savePalette,
                         icon: const Icon(TablerIcons.check),
-                        onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
-                            () {
-                          widget.accept(saveData: PaletteExportData(extension: fileExtensionKpal, directory: p.join(GetIt.I.get<AppPaths>().internalDir, palettesSubDirName), fileName: _fileName.value, name: "KPAL"), paletteType: PaletteExportType.kpal);
-                        } : null,
+                        onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ? accept : null,
                       );
                     },
                   ),

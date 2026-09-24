@@ -42,10 +42,10 @@ class CanvasSizeWidget extends StatefulWidget
   const CanvasSizeWidget({required this.dismiss, required this.accept, super.key});
 
   @override
-  State<StatefulWidget> createState() => _CanvasSizeWidgetState();
+  State<StatefulWidget> createState() => CanvasSizeWidgetState();
 }
 
-class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
+class CanvasSizeWidgetState extends State<CanvasSizeWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final DocumentState _documentState = GetIt.I.get<DocumentState>();
@@ -360,6 +360,11 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
     );
   }
 
+  void accept()
+  {
+    widget.accept(size: CoordinateSetI(x: _width.value, y: _height.value), offset: CoordinateSetI(x: _offsetX.value, y: _offsetY.value));
+  }
+
   @override
   Widget build(final BuildContext context)
   {
@@ -559,9 +564,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                       TablerIcons.check,
                       size: OverlayEntryAlertDialogOptions.iconSize,
                     ),
-                    onPressed: () {
-                      widget.accept(size: CoordinateSetI(x: _width.value, y: _height.value), offset: CoordinateSetI(x: _offsetX.value, y: _offsetY.value));
-                    },
+                    onPressed: accept,
                   ),
                 ),
               ),

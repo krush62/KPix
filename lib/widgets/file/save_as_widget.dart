@@ -36,10 +36,10 @@ class SaveAsWidget extends StatefulWidget
   const SaveAsWidget({super.key, required this.accept, required this.dismiss, required this.callback});
 
   @override
-  State<SaveAsWidget> createState() => _SaveAsWidgetState();
+  State<SaveAsWidget> createState() => SaveAsWidgetState();
 }
 
-class _SaveAsWidgetState extends State<SaveAsWidget>
+class SaveAsWidgetState extends State<SaveAsWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<String> _fileName = ValueNotifier<String>("");
@@ -59,6 +59,17 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
   void _updateFileNameStatus()
   {
     _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: GetIt.I.get<AppPaths>().projectsDir, extension: fileExtensionKpix, allowRecoverFile: false);
+  }
+
+  /// Does nothing for an unusable name; an existing project is only replaced
+  /// with [allowOverwrite].
+  void accept({final bool allowOverwrite = true})
+  {
+    final FileNameStatus status = _fileNameStatus.value;
+    if (status == FileNameStatus.available || (allowOverwrite && status == FileNameStatus.overwrite))
+    {
+      widget.accept(fileName: _fileName.value, callback: widget.callback);
+    }
   }
 
   @override
@@ -151,10 +162,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                         return IconButton.outlined(
                           tooltip: l10n.saveProject,
                           icon: const Icon(TablerIcons.check),
-                          onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
-                              () {
-                            widget.accept(fileName: _fileName.value, callback: widget.callback);
-                          } : null,
+                          onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ? accept : null,
                         );
                       },
                     ),

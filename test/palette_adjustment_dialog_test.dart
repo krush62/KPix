@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -26,6 +27,7 @@ import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_adjustment_widget.dart';
 
 import 'support/selection_harness.dart';
@@ -68,6 +70,29 @@ Future<void> _close(final WidgetTester tester) async
     }
   }
   await tester.pump();
+}
+
+/// Boots a project and shows the adjustment dialog the way the app does, as an
+/// overlay that closes itself when dismissed.
+Future<KPixOverlay> _showOverlayDialog(final WidgetTester tester) async
+{
+  await tester.runAsync(() async {
+    await bootProject(canvasSize: CoordinateSetI(x: 4, y: 4));
+  });
+  const Key hostKey = Key("host");
+  await tester.pumpWidget(
+    const MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Material(child: SizedBox.expand(key: hostKey)),
+    ),
+  );
+  late final KPixOverlay dialog;
+  dialog = getPaletteAdjustmentDialog(onDismiss: () {dialog.hide();});
+  dialog.show(context: tester.element(find.byKey(hostKey)));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 200));
+  return dialog;
 }
 
 AppLocalizations _l10n(final WidgetTester tester)
@@ -194,6 +219,41 @@ void main()
     expect(dismissed, isTrue);
     expect(_baseHues(), before);
     expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), stepBefore);
+    await _close(tester);
+  });
+
+  testWidgets("escape on the shown dialog cancels like the cancel button", (final WidgetTester tester) async {
+    final KPixOverlay dialog = await _showOverlayDialog(tester);
+    final AppLocalizations l10n = _l10n(tester);
+    final List<int> before = _baseHues();
+    final HistoryStateTypeIdentifier stepBefore = GetIt.I.get<HistoryManager>().getCurrentIdentifier();
+
+    await _dragSliderToMax(tester, label: l10n.hueShift);
+    expect(_baseHues(), isNot(before));
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pump();
+
+    expect(dialog.isVisible, isFalse);
+    expect(_baseHues(), before);
+    expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), stepBefore);
+    await _close(tester);
+  });
+
+  testWidgets("enter on the shown dialog applies like the apply button, also after a switch was clicked", (final WidgetTester tester) async {
+    final KPixOverlay dialog = await _showOverlayDialog(tester);
+    final AppLocalizations l10n = _l10n(tester);
+    final List<int> before = _baseHues();
+
+    await _dragSliderToMax(tester, label: l10n.hueShift);
+    //a clicked control must not keep Enter for itself
+    await tester.tap(find.byType(Switch).first);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+
+    expect(dialog.isVisible, isFalse);
+    expect(_baseHues(), isNot(before));
+    expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), HistoryStateTypeIdentifier.kPalAdjust);
     await _close(tester);
   });
 }

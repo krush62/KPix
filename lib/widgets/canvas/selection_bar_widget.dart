@@ -27,7 +27,6 @@ import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/widgets/layer_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
-import 'package:kpix/widgets/overlays/overlay_selection_align_menu.dart';
 import 'package:kpix/widgets/selection_action_messages.dart';
 
 /// Layout options for the [SelectionBarWidget].
@@ -52,7 +51,16 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final SelectionState _selectionState = GetIt.I.get<DocumentState>().selectionState;
   final GlobalKey _alignAnchorKey = GlobalKey();
-  final OverlayPortalController _alignmentController = OverlayPortalController();
+  late final KPixOverlay _alignMenu = getSelectionAlignMenu(
+    onDismiss: _alignDismiss,
+    onAlignLeft: _alignLeftPressed,
+    onAlignRight: _alignRightPressed,
+    onAlignTop: _alignTopPressed,
+    onAlignBottom: _alignBottomPressed,
+    onAlignCenterH: _alignCenterHPressed,
+    onAlignCenterV: _alignCenterVPressed,
+    anchorKey: _alignAnchorKey,
+  );
 
   //kept so the very same callbacks can be removed again in dispose
   late final Map<HotkeyAction, VoidCallback> _hotkeyCallbacks = <HotkeyAction, VoidCallback>{
@@ -85,6 +93,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
     {
       _hotkeyManager.removeListener(func: hotkey.value, action: hotkey.key);
     }
+    _alignDismiss();
     super.dispose();
   }
 
@@ -124,7 +133,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
 
   void _alignDismiss()
   {
-    _alignmentController.hide();
+    _alignMenu.hide();
   }
 
   void _alignCenterHPressed()
@@ -252,34 +261,11 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   anchorKey: _alignAnchorKey,
                   child: Tooltip(
                     message: l10n.alignDot,
-                    child: OverlayPortal(
-                      controller: _alignmentController,
-                      overlayChildBuilder: (final BuildContext bcontext) {
-                        return Stack(
-                          children: <Widget>[
-                            ModalBarrier(
-                              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
-                              onDismiss: _alignDismiss,
-                            ),
-                            OverlaySelectionAlignMenu(
-                              anchorKey: _alignAnchorKey,
-                              onDismiss: _alignDismiss,
-                              onAlignCenterH: _alignCenterHPressed,
-                              onAlignCenterV: _alignCenterVPressed,
-                              onAlignLeft: _alignLeftPressed,
-                              onAlignRight: _alignRightPressed,
-                              onAlignTop: _alignTopPressed,
-                              onAlignBottom: _alignBottomPressed,
-                            ),
-                          ],
-                        );
-                      },
-                      child: IconButton.outlined(
-                        onPressed: _selectionState.selection.isEmpty ? null : _alignmentController.show,
-                        icon: const Icon(
-                          TablerIcons.keyframe_align_center,
-                          size: _SelectionBarWidgetOptions.iconHeight,
-                        ),
+                    child: IconButton.outlined(
+                      onPressed: _selectionState.selection.isEmpty ? null : () {_alignMenu.show(context: context);},
+                      icon: const Icon(
+                        TablerIcons.keyframe_align_center,
+                        size: _SelectionBarWidgetOptions.iconHeight,
                       ),
                     ),
                   ),

@@ -64,10 +64,10 @@ class PaletteAdjustmentWidget extends StatefulWidget
   const PaletteAdjustmentWidget({super.key, required this.dismiss});
 
   @override
-  State<PaletteAdjustmentWidget> createState() => _PaletteAdjustmentWidgetState();
+  State<PaletteAdjustmentWidget> createState() => PaletteAdjustmentWidgetState();
 }
 
-class _PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
+class PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
 {
   final PaletteState _paletteState = GetIt.I.get<PaletteState>();
   final DocumentState _documentState = GetIt.I.get<DocumentState>();
@@ -279,13 +279,13 @@ class _PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
     _adjustmentChanged(adjustment: const PaletteAdjustment());
   }
 
-  void _acceptPressed()
+  void accept()
   {
     _paletteState.paletteAdjusted();
     widget.dismiss();
   }
 
-  void _cancelPressed()
+  void cancel()
   {
     for (final KPalRampData ramp in _ramps)
     {
@@ -595,7 +595,7 @@ class _PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
                     child: IconButton.outlined(
                       tooltip: l10n.cancel,
                       icon: const Icon(TablerIcons.x),
-                      onPressed: _cancelPressed,
+                      onPressed: cancel,
                     ),
                   ),
                 ),
@@ -615,7 +615,7 @@ class _PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
                     child: IconButton.outlined(
                       tooltip: l10n.apply,
                       icon: const Icon(TablerIcons.check),
-                      onPressed: _acceptPressed,
+                      onPressed: accept,
                     ),
                   ),
                 ),

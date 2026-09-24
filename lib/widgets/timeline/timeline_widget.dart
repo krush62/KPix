@@ -748,7 +748,11 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         widget.timeline.selectFrameByIndex(index: i);
                         if (!isPlaying)
                         {
+                          //created once, so Enter reads the value the user picked
+                          final FrameTimeWidget frameTimeWidget = FrameTimeWidget(frame: currentFrame, onDismiss: _frameTimeOverlayDismiss, onConfirmSingle: _frameTimeOverlayConfirmSingle, onConfirmAll: _frameTimeOverlayConfirmAll,);
                           _frameTimeOverlay = KPixOverlay(
+                            onEscape: _frameTimeOverlayDismiss,
+                            onEnter: () {_frameTimeOverlayConfirmSingle(frame: currentFrame, value: frameTimeWidget.valueNotifier.value);},
                             entry: OverlayEntry(
                               builder: (final BuildContext context) => Stack(
                                 children: <Widget>[
@@ -761,7 +765,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                     children: <Widget>[
                                       Padding(
                                         padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                                        child: FrameTimeWidget(frame: currentFrame, onDismiss: _frameTimeOverlayDismiss, onConfirmSingle: _frameTimeOverlayConfirmSingle, onConfirmAll: _frameTimeOverlayConfirmAll,),
+                                        child: frameTimeWidget,
                                       ),
                                     ],
                                   ),
@@ -1175,6 +1179,8 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                 ),
                                 onPressed: isPlaying ? null : () {
                                   _frameBlendingOverlay = KPixOverlay(
+                                    onEscape: _frameBlendingOverlayDismiss,
+                                    onEnter: _frameBlendingOverlayDismiss,
                                     entry: OverlayEntry(
                                       builder: (final BuildContext context) => Stack(
                                         children: <Widget>[

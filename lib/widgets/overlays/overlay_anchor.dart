@@ -57,8 +57,13 @@ class AnchoredOverlayBox extends StatefulWidget
   final GlobalKey anchorKey;
 
   /// The distance between the top left corner of the anchor and the top left
-  /// corner of [child].
+  /// corner of [child]; horizontally measured from the centred position when
+  /// [centerHorizontally] is set.
   final Offset offset;
+
+  /// Whether [child] is centred horizontally on the anchor, which needs a
+  /// [width].
+  final bool centerHorizontally;
 
   /// The width of [child], or `null` to let it size itself.
   final double? width;
@@ -76,7 +81,8 @@ class AnchoredOverlayBox extends StatefulWidget
     this.offset = Offset.zero,
     this.width,
     this.height,
-  });
+    this.centerHorizontally = false,
+  }) : assert(!centerHorizontally || width != null, "centering needs a width");
 
   @override
   State<AnchoredOverlayBox> createState() => _AnchoredOverlayBoxState();
@@ -106,9 +112,9 @@ class _AnchoredOverlayBoxState extends State<AnchoredOverlayBox> with WidgetsBin
     setState(() {});
   }
 
-  /// The top left corner of the anchor in the coordinate system of the
-  /// surrounding [Overlay], or `null` while the anchor is not laid out.
-  Offset? _getAnchorOffset()
+  /// The bounds of the anchor in the coordinate system of the surrounding
+  /// [Overlay], or `null` while the anchor is not laid out.
+  Rect? _getAnchorRect()
   {
     final RenderObject? anchorObject = widget.anchorKey.currentContext?.findRenderObject();
     final RenderObject? overlayObject = Overlay.of(context).context.findRenderObject();
@@ -116,20 +122,21 @@ class _AnchoredOverlayBoxState extends State<AnchoredOverlayBox> with WidgetsBin
     {
       return null;
     }
-    return anchorObject.localToGlobal(Offset.zero, ancestor: overlayObject);
+    return anchorObject.localToGlobal(Offset.zero, ancestor: overlayObject) & anchorObject.size;
   }
 
   @override
   Widget build(final BuildContext context)
   {
-    final Offset? anchorOffset = _getAnchorOffset();
-    if (anchorOffset == null)
+    final Rect? anchorRect = _getAnchorRect();
+    if (anchorRect == null)
     {
       return const SizedBox.shrink();
     }
+    final double left = widget.centerHorizontally ? anchorRect.center.dx - widget.width! / 2.0 : anchorRect.left;
     return Positioned(
-      left: anchorOffset.dx + widget.offset.dx,
-      top: anchorOffset.dy + widget.offset.dy,
+      left: left + widget.offset.dx,
+      top: anchorRect.top + widget.offset.dy,
       width: widget.width,
       height: widget.height,
       child: widget.child,

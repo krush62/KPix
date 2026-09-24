@@ -33,10 +33,10 @@ class ChangeTextToolWidget extends StatefulWidget
   const ChangeTextToolWidget({super.key, required this.accept, required this.dismiss, this.initialText = "", this.maxStringLength = 32});
 
   @override
-  State<ChangeTextToolWidget> createState() => _ChangeTextToolWidgetState();
+  State<ChangeTextToolWidget> createState() => ChangeTextToolWidgetState();
 }
 
-class _ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
+class ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<String> _text = ValueNotifier<String>("");
@@ -50,6 +50,15 @@ class _ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.changeTextToolFocus).requestFocus();
   }
 
+
+  /// Does nothing while the text is blank, like the disabled apply button.
+  void accept()
+  {
+    if (_text.value.trim() != "")
+    {
+      widget.accept(newText: _text.value);
+    }
+  }
 
   @override
   Widget build(final BuildContext context)
@@ -124,10 +133,7 @@ class _ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
                         return IconButton.outlined(
                           tooltip: l10n.apply,
                           icon: const Icon(TablerIcons.check),
-                          onPressed: text.trim() != "" ?
-                              () {
-                            widget.accept(newText: _text.value);
-                          } : null,
+                          onPressed: text.trim() != "" ? accept : null,
                         );
                       },
                     ),

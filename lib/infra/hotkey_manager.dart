@@ -15,6 +15,7 @@
  */
 
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -209,6 +210,17 @@ class HotkeyManager
     _createFocusNodeListeners();
   }
 
+  void handleMouseEvent(final PointerDownEvent event)
+  {
+    if ((event.buttons & kBackMouseButton) != 0)
+    {
+      triggerShortcut(action: HotkeyAction.generalUndo);
+    }
+    else if ((event.buttons & kForwardMouseButton) != 0)
+    {
+      triggerShortcut(action: HotkeyAction.generalRedo);
+    }
+  }
 
 
   void handleRawKeyboardEvent(final KeyEvent? evt)

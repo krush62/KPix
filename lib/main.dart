@@ -106,24 +106,27 @@ void main(final List<String> args)
             focusNode: focusNode,
             autofocus: true,
             onKeyEvent: hotkeyManager.handleRawKeyboardEvent,
-            child: AnimatedBuilder(
-              animation: appSettings,
-              builder: (final BuildContext context, final Widget? child)
-              {
-                return getToastificationWrapper(
-                  child: MaterialApp(
-                    debugShowCheckedModeBanner: false,
-                    localizationsDelegates: const <LocalizationsDelegate<dynamic>>[AppLocalizations.delegate, ...flutter_localizations.GlobalMaterialLocalizations.delegates],
-                    supportedLocales: AppLocalizations.supportedLocales,
-                    //null follows the system language
-                    locale: languageSettings.locale,
-                    home: const KPixApp(),
-                    theme: monochromeTheme,
-                    darkTheme: monochromeThemeDark,
-                    themeMode: themeSettings.themeMode,
-                  ),
-                );
-              },
+            child: Listener(
+              onPointerDown: hotkeyManager.handleMouseEvent,
+              child: AnimatedBuilder(
+                animation: appSettings,
+                builder: (final BuildContext context, final Widget? child)
+                {
+                  return getToastificationWrapper(
+                    child: MaterialApp(
+                      debugShowCheckedModeBanner: false,
+                      localizationsDelegates: const <LocalizationsDelegate<dynamic>>[AppLocalizations.delegate, ...flutter_localizations.GlobalMaterialLocalizations.delegates],
+                      supportedLocales: AppLocalizations.supportedLocales,
+                      //null follows the system language
+                      locale: languageSettings.locale,
+                      home: const KPixApp(),
+                      theme: monochromeTheme,
+                      darkTheme: monochromeThemeDark,
+                      themeMode: themeSettings.themeMode,
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         );

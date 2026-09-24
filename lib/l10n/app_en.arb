@@ -493,6 +493,7 @@
   "insufficientPermissionsForDir": "Insufficient permissions for the selected directory!",
   "undoSteps": "Undo Steps",
   "selectInsertedLayers": "Select Inserted Layers",
+  "activateSelectionToolAfterPaste": "Activate Selection Tool After Pasting",
   "defaultShadingLayerSettings": "Default Shading Layer Settings",
   "defaultFrameTime": "Default Frame Time",
   "showReferenceLayersOutsideOfCanvas": "Show Reference Layers outside of canvas",

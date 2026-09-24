@@ -118,6 +118,10 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
             label: l10n.selectInsertedLayers,
             notifier: widget.prefs.selectLayerAfterInsert,
         ),
+        PrefSwitchRow(
+            label: l10n.activateSelectionToolAfterPaste,
+            notifier: widget.prefs.selectToolAfterPaste,
+        ),
 
         Row(
           mainAxisSize: MainAxisSize.min,

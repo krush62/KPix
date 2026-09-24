@@ -127,4 +127,17 @@ class ToolState
       selectOptions.shape.value = shape;
     }
   }
+
+  /// Activates the selection tool with its default shape and mode, so that
+  /// pasted content can be moved right away.
+  void setDefaultSelectionTool()
+  {
+    _setSelectionToolSelection(shape: SelectConstraints.shapeDefault);
+    if (_currentToolOptions is SelectOptions)
+    {
+      final SelectOptions selectOptions = _currentToolOptions as SelectOptions;
+      selectOptions.unModifiedMode.value = SelectConstraints.modeDefault;
+      selectOptions.mode.value = SelectConstraints.modeDefault;
+    }
+  }
 }

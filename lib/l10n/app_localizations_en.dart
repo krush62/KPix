@@ -1096,6 +1096,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectInsertedLayers => 'Select Inserted Layers';
 
   @override
+  String get activateSelectionToolAfterPaste =>
+      'Activate Selection Tool After Pasting';
+
+  @override
   String get defaultShadingLayerSettings => 'Default Shading Layer Settings';
 
   @override

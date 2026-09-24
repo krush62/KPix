@@ -139,6 +139,7 @@ enum PreferenceBool
 
   SelectShapeAfterInsert(defaultValue: false),
   SelectLayerAfterInsert(defaultValue: true),
+  SelectToolAfterPaste(defaultValue: true),
   ShowReferenceOutsideCanvas(defaultValue: false),
 
   ProjectDirectory_UseCustom(defaultValue: false),
@@ -393,6 +394,7 @@ class PreferenceManager
       undoSteps: _getValueI(PreferenceInt.HistoryOptions_Steps),
       selectAfterInsert: _getValueB(PreferenceBool.SelectShapeAfterInsert),
       selectLayerAfterInsert: _getValueB(PreferenceBool.SelectLayerAfterInsert),
+      selectToolAfterPaste: _getValueB(PreferenceBool.SelectToolAfterPaste),
       undoStepsMax: _getValueI(PreferenceInt.HistoryOptions_StepsMax),
       undoStepsMin: _getValueI(PreferenceInt.HistoryOptions_StepsMin),
       frameConstraints: frameConstraints,
@@ -487,6 +489,8 @@ class PreferenceManager
       GetIt.I.get<HistoryManager>().changeMaxEntries(maxEntries: behaviorPreferenceContent.undoSteps.value);
     }
     _boolMap[PreferenceBool.SelectShapeAfterInsert]!.value = behaviorPreferenceContent.selectShapeAfterInsert.value;
+    _boolMap[PreferenceBool.SelectLayerAfterInsert]!.value = behaviorPreferenceContent.selectLayerAfterInsert.value;
+    _boolMap[PreferenceBool.SelectToolAfterPaste]!.value = behaviorPreferenceContent.selectToolAfterPaste.value;
 
     _intMap[PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken]!.value = behaviorPreferenceContent.shadingStepsMinus.value;
     _intMap[PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten]!.value = behaviorPreferenceContent.shadingStepsPlus.value;

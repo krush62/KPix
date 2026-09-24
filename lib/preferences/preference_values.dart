@@ -316,6 +316,7 @@ class BehaviorPreferenceContent
   final ValueNotifier<int> undoSteps;
   final ValueNotifier<bool> selectShapeAfterInsert;
   final ValueNotifier<bool> selectLayerAfterInsert;
+  final ValueNotifier<bool> selectToolAfterPaste;
   final ValueNotifier<bool> showReferenceOutsideCanvas;
   final ValueNotifier<int> shadingStepsMinus;
   final ValueNotifier<int> shadingStepsPlus;
@@ -327,12 +328,13 @@ class BehaviorPreferenceContent
   final ValueNotifier<bool> useCustomProjectDirectory;
   final ValueNotifier<String> customProjectDirectory;
 
-  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints, required final bool showReferenceOutsideCanvas, required final bool useCustomProjectDirectory, required final String customProjectDirectory})
+  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final bool selectToolAfterPaste, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints, required final bool showReferenceOutsideCanvas, required final bool useCustomProjectDirectory, required final String customProjectDirectory})
   {
     return BehaviorPreferenceContent._(
       undoSteps: ValueNotifier<int>(undoSteps.clamp(undoStepsMin, undoStepsMax)),
       selectShapeAfterInsert: ValueNotifier<bool>(selectAfterInsert),
       selectLayerAfterInsert: ValueNotifier<bool>(selectLayerAfterInsert),
+      selectToolAfterPaste: ValueNotifier<bool>(selectToolAfterPaste),
       frameConstraints: frameConstraints,
       fps: ValueNotifier<int>(frameConstraints.defaultFps),
       shadingStepsMinus: ValueNotifier<int>(shadingConstraints.shadingStepsDefaultDarken),
@@ -346,13 +348,14 @@ class BehaviorPreferenceContent
     );
   }
 
-  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints, required this.fps, required this.frameConstraints, required this.showReferenceOutsideCanvas, required this.useCustomProjectDirectory, required this.customProjectDirectory});
+  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.selectToolAfterPaste, required this.undoStepsMax, required this.undoStepsMin, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints, required this.fps, required this.frameConstraints, required this.showReferenceOutsideCanvas, required this.useCustomProjectDirectory, required this.customProjectDirectory});
 
   void copyValuesFrom({required final BehaviorPreferenceContent other})
   {
     undoSteps.value = other.undoSteps.value;
     selectShapeAfterInsert.value = other.selectShapeAfterInsert.value;
     selectLayerAfterInsert.value = other.selectLayerAfterInsert.value;
+    selectToolAfterPaste.value = other.selectToolAfterPaste.value;
     showReferenceOutsideCanvas.value = other.showReferenceOutsideCanvas.value;
     shadingStepsMinus.value = other.shadingStepsMinus.value;
     shadingStepsPlus.value = other.shadingStepsPlus.value;

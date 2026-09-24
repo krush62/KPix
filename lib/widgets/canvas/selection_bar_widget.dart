@@ -20,8 +20,10 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/widgets/layer_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -94,11 +96,20 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
   void _copyPressed() => _showSelectionResult(result: _selectionState.copy());
   void _copyMergedPressed() => _showSelectionResult(result: _selectionState.copyMerged());
   void _cutPressed() => _showSelectionResult(result: _selectionState.cut());
-  void _pastePressed() => _showSelectionResult(result: _selectionState.paste());
   void _deletePressed() => _showSelectionResult(result: _selectionState.delete());
   void _flipHPressed() => _showSelectionResult(result: _selectionState.flipH());
   void _flipVPressed() => _showSelectionResult(result: _selectionState.flipV());
   void _rotatePressed() => _showSelectionResult(result: _selectionState.rotate());
+
+  void _pastePressed()
+  {
+    final SelectionActionResult result = _selectionState.paste();
+    if (result == SelectionActionResult.success && GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.selectToolAfterPaste.value)
+    {
+      GetIt.I.get<ToolState>().setDefaultSelectionTool();
+    }
+    _showSelectionResult(result: result);
+  }
 
   void _pasteAsNewLayerPressed()
   {

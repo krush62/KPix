@@ -2132,6 +2132,12 @@ abstract class AppLocalizations {
   /// **'Select Inserted Layers'**
   String get selectInsertedLayers;
 
+  /// No description provided for @activateSelectionToolAfterPaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate Selection Tool After Pasting'**
+  String get activateSelectionToolAfterPaste;
+
   /// No description provided for @defaultShadingLayerSettings.
   ///
   /// In en, this message translates to:

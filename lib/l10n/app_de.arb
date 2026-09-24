@@ -391,6 +391,7 @@
   "insufficientPermissionsForDir": "Unzureichende Berechtigungen für das ausgewählte Verzeichnis!",
   "undoSteps": "Rückgängig Schritte",
   "selectInsertedLayers": "Eingefügte Ebenen auswählen",
+  "activateSelectionToolAfterPaste": "Auswahlwerkzeug nach dem Einfügen aktivieren",
   "defaultShadingLayerSettings": "Voreinstellung für Schattierungsebenen",
   "defaultFrameTime": "Voreinstellung Frame-Dauer",
   "showReferenceLayersOutsideOfCanvas": "Referenzebenen außerhalb der Leinwand anzeigen",

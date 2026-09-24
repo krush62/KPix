@@ -1116,6 +1116,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get selectInsertedLayers => 'Eingefügte Ebenen auswählen';
 
   @override
+  String get activateSelectionToolAfterPaste =>
+      'Auswahlwerkzeug nach dem Einfügen aktivieren';
+
+  @override
   String get defaultShadingLayerSettings =>
       'Voreinstellung für Schattierungsebenen';
 

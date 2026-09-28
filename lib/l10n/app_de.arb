@@ -303,7 +303,7 @@
   "baseHue": "Basis-Farbwert",
   "hueShift": "Farbwert-\nverschiebung",
   "exponent": "Exponent",
-  "baseSat": "Base Sättigung",
+  "baseSat": "Basis-Sättigung",
   "satShift": "Sättigungs-\nverschiebung",
   "satCurve": "Sättigungskurve",
   "satCurveNoFlat": "Verringerte Sättigung fur geringe und hohe Helligkeiten ",

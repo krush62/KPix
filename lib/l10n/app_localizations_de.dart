@@ -872,7 +872,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get exponent => 'Exponent';
 
   @override
-  String get baseSat => 'Base Sättigung';
+  String get baseSat => 'Basis-Sättigung';
 
   @override
   String get satShift => 'Sättigungs-\nverschiebung';

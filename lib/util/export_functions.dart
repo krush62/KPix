@@ -496,7 +496,7 @@ int _getShadeForCoord({required final int currentLayerIndex, required final Coor
 
       for (int j = 0; j < layerNames[i].length; j++) //name
       {
-        outBytes.setUint8(offset, layerNames[(layerEncBytes.length - 1) - i][j]);
+        outBytes.setUint8(offset, layerNames[i][j]);
         offset++;
       }
 

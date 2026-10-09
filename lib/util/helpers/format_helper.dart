@@ -80,6 +80,12 @@ String formatDateTime({required final DateTime dateTime})
   return '$year-$month-$day $hour:$minute';
 }
 
+/// Returns the way the application shows a width and height.
+String formatDimension({required final int width, required final int height})
+{
+  return '$width × $height';
+}
+
 /// Converts a string to a version object.
 Version? convertStringToVersion({required final String version})
 {

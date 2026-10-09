@@ -279,7 +279,7 @@
   "fileName": "Dateiname",
   "exportFile": "Datei Exportieren",
 
-  "imageDimensionsExceed": "Bildmaße dürfen {width}x{height} nicht überschreiten!",
+  "imageDimensionsExceed": "Bildmaße dürfen {width} × {height} nicht überschreiten!",
   "couldNotDecodeImage": "Bild konnte nicht dekodiert werden!",
   "couldNotLoadFile": "Datei konnte nicht geladen werden!",
   "importImage": "Bild importieren",
@@ -418,6 +418,8 @@
   "selectionOutlineOpacity": "Deckkraft Auswahlumrandungen",
   "pulsatingSelectionOutline": "Pulsierende Auswahlumrandung",
   "canvasBorerOpacity": "Deckkraft Leinwandumrandung",
+  "toolInfoPreferences": "Werkzeuginfo-Einstellungen",
+  "showMeasurementsAtCursor": "Maße am Cursor anzeigen",
 
   "pollingTimeToCheck": "Abfrageintervall für Tastendrücke des Stylus.",
   "pollInterval": "Abfrageintervall",

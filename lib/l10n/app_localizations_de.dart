@@ -804,7 +804,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String imageDimensionsExceed(int width, int height) {
-    return 'Bildmaße dürfen ${width}x$height nicht überschreiten!';
+    return 'Bildmaße dürfen $width × $height nicht überschreiten!';
   }
 
   @override
@@ -1189,6 +1189,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get canvasBorerOpacity => 'Deckkraft Leinwandumrandung';
+
+  @override
+  String get toolInfoPreferences => 'Werkzeuginfo-Einstellungen';
+
+  @override
+  String get showMeasurementsAtCursor => 'Maße am Cursor anzeigen';
 
   @override
   String get pollingTimeToCheck =>

@@ -42,6 +42,7 @@ void main() {
   testGetCoordinateNeighbors();
   testArgbToRgba();
   testIntToBytes();
+  testFormatDimension();
   testAngleUtilities();
   testExtractFileName();
   testGlyph();
@@ -1077,6 +1078,15 @@ void testIntToBytes()
       expect(() => intToBytes(value: 0x1234, length: 3), throwsA(isA<ArgumentError>()));
       expect(() => intToBytes(value: 0x1234, length: 0), throwsA(isA<ArgumentError>()));
       expect(() => intToBytes(value: 0x1234, length: 5), throwsA(isA<ArgumentError>()));
+    });
+  });
+}
+
+void testFormatDimension()
+{
+  group('formatDimension', () {
+    test('shows width × height', () {
+      expect(formatDimension(width: 320, height: 180), '320 × 180');
     });
   });
 }

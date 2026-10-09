@@ -50,6 +50,7 @@ class StampPainter extends IToolPainter
   ShaderDirection _lastShadingDirection = ShaderDirection.left;
   bool _lastShadingCurrentRamp = false;
   ColorReference? _lastColorSelection;
+  bool _modifiersDirty = false;
 
   static const List<MapEntry<int, int>> _symbolPath = <MapEntry<int, int>>[
     MapEntry<int, int>(0, 0),
@@ -62,6 +63,12 @@ class StampPainter extends IToolPainter
     MapEntry<int, int>(0, 1),
     MapEntry<int, int>(0, 0),
   ];
+
+  @override
+  void modifiersChanged()
+  {
+    _modifiersDirty = true;
+  }
 
   @override
   void calculate({required final DrawingParameters drawParams})
@@ -92,7 +99,8 @@ class StampPainter extends IToolPainter
         _lastShadingEnabled != shaderOptions.isEnabled.value ||
         _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
         _lastShadingDirection != shaderOptions.shaderDirection.value ||
-        _lastColorSelection != paletteState.selectedColor;
+        _lastColorSelection != paletteState.selectedColor ||
+        _modifiersDirty;
 
       final StampManagerEntryData? currentStamp = _manager.selectedStamp.value;
       if (shouldUpdate && currentStamp != null)
@@ -182,6 +190,7 @@ class StampPainter extends IToolPainter
     _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
     _lastShadingDirection = shaderOptions.shaderDirection.value;
     _lastColorSelection = paletteState.selectedColor;
+    _modifiersDirty = false;
 
     if (drawParams.cursorPos == null)
     {

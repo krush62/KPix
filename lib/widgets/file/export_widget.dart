@@ -26,6 +26,7 @@ import 'package:kpix/models/export_types.dart';
 import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
@@ -410,7 +411,7 @@ class ExportWidgetState extends State<ExportWidget>
                                       builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
                                         final bool isScalable = (section == ExportSectionType.image && ImageExportData.exportTypeMap[imageType]!.scalable) || (section == ExportSectionType.animation && AnimationExportData.exportTypeMap[animationType]!.scalable);
                                         return Text(isScalable ?
-                                        "${_canvasState.canvasSize.x *  exportScalingValues[scalingIndexVal]} x ${_canvasState.canvasSize.y *  exportScalingValues[scalingIndexVal]}" : "${_canvasState.canvasSize.x} x ${_canvasState.canvasSize.y}",
+                                        formatDimension(width: _canvasState.canvasSize.x *  exportScalingValues[scalingIndexVal], height: _canvasState.canvasSize.y *  exportScalingValues[scalingIndexVal]) : formatDimension(width: _canvasState.canvasSize.x, height: _canvasState.canvasSize.y),
                                           textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium,
                                         );
                                       },

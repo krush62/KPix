@@ -33,6 +33,7 @@ import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/frame_blending_options.dart';
 import 'package:kpix/models/kpix_painter_options.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/models/status_bar_data.dart';
 import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/models/tool_state.dart';
@@ -53,6 +54,7 @@ import 'package:kpix/painting/stamp_painter.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 
 
@@ -80,6 +82,10 @@ class KPixPainter extends CustomPainter
   late Color _blackSelectionAlphaColor;
   late Color _whiteSelectionAlphaColor;
   late Color _blackBorderAlphaColor;
+  TextStyle _cursorInfoTextStyle = const TextStyle(color: Colors.white, fontSize: 12);
+  Decoration _cursorInfoDecoration = const BoxDecoration(color: Colors.black);
+  EdgeInsets _cursorInfoPadding = const EdgeInsets.all(4.0);
+  double _cursorInfoShadowExtent = 0.0;
   late int _selectionAlpha;
   final ValueNotifier<double> _selectionPulse;
   late Map<ToolType, IToolPainter> toolPainterMap;
@@ -170,6 +176,16 @@ class KPixPainter extends CustomPainter
     _blackBorderAlphaColor = Colors.black.withAlpha(alignedValue);
   }
 
+  void setCursorInfoTheme({required final ThemeData theme})
+  {
+    final TooltipThemeData tooltipTheme = theme.tooltipTheme;
+    _cursorInfoTextStyle = tooltipTheme.textStyle ?? _cursorInfoTextStyle;
+    _cursorInfoDecoration = tooltipTheme.decoration ?? _cursorInfoDecoration;
+    _cursorInfoPadding = tooltipTheme.padding?.resolve(TextDirection.ltr) ?? _cursorInfoPadding;
+    final List<BoxShadow> shadows = (_cursorInfoDecoration is BoxDecoration ? (_cursorInfoDecoration as BoxDecoration).boxShadow : null) ?? <BoxShadow>[];
+    _cursorInfoShadowExtent = shadows.fold(0.0, (final double extent, final BoxShadow shadow) => max(extent, shadow.blurSigma * 3 + shadow.spreadRadius + shadow.offset.distance));
+  }
+
   @override
   void paint(final Canvas canvas, final Size size)
   {
@@ -255,6 +271,10 @@ class KPixPainter extends CustomPainter
       if (drawParams.symmetryHorizontal != null || drawParams.symmetryVertical != null && !drawParams.isPlaying)
       {
         _drawSymmetry(drawParams: drawParams);
+      }
+      if (_guiOptions.showCursorInfo.value && drawParams.currentRasterLayer != null && !drawParams.isPlaying)
+      {
+        _drawCursorInfo(drawParams: drawParams);
       }
     }
   }
@@ -594,6 +614,50 @@ class KPixPainter extends CustomPainter
         }
       }
     }
+  }
+
+  void _drawCursorInfo({required final DrawingParameters drawParams})
+  {
+    const double cursorDistance = 8.0;
+    const double opacity = 0.85;
+
+    final CursorInfo? info = toolPainter?.getCursorInfo(drawParams: drawParams);
+    if (info == null || drawParams.cursorPos == null)
+    {
+      return;
+    }
+    final List<String> lines = <String>[
+      if (info.dimension != null) formatDimension(width: info.dimension!.x, height: info.dimension!.y),
+      if (info.length != null) "${info.length!.toStringAsFixed(1)} px",
+      if (info.angle != null) "${info.angle!.toStringAsFixed(1)}°",
+    ];
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(text: lines.join("\n"), style: _cursorInfoTextStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    //below right of the cursor, flipped to the other side at the edges
+    final Size boxSize = Size(textPainter.width + _cursorInfoPadding.horizontal, textPainter.height + _cursorInfoPadding.vertical);
+    double left = drawParams.cursorPos!.x + cursorDistance;
+    double top = drawParams.cursorPos!.y + cursorDistance;
+    if (left + boxSize.width > drawParams.drawingSize.width)
+    {
+      left = drawParams.cursorPos!.x - cursorDistance - boxSize.width;
+    }
+    if (top + boxSize.height > drawParams.drawingSize.height)
+    {
+      top = drawParams.cursorPos!.y - cursorDistance - boxSize.height;
+    }
+
+    //painted like a tooltip, then faded as a whole
+    final Offset boxOffset = Offset(left, top);
+    drawParams.canvas.saveLayer((boxOffset & boxSize).inflate(_cursorInfoShadowExtent), Paint()..color = Colors.black.withValues(alpha: opacity));
+    final BoxPainter boxPainter = _cursorInfoDecoration.createBoxPainter();
+    boxPainter.paint(drawParams.canvas, boxOffset, ImageConfiguration(size: boxSize, textDirection: TextDirection.ltr));
+    textPainter.paint(drawParams.canvas, boxOffset + _cursorInfoPadding.topLeft);
+    drawParams.canvas.restore();
+    boxPainter.dispose();
+    textPainter.dispose();
   }
 
   void _drawSymmetry({required final DrawingParameters drawParams})

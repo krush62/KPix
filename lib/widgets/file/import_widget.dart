@@ -24,6 +24,7 @@ import 'package:kpix/models/constraints/kpal_constraints.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
+import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -291,8 +292,8 @@ class ImportWidgetState extends State<ImportWidget>
                                 return  ValueListenableBuilder<int>(
                                   valueListenable: _scaleDownNotifier,
                                   builder: (final BuildContext context, final int scaleVal, final Widget? child) {
-                                    final String originalDims = img != null ? "${img.width}x${img.height}" : "";
-                                    final String scaledDims = img != null ? "${img.width ~/ scaleVal}x${img.height ~/ scaleVal}" : "";
+                                    final String originalDims = img != null ? formatDimension(width: img.width, height: img.height) : "";
+                                    final String scaledDims = img != null ? formatDimension(width: img.width ~/ scaleVal, height: img.height ~/ scaleVal) : "";
 
                                     return KPixSlider(
                                       value: scaleVal.toDouble(),

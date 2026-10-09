@@ -26,6 +26,7 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/constraints/tool_shape_constraints.dart';
+import 'package:kpix/models/status_bar_data.dart';
 import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/preferences/preference_values.dart';
@@ -48,10 +49,17 @@ class ShapePainter extends IToolPainter
   final CoordinateSetI _lastNormStartPos = CoordinateSetI.zero();
   final CoordinateSetI _lastNormEndPos = CoordinateSetI.zero();
   bool _isStarted = false;
+  bool _modifiersDirty = false;
   bool _waitingForRasterization = false;
   CoordinateColorMap _drawingPixels = HashMap<CoordinateSetI, ColorReference>();
 
   ShapePainter({required super.painterOptions});
+
+  @override
+  void modifiersChanged()
+  {
+    _modifiersDirty = true;
+  }
 
 
   @override
@@ -61,7 +69,8 @@ class ShapePainter extends IToolPainter
     if (drawParams.currentRasterLayer != null && drawParams.cursorPosNorm != null)
     {
       final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
-      bool selectionChanged = false;
+      bool selectionChanged = _modifiersDirty;
+      _modifiersDirty = false;
       if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dy != drawParams.primaryPressStart.dy)
       {
         _normStartPos.x = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: effPxlSize);
@@ -557,6 +566,12 @@ class ShapePainter extends IToolPainter
         statusBarData.aspectRatio = statusBarData.diagonal = statusBarData.dimension = CoordinateSetI(x: width, y: height);
       }
     }
+  }
+
+  @override
+  CursorInfo? getCursorInfo({required final DrawingParameters drawParams})
+  {
+    return _isStarted ? CursorInfo.box(startPos: _selectionStart, endPos: _selectionEnd) : null;
   }
 
   @override

@@ -334,7 +334,7 @@
   "fileName": "File Name",
   "exportFile": "Export File",
 
-  "imageDimensionsExceed": "Image dimensions cannot exceed {width}x{height}!",
+  "imageDimensionsExceed": "Image dimensions cannot exceed {width} × {height}!",
   "@imageDimensionsExceed": {
     "description": "message during import regarding image dimensions",
     "placeholders": {
@@ -520,6 +520,8 @@
   "selectionOutlineOpacity": "Selection Outline Opacity",
   "pulsatingSelectionOutline": "Pulsating Selection Outline",
   "canvasBorerOpacity": "Canvas Border Opacity",
+  "toolInfoPreferences": "Tool Info Preferences",
+  "showMeasurementsAtCursor": "Show Measurements at Cursor",
 
   "pollingTimeToCheck": "Polling time to check for presses of stylus buttons.",
   "pollInterval": "Poll Interval",

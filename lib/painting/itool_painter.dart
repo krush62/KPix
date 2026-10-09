@@ -22,6 +22,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
@@ -245,6 +246,7 @@ abstract class IToolPainter
   final DocumentState documentState = GetIt.I.get<DocumentState>();
   final ShaderOptions shaderOptions = GetIt.I.get<ShaderOptions>();
   final GuiPreferenceContent guiPrefs = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
+  final HotkeyManager _modifierKeys = GetIt.I.get<HotkeyManager>();
   final KPixPainterOptions painterOptions;
   final StatusBarData statusBarData = StatusBarData();
   late Color blackToolAlphaColor;
@@ -266,7 +268,19 @@ abstract class IToolPainter
   {
     guiPrefs.toolOpacity.addListener(_toolOpacityChanged);
     _setOutlineColors(percentageValue: guiPrefs.toolOpacity.value);
+    _modifierKeys.shiftNotifier.addListener(_modifierKeysChanged);
+    _modifierKeys.controlNotifier.addListener(_modifierKeysChanged);
   }
+
+  //previews depending on modifier keys can't wait for the cursor to move
+  void _modifierKeysChanged()
+  {
+    modifiersChanged();
+    hasAsyncUpdate = true;
+  }
+
+  /// Called when shift or control is pressed or released, before the repaint.
+  void modifiersChanged() {}
 
   void _toolOpacityChanged()
   {
@@ -285,6 +299,8 @@ abstract class IToolPainter
   void dispose()
   {
     guiPrefs.toolOpacity.removeListener(_toolOpacityChanged);
+    _modifierKeys.shiftNotifier.removeListener(_modifierKeysChanged);
+    _modifierKeys.controlNotifier.removeListener(_modifierKeysChanged);
   }
 
   bool get hasHistoryData
@@ -301,6 +317,7 @@ abstract class IToolPainter
   void calculate({required final DrawingParameters drawParams}){}
   void drawExtras({required final DrawingParameters drawParams}){}
   void drawCursorOutline({required final DrawingParameters drawParams});
+  CursorInfo? getCursorInfo({required final DrawingParameters drawParams}) => null;
   void reset() {}
   void setStatusBarData({required final DrawingParameters drawParams})
   {

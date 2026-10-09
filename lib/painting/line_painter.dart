@@ -23,6 +23,7 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/constraints/tool_line_constraints.dart';
 import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
+import 'package:kpix/models/status_bar_data.dart';
 import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/tool_options/line_options.dart';
@@ -39,6 +40,7 @@ class LinePainter extends IToolPainter
   Set<CoordinateSetI> _linePoints = <CoordinateSetI>{};
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI.zero();
   int _previousSize = -1;
+  bool _modifiersDirty = false;
   bool _lineStarted = false;
   bool _dragStarted = false;
   final CoordinateSetI _lineStartPos = CoordinateSetI.zero();
@@ -51,15 +53,20 @@ class LinePainter extends IToolPainter
   bool _waitingForRasterization = false;
   RasterableLayerState? _dumpLayer;
 
-
+  @override
+  void modifiersChanged()
+  {
+    _modifiersDirty = true;
+  }
 
   @override
   void calculate({required final DrawingParameters drawParams})
   {
     if (drawParams.cursorPosNorm != null)
     {
-      if (drawParams.cursorPosNorm! != _previousCursorPosNorm || _options.width.value != _previousSize)
+      if (drawParams.cursorPosNorm! != _previousCursorPosNorm || _options.width.value != _previousSize || _modifiersDirty)
       {
+        _modifiersDirty = false;
         _contentPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: drawParams.cursorPosNorm!);
 
         if (_lineStarted)
@@ -447,6 +454,27 @@ class LinePainter extends IToolPainter
         setLineStatusBarData(startPos: _lineStartPos, endPos: drawParams.cursorPosNorm!);
       }
     }
+  }
+
+  @override
+  CursorInfo? getCursorInfo({required final DrawingParameters drawParams})
+  {
+    if (!_lineStarted || drawParams.cursorPosNorm == null)
+    {
+      return null;
+    }
+    //a curve shows its chord
+    if (_dragStarted && _lineEndPos1 != _lineEndPos2)
+    {
+      return CursorInfo.line(startPos: _lineStartPos, endPos: _lineEndPos1);
+    }
+    final CoordinateSetI endPos = _options.integerAspectRatio.value ?
+      getIntegerRatioSnappedPoint(startPos: _lineStartPos, endPos: drawParams.cursorPosNorm!, angles: _options.angles) :
+      drawParams.cursorPosNorm!;
+    final CoordinateSetI startPos = _hotkeyManager.shiftIsPressed ?
+      CoordinateSetI(x: _lineStartPos.x + (_lineStartPos.x - endPos.x), y: _lineStartPos.y + (_lineStartPos.y - endPos.y)) :
+      _lineStartPos;
+    return CursorInfo.line(startPos: startPos, endPos: endPos);
   }
 
   @override

@@ -22,6 +22,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/canvas_size_constraints.dart';
+import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -129,7 +130,7 @@ class NewProjectWidgetState extends State<NewProjectWidget>
     for (final CoordinateSetI resolution in sizes)
     {
       items.add(SizedBox(width: padding));
-      items.add(Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: resolution.x, height: resolution.y);}, child: Text("${resolution.x}x${resolution.y}"))));
+      items.add(Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: resolution.x, height: resolution.y);}, child: Text(formatDimension(width: resolution.x, height: resolution.y)))));
 
     }
     return  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, mainAxisSize: MainAxisSize.min, children: items);

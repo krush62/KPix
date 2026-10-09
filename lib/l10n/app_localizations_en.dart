@@ -787,7 +787,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String imageDimensionsExceed(int width, int height) {
-    return 'Image dimensions cannot exceed ${width}x$height!';
+    return 'Image dimensions cannot exceed $width × $height!';
   }
 
   @override
@@ -1168,6 +1168,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get canvasBorerOpacity => 'Canvas Border Opacity';
+
+  @override
+  String get toolInfoPreferences => 'Tool Info Preferences';
+
+  @override
+  String get showMeasurementsAtCursor => 'Show Measurements at Cursor';
 
   @override
   String get pollingTimeToCheck =>

@@ -148,6 +148,8 @@ enum PreferenceBool
 
   Selection_PulsatingOutline(defaultValue: false),
 
+  Gui_ShowCursorInfo(defaultValue: true),
+
 
   ;
   const PreferenceBool({
@@ -373,6 +375,7 @@ class PreferenceManager
       canvasBorderOpacityValue: _getValueI(PreferenceInt.Opacity_CanvasBorder),
       selectionOpacityValue: _getValueI(PreferenceInt.Opacity_Selection),
       selectionPulsatingValue: _getValueB(PreferenceBool.Selection_PulsatingOutline),
+      showCursorInfoValue: _getValueB(PreferenceBool.Gui_ShowCursorInfo),
       toolOpacityValue: _getValueI(PreferenceInt.Opacity_Tool),
       languageValue: _getValueS(PreferenceString.Gui_Language),
     );
@@ -475,6 +478,7 @@ class PreferenceManager
     _intMap[PreferenceInt.Opacity_Tool]!.value = guiPreferenceContent.toolOpacity.value;
     _intMap[PreferenceInt.Opacity_Selection]!.value = guiPreferenceContent.selectionOpacity.value;
     _boolMap[PreferenceBool.Selection_PulsatingOutline]!.value = guiPreferenceContent.selectionPulsatingOutline.value;
+    _boolMap[PreferenceBool.Gui_ShowCursorInfo]!.value = guiPreferenceContent.showCursorInfo.value;
     _intMap[PreferenceInt.Opacity_CanvasBorder]!.value = guiPreferenceContent.canvasBorderOpacity.value;
     if (guiPreferenceContent.language.value != _stringMap[PreferenceString.Gui_Language]!.value)
     {

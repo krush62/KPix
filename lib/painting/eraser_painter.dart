@@ -51,25 +51,7 @@ class EraserPainter extends IToolPainter
   Path? _linePreviewFill;
   Path? _linePreviewOutline;
 
-  EraserPainter({required super.painterOptions})
-  {
-    _hotkeyManager.shiftNotifier.addListener(_lineModifierChanged);
-    _hotkeyManager.controlNotifier.addListener(_lineModifierChanged);
-  }
-
-  //the line preview depends on the modifiers, so it can't wait for the cursor to move
-  void _lineModifierChanged()
-  {
-    hasAsyncUpdate = true;
-  }
-
-  @override
-  void dispose()
-  {
-    _hotkeyManager.shiftNotifier.removeListener(_lineModifierChanged);
-    _hotkeyManager.controlNotifier.removeListener(_lineModifierChanged);
-    super.dispose();
-  }
+  EraserPainter({required super.painterOptions});
 
   bool get _isInLineMode
   {

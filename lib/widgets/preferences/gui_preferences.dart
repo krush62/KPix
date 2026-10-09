@@ -108,6 +108,14 @@ class _GuiPreferencesState extends State<GuiPreferences>
             maxVal: opacityMax.toDouble(),
             notifier: widget.prefs.canvasBorderOpacity,
           ),
+
+          SizedBox(height: widget.itemPadding),
+
+          Text(l10n.toolInfoPreferences, style: Theme.of(context).textTheme.titleLarge),
+          PrefSwitchRow(
+            label: l10n.showMeasurementsAtCursor,
+            notifier: widget.prefs.showCursorInfo,
+          ),
         ],
       ),
     );

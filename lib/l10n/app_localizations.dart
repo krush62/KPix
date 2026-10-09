@@ -1553,7 +1553,7 @@ abstract class AppLocalizations {
   /// message during import regarding image dimensions
   ///
   /// In en, this message translates to:
-  /// **'Image dimensions cannot exceed {width}x{height}!'**
+  /// **'Image dimensions cannot exceed {width} × {height}!'**
   String imageDimensionsExceed(int width, int height);
 
   /// No description provided for @couldNotDecodeImage.
@@ -2275,6 +2275,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Canvas Border Opacity'**
   String get canvasBorerOpacity;
+
+  /// No description provided for @toolInfoPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Tool Info Preferences'**
+  String get toolInfoPreferences;
+
+  /// No description provided for @showMeasurementsAtCursor.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Measurements at Cursor'**
+  String get showMeasurementsAtCursor;
 
   /// No description provided for @pollingTimeToCheck.
   ///

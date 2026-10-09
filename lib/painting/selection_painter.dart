@@ -22,6 +22,7 @@ import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/constraints/tool_select_constraints.dart';
+import 'package:kpix/models/status_bar_data.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/select_options.dart';
@@ -375,6 +376,14 @@ class SelectionPainter extends IToolPainter
         statusBarData.aspectRatio = statusBarData.diagonal = statusBarData.dimension = CoordinateSetI(x: width, y: height);
       }
     }
+  }
+
+  @override
+  CursorInfo? getCursorInfo({required final DrawingParameters drawParams})
+  {
+    //a single pixel is a click (e.g. deselecting), not a drag
+    final bool isDrawingShape = _isStartOnCanvas && !_shouldMove && hasNewSelection && selectionStart != selectionEnd && (options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse);
+    return isDrawingShape ? CursorInfo.box(startPos: selectionStart, endPos: selectionEnd) : null;
   }
 
   @override

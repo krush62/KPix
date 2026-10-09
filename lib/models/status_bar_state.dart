@@ -18,6 +18,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:kpix/models/status_bar_data.dart';
+import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 
 class StatusBarState
@@ -32,7 +33,7 @@ class StatusBarState
 
   void setStatusBarDimensions({required final int width, required final int height})
   {
-    statusBarDimensionString.value = "$width,$height";
+    statusBarDimensionString.value = formatDimension(width: width, height: height);
   }
 
   void hideStatusBarDimension()
@@ -62,7 +63,7 @@ class StatusBarState
 
   void setStatusBarToolDimension({required final int width, required final int height})
   {
-    statusBarToolDimensionString.value = "$width,$height";
+    statusBarToolDimensionString.value = formatDimension(width: width, height: height);
   }
 
   void hideStatusBarToolDimension()

@@ -330,6 +330,13 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _updateSelectionPulse();
   }
 
+  @override
+  void didChangeDependencies()
+  {
+    super.didChangeDependencies();
+    kPixPainter.setCursorInfoTheme(theme: Theme.of(context));
+  }
+
   void _selectionPulseTick()
   {
     final double wave = (1.0 - cos(2 * pi * _selectionPulseController.value)) / 2.0;

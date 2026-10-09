@@ -580,6 +580,14 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     {
       _viewState.repaintNotifier.repaint();
       kPixPainter.toolPainter!.hasAsyncUpdate = false;
+      //the tool data can change without the cursor moving (e.g. a modifier key)
+      WidgetsBinding.instance.addPostFrameCallback((final _)
+      {
+        if (mounted && kPixPainter.toolPainter != null)
+        {
+          GetIt.I.get<StatusBarState>().updateFromPaint(statusBarData: kPixPainter.toolPainter!.statusBarData);
+        }
+      });
     }
 
   }

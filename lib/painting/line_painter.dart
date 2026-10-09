@@ -444,10 +444,7 @@ class LinePainter extends IToolPainter
       statusBarData.cursorPos = drawParams.cursorPosNorm;
       if (_lineStarted)
       {
-        final int width = (drawParams.cursorPosNorm!.x - _lineStartPos.x).abs() + 1;
-        final int height =(drawParams.cursorPosNorm!.y - _lineStartPos.y).abs() + 1;
-        statusBarData.aspectRatio = statusBarData.diagonal = statusBarData.dimension = CoordinateSetI(x: width, y: height);
-        statusBarData.angle = _lineStartPos;
+        setLineStatusBarData(startPos: _lineStartPos, endPos: drawParams.cursorPosNorm!);
       }
     }
   }

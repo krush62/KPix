@@ -78,6 +78,11 @@ class PencilPainter extends IToolPainter
     super.dispose();
   }
 
+  bool get _isInLineMode
+  {
+    return _hotkeyManager.shiftIsPressed && _lastDrawingPosition != null && _paintPositions.isEmpty && _allPaintPositions.isEmpty;
+  }
+
   @override
   void calculate({required final DrawingParameters drawParams})
   {
@@ -247,7 +252,7 @@ class PencilPainter extends IToolPainter
       if ((_hasNewCursorPos || (_cursorContentDirty && strokeHasSettled)) && drawParams.cursorPosNorm != null)
       {
         CoordinateColorMap cursorPixels = CoordinateColorMap();
-        if (_hotkeyManager.shiftIsPressed && _lastDrawingPosition != null && _paintPositions.isEmpty && _allPaintPositions.isEmpty)
+        if (_isInLineMode)
         {
           final Set<CoordinateSetI> linePoints = _hotkeyManager.controlIsPressed ?
           getIntegerRatioLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, angles: _lineOptions.angles, shape: _options.shape.value) :
@@ -349,6 +354,10 @@ class PencilPainter extends IToolPainter
   {
       super.setStatusBarData(drawParams: drawParams);
       statusBarData.cursorPos = drawParams.cursorPosNorm;
+      if (_isInLineMode && drawParams.cursorPosNorm != null)
+      {
+        setLineStatusBarData(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!);
+      }
   }
 
   @override

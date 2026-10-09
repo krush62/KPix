@@ -208,4 +208,36 @@ void main()
       expect(painter.cursorRaster?.size, CoordinateSetI(x: 1, y: 1), reason: "releasing shift brings the tip back");
     },);
   });
+
+  testWidgets("the line mode puts the line's measurements into the status bar", (final WidgetTester tester) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
+      GetIt.I.get<ToolOptions>().pencilOptions.size.value = 1;
+      final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
+      final CoordinateSetI lineStart = CoordinateSetI(x: 0, y: 1);
+      final CoordinateSetI lineEnd = CoordinateSetI(x: 3, y: 3);
+
+      final PencilPainter painter = PencilPainter(painterOptions: _painterOptions());
+      await _tick(painter: painter, projectSession: projectSession, cursor: lineStart, primaryDown: true);
+      await _tick(painter: painter, projectSession: projectSession, cursor: lineStart, primaryDown: false);
+      await settle();
+      await _tick(painter: painter, projectSession: projectSession, cursor: lineEnd, primaryDown: false);
+      painter.setStatusBarData(drawParams: _params(projectSession: projectSession, cursor: lineEnd, primaryDown: false));
+      expect(painter.statusBarData.dimension, isNull, reason: "setup: without shift there is no line to measure");
+
+      hotkeyManager.shiftNotifier.value = true;
+      await _tick(painter: painter, projectSession: projectSession, cursor: lineEnd, primaryDown: false);
+      painter.setStatusBarData(drawParams: _params(projectSession: projectSession, cursor: lineEnd, primaryDown: false));
+
+      expect(painter.statusBarData.cursorPos, lineEnd);
+      expect(painter.statusBarData.dimension, CoordinateSetI(x: 4, y: 3));
+      expect(painter.statusBarData.diagonal, CoordinateSetI(x: 4, y: 3));
+      expect(painter.statusBarData.aspectRatio, CoordinateSetI(x: 4, y: 3));
+      expect(painter.statusBarData.angle, lineStart, reason: "the angle is measured from the last drawn pixel to the cursor");
+
+      hotkeyManager.shiftNotifier.value = false;
+      painter.setStatusBarData(drawParams: _params(projectSession: projectSession, cursor: lineEnd, primaryDown: false));
+      expect(painter.statusBarData.dimension, isNull, reason: "releasing shift leaves the line mode");
+      expect(painter.statusBarData.angle, isNull, reason: "releasing shift leaves the line mode");
+    },);
+  });
 }

@@ -311,6 +311,14 @@ abstract class IToolPainter
     statusBarData.angle = null;
   }
 
+  void setLineStatusBarData({required final CoordinateSetI startPos, required final CoordinateSetI endPos})
+  {
+    final int width = (endPos.x - startPos.x).abs() + 1;
+    final int height = (endPos.y - startPos.y).abs() + 1;
+    statusBarData.aspectRatio = statusBarData.diagonal = statusBarData.dimension = CoordinateSetI(x: width, y: height);
+    statusBarData.angle = startPos;
+  }
+
   Set<CoordinateSetI> getRoundSquareContentPoints({required final PencilShape shape, required final int size, required final CoordinateSetI position})
   {
     final CoordinateSetI startPos = CoordinateSetI(x: position.x - ((size - 1) ~/ 2), y: position.y - ((size - 1) ~/ 2));

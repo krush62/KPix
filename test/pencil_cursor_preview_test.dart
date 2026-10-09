@@ -19,6 +19,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
@@ -29,6 +30,7 @@ import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/pencil_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -174,6 +176,36 @@ void main()
 
       expect(painter.cursorRaster, same(first),
           reason: "an idle frame with the cursor unmoved must not rebuild the preview every tick",);
+    },);
+  });
+
+  testWidgets("pressing shift shows the line preview without moving the cursor", (final WidgetTester tester) async {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
+      GetIt.I.get<ToolOptions>().pencilOptions.size.value = 1;
+      final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
+      final CoordinateSetI lineStart = CoordinateSetI(x: 0, y: 0);
+      final CoordinateSetI lineEnd = CoordinateSetI(x: 3, y: 3);
+
+      final PencilPainter painter = PencilPainter(painterOptions: _painterOptions());
+      await _tick(painter: painter, projectSession: projectSession, cursor: lineStart, primaryDown: true);
+      await _tick(painter: painter, projectSession: projectSession, cursor: lineStart, primaryDown: false);
+      await settle();
+      await _tick(painter: painter, projectSession: projectSession, cursor: lineEnd, primaryDown: false);
+      expect(painter.cursorRaster?.size, CoordinateSetI(x: 1, y: 1), reason: "setup: without shift the preview is the pencil tip");
+
+      painter.hasAsyncUpdate = false;
+      hotkeyManager.shiftNotifier.value = true;
+      expect(painter.hasAsyncUpdate, isTrue,
+          reason: "the canvas only repaints on request, so pressing shift has to ask for one",);
+
+      await _tick(painter: painter, projectSession: projectSession, cursor: lineEnd, primaryDown: false);
+      //the start pixel already has the color, so the preview covers (1,1) to (3,3)
+      expect(painter.cursorRaster?.offset, CoordinateSetI(x: 1, y: 1), reason: "the line preview shows up without the cursor moving");
+      expect(painter.cursorRaster?.size, CoordinateSetI(x: 3, y: 3), reason: "the line preview shows up without the cursor moving");
+
+      hotkeyManager.shiftNotifier.value = false;
+      await _tick(painter: painter, projectSession: projectSession, cursor: lineEnd, primaryDown: false);
+      expect(painter.cursorRaster?.size, CoordinateSetI(x: 1, y: 1), reason: "releasing shift brings the tip back");
     },);
   });
 }

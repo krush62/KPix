@@ -57,7 +57,26 @@ class PencilPainter extends IToolPainter
   ColorReference? _lastColorSelection;
 
 
-  PencilPainter({required super.painterOptions});
+  PencilPainter({required super.painterOptions})
+  {
+    _hotkeyManager.shiftNotifier.addListener(_lineModifierChanged);
+    _hotkeyManager.controlNotifier.addListener(_lineModifierChanged);
+  }
+
+  //the line preview depends on the modifiers, so it can't wait for the cursor to move
+  void _lineModifierChanged()
+  {
+    _cursorContentDirty = true;
+    hasAsyncUpdate = true;
+  }
+
+  @override
+  void dispose()
+  {
+    _hotkeyManager.shiftNotifier.removeListener(_lineModifierChanged);
+    _hotkeyManager.controlNotifier.removeListener(_lineModifierChanged);
+    super.dispose();
+  }
 
   @override
   void calculate({required final DrawingParameters drawParams})

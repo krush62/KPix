@@ -25,6 +25,7 @@ import 'package:flutter_localizations/flutter_localizations.dart'  as flutter_lo
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/infra/reference_image_manager.dart';
+import 'package:kpix/infra/stylus_bridge.dart';
 import 'package:kpix/kpix_language.dart';
 import 'package:kpix/kpix_logger.dart';
 import 'package:kpix/kpix_theme.dart';
@@ -94,6 +95,7 @@ void main(final List<String> args)
   final HotkeyManager hotkeyManager = HotkeyManager();
   final FocusNode focusNode = FocusNode();
   GetIt.I.registerSingleton<HotkeyManager>(hotkeyManager);
+  GetIt.I.registerSingleton<StylusBridge>(StylusBridge());
   //built once: the app rebuilds when either the theme or the language changes
   final Listenable appSettings = Listenable.merge(<Listenable>[themeSettings, languageSettings]);
   runApp(

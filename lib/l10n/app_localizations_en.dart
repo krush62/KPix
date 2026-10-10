@@ -1176,13 +1176,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showMeasurementsAtCursor => 'Show Measurements at Cursor';
 
   @override
-  String get pollingTimeToCheck =>
-      'Polling time to check for presses of stylus buttons.';
-
-  @override
-  String get pollInterval => 'Poll Interval';
-
-  @override
   String get timeThatNeedsToBeHeldDown =>
       'Time that needs to be held down for a long press.';
 

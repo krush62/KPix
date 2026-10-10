@@ -40,15 +40,6 @@ class _StylusPreferencesState extends State<StylusPreferences>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Tooltip(
-          message: l10n.pollingTimeToCheck,
-          child: PrefSliderRow<int>(
-            text: l10n.pollInterval,
-            minVal: widget.prefs.stylusPollIntervalMin.toDouble(),
-            maxVal: widget.prefs.stylusPollIntervalMax.toDouble(),
-            notifier: widget.prefs.stylusPollInterval,
-          ),
-        ),
-        Tooltip(
           message: l10n.timeThatNeedsToBeHeldDown,
           child: PrefSliderRow<int>(
             text: l10n.longPressDelay,

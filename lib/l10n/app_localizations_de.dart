@@ -1197,13 +1197,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get showMeasurementsAtCursor => 'Maße am Cursor anzeigen';
 
   @override
-  String get pollingTimeToCheck =>
-      'Abfrageintervall für Tastendrücke des Stylus.';
-
-  @override
-  String get pollInterval => 'Abfrageintervall';
-
-  @override
   String get timeThatNeedsToBeHeldDown =>
       'Zeit die die Taste des Stylus gedrückt werden muss für einen \"Langen Druck\"';
 

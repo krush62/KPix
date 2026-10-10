@@ -77,6 +77,7 @@ abstract final class _CanvasOptions
   static const int optimalZoomSettleTime = 1500;
   static const int selectionPulseDuration = 1500;
   static const double selectionPulseMinFactor = 0.5;
+  static const int cursorTimeoutPollFactor = 2;
 }
 
 /// Status of the touch pointer.
@@ -133,10 +134,14 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   late Timer _timerStylusBtnLongPress;
   bool _timerStylusRunning = false;
   bool _stylusButtonDetected = false;
-  bool _stylusHoverDetected = false;
   final ValueNotifier<bool> _stylusButtonDown = ValueNotifier<bool>(false);
   DateTime _stylusDownTimeStamp = DateTime.now();
-  DateTime _stylusHoverTimeStamp = DateTime.now();
+
+  //stylus and touch pointers on the screen keep the cursor visible
+  final Set<int> _contactPointers = <int>{};
+  //Android does not report a stylus leaving the hover range, so its cursor times out
+  Timer? _cursorTimeoutTimer;
+  int? _primaryPointer;
 
   late Offset _dragStartLoc;
 
@@ -157,7 +162,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
   late MouseCursor _defaultMouseCursor = _desktopPrefs.cursorType.value.systemCursor;
   late final ValueNotifier<MouseCursor> _mouseCursor = ValueNotifier<MouseCursor>(_defaultMouseCursor);
-  bool _mouseIsInside = false;
   final Map<int, TouchPointerStatus> _touchPointers = <int, TouchPointerStatus>{};
   double _initialTouchZoomDistance = 0.0;
   int _touchZoomStartLevel = 1;
@@ -231,6 +235,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     }
     _timers.clear();
     _referenceCommitTimer?.cancel();
+    _cursorTimeoutTimer?.cancel();
 
     _desktopPrefs.cursorType.removeListener(_setDefaultCursor);
     _stylusPrefs.stylusLongPressDelay.removeListener(_stylusLongPressDelayChanged);
@@ -540,6 +545,11 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   void _buttonDown({required final PointerDownEvent details})
   {
     _cancelOptimalZoom();
+    if (details.kind != PointerDeviceKind.mouse)
+    {
+      _contactPointers.add(details.pointer);
+      _cursorTimeoutTimer?.cancel();
+    }
     if (details.kind == PointerDeviceKind.touch)
     {
       _touchPointers[details.pointer] = TouchPointerStatus(startPos: details.localPosition, currentPos: details.localPosition);
@@ -559,7 +569,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
     if (details.buttons == kPrimaryButton && _touchPointers.isEmpty)
     {
-      _startDown(details.localPosition);
+      _startDown(details.localPosition, details.pointer);
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
@@ -599,9 +609,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
   }
 
-  void _startDown(final Offset position)
+  void _startDown(final Offset position, final int pointer)
   {
     _pressStartLoc.value = position;
+    _primaryPointer = pointer;
     _primaryIsDown.value = true;
     if (!_timerRunning) {
       _timerRunning = true;
@@ -611,9 +622,11 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
   void checkTouchDraw()
   {
-    if (_touchPointers.length == 1)
+    //a touch while the stylus draws (e.g. a palm) must not take over the stroke
+    if (_touchPointers.length == 1 && !_primaryIsDown.value)
     {
-      _startDown(_touchPointers.values.toList().first.startPos);
+      final MapEntry<int, TouchPointerStatus> touch = _touchPointers.entries.first;
+      _startDown(touch.value.startPos, touch.key);
     }
   }
 
@@ -629,6 +642,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     {
       //print("PRIMARY UP");
       _timerLongPress.cancel();
+      _primaryPointer = null;
       _primaryIsDown.value = false;
       final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
       if (currentLayer is ReferenceLayerState)
@@ -698,6 +712,50 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       }
     }
     _updateLocation(details: details);
+    _releaseContact(details: details);
+  }
+
+  void _buttonCancel({required final PointerCancelEvent details})
+  {
+    //a cancelled touch (e.g. a rejected palm) must not end the stroke of another pointer
+    if (details.kind != PointerDeviceKind.mouse && details.pointer != _primaryPointer)
+    {
+      if (_touchPointers.remove(details.pointer) != null && _touchPointers.length == 1)
+      {
+        _isDragging.value = false;
+      }
+      _releaseContact(details: details);
+      _viewState.repaintNotifier.repaint();
+    }
+    else
+    {
+      _buttonUp(details: details);
+    }
+  }
+
+  void _releaseContact({required final PointerEvent details})
+  {
+    if (_contactPointers.remove(details.pointer) && _contactPointers.isEmpty)
+    {
+      _restartCursorTimeout();
+    }
+  }
+
+  //the delay after lifting also leaves the tools time to process the release
+  void _restartCursorTimeout()
+  {
+    _cursorTimeoutTimer?.cancel();
+    _cursorTimeoutTimer = Timer(Duration(milliseconds: _stylusPrefs.stylusPollInterval.value * _CanvasOptions.cursorTimeoutPollFactor), _cursorTimeout);
+  }
+
+  void _cursorTimeout()
+  {
+    _cursorTimeoutTimer = null;
+    if (_contactPointers.isEmpty && _cursorPos.value != null)
+    {
+      _cursorPos.value = null;
+      _viewState.repaintNotifier.repaint();
+    }
   }
 
 
@@ -722,9 +780,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
     }
 
+    //the mouse cursor is hidden when the mouse leaves the canvas instead
     if (details.kind == PointerDeviceKind.mouse)
     {
-      _mouseIsInside = true;
+      _cursorTimeoutTimer?.cancel();
     }
 
     if (_needSecondaryStartLoc)
@@ -862,9 +921,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       {
         _stylusButtonDetected = true;
       }
-      _stylusHoverDetected = true;
-      _stylusHoverTimeStamp = DateTime.now();
-
+    }
+    if (details.kind != PointerDeviceKind.mouse)
+    {
+      _restartCursorTimeout();
     }
     _updateLocation(details: details);
 
@@ -971,7 +1031,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   {
     _cursorPos.value = null;
     _viewState.repaintNotifier.repaint();
-    _mouseIsInside = false;
   }
 
   int _getClosestPixel({required final double value, required final double pixelSize})
@@ -1052,15 +1111,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     }
     _stylusButtonDetected = false;
 
-    if (!_stylusHoverDetected && _cursorPos.value != null && !_mouseIsInside)
-    {
-      _cursorPos.value = null;
-      _viewState.repaintNotifier.repaint();
-    }
-    else if (DateTime.now().difference(_stylusHoverTimeStamp).inMilliseconds > _stylusPrefs.stylusPollInterval.value)
-    {
-      _stylusHoverDetected = false;
-    }
     if (_hasNewStylusPollValue)
     {
       t.cancel();
@@ -1163,6 +1213,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
             onPointerDown: (final PointerDownEvent pde) {_buttonDown(details: pde);},
             onPointerMove: (final PointerEvent pe) {_updateLocation(details: pe);},
             onPointerUp: (final PointerEvent pe) {_buttonUp(details: pe);},
+            onPointerCancel: (final PointerCancelEvent pce) {_buttonCancel(details: pce);},
             onPointerHover: (final PointerHoverEvent phe) {_hover(details: phe);},
             onPointerSignal: (final PointerSignalEvent pse) {_scroll(ev: pse);},
             onPointerPanZoomEnd: (final PointerPanZoomEndEvent event) {_panZoomEnd(event: event);},

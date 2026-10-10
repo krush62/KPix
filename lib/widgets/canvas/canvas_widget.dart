@@ -150,6 +150,8 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   //without reported hover exits a stylus cursor has to time out quickly
   Timer? _cursorTimeoutTimer;
   bool _hoverExitReported = false;
+  //channel messages overtake pointer events, so hover events from before the exit can still arrive
+  Duration _hoverExitTime = Duration.zero;
   int? _primaryPointer;
 
   late Offset _dragStartLoc;
@@ -780,9 +782,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     }
   }
 
-  void _stylusHoverExit()
+  void _stylusHoverExit({required final Duration timeStamp})
   {
     _hoverExitReported = true;
+    _hoverExitTime = timeStamp;
     //the delay lets a following touch down of the stylus keep the cursor
     _restartCursorTimeout(milliseconds: _CanvasOptions.hoverExitDelay);
   }
@@ -946,6 +949,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   {
     if (details.kind != PointerDeviceKind.mouse)
     {
+      if (details.timeStamp <= _hoverExitTime)
+      {
+        return;
+      }
       _restartCursorTimeout(milliseconds: _hoverExitReported ? _CanvasOptions.reportedHoverTimeout : _CanvasOptions.cursorTimeout);
     }
     _updateLocation(details: details);

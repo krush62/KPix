@@ -22,8 +22,9 @@ class StylusBridge
   static const MethodChannel _channel = MethodChannel('app.channel.stylus');
 
   //set by the canvas widget
-  //a hover exit is also sent right before the stylus touches the screen
-  VoidCallback? onHoverExit;
+  //a hover exit is also sent right before the stylus touches the screen,
+  //its time stamp uses the same clock as PointerEvent.timeStamp
+  void Function({required Duration timeStamp})? onHoverExit;
   void Function({required bool pressed})? onButton;
 
   StylusBridge()
@@ -36,7 +37,7 @@ class StylusBridge
     switch (call.method)
     {
       case 'hoverExit':
-        onHoverExit?.call();
+        onHoverExit?.call(timeStamp: Duration(milliseconds: call.arguments as int));
       case 'buttonPress':
         onButton?.call(pressed: true);
       case 'buttonRelease':

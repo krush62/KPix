@@ -70,7 +70,7 @@ class MainActivity: FlutterActivity() {
         {
             when (ev.actionMasked)
             {
-                MotionEvent.ACTION_HOVER_EXIT -> stylusChannel?.invokeMethod("hoverExit", null)
+                MotionEvent.ACTION_HOVER_EXIT -> stylusChannel?.invokeMethod("hoverExit", ev.eventTime)
                 MotionEvent.ACTION_BUTTON_PRESS -> if (ev.actionButton == MotionEvent.BUTTON_STYLUS_PRIMARY) stylusChannel?.invokeMethod("buttonPress", null)
                 MotionEvent.ACTION_BUTTON_RELEASE -> if (ev.actionButton == MotionEvent.BUTTON_STYLUS_PRIMARY) stylusChannel?.invokeMethod("buttonRelease", null)
             }

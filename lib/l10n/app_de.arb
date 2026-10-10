@@ -421,8 +421,6 @@
   "toolInfoPreferences": "Werkzeuginfo-Einstellungen",
   "showMeasurementsAtCursor": "Maße am Cursor anzeigen",
 
-  "pollingTimeToCheck": "Abfrageintervall für Tastendrücke des Stylus.",
-  "pollInterval": "Abfrageintervall",
   "timeThatNeedsToBeHeldDown": "Zeit die die Taste des Stylus gedrückt werden muss für einen \"Langen Druck\"",
   "longPressDelay": "Verzögerung für \"Langen Druck\"",
   "distanceThatMustBeMoved": "Bewegungsdistanz zum Abbrechen eines \"Langen Drucks\"",

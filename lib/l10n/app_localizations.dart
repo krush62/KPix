@@ -2288,18 +2288,6 @@ abstract class AppLocalizations {
   /// **'Show Measurements at Cursor'**
   String get showMeasurementsAtCursor;
 
-  /// No description provided for @pollingTimeToCheck.
-  ///
-  /// In en, this message translates to:
-  /// **'Polling time to check for presses of stylus buttons.'**
-  String get pollingTimeToCheck;
-
-  /// No description provided for @pollInterval.
-  ///
-  /// In en, this message translates to:
-  /// **'Poll Interval'**
-  String get pollInterval;
-
   /// No description provided for @timeThatNeedsToBeHeldDown.
   ///
   /// In en, this message translates to:

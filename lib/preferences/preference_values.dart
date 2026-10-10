@@ -32,7 +32,6 @@ class StylusPreferenceContent
   final ValueNotifier<double> stylusLongPressCancelDistance;
   final ValueNotifier<double> stylusZoomStepDistance;
   final ValueNotifier<double> stylusSizeStepDistance;
-  final ValueNotifier<int> stylusPollInterval;
   final ValueNotifier<int> stylusPickMaxDuration;
   final int stylusLongPressDelayMin;
   final int stylusLongPressDelayMax;
@@ -42,8 +41,6 @@ class StylusPreferenceContent
   final double stylusZoomStepDistanceMax;
   final double stylusSizeStepDistanceMin;
   final double stylusSizeStepDistanceMax;
-  final int stylusPollIntervalMin;
-  final int stylusPollIntervalMax;
   final int stylusPickMaxDurationMin;
   final int stylusPickMaxDurationMax;
 
@@ -60,9 +57,6 @@ class StylusPreferenceContent
     required final double stylusSizeStepDistance,
     required final double stylusSizeStepDistanceMin,
     required final double stylusSizeStepDistanceMax,
-    required final int stylusPollInterval,
-    required final int stylusPollIntervalMin,
-    required final int stylusPollIntervalMax,
     required final int stylusPickMaxDuration,
     required final int stylusPickMaxDurationMin,
     required final int stylusPickMaxDurationMax,
@@ -75,9 +69,6 @@ class StylusPreferenceContent
       stylusLongPressDelay: ValueNotifier<int>(stylusLongPressDelay.clamp(stylusLongPressDelayMin, stylusLongPressDelayMax)),
       stylusLongPressDelayMin: stylusLongPressDelayMin,
       stylusLongPressDelayMax: stylusLongPressDelayMax,
-      stylusPollInterval: ValueNotifier<int>(stylusPollInterval.clamp(stylusPollIntervalMin, stylusPollIntervalMax)),
-      stylusPollIntervalMin: stylusPollIntervalMin,
-      stylusPollIntervalMax: stylusPollIntervalMax,
       stylusSizeStepDistance: ValueNotifier<double>(stylusSizeStepDistance.clamp(stylusSizeStepDistanceMin, stylusSizeStepDistanceMax)),
       stylusSizeStepDistanceMin: stylusSizeStepDistanceMin,
       stylusSizeStepDistanceMax: stylusSizeStepDistanceMax,
@@ -95,7 +86,6 @@ class StylusPreferenceContent
     required this.stylusLongPressCancelDistance,
     required this.stylusZoomStepDistance,
     required this.stylusSizeStepDistance,
-    required this.stylusPollInterval,
     required this.stylusPickMaxDuration,
     required this.stylusLongPressDelayMin,
     required this.stylusLongPressDelayMax,
@@ -105,8 +95,6 @@ class StylusPreferenceContent
     required this.stylusZoomStepDistanceMax,
     required this.stylusSizeStepDistanceMin,
     required this.stylusSizeStepDistanceMax,
-    required this.stylusPollIntervalMin,
-    required this.stylusPollIntervalMax,
     required this.stylusPickMaxDurationMin,
     required this.stylusPickMaxDurationMax,});
 
@@ -116,7 +104,6 @@ class StylusPreferenceContent
     stylusLongPressCancelDistance.value = other.stylusLongPressCancelDistance.value;
     stylusZoomStepDistance.value = other.stylusZoomStepDistance.value;
     stylusSizeStepDistance.value = other.stylusSizeStepDistance.value;
-    stylusPollInterval.value = other.stylusPollInterval.value;
     stylusPickMaxDuration.value = other.stylusPickMaxDuration.value;
   }
 }

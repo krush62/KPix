@@ -523,8 +523,6 @@
   "toolInfoPreferences": "Tool Info Preferences",
   "showMeasurementsAtCursor": "Show Measurements at Cursor",
 
-  "pollingTimeToCheck": "Polling time to check for presses of stylus buttons.",
-  "pollInterval": "Poll Interval",
   "timeThatNeedsToBeHeldDown": "Time that needs to be held down for a long press.",
   "longPressDelay": "Long Press Delay",
   "distanceThatMustBeMoved": "Distance that must be moved during a long press to cancel it.",

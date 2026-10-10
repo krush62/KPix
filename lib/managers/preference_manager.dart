@@ -112,9 +112,6 @@ enum PreferenceInt
   StylusOptions_LongPressDelay(defaultValue: 150),
   StylusOptions_LongPressDelayMin(defaultValue: 50),
   StylusOptions_LongPressDelayMax(defaultValue: 1000),
-  StylusOptions_PollInterval(defaultValue: 50),
-  StylusOptions_PollIntervalMin(defaultValue: 20),
-  StylusOptions_PollIntervalMax(defaultValue: 150),
   StylusOptions_PickMaxDuration(defaultValue: 400),
   StylusOptions_PickMaxDurationMin(defaultValue: 100),
   StylusOptions_PickMaxDurationMax(defaultValue: 1000),
@@ -414,9 +411,6 @@ class PreferenceManager
       stylusLongPressDelay: _getValueI(PreferenceInt.StylusOptions_LongPressDelay),
       stylusLongPressDelayMin: _getValueI(PreferenceInt.StylusOptions_LongPressDelayMin),
       stylusLongPressDelayMax: _getValueI(PreferenceInt.StylusOptions_LongPressDelayMax),
-      stylusPollInterval: _getValueI(PreferenceInt.StylusOptions_PollInterval),
-      stylusPollIntervalMin: _getValueI(PreferenceInt.StylusOptions_PollIntervalMin),
-      stylusPollIntervalMax: _getValueI(PreferenceInt.StylusOptions_PollIntervalMax),
       stylusSizeStepDistance: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistance),
       stylusSizeStepDistanceMin: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistanceMin),
       stylusSizeStepDistanceMax: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistanceMax),
@@ -509,7 +503,6 @@ class PreferenceManager
     //STYLUS PREFERENCES
     _doubleMap[PreferenceDouble.StylusOptions_LongPressCancelDistance]!.value = stylusPreferenceContent.stylusLongPressCancelDistance.value;
     _intMap[PreferenceInt.StylusOptions_LongPressDelay]!.value = stylusPreferenceContent.stylusLongPressDelay.value;
-    _intMap[PreferenceInt.StylusOptions_PollInterval]!.value = stylusPreferenceContent.stylusPollInterval.value;
     _doubleMap[PreferenceDouble.StylusOptions_SizeStepDistance]!.value = stylusPreferenceContent.stylusSizeStepDistance.value;
     _doubleMap[PreferenceDouble.StylusOptions_ZoomStepDistance]!.value = stylusPreferenceContent.stylusZoomStepDistance.value;
     _intMap[PreferenceInt.StylusOptions_PickMaxDuration]!.value = stylusPreferenceContent.stylusPickMaxDuration.value;

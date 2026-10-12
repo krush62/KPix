@@ -62,18 +62,14 @@ class MainActivity: FlutterActivity() {
         stylusChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, STYLUS_CHANNEL)
     }
 
-    //Flutter only forwards hover moves, so stylus hover exits and button changes are sent here
+    //Flutter only forwards hover moves, so stylus hover exits are sent here
+    //(button events are not needed: Android drops them while hovering, pointer events carry the button state)
     override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean
     {
         val toolType = ev.getToolType(ev.actionIndex)
-        if (toolType == MotionEvent.TOOL_TYPE_STYLUS || toolType == MotionEvent.TOOL_TYPE_ERASER)
+        if (ev.actionMasked == MotionEvent.ACTION_HOVER_EXIT && (toolType == MotionEvent.TOOL_TYPE_STYLUS || toolType == MotionEvent.TOOL_TYPE_ERASER))
         {
-            when (ev.actionMasked)
-            {
-                MotionEvent.ACTION_HOVER_EXIT -> stylusChannel?.invokeMethod("hoverExit", ev.eventTime)
-                MotionEvent.ACTION_BUTTON_PRESS -> if (ev.actionButton == MotionEvent.BUTTON_STYLUS_PRIMARY) stylusChannel?.invokeMethod("buttonPress", null)
-                MotionEvent.ACTION_BUTTON_RELEASE -> if (ev.actionButton == MotionEvent.BUTTON_STYLUS_PRIMARY) stylusChannel?.invokeMethod("buttonRelease", null)
-            }
+            stylusChannel?.invokeMethod("hoverExit", ev.eventTime)
         }
         return super.dispatchGenericMotionEvent(ev)
     }

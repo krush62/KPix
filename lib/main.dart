@@ -152,7 +152,6 @@ void main(final List<String> args)
 
 class KPixApp extends StatefulWidget
 {
-  //This is ugly, I know
   const KPixApp({super.key});
 
   @override

@@ -16,7 +16,7 @@
 
 import 'package:flutter/services.dart';
 
-/// Android stylus events that Flutter does not forward itself, sent by MainActivity.
+/// The Android stylus hover exit, which Flutter does not forward itself, sent by MainActivity.
 class StylusBridge
 {
   static const MethodChannel _channel = MethodChannel('app.channel.stylus');
@@ -25,7 +25,6 @@ class StylusBridge
   //a hover exit is also sent right before the stylus touches the screen,
   //its time stamp uses the same clock as PointerEvent.timeStamp
   void Function({required Duration timeStamp})? onHoverExit;
-  void Function({required bool pressed})? onButton;
 
   StylusBridge()
   {
@@ -34,14 +33,9 @@ class StylusBridge
 
   Future<void> _handleCall(final MethodCall call) async
   {
-    switch (call.method)
+    if (call.method == 'hoverExit')
     {
-      case 'hoverExit':
-        onHoverExit?.call(timeStamp: Duration(milliseconds: call.arguments as int));
-      case 'buttonPress':
-        onButton?.call(pressed: true);
-      case 'buttonRelease':
-        onButton?.call(pressed: false);
+      onHoverExit?.call(timeStamp: Duration(milliseconds: call.arguments as int));
     }
   }
 }

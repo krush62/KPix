@@ -65,7 +65,6 @@ import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/helpers/platform_helper.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 
 /// Layout options for [CanvasWidget].
@@ -139,11 +138,8 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   final ValueNotifier<bool> _stylusButtonDown = ValueNotifier<bool>(false);
   DateTime _stylusDownTimeStamp = DateTime.now();
   final StylusBridge _stylusBridge = GetIt.I.get<StylusBridge>();
-  //on desktop and web a stylus button arrives as a press of the pointer
-  final bool _stylusButtonIsPointer = isDesktop(includingWeb: true);
-  int? _stylusButtonPointer;
-  //once MainActivity delivered button events, the button state in hover events is ignored
-  bool _nativeStylusButtons = false;
+  //a stylus button pressed during a stroke only counts after it was released
+  bool _stylusButtonSuppressed = false;
 
   //stylus and touch pointers on the screen keep the cursor visible
   final Set<int> _contactPointers = <int>{};
@@ -269,7 +265,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     if (_stylusBridge.onHoverExit == _stylusHoverExit)
     {
       _stylusBridge.onHoverExit = null;
-      _stylusBridge.onButton = null;
     }
 
     _guiPrefs.selectionPulsatingOutline.removeListener(_updateSelectionPulse);
@@ -295,7 +290,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _timers.add(Timer.periodic(const Duration(milliseconds: _CanvasOptions.idleTimerRate), (final Timer t) {_idleTimeout(t: t);}));
     GetIt.I.get<HistoryController>().flushHistoryData = _flushPendingHistory;
     _stylusBridge.onHoverExit = _stylusHoverExit;
-    _stylusBridge.onButton = _nativeStylusButton;
     _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
     WidgetsBinding.instance.addPostFrameCallback((final _)
     {
@@ -597,12 +591,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     }
 
     _updateLocation(details: details);
-
-    if (_stylusButtonIsPointer && details.kind == PointerDeviceKind.stylus && details.buttons == kSecondaryButton)
-    {
-      _stylusButtonPointer = details.pointer;
-      _setStylusButton(pressed: true);
-    }
   }
 
   void _idleTimeout({required final Timer t})
@@ -738,6 +726,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       {
         _isDragging.value = false;
       }
+      if (details.kind == PointerDeviceKind.stylus)
+      {
+        _setStylusButton(pressed: false);
+      }
       _releaseContact(details: details);
       _viewState.repaintNotifier.repaint();
     }
@@ -749,11 +741,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
   void _releaseContact({required final PointerEvent details})
   {
-    if (details.pointer == _stylusButtonPointer)
-    {
-      _stylusButtonPointer = null;
-      _setStylusButton(pressed: false);
-    }
     if (_contactPointers.remove(details.pointer) && _contactPointers.isEmpty)
     {
       _restartCursorTimeout();
@@ -790,10 +777,22 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     _restartCursorTimeout(milliseconds: _CanvasOptions.hoverExitDelay);
   }
 
-  void _nativeStylusButton({required final bool pressed})
+  //every stylus event carries the button state; Android drops the button events while hovering
+  void _sampleStylusButton({required final PointerEvent details})
   {
-    _nativeStylusButtons = true;
-    _setStylusButton(pressed: pressed);
+    final bool pressed = (details.buttons & kSecondaryButton) != 0;
+    if (!pressed)
+    {
+      _stylusButtonSuppressed = false;
+    }
+    else if (_primaryIsDown.value && !_stylusButtonDown.value)
+    {
+      _stylusButtonSuppressed = true;
+    }
+    if (!_stylusButtonSuppressed)
+    {
+      _setStylusButton(pressed: pressed);
+    }
   }
 
 
@@ -822,6 +821,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     if (details.kind == PointerDeviceKind.mouse)
     {
       _cursorTimeoutTimer?.cancel();
+    }
+    else if (details.kind == PointerDeviceKind.stylus)
+    {
+      _sampleStylusButton(details: details);
     }
 
     final Offset cursorOffset = Offset(_cursorPos.value!.x, _cursorPos.value!.y);
@@ -956,11 +959,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       _restartCursorTimeout(milliseconds: _hoverExitReported ? _CanvasOptions.reportedHoverTimeout : _CanvasOptions.cursorTimeout);
     }
     _updateLocation(details: details);
-
-    if (details.kind == PointerDeviceKind.stylus && !_nativeStylusButtons)
-    {
-      _setStylusButton(pressed: (details.buttons & kSecondaryButton) != 0);
-    }
   }
 
   void _scroll({required final PointerSignalEvent ev})

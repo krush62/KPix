@@ -98,7 +98,7 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
                 Expanded(
                   child: Center(
                     child: Text(
-                      widget.entryData.rampDataList.length == 1 ? l10n.nColors(colorCount) : l10n.nRampsColors(colorCount, widget.entryData.rampDataList.length),
+                      widget.entryData.rampDataList.length == 1 ? l10n.nColors(colorCount) : l10n.nRampsColors(widget.entryData.rampDataList.length, colorCount),
                       style: Theme.of(context).textTheme.bodySmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
                   ),

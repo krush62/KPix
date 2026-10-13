@@ -136,6 +136,19 @@ class NewProjectWidgetState extends State<NewProjectWidget>
     return  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, mainAxisSize: MainAxisSize.min, children: items);
   }
 
+  Row _getLabelSizeRow({required final List<(CoordinateSetI, String)> data, required final IconData icon, required final double padding})
+  {
+    final List<Widget> items = <Widget>[];
+    items.add(Expanded(child: Icon(icon, color: Theme.of(context).primaryColorLight,)));
+    for (final (CoordinateSetI, String) entry in data)
+    {
+      items.add(SizedBox(width: padding));
+      items.add(Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: entry.$1.x, height: entry.$1.y);}, child: Text(entry.$2))));
+
+    }
+    return  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, mainAxisSize: MainAxisSize.min, children: items);
+  }
+
   Row _getInputRow({
     required final String title,
     required final ValueNotifier<int> notifier,
@@ -224,8 +237,8 @@ class NewProjectWidgetState extends State<NewProjectWidget>
                 CoordinateSetI(x: 256, y: 256),
                 CoordinateSetI(x: 512, y: 512),
               ],
-              title: "1:1",
-              padding: OverlayEntryAlertDialogOptions.padding,
+            title: "1:1",
+            padding: OverlayEntryAlertDialogOptions.padding,
           ),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           _getSizeRow(
@@ -238,8 +251,8 @@ class NewProjectWidgetState extends State<NewProjectWidget>
                 CoordinateSetI(x: 320, y: 240),
                 CoordinateSetI(x: 480, y: 360),
               ],
-              title: "4:3",
-              padding: OverlayEntryAlertDialogOptions.padding,
+            title: "4:3",
+            padding: OverlayEntryAlertDialogOptions.padding,
           ),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           _getSizeRow(
@@ -252,8 +265,22 @@ class NewProjectWidgetState extends State<NewProjectWidget>
                 CoordinateSetI(x: 384, y: 216),
                 CoordinateSetI(x: 480, y: 270),
               ],
-              title: "16:9",
-              padding: OverlayEntryAlertDialogOptions.padding,
+            title: "16:9",
+            padding: OverlayEntryAlertDialogOptions.padding,
+          ),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
+          _getLabelSizeRow(
+            data: <(CoordinateSetI, String)>[
+              (CoordinateSetI(x: 160, y: 144), "GB"),
+              (CoordinateSetI(x: 240, y: 160), "GBA"),
+              (CoordinateSetI(x: 256, y: 192), "NDS"),
+              (CoordinateSetI(x: 224, y: 144), "WSC"),
+              (CoordinateSetI(x: 480, y: 272), "PSP"),
+              (CoordinateSetI(x: 160, y: 152), "NGPC"),
+              (CoordinateSetI(x: 160, y: 102), "LYNX"),
+            ],
+          icon: TablerIcons.device_gamepad,
+          padding: OverlayEntryAlertDialogOptions.padding,
           ),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Divider(height: OverlayEntryAlertDialogOptions.padding / 4, thickness: OverlayEntryAlertDialogOptions.padding / 4, color: Theme.of(context).primaryColorLight,),

@@ -66,8 +66,6 @@ String escapeXml({required final String input})
       .replaceAll("'", '&apos;');
 }
 
-
-
 /// Returns a string representation of the date and time.
 String formatDateTime({required final DateTime dateTime})
 {
@@ -83,7 +81,7 @@ String formatDateTime({required final DateTime dateTime})
 /// Returns the way the application shows a width and height.
 String formatDimension({required final int width, required final int height})
 {
-  return '$width × $height';
+  return '$width×$height';
 }
 
 /// Converts a string to a version object.

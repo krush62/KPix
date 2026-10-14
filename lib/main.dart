@@ -726,16 +726,31 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         {
           return Padding(
             padding: const EdgeInsets.all(_MainLayoutOptions.loadingScreenPadding),
-            child: Stack(
+            child: Column(
               children: <Widget>[
-                Center(child: Image.asset(PreferenceManager.ASSET_ICON),),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Text(
-                    l10n.loadingDot,
-                    style: Theme.of(context).textTheme.displayLarge?.apply(color: Theme.of(context).primaryColorLight),
-                  ),
+                const Spacer(),
+                Row(
+                  children: <Widget>[
+                    const Spacer(),
+                    Image.asset(PreferenceManager.ASSET_ICON, width: _MainLayoutOptions.splashIconSize,),
+                    const Spacer(),
+                  ],
                 ),
+                const SizedBox(height: _MainLayoutOptions.loadingScreenPadding,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    const Spacer(),
+                    CircularProgressIndicator(color: Theme.of(context).primaryColorLight,),
+                    const SizedBox(width: _MainLayoutOptions.loadingScreenPadding,),
+                    Text(
+                      l10n.loadingDot,
+                      style: Theme.of(context).textTheme.displaySmall?.apply(color: Theme.of(context).primaryColorLight),
+                    ),
+                    const Spacer(),
+                  ],
+                ),
+                const Spacer(),
               ],
             ),
           );
@@ -890,6 +905,7 @@ abstract final class _MainLayoutOptions
   static const int recoverCheckIntervalMinutes = 2;
   static const double titleBarPadding = 4.0;
   static const double loadingScreenPadding = 32.0;
+  static const double splashIconSize = 240.0;
 
   static const double timelineExpandedHeight = 320.0;
 }

@@ -1085,8 +1085,8 @@ void testIntToBytes()
 void testFormatDimension()
 {
   group('formatDimension', () {
-    test('shows width × height', () {
-      expect(formatDimension(width: 320, height: 180), '320 × 180');
+    test('shows width×height', () {
+      expect(formatDimension(width: 320, height: 180), '320×180');
     });
   });
 }

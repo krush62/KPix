@@ -17,6 +17,7 @@
  */
 
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -34,10 +35,57 @@ void main() {
   });
 
   testMoveProjectFiles();
+  testCopyImportFile();
 }
 
 Future<void> _createFile({required final String path, final String content = "kpix"}) async {
   await File(path).writeAsString(content);
+}
+
+Future<void> _setReadOnly({required final String path, required final bool readOnly}) async {
+  if (Platform.isWindows) {
+    await Process.run('attrib', <String>[if (readOnly) '+R' else '-R', path]);
+  } else {
+    await Process.run('chmod', <String>[if (readOnly) '444' else '644', path]);
+  }
+}
+
+void testCopyImportFile() {
+  group('copyImportFile', () {
+    late Directory tempDir;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp("kpix_import_test");
+    });
+
+    tearDown(() async {
+      await tempDir.delete(recursive: true);
+    });
+
+    //Windows hands out files picked from a phone as read-only temp copies
+    test('the imported project can be saved over when the source is read-only', () async {
+      final String sourcePath = p.join(tempDir.path, "source.$fileExtensionKpix");
+      final String targetPath = p.join(tempDir.path, "imported.$fileExtensionKpix");
+      await _createFile(path: sourcePath);
+      await _setReadOnly(path: sourcePath, readOnly: true);
+      final ui.PictureRecorder recorder = ui.PictureRecorder();
+      ui.Canvas(recorder);
+      final ui.Image thumbnail = await recorder.endRecording().toImage(1, 1);
+
+      try {
+        expect(await copyImportFile(inputPath: sourcePath, image: thumbnail, targetPath: targetPath), isTrue);
+        expect(await File(targetPath).readAsString(), "kpix");
+        await File(targetPath).writeAsString("saved");
+        expect(await File(targetPath).readAsString(), "saved");
+      } finally {
+        thumbnail.dispose();
+        await _setReadOnly(path: sourcePath, readOnly: false);
+        if (File(targetPath).existsSync()) {
+          await _setReadOnly(path: targetPath, readOnly: false);
+        }
+      }
+    });
+  });
 }
 
 void testMoveProjectFiles() {

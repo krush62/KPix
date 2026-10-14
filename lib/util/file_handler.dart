@@ -402,7 +402,8 @@ Future<bool> copyImportFile({required final String inputPath, required final ui.
       if (pngBytes != null) 
       {
         await File(pngPath).writeAsBytes(pngBytes.buffer.asUint8List());
-        final File createdFile = await projectFile.copy(targetPath);
+        //not File.copy: that keeps a read-only source read-only, e.g. a file picked from a phone on Windows
+        final File createdFile = await File(targetPath).writeAsBytes(await projectFile.readAsBytes());
         if (!await createdFile.exists())
         {
           logger.w("Error copying import file: Created file ${createdFile.path} does not exist.",);

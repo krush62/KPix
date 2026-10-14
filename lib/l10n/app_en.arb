@@ -522,6 +522,7 @@
   "canvasBorerOpacity": "Canvas Border Opacity",
   "toolInfoPreferences": "Tool Info Preferences",
   "showMeasurementsAtCursor": "Show Measurements at Cursor",
+  "measurementInfoIsOnTheRight": "Measurement Info is on the right",
 
   "timeThatNeedsToBeHeldDown": "Time that needs to be held down for a long press.",
   "longPressDelay": "Long Press Delay",

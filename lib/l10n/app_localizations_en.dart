@@ -1176,6 +1176,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showMeasurementsAtCursor => 'Show Measurements at Cursor';
 
   @override
+  String get measurementInfoIsOnTheRight => 'Measurement Info is on the right';
+
+  @override
   String get timeThatNeedsToBeHeldDown =>
       'Time that needs to be held down for a long press.';
 

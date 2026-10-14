@@ -110,8 +110,8 @@ class KPixPainter extends CustomPainter
   final CoordinateSetD _referenceImgLastReferenceOffset = CoordinateSetD.zero();
 
   // INFO BOX
-  final CoordinateSetD infoBoxCursorDistance = CoordinateSetD(x: 0.0, y: 32.0);
-  final double infoBoxOpacity = 0.85;
+  final double infoBoxCursorDistanceHorizontal = 24.0;
+  final double infoBoxOpacity = 0.7;
 
   KPixPainter({
       required final ValueNotifier<Offset> offset,
@@ -637,18 +637,11 @@ class KPixPainter extends CustomPainter
       textDirection: TextDirection.ltr,
     )..layout();
 
-    //below right of the cursor, flipped to the other side at the edges
+
+
     final Size boxSize = Size(textPainter.width + _cursorInfoPadding.horizontal, textPainter.height + _cursorInfoPadding.vertical);
-    double left = drawParams.cursorPos!.x + infoBoxCursorDistance.x;
-    double top = drawParams.cursorPos!.y + infoBoxCursorDistance.y;
-    if (left + boxSize.width > drawParams.drawingSize.width)
-    {
-      left = drawParams.cursorPos!.x - infoBoxCursorDistance.x - boxSize.width;
-    }
-    if (top + boxSize.height > drawParams.drawingSize.height)
-    {
-      top = drawParams.cursorPos!.y - infoBoxCursorDistance.y - boxSize.height;
-    }
+    final double left = _guiOptions.cursorInfoRight.value ? drawParams.cursorPos!.x + infoBoxCursorDistanceHorizontal : drawParams.cursorPos!.x - infoBoxCursorDistanceHorizontal - boxSize.width;
+    final double top = drawParams.cursorPos!.y - (boxSize.height / 2);
 
     //painted like a tooltip, then faded as a whole
     final Offset boxOffset = Offset(left, top);

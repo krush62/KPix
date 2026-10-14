@@ -201,11 +201,12 @@ class GuiPreferenceContent
   final ValueNotifier<int> selectionOpacity;
   final ValueNotifier<bool> selectionPulsatingOutline;
   final ValueNotifier<bool> showCursorInfo;
+  final ValueNotifier<bool> cursorInfoRight;
   final ValueNotifier<int> canvasBorderOpacity;
   final ValueNotifier<ColorNameScheme> colorNameScheme;
   final ValueNotifier<String> language;
 
-  factory GuiPreferenceContent({required final int themeTypeValue, required final int rasterSizeValue, required final int rasterContrast, required final int colorNameSchemeValue, required final int canvasBorderOpacityValue, required final int selectionOpacityValue, required final bool selectionPulsatingValue, required final bool showCursorInfoValue, required final int toolOpacityValue, required final String languageValue})
+  factory GuiPreferenceContent({required final int themeTypeValue, required final int rasterSizeValue, required final int rasterContrast, required final int colorNameSchemeValue, required final int canvasBorderOpacityValue, required final int selectionOpacityValue, required final bool selectionPulsatingValue, required final bool showCursorInfoValue, required final bool cursorInfoRightValue, required final int toolOpacityValue, required final String languageValue})
   {
     final ThemeMode themeType = themeTypeIndexMap[themeTypeValue]?? ThemeMode.system;
     final int rasterSizeIndex = max(rasterSizes.indexOf(rasterSizeValue), 0);
@@ -224,12 +225,13 @@ class GuiPreferenceContent
       selectionOpacity: ValueNotifier<int>(selectionOpacity),
       selectionPulsatingOutline: ValueNotifier<bool>(selectionPulsatingValue),
       showCursorInfo: ValueNotifier<bool>(showCursorInfoValue),
+      cursorInfoRight: ValueNotifier<bool>(cursorInfoRightValue),
       toolOpacity: ValueNotifier<int>(toolOpacity),
       language: ValueNotifier<String>(isSupportedLanguage(languageCode: languageValue) ? languageValue : systemLanguageCode),
     );
   }
 
-  GuiPreferenceContent._({required this.themeType, required this.rasterSizeIndex, required this.rasterContrast, required this.colorNameScheme, required this.canvasBorderOpacity, required this.selectionOpacity, required this.selectionPulsatingOutline, required this.showCursorInfo, required this.toolOpacity, required this.language});
+  GuiPreferenceContent._({required this.themeType, required this.rasterSizeIndex, required this.rasterContrast, required this.colorNameScheme, required this.canvasBorderOpacity, required this.selectionOpacity, required this.selectionPulsatingOutline, required this.showCursorInfo, required this.cursorInfoRight, required this.toolOpacity, required this.language});
 
   void copyValuesFrom({required final GuiPreferenceContent other})
   {
@@ -241,6 +243,7 @@ class GuiPreferenceContent
     selectionOpacity.value = other.selectionOpacity.value;
     selectionPulsatingOutline.value = other.selectionPulsatingOutline.value;
     showCursorInfo.value = other.showCursorInfo.value;
+    cursorInfoRight.value = other.cursorInfoRight.value;
     toolOpacity.value = other.toolOpacity.value;
     language.value = other.language.value;
   }

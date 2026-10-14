@@ -420,6 +420,7 @@
   "canvasBorerOpacity": "Deckkraft Leinwandumrandung",
   "toolInfoPreferences": "Werkzeuginfo-Einstellungen",
   "showMeasurementsAtCursor": "Maße am Cursor anzeigen",
+  "measurementInfoIsOnTheRight": "Maße rechts vom Cursor",
 
   "timeThatNeedsToBeHeldDown": "Zeit die die Taste des Stylus gedrückt werden muss für einen \"Langen Druck\"",
   "longPressDelay": "Verzögerung für \"Langen Druck\"",

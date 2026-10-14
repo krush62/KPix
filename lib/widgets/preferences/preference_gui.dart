@@ -186,9 +186,11 @@ class PrefSwitchRow extends StatelessWidget {
     super.key,
     required this.label,
     required this.notifier,
+    this.isEnabled = true,
   });
 
   final String label;
+  final bool isEnabled;
   final ValueNotifier<bool> notifier;
 
   @override
@@ -207,7 +209,7 @@ class PrefSwitchRow extends StatelessWidget {
                 {
                   return Switch(
                     value: select,
-                    onChanged: (final bool newVal) => notifier.value = newVal,
+                    onChanged: isEnabled ? (final bool newVal) => notifier.value = newVal : null,
                   );
                 },
               ),

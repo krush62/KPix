@@ -116,6 +116,18 @@ class _GuiPreferencesState extends State<GuiPreferences>
             label: l10n.showMeasurementsAtCursor,
             notifier: widget.prefs.showCursorInfo,
           ),
+          ValueListenableBuilder<bool>(
+            valueListenable: widget.prefs.showCursorInfo,
+              builder: (final BuildContext context, final bool isEnabled, final Widget? child)
+              {
+                return PrefSwitchRow(
+                  label: l10n.measurementInfoIsOnTheRight,
+                  notifier: widget.prefs.cursorInfoRight,
+                  isEnabled: isEnabled,
+                );
+              },
+          ),
+
         ],
       ),
     );

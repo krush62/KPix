@@ -2288,6 +2288,12 @@ abstract class AppLocalizations {
   /// **'Show Measurements at Cursor'**
   String get showMeasurementsAtCursor;
 
+  /// No description provided for @measurementInfoIsOnTheRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Measurement Info is on the right'**
+  String get measurementInfoIsOnTheRight;
+
   /// No description provided for @timeThatNeedsToBeHeldDown.
   ///
   /// In en, this message translates to:

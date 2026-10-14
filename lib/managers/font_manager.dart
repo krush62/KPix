@@ -14,11 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:ui' as ui;
-
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/util/helpers/isolate_helper.dart';
+import 'package:kpix/util/helpers/png_helper.dart';
 
 enum PixelFontType
 {
@@ -247,66 +246,73 @@ class FontManager
 
   static Future<Map<PixelFontType, KFont>> readFonts() async
   {
-    final Map<PixelFontType, KFont> fontMap = <PixelFontType, KFont>{};
-    for (final MapEntry<PixelFontType, String> mapEntry in _pixelFontFileMap.entries)
-    {
-     fontMap[mapEntry.key] = await _readFontFromFile(sflName: "${PreferenceManager.ASSET_PATH_FONTS}/${mapEntry.value}$sflExtension", pngName: "${PreferenceManager.ASSET_PATH_FONTS}/${mapEntry.value}$pngExtension", fontName: _pixelFontNameMap[mapEntry.key]!);
-    }
-    return fontMap;
+    final List<PixelFontType> types = _pixelFontFileMap.keys.toList();
+    final List<String> sflContents = await Future.wait(types.map((final PixelFontType type) => rootBundle.loadString("${PreferenceManager.ASSET_PATH_FONTS}/${_pixelFontFileMap[type]}$sflExtension")));
+    final List<Uint8List> pngContents = await Future.wait(types.map((final PixelFontType type) async => (await rootBundle.load("${PreferenceManager.ASSET_PATH_FONTS}/${_pixelFontFileMap[type]}$pngExtension")).buffer.asUint8List()));
+    final List<String> fontNames = types.map((final PixelFontType type) => _pixelFontNameMap[type]!).toList();
+    final List<KFont> fonts = await _buildFontsOffThread(sflContents: sflContents, pngContents: pngContents, fontNames: fontNames);
+    return Map<PixelFontType, KFont>.fromIterables(types, fonts);
   }
 
-
-  static Future<KFont> _readFontFromFile({required final String sflName, required final String pngName, required final String fontName}) async
+  //decoding through the engine costs a round trip and a GPU readback per font
+  static Future<List<KFont>> _buildFontsOffThread({required final List<String> sflContents, required final List<Uint8List> pngContents, required final List<String> fontNames})
   {
-    final String sflContent = await rootBundle.loadString(sflName);
+    return runOffThread<List<KFont>>(
+      work: () => <KFont>[
+        for (int i = 0; i < fontNames.length; i++) _buildFont(sflContent: sflContents[i], pngBytes: pngContents[i], fontName: fontNames[i]),
+      ],
+      debugLabel: "font decoding",
+    );
+  }
+
+  static KFont _buildFont({required final String sflContent, required final Uint8List pngBytes, required final String fontName})
+  {
     final List<String> lines = sflContent.split('\n');
     assert(lines.isNotEmpty);
 
-    final ByteData byteData = await rootBundle.load(pngName);
-    final Uint8List pngBytes = byteData.buffer.asUint8List();
-    final ui.Image decImg = await decodeImageFromList(pngBytes);
-    final int imgHeight = decImg.height;
-    final int imgWidth = decImg.width;
-    final ByteData? imgData = await decImg.toByteData();
-    decImg.dispose();
+    final RgbaPixels? pixels = decodePngToRgba(pngBytes: pngBytes);
+    if (pixels == null)
+    {
+      throw FormatException("Could not decode the glyph image of font $fontName.");
+    }
+    final int imgHeight = pixels.height;
+    final int imgWidth = pixels.width;
+    final ByteData imgData = pixels.bytes;
     final Map<int, Glyph> glyphMap = <int, Glyph>{};
 
-    if (imgData != null)
+    for (int i = 4; i < lines.length; i++)
     {
-      for (int i = 4; i < lines.length; i++)
+      final List<String> splits = lines[i].split(' ');
+      if (splits.length >= 4)
       {
-        final List<String> splits = lines[i].split(' ');
-        if (splits.length >= 4)
+        final int id = int.parse(splits[0].trim());
+        final int x = int.parse(splits[1].trim());
+        final int width = int.parse(splits[3].trim());
+        if (x >= 0 && x < imgWidth)
         {
-          final int id = int.parse(splits[0].trim());
-          final int x = int.parse(splits[1].trim());
-          final int width = int.parse(splits[3].trim());
-          if (x >= 0 && x < imgWidth)
+          if (width > 0)
           {
-            if (width > 0)
+            final Glyph glyph = Glyph(width: width, height: imgHeight);
+            for (int a = x; a < x + width; a++)
             {
-              final Glyph glyph = Glyph(width: width, height: imgHeight);
-              for (int a = x; a < x + width; a++)
+              for (int b = 0; b < imgHeight; b++)
               {
-                for (int b = 0; b < imgHeight; b++)
-                {
-                  final int addr = (b * imgWidth * 4) + (a * 4) + 3;
-                  final int val = imgData.getUint8(addr);
-                  glyph.setPixel(x: a - x, y: b, value: val > 0);
-                }
+                final int addr = (b * imgWidth * 4) + (a * 4) + 3;
+                final int val = imgData.getUint8(addr);
+                glyph.setPixel(x: a - x, y: b, value: val > 0);
               }
-              glyphMap[id] = glyph;
             }
-            else if (id == 32)
-            {
-              //the space glyph is blank, which a freshly allocated Glyph already is
-              glyphMap[id] = Glyph(width: 1, height: imgHeight);
-            }
+            glyphMap[id] = glyph;
           }
-          else
+          else if (id == 32)
           {
-            //DISCARDING INVALID CHARACTER LOCATION
+            //the space glyph is blank, which a freshly allocated Glyph already is
+            glyphMap[id] = Glyph(width: 1, height: imgHeight);
           }
+        }
+        else
+        {
+          //DISCARDING INVALID CHARACTER LOCATION
         }
       }
     }

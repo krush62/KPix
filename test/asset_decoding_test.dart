@@ -16,13 +16,20 @@
  *
  */
 
+import 'dart:ui' as ui;
+
+import 'package:flutter/painting.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/models/stamp_manager_data.dart';
 import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/helpers/png_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('Dart PNG decoding matches the engine for every font and stamp', _compareDecoders, timeout: const Timeout(Duration(minutes: 3)),);
 
   test('fonts still decode identically after the atlas is released', () async {
     final Map<PixelFontType, KFont> fonts = await FontManager.readFonts();
@@ -85,4 +92,45 @@ void main() {
     // the thumbnail is decoded by a codec that is now disposed; the image must survive
     expect(withThumbnail, count);
   }, timeout: const Timeout(Duration(minutes: 3)),);
+}
+
+Future<void> _compareDecoders() async {
+  final AssetManifest manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+  final List<String> pngAssets = manifest
+      .listAssets()
+      .where((final String path) => (path.startsWith('fonts/') || path.startsWith('stamps/')) && path.toLowerCase().endsWith('.png'))
+      .toList();
+  expect(pngAssets.length, greaterThan(100));
+
+  for (final String path in pngAssets) {
+    final Uint8List pngBytes = (await rootBundle.load(path)).buffer.asUint8List();
+    final RgbaPixels? dartPixels = decodePngToRgba(pngBytes: pngBytes);
+    expect(dartPixels, isNotNull, reason: path);
+    final ui.Image engineImage = await decodeImageFromList(pngBytes);
+    final ByteData enginePixels = (await engineImage.toByteData())!;
+    expect(dartPixels!.width, engineImage.width, reason: path);
+    expect(dartPixels.height, engineImage.height, reason: path);
+    engineImage.dispose();
+    expect(_countMismatches(dartPixels: dartPixels.bytes, enginePixels: enginePixels), 0, reason: path);
+  }
+}
+
+// kept out of the async test body: a hot typed data loop in there crashes the JIT in flutter_tester
+int _countMismatches({required final ByteData dartPixels, required final ByteData enginePixels}) {
+  // the loaders read the alpha channel and the colour of opaque pixels only
+  int mismatches = 0;
+  for (int i = 0; i < enginePixels.lengthInBytes; i += 4) {
+    final int alpha = enginePixels.getUint8(i + 3);
+    if (dartPixels.getUint8(i + 3) != alpha) {
+      mismatches++;
+    } else if (alpha == 255) {
+      for (int c = 0; c < 3; c++) {
+        if (dartPixels.getUint8(i + c) != enginePixels.getUint8(i + c)) {
+          mismatches++;
+          break;
+        }
+      }
+    }
+  }
+  return mismatches;
 }

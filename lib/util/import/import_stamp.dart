@@ -38,18 +38,17 @@ Future<StampMap> _loadInstalledStamps() async
       .listAssets()
       .where((final String path) => path.startsWith(stampRoot) && path.endsWith(".png"))
       .toList();
-  for (final String path in stampAssets)
+  final List<Uint8List> pngContents = await Future.wait(stampAssets.map((final String path) async => (await rootBundle.load(path)).buffer.asUint8List()));
+  final List<StampManagerEntryData?> stamps = await _readStamps(pngContents: pngContents, fileNames: stampAssets, isLocked: true);
+  for (int i = 0; i < stampAssets.length; i++)
   {
-    final String folder = path.substring(0, path.lastIndexOf('/')).substring(stampRoot.length);
-    final ByteData byteData = await rootBundle.load(path);
-    final Uint8List pngBytes = byteData.buffer.asUint8List();
-    final StampManagerEntryData data = await _readStampFromFileData(pngBytes: pngBytes, fileName: path, isLocked: true);
-    if (data.thumbnail != null)
+    final StampManagerEntryData? data = stamps[i];
+    if (data != null)
     {
+      final String folder = stampAssets[i].substring(0, stampAssets[i].lastIndexOf('/')).substring(stampRoot.length);
       stampData[folder] ??= <StampManagerEntryData>[];
       stampData[folder]!.add(data);
     }
-
   }
   return stampData;
 }
@@ -69,79 +68,118 @@ Future<List<StampManagerEntryData>> _loadUserStamps() async
       }
     });
   }
-  for (final String filePath in filesWithExtension)
-  {
-    final Uint8List pngBytes = await File(filePath).readAsBytes();
-    final StampManagerEntryData data = await _readStampFromFileData(pngBytes: pngBytes, fileName: filePath, isLocked: false);
-
-    if (data.thumbnail != null)
-    {
-      stampData.add(data);
-    }
-  }
+  final List<Uint8List> pngContents = await Future.wait(filesWithExtension.map((final String filePath) => File(filePath).readAsBytes()));
+  final List<StampManagerEntryData?> stamps = await _readStamps(pngContents: pngContents, fileNames: filesWithExtension, isLocked: false);
+  stampData.addAll(stamps.nonNulls);
   return stampData;
 }
 
-Future<StampManagerEntryData> _readStampFromFileData({required final Uint8List pngBytes, required final String fileName, required final bool isLocked}) async
+/// Pixel data of a stamp, decoded away from the UI isolate.
+class _StampPixels
 {
-  final ui.Image decImg = await decodeImageFromList(pngBytes);
-  final int imgHeight = decImg.height;
-  final int imgWidth = decImg.width;
-  final ByteData? imgData = await decImg.toByteData();
-  decImg.dispose();
-  final HashMap<CoordinateSetI, int> stampMap = HashMap<CoordinateSetI, int>();
-  ui.Image? thumbnail;
+  final int width;
+  final int height;
+  final HashMap<CoordinateSetI, int> data;
 
-  if (imgData != null)
+  _StampPixels({required this.width, required this.height, required this.data});
+}
+
+/// Reads all stamps at once; an entry is null if its file could not be decoded.
+Future<List<StampManagerEntryData?>> _readStamps({required final List<Uint8List> pngContents, required final List<String> fileNames, required final bool isLocked}) async
+{
+  //the engine only decodes the thumbnails, the stamp data is decoded in Dart to avoid a GPU readback per stamp
+  final Future<List<ui.Image?>> thumbnailsFuture = Future.wait(pngContents.map(_decodeStampThumbnail));
+  final List<_StampPixels?> pixels = await _decodeStampsOffThread(pngContents: pngContents);
+  final List<ui.Image?> thumbnails = await thumbnailsFuture;
+
+  final List<StampManagerEntryData?> stamps = <StampManagerEntryData?>[];
+  for (int i = 0; i < pngContents.length; i++)
   {
-    for (int x = 0; x < imgWidth; x++)
+    final _StampPixels? stampPixels = pixels[i];
+    final ui.Image? thumbnail = thumbnails[i];
+    if (stampPixels != null && thumbnail != null)
     {
-      for (int y = 0; y < imgHeight; y++)
-      {
-        final int r = imgData.getUint8((y * imgWidth * 4) + (x * 4) + 0);
-        final int g = imgData.getUint8((y * imgWidth * 4) + (x * 4) + 1);
-        final int b = imgData.getUint8((y * imgWidth * 4) + (x * 4) + 2);
-        final int a = imgData.getUint8((y * imgWidth * 4) + (x * 4) + 3);
-        if (a == 255 && r == g && r == b)
-        {
-          int? val;
-          if (r == 0)
-          {
-            val = -2;
-          }
-          else if (r == 64)
-          {
-            val = -1;
-          }
-          else if (r == 128)
-          {
-            val = 0;
-          }
-          else if (r == 192)
-          {
-            val = 1;
-          }
-          else if (r == 255)
-          {
-            val = 2;
-          }
+      stamps.add(StampManagerEntryData(path: fileNames[i], isLocked: isLocked, name: extractFilenameFromPath(path: fileNames[i], keepExtension: false), data: stampPixels.data, thumbnail: thumbnail, width: stampPixels.width, height: stampPixels.height));
+    }
+    else
+    {
+      thumbnail?.dispose();
+      stamps.add(null);
+    }
+  }
+  return stamps;
+}
 
-          if (val != null)
-          {
-            stampMap[CoordinateSetI(x: x, y: y)] = val;
-          }
+Future<ui.Image?> _decodeStampThumbnail(final Uint8List pngBytes) async
+{
+  try
+  {
+    return await decodeImageFromList(pngBytes);
+  }
+  catch (_)
+  {
+    return null;
+  }
+}
+
+Future<List<_StampPixels?>> _decodeStampsOffThread({required final List<Uint8List> pngContents})
+{
+  return runOffThread<List<_StampPixels?>>(
+    work: () => pngContents.map((final Uint8List pngBytes) => _decodeStampPixels(pngBytes: pngBytes)).toList(),
+    debugLabel: "stamp decoding",
+  );
+}
+
+_StampPixels? _decodeStampPixels({required final Uint8List pngBytes})
+{
+  final RgbaPixels? pixels = decodePngToRgba(pngBytes: pngBytes);
+  if (pixels == null)
+  {
+    return null;
+  }
+  final int imgWidth = pixels.width;
+  final int imgHeight = pixels.height;
+  final ByteData imgData = pixels.bytes;
+  final HashMap<CoordinateSetI, int> stampMap = HashMap<CoordinateSetI, int>();
+
+  for (int x = 0; x < imgWidth; x++)
+  {
+    for (int y = 0; y < imgHeight; y++)
+    {
+      final int r = imgData.getUint8((y * imgWidth * 4) + (x * 4) + 0);
+      final int g = imgData.getUint8((y * imgWidth * 4) + (x * 4) + 1);
+      final int b = imgData.getUint8((y * imgWidth * 4) + (x * 4) + 2);
+      final int a = imgData.getUint8((y * imgWidth * 4) + (x * 4) + 3);
+      if (a == 255 && r == g && r == b)
+      {
+        int? val;
+        if (r == 0)
+        {
+          val = -2;
+        }
+        else if (r == 64)
+        {
+          val = -1;
+        }
+        else if (r == 128)
+        {
+          val = 0;
+        }
+        else if (r == 192)
+        {
+          val = 1;
+        }
+        else if (r == 255)
+        {
+          val = 2;
+        }
+
+        if (val != null)
+        {
+          stampMap[CoordinateSetI(x: x, y: y)] = val;
         }
       }
     }
-    try
-    {
-      final ui.Codec codec = await ui.instantiateImageCodec(pngBytes);
-      final ui.FrameInfo frame = await codec.getNextFrame();
-      thumbnail = frame.image;
-      codec.dispose();
-    }
-    catch(_){}
-
   }
-  return StampManagerEntryData(path: fileName, isLocked: isLocked, name: extractFilenameFromPath(path: fileName, keepExtension: false), data: stampMap, thumbnail: thumbnail, width: imgWidth, height: imgHeight);
+  return _StampPixels(width: imgWidth, height: imgHeight, data: stampMap);
 }

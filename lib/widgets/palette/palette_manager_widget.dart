@@ -159,7 +159,14 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _applyPalette()
   {
-    _paletteWarningDialog?.show(context: context);
+    if (GetIt.I.get<PaletteState>().projectHasPixels())
+    {
+      _paletteWarningDialog?.show(context: context);
+    }
+    else
+    {
+      _paletteWarningNo();
+    }
   }
 
   void _appendPalette()

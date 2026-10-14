@@ -118,9 +118,8 @@ class PaletteState
     _selectedColor.value = _colorRamps.value[0].references[0];
   }
 
-  int getPixelCountForRamp({required final KPalRampData ramp, final bool includeInvisible = true})
+  LinkedHashSet<LayerState> _getOriginalLayers()
   {
-    int pixelCount = 0;
     final List<Frame> allFrames = GetIt.I.get<DocumentState>().timeline.frames.value;
     final LinkedHashSet<LayerState> originalLayerSet = LinkedHashSet<LayerState>();
     for (final Frame f in allFrames)
@@ -131,7 +130,30 @@ class PaletteState
         originalLayerSet.add(layers.getLayer(index: i));
       }
     }
+    return originalLayerSet;
+  }
 
+  bool projectHasPixels()
+  {
+    final LinkedHashSet<LayerState> originalLayerSet = _getOriginalLayers();
+    final List<KPalRampData> ramps = _colorRamps.value;
+    for (final LayerState layer in originalLayerSet)
+    {
+      for (final KPalRampData ramp in ramps)
+      {
+        if (layer is DrawingLayerState && layer.getPixelCountForRamp(ramp: ramp) > 0)
+        {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  int getPixelCountForRamp({required final KPalRampData ramp, final bool includeInvisible = true})
+  {
+    int pixelCount = 0;
+    final LinkedHashSet<LayerState> originalLayerSet = _getOriginalLayers();
     for (final LayerState layer in originalLayerSet)
     {
       if (layer is DrawingLayerState && (includeInvisible || layer.visibilityState.value == LayerVisibilityState.visible))
@@ -151,6 +173,7 @@ class PaletteState
       clipboard: selectionState.getClipboardPixelCountForRamp(ramp: ramp),
     );
   }
+
 
   PaletteActionResult deleteRamp({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {

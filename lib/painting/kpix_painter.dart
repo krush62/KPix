@@ -109,6 +109,10 @@ class KPixPainter extends CustomPainter
   Offset _referenceImglastStartPos = Offset.zero;
   final CoordinateSetD _referenceImgLastReferenceOffset = CoordinateSetD.zero();
 
+  // INFO BOX
+  final CoordinateSetD infoBoxCursorDistance = CoordinateSetD(x: 0.0, y: 32.0);
+  final double infoBoxOpacity = 0.85;
+
   KPixPainter({
       required final ValueNotifier<Offset> offset,
     required final ValueNotifier<CoordinateSetD?> coords,
@@ -618,9 +622,6 @@ class KPixPainter extends CustomPainter
 
   void _drawCursorInfo({required final DrawingParameters drawParams})
   {
-    const double cursorDistance = 8.0;
-    const double opacity = 0.85;
-
     final CursorInfo? info = toolPainter?.getCursorInfo(drawParams: drawParams);
     if (info == null || drawParams.cursorPos == null)
     {
@@ -638,20 +639,20 @@ class KPixPainter extends CustomPainter
 
     //below right of the cursor, flipped to the other side at the edges
     final Size boxSize = Size(textPainter.width + _cursorInfoPadding.horizontal, textPainter.height + _cursorInfoPadding.vertical);
-    double left = drawParams.cursorPos!.x + cursorDistance;
-    double top = drawParams.cursorPos!.y + cursorDistance;
+    double left = drawParams.cursorPos!.x + infoBoxCursorDistance.x;
+    double top = drawParams.cursorPos!.y + infoBoxCursorDistance.y;
     if (left + boxSize.width > drawParams.drawingSize.width)
     {
-      left = drawParams.cursorPos!.x - cursorDistance - boxSize.width;
+      left = drawParams.cursorPos!.x - infoBoxCursorDistance.x - boxSize.width;
     }
     if (top + boxSize.height > drawParams.drawingSize.height)
     {
-      top = drawParams.cursorPos!.y - cursorDistance - boxSize.height;
+      top = drawParams.cursorPos!.y - infoBoxCursorDistance.y - boxSize.height;
     }
 
     //painted like a tooltip, then faded as a whole
     final Offset boxOffset = Offset(left, top);
-    drawParams.canvas.saveLayer((boxOffset & boxSize).inflate(_cursorInfoShadowExtent), Paint()..color = Colors.black.withValues(alpha: opacity));
+    drawParams.canvas.saveLayer((boxOffset & boxSize).inflate(_cursorInfoShadowExtent), Paint()..color = Colors.black.withValues(alpha: infoBoxOpacity));
     final BoxPainter boxPainter = _cursorInfoDecoration.createBoxPainter();
     boxPainter.paint(drawParams.canvas, boxOffset, ImageConfiguration(size: boxSize, textDirection: TextDirection.ltr));
     textPainter.paint(drawParams.canvas, boxOffset + _cursorInfoPadding.topLeft);

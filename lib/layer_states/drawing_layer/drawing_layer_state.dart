@@ -564,7 +564,9 @@ class DrawingLayerState extends RasterableLayerState
 
     if (layerStack != null)
     {
-      final ui.Image layerStackImage = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, layers: layerStack!, frameIsSelected: false, fullRenderForced: fullRenderForced, renderRegions: renderRegions);
+      //a stack need not belong to the open canvas, an imported project's does not
+      final CoordinateSetI stackSize = CoordinateSetI(x: _data.width, y: _data.height);
+      final ui.Image layerStackImage = await _createRasterFromLayers(canvasSize: stackSize, layers: layerStack!, frameIsSelected: false, fullRenderForced: fullRenderForced, renderRegions: renderRegions);
       return DualRasterResult(rasterImages: rasterImages, externalStackImages: RasterImagePair(thumbnail: layerStackImage, raster: layerStackImage));
     }
     else

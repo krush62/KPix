@@ -349,7 +349,9 @@ class ShadingLayerState extends RasterableLayerState
       }
       if (currentIndex != null)
       {
-        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, rasterLayers: layerStack!, currentIndex: currentIndex, fullRenderForced: fullRenderForced, renderRegions: renderRegions, frame: null, thumbnailStale: thumbnailStale);
+        //a stack need not belong to the open canvas, an imported project's does not
+        final CoordinateSetI stackSize = CoordinateSetI(x: shadingValues.width, y: shadingValues.height);
+        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: stackSize, rasterLayers: layerStack!, currentIndex: currentIndex, fullRenderForced: fullRenderForced, renderRegions: renderRegions, frame: null, thumbnailStale: thumbnailStale);
         return DualRasterResult(rasterImages: rasterImages, externalStackImages: externalStackImages);
       }
       else

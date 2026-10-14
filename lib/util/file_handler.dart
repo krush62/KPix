@@ -1095,7 +1095,15 @@ Future<ProjectImportResult> importProject({required final String? path}) async
             final ui.Image? img = await getImageFromLoadFileSet(loadFileSet: loadFileSet);
             if (img != null)
             {
-              final bool copied = await copyImportFile(inputPath: loadFileSet.path!, image: img, targetPath: projectPath,);
+              final bool copied;
+              try
+              {
+                copied = await copyImportFile(inputPath: loadFileSet.path!, image: img, targetPath: projectPath,);
+              }
+              finally
+              {
+                img.dispose();
+              }
               if (copied)
               {
                 notifyProjectFileChanged(path: projectPath);
@@ -1153,22 +1161,34 @@ Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSe
   }
   final RampResolver resolver = RampResolver(liveRamps: ramps, historyRamps: state.rampList);
 
-  final List<LayerState> layers = <LayerState>[];
+  //these layers are in no frame of the open document, so without a stack of
+  //their own they would raster nothing; only visible raster layers are drawn
+  final List<RasterableLayerState> layers = <RasterableLayerState>[];
   for (final HistoryLayer hLayer in state.timeline.getLayersForFrameIndex(frameIndex: 0))
   {
-    final LayerState layer = await hLayer.toLayerState(canvasSize: state.canvasSize, ramps: resolver);
-    layer.visibilityState.value = hLayer.visibilityState;
-    layers.add(layer);
+    if (hLayer.visibilityState == LayerVisibilityState.visible && (hLayer is HistoryDrawingLayer || hLayer is HistoryShadingLayer))
+    {
+      final RasterableLayerState layer = await hLayer.toLayerState(canvasSize: state.canvasSize, ramps: resolver) as RasterableLayerState;
+      layer.layerStack = layers;
+      layers.add(layer);
+    }
   }
 
-  //the compositor reads the rasters straight off the layers, so they have to have
-  //settled first; only the rasterable ones are drawn, so only those are waited for
-  await Future.wait<void>(layers.whereType<RasterableLayerState>().map((final RasterableLayerState layer) => layer.rasterizationComplete))
-      .timeout(rasterSettleTimeout, onTimeout: ()
+  //shading and effects read the rasters below them, so raster bottom up
+  for (final RasterableLayerState layer in layers.reversed)
   {
-    GetIt.I.get<Logger>().w("Timed out rasterizing layers for the project thumbnail.");
-    return <void>[];
-  },);
+    layer.forceFullRender();
+    bool settled = true;
+    await layer.rasterizationComplete.timeout(rasterSettleTimeout, onTimeout: ()
+    {
+      settled = false;
+    },);
+    if (!settled)
+    {
+      GetIt.I.get<Logger>().w("Timed out rasterizing layers for the project thumbnail.");
+      break;
+    }
+  }
 
   final ui.Image thumbnail = await getImageFromLayers(
     canvasSize: state.canvasSize,

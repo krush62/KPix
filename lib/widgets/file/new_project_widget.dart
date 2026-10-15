@@ -387,7 +387,7 @@ class NewProjectWidgetState extends State<NewProjectWidget>
                 Expanded(
                   child: IconButton.outlined(
                     tooltip: l10n.exitApplication,
-                    icon: const Icon(TablerIcons.x),
+                    icon: const Icon(TablerIcons.power),
                     onPressed: () {
                       widget.dismiss!();
                     },

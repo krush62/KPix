@@ -24,6 +24,7 @@ import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/clipboard_content.dart';
@@ -589,7 +590,7 @@ class SelectionState with ChangeNotifier
     final Frame? frame = _documentState.timeline.selectedFrame;
     if (frame != null)
     {
-      final Iterable<LayerState> visibleLayers = frame.layerList.getVisibleLayers();
+      final Iterable<RasterableLayerState> visibleLayers = frame.layerList.getVisibleRasterLayers();
       final SelectionBuffer merged = SelectionBuffer();
       final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox();
       if (topLeft != null && bottomRight != null)
@@ -602,25 +603,14 @@ class SelectionState with ChangeNotifier
 
       for (final CoordinateSetI coord in selection.getCoordinates())
       {
+        //the rastered composites already hold the floating selection, layer effects and shading
         ColorReference? mergedColor;
-        for (final LayerState layer in visibleLayers)
+        for (final RasterableLayerState layer in visibleLayers)
         {
-          if (layer is DrawingLayerState)
+          mergedColor = layer.compositeAt(frame: frame, coord: coord);
+          if (mergedColor != null)
           {
-            ColorReference? colRef = layer.getDataEntry(coord: coord);
-            if (layer == _documentState.timeline.getCurrentLayer())
-            {
-              final ColorReference? selColRef = selection.getColorReference(coord: coord);
-              if (selColRef != null)
-              {
-                colRef = selColRef;
-              }
-            }
-            if (colRef != null)
-            {
-              mergedColor = colRef;
-              break;
-            }
+            break;
           }
         }
         int code = PaletteCodec.transparent;

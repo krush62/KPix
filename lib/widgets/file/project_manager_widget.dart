@@ -20,7 +20,6 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/l10n/app_localizations.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/project_manager_data.dart';
@@ -52,9 +51,10 @@ abstract final class _ProjectManagerOptions
 class ProjectManagerWidget extends StatefulWidget
 {
   final Function() dismiss;
-  final Function() fileLoad;
-  final SaveKnownFileFn saveKnownFileFn;
-  const ProjectManagerWidget({super.key, required this.dismiss, required this.saveKnownFileFn, required this.fileLoad});
+  //both are run by the owner, since this view is gone before saving finishes
+  final LoadProjectFn loadProject;
+  final LoadProjectFn saveAndLoadProject;
+  const ProjectManagerWidget({super.key, required this.dismiss, required this.saveAndLoadProject, required this.loadProject});
 
   @override
   State<ProjectManagerWidget> createState() => _ProjectManagerWidgetState();
@@ -81,7 +81,6 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   //overlay builds, so it still follows a locale change
   late final KPixOverlay _saveBeforeLoadWarningDialog;
   late final KPixOverlay _deleteWarningDialog;
-  late final KPixOverlay _loadingDialog;
 
   @override
   void initState()
@@ -101,7 +100,6 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       outsideCancelable: false,
       message: (final AppLocalizations l10n) => l10n.unsavedChangesSaveFirst,
     );
-    _loadingDialog = getLoadingDialog(message: (final AppLocalizations l10n) => l10n.openingImageDot);
     _deleteWarningDialog = getTwoButtonDialog(
       message: (final AppLocalizations l10n) => l10n.doYouReallyWantToDeleteProject,
       onNo: _deleteWarningNo,
@@ -131,42 +129,22 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   void _saveBeforeLoadWarningYes()
   {
-    widget.saveKnownFileFn(callback: _saveBeforeLoadWarningNo);
+    _closeSaveBeforeLoadWarning();
+    final String? selectedPath = _projectManager.selectedPath.value;
+    if (selectedPath != null)
+    {
+      widget.saveAndLoadProject(path: selectedPath);
+    }
   }
 
   void _saveBeforeLoadWarningNo()
   {
-    final String? selectedPath = _projectManager.selectedPath.value;
-    if (selectedPath == null)
-    {
-      _closeSaveBeforeLoadWarning();
-      return;
-    }
-    _loadingDialog.show(context: context);
-    //taken now: this widget is dismissed long before the file has loaded
-    final AppLocalizations l10n = AppLocalizations.of(context)!;
-    loadKPixFile(
-      fileData: null,
-      path: selectedPath,
-      drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
-      shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
-      frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
-    ).then((final LoadFileSet loadFileSet)
-    {
-      fileLoaded(loadFileSet: loadFileSet, finishCallback: (final ProjectLoadResult? result)
-      {
-        _loadingDialog.hide();
-        if (result != null)
-        {
-          showMessagesForProjectLoad(result: result, l10n: l10n);
-        }
-      },);
-    });
     _closeSaveBeforeLoadWarning();
-    //report the load before dismissing, so the dismiss handler can drop any
-    //pending callback without discarding one that is still owed a call
-    widget.fileLoad();
-    widget.dismiss();
+    final String? selectedPath = _projectManager.selectedPath.value;
+    if (selectedPath != null)
+    {
+      widget.loadProject(path: selectedPath);
+    }
   }
 
   void _dismissPressed()

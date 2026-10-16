@@ -857,14 +857,14 @@ KPixOverlay getPaletteAdjustmentDialog({required final Function() onDismiss})
 
 /// An overlay holding the project manager.
 ///
-/// [onSave] and [onLoad] are handed on to the [ProjectManagerWidget].
-KPixOverlay getProjectManagerDialog({required final Function() onDismiss, required final SaveKnownFileFn onSave, required final Function() onLoad})
+/// [onSaveAndLoad] and [onLoad] are handed on to the [ProjectManagerWidget].
+KPixOverlay getProjectManagerDialog({required final Function() onDismiss, required final LoadProjectFn onSaveAndLoad, required final LoadProjectFn onLoad})
 {
   return _barrierOverlay(
     smokeOpacity: OverlayEntryAlertDialogOptions.smokeOpacity,
     onEscape: onDismiss,
     content: (final BuildContext context) => Center(
-      child: ProjectManagerWidget(dismiss: onDismiss, saveKnownFileFn: onSave, fileLoad: onLoad,),
+      child: ProjectManagerWidget(dismiss: onDismiss, saveAndLoadProject: onSaveAndLoad, loadProject: onLoad,),
     ),
   );
 }

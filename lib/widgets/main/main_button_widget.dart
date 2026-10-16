@@ -86,7 +86,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   /// Run once the project manager reports that a file has been loaded.
   ///
   /// Set when the manager is opened on behalf of a caller that wants to know,
-  /// consumed by [_fileLoaded], and dropped again if the manager is dismissed
+  /// consumed by [_loadProject], and dropped again if the manager is dismissed
   /// without loading anything.
   Function()? _pendingLoadCallback;
   KPixOverlay? _importDialog;
@@ -117,8 +117,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
     _projectManagerDialog = getProjectManagerDialog(
       onDismiss: _projectManagerDismissed,
-      onSave: _saveFile,
-      onLoad: _fileLoaded,
+      onSaveAndLoad: _saveAndLoadProject,
+      onLoad: _loadProject,
     );
 
     _aboutDialog = getAboutDialog(
@@ -290,11 +290,48 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     );
   }
 
-  void _fileLoaded()
+  void _loadProject({required final String path})
   {
+    if (!mounted)
+    {
+      return;
+    }
+    //taken now: the context is not used again once loading has started
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    _closeAllMenus();
+    _openLoadingDialog?.show(context: context);
+    loadKPixFile(
+      fileData: null,
+      path: path,
+      drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
+      shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
+      frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
+    ).then((final LoadFileSet loadFileSet)
+    {
+      fileLoaded(loadFileSet: loadFileSet, finishCallback: (final ProjectLoadResult? result)
+      {
+        _openLoadingDialog?.hide();
+        if (result != null)
+        {
+          showMessagesForProjectLoad(result: result, l10n: l10n);
+        }
+      },);
+    });
     final Function()? callback = _pendingLoadCallback;
     _pendingLoadCallback = null;
     callback?.call();
+  }
+
+  void _saveAndLoadProject({required final String path})
+  {
+    _saveFile(callback: ()
+    {
+      //the callback also comes when saving failed, and then the changes must stay
+      if (!_projectSession.hasChanges.value)
+      {
+        _loadProject(path: path);
+      }
+    },);
   }
 
   void _projectManagerDismissed()

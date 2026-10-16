@@ -39,6 +39,7 @@ typedef NewFileFn = void Function({required CoordinateSetI size});
 typedef SaveFileFn = void Function({required String fileName, required Function()? callback});
 typedef ChangeTextToolFn = void Function({required String newText});
 typedef SaveKnownFileFn = void Function({Function()? callback});
+typedef LoadProjectFn = void Function({required String path});
 typedef ImportImageFn = void Function({required ImportData importData});
 typedef StampEntryDataFn = void Function({required StampManagerEntryData data});
 

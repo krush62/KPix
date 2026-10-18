@@ -129,7 +129,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         onDismiss: _closeAllMenus,
         onAccept: ({required final Function()? callback, required final String fileName}) {
           _closeAllMenus();
-          saveFilePressed(fileName: fileName, finishCallback: callback, savedCallback: _fileSaved);
+          saveFilePressed(fileName: fileName, finishCallback: callback, savedCallback: _fileSaved, failedCallback: _fileSaveFailed);
         },
     );
 
@@ -324,14 +324,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _saveAndLoadProject({required final String path})
   {
-    _saveFile(callback: ()
-    {
-      //the callback also comes when saving failed, and then the changes must stay
-      if (!_projectSession.hasChanges.value)
-      {
-        _loadProject(path: path);
-      }
-    },);
+    _saveFile(callback: () {_loadProject(path: path);});
   }
 
   void _projectManagerDismissed()
@@ -354,6 +347,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
   }
 
+  void _fileSaveFailed()
+  {
+    if (mounted)
+    {
+      showMessageForFileSaveFailed(l10n: AppLocalizations.of(context)!);
+    }
+  }
+
   void _saveFile({final Function()? callback})
   {
     if (_projectSession.projectName.value == null)
@@ -362,7 +363,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
     else
     {
-      saveFilePressed(fileName: _projectSession.projectName.value!, finishCallback: callback, savedCallback: _fileSaved);
+      saveFilePressed(fileName: _projectSession.projectName.value!, finishCallback: callback, savedCallback: _fileSaved, failedCallback: _fileSaveFailed);
       _closeAllMenus();
     }
   }
@@ -373,7 +374,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         onDismiss: _closeAllMenus,
         onAccept: ({required final Function()? callback, required final String fileName}) {
           _closeAllMenus();
-          saveFilePressed(fileName: fileName, finishCallback: callback, savedCallback: _fileSaved);
+          saveFilePressed(fileName: fileName, finishCallback: callback, savedCallback: _fileSaved, failedCallback: _fileSaveFailed);
         },
         callback: callback,
     );

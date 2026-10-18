@@ -1068,6 +1068,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorSavingPalette => 'Error saving palette!';
 
   @override
+  String get errorSavingProject =>
+      'Error saving project! Your changes have not been saved.';
+
+  @override
   String paletteSavedAt(String path) {
     return 'Palette saved successfully at $path.';
   }

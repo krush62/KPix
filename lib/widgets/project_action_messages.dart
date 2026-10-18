@@ -44,6 +44,11 @@ void showMessageForFileSaved({required final String displayPath, required final 
   showMessage(text: l10n.fileSavedAt(displayPath), toastType: ToastType.success);
 }
 
+void showMessageForFileSaveFailed({required final AppLocalizations l10n})
+{
+  showMessage(text: l10n.errorSavingProject, toastType: ToastType.error);
+}
+
 void showMessageForImageImport({required final ImageImportResult result, required final AppLocalizations l10n})
 {
   switch (result)

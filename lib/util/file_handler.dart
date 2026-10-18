@@ -306,42 +306,19 @@ void fileLoaded({required final LoadFileSet loadFileSet, required final void Fun
 }
 
 /// [savedCallback] receives the path to show the user once the file is saved;
-/// [finishCallback] is called afterwards, and also if saving failed.
-Future<void> saveFilePressed({required final String fileName, final Function()? finishCallback, final void Function(String displayPath)? savedCallback, final bool forceSaveAs = false,}) async
+/// [finishCallback] is called afterwards. If saving failed, only
+/// [failedCallback] is called, so nothing that relies on the save goes ahead.
+Future<void> saveFilePressed({required final String fileName, final Function()? finishCallback, final void Function(String displayPath)? savedCallback, final Function()? failedCallback, final bool forceSaveAs = false,}) async
 {
-  if (!kIsWeb)
+  final String savePath = kIsWeb ? fileName : p.join(GetIt.I.get<AppPaths>().projectsDir, "$fileName.$fileExtensionKpix");
+  final String? path = await saveKPixFile(path: savePath);
+  if (path != null)
   {
-    final String finalPath = p.join(GetIt.I.get<AppPaths>().projectsDir, "$fileName.$fileExtensionKpix");
-    saveKPixFile(path: finalPath).then((final String? path)
-    {
-      if (path != null)
-      {
-        _projectFileSaved(fileName: fileName, path: path,finishCallback: finishCallback, savedCallback: savedCallback,);
-      }
-      else if (finishCallback != null) 
-      {
-        finishCallback();
-      }
-    });
+    await _projectFileSaved(fileName: fileName, path: path, finishCallback: finishCallback, savedCallback: savedCallback,);
   }
   else
   {
-    saveKPixFile(path: fileName).then((final String? path)
-    {
-      if (path != null) 
-      {
-        _projectFileSaved(
-          fileName: fileName,
-          path: path,
-          finishCallback: finishCallback,
-          savedCallback: savedCallback,
-        );
-      } 
-      else if (finishCallback != null) 
-      {
-        finishCallback();
-      }
-    });
+    failedCallback?.call();
   }
 }
 

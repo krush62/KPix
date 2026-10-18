@@ -476,6 +476,7 @@
   "savePalette": "Save Palette",
   "defaultPalette": "Default",
   "errorSavingPalette": "Error saving palette!",
+  "errorSavingProject": "Error saving project! Your changes have not been saved.",
   "paletteSavedAt": "Palette saved successfully at {path}.",
   "@paletteSavedAt": {
     "description": "palette manager",

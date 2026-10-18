@@ -382,6 +382,7 @@
   "savePalette": "Palette speichern",
   "defaultPalette": "Standard",
   "errorSavingPalette": "Fehler beim Speichern der Palette!",
+  "errorSavingProject": "Fehler beim Speichern des Projekts! Die Änderungen wurden nicht gespeichert.",
   "paletteSavedAt": "Palette erfolgreich gespeichert unter {path}.",
   "paletteWithSameNameExists": "Eine Palette mit demselben Namen existiert bereits!",
   "pleaseSelectAKPalFile": "Bitte eine KPal-Datei auswählen!",

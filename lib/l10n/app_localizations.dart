@@ -2084,6 +2084,12 @@ abstract class AppLocalizations {
   /// **'Error saving palette!'**
   String get errorSavingPalette;
 
+  /// No description provided for @errorSavingProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving project! Your changes have not been saved.'**
+  String get errorSavingProject;
+
   /// palette manager
   ///
   /// In en, this message translates to:

@@ -23,6 +23,7 @@ import 'package:kpix/l10n/app_localizations.dart';
 enum ExportShaderType
 {
   lcd,
+  upscale,
 }
 
 /// How the value of an [ExportShaderSliderParameter] is shown.
@@ -30,6 +31,7 @@ enum ExportShaderValueFormat
 {
   percent,
   pixels,
+  decimal,
 }
 
 /// A value of an export shader the user can change.
@@ -84,6 +86,8 @@ final class ExportShaderSliderParameter extends ExportShaderParameter
         return "${(value * 100).round()}%";
       case ExportShaderValueFormat.pixels:
         return "${value.round()} px";
+      case ExportShaderValueFormat.decimal:
+        return value.toStringAsFixed(2);
     }
   }
 }
@@ -104,52 +108,124 @@ final class ExportShaderToggleParameter extends ExportShaderParameter
   }
 }
 
-/// A shader bundled with the app, see `shaders/` and the `shaders:` section of `pubspec.yaml`.
+/// One algorithm of an [ExportShaderDefinition]; the shaders are in `shaders/` and listed in `pubspec.yaml`.
+class ExportShaderVariant
+{
+  final String name;
+  final String asset;
+  final List<ExportShaderParameter> parameters;
+
+  const ExportShaderVariant({required this.name, required this.asset, this.parameters = const <ExportShaderParameter>[]});
+}
+
 class ExportShaderDefinition
 {
   final ExportShaderType type;
-  final String asset;
   final String Function(AppLocalizations l10n) name;
-  final List<ExportShaderParameter> parameters;
+  final List<ExportShaderVariant> variants;
 
-  const ExportShaderDefinition({required this.type, required this.asset, required this.name, required this.parameters});
+  const ExportShaderDefinition({required this.type, required this.name, required this.variants});
 }
 
 String _lcdName(final AppLocalizations l10n) => l10n.shaderLcd;
+String _upscaleName(final AppLocalizations l10n) => l10n.shaderUpscale;
 String _brightnessLabel(final AppLocalizations l10n) => l10n.brightness;
 String _gridWidthLabel(final AppLocalizations l10n) => l10n.gridWidth;
 String _gridColorLabel(final AppLocalizations l10n) => l10n.gridColor;
 String _softnessLabel(final AppLocalizations l10n) => l10n.softness;
 String _subpixelsLabel(final AppLocalizations l10n) => l10n.subpixels;
 String _gridOnTransparencyLabel(final AppLocalizations l10n) => l10n.gridOnTransparency;
+String _colorToleranceLabel(final AppLocalizations l10n) => l10n.colorTolerance;
+String _smoothnessLabel(final AppLocalizations l10n) => l10n.smoothness;
+String _antiAliasingLabel(final AppLocalizations l10n) => l10n.antiAliasing;
+String _lineWidthLabel(final AppLocalizations l10n) => l10n.lineWidth;
+String _similarityThresholdLabel(final AppLocalizations l10n) => l10n.similarityThreshold;
 
 const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <ExportShaderType, ExportShaderDefinition>{
   ExportShaderType.lcd: ExportShaderDefinition(
     type: ExportShaderType.lcd,
-    asset: "shaders/lcd.frag",
     name: _lcdName,
-    parameters: <ExportShaderParameter>[
-      ExportShaderSliderParameter(uniform: "uBrightness", label: _brightnessLabel, min: 0.25, max: 3.0, initial: 1.0, format: ExportShaderValueFormat.percent),
-      ExportShaderSliderParameter(uniform: "uGridWidth", label: _gridWidthLabel, min: 1.0, max: 6.0, initial: 1.0, divisions: 5, format: ExportShaderValueFormat.pixels),
-      ExportShaderSliderParameter(uniform: "uGridGray", label: _gridColorLabel, min: 0.0, max: 1.0, initial: 0.25, format: ExportShaderValueFormat.percent, trackGradient: <Color>[Color(0xFF000000), Color(0xFFFFFFFF)]),
-      ExportShaderSliderParameter(uniform: "uSoftness", label: _softnessLabel, min: 0.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.percent),
-      ExportShaderSliderParameter(uniform: "uSubpixels", label: _subpixelsLabel, min: 0.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.percent),
-      ExportShaderToggleParameter(uniform: "uGridOnTransparency", label: _gridOnTransparencyLabel, initial: false),
+    variants: <ExportShaderVariant>[
+      ExportShaderVariant(
+        name: "LCD",
+        asset: "shaders/lcd.frag",
+        parameters: <ExportShaderParameter>[
+          ExportShaderSliderParameter(uniform: "uBrightness", label: _brightnessLabel, min: 0.25, max: 3.0, initial: 1.0, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uGridWidth", label: _gridWidthLabel, min: 1.0, max: 6.0, initial: 1.0, divisions: 5, format: ExportShaderValueFormat.pixels),
+          ExportShaderSliderParameter(uniform: "uGridGray", label: _gridColorLabel, min: 0.0, max: 1.0, initial: 0.25, format: ExportShaderValueFormat.percent, trackGradient: <Color>[Color(0xFF000000), Color(0xFFFFFFFF)]),
+          ExportShaderSliderParameter(uniform: "uSoftness", label: _softnessLabel, min: 0.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uSubpixels", label: _subpixelsLabel, min: 0.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.percent),
+          ExportShaderToggleParameter(uniform: "uGridOnTransparency", label: _gridOnTransparencyLabel, initial: false),
+        ],
+      ),
+    ],
+  ),
+  ExportShaderType.upscale: ExportShaderDefinition(
+    type: ExportShaderType.upscale,
+    name: _upscaleName,
+    variants: <ExportShaderVariant>[
+      ExportShaderVariant(
+        name: "OmniScale",
+        asset: "shaders/upscale_omniscale.frag",
+        parameters: <ExportShaderParameter>[
+          //0 = the thresholds of the original in SameBoy, 1 = the looser ones of the libretro port
+          ExportShaderSliderParameter(uniform: "uTolerance", label: _colorToleranceLabel, min: 0.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
+        ],
+      ),
+      ExportShaderVariant(
+        name: "xBR",
+        asset: "shaders/upscale_xbr.frag",
+        parameters: <ExportShaderParameter>[
+          ExportShaderSliderParameter(uniform: "uEqThreshold", label: _colorToleranceLabel, min: 0.0, max: 1.0, initial: 0.32, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uCoefficient", label: _smoothnessLabel, min: 0.0, max: 1.0, initial: 0.3, format: ExportShaderValueFormat.decimal),
+          ExportShaderToggleParameter(uniform: "uBlending", label: _antiAliasingLabel, initial: true),
+        ],
+      ),
+      ExportShaderVariant(
+        name: "xBRZ",
+        asset: "shaders/upscale_xbrz.frag",
+        parameters: <ExportShaderParameter>[
+          ExportShaderSliderParameter(uniform: "uColorTolerance", label: _colorToleranceLabel, min: 0.0, max: 0.5, initial: 30.0 / 255.0, format: ExportShaderValueFormat.decimal),
+        ],
+      ),
+      ExportShaderVariant(
+        name: "CleanEdge",
+        asset: "shaders/upscale_clean_edge.frag",
+        parameters: <ExportShaderParameter>[
+          //the shader clamps the width to this range while 2:1 slopes are on
+          ExportShaderSliderParameter(uniform: "uLineWidth", label: _lineWidthLabel, min: 0.44, max: 1.14, initial: 1.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uSimilarityThreshold", label: _similarityThresholdLabel, min: 0.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
+        ],
+      ),
     ],
   ),
 };
 
-/// The current parameter values of one export shader.
+/// The chosen variant and the parameter values of one export shader.
 class ExportShaderValues extends ChangeNotifier
 {
   final ExportShaderDefinition definition;
   final Map<ExportShaderParameter, Object> _values;
+  int _variantIndex = 0;
 
   ExportShaderValues({required this.definition}) : _values = <ExportShaderParameter, Object>{
-    for (final ExportShaderParameter parameter in definition.parameters) parameter: parameter.initialValue,
+    for (final ExportShaderVariant variant in definition.variants)
+      for (final ExportShaderParameter parameter in variant.parameters) parameter: parameter.initialValue,
   };
 
-  ExportShaderValues.from({required final ExportShaderValues other}) : definition = other.definition, _values = Map<ExportShaderParameter, Object>.of(other._values);
+  ExportShaderValues.from({required final ExportShaderValues other}) : definition = other.definition, _values = Map<ExportShaderParameter, Object>.of(other._values), _variantIndex = other._variantIndex;
+
+  int get variantIndex => _variantIndex;
+  ExportShaderVariant get variant => definition.variants[_variantIndex];
+
+  set variantIndex(final int index)
+  {
+    if (index != _variantIndex)
+    {
+      _variantIndex = index;
+      notifyListeners();
+    }
+  }
 
   T valueOf<T extends Object>({required final ExportShaderParameter parameter})
   {
@@ -170,11 +246,12 @@ class ExportShaderValues extends ChangeNotifier
     return _values[parameter] == parameter.initialValue;
   }
 
+  /// Writes the parameters of the current [variant] to its last pass.
   void applyTo({required final FragmentShader shader})
   {
-    for (final MapEntry<ExportShaderParameter, Object> entry in _values.entries)
+    for (final ExportShaderParameter parameter in variant.parameters)
     {
-      entry.key.apply(shader: shader, value: entry.value);
+      parameter.apply(shader: shader, value: _values[parameter]!);
     }
   }
 }

@@ -972,6 +972,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shaderLcd => 'LCD';
 
   @override
+  String get shaderUpscale => 'Upscale';
+
+  @override
+  String get colorTolerance => 'Color Tolerance';
+
+  @override
+  String get smoothness => 'Smoothness';
+
+  @override
+  String get antiAliasing => 'Anti-Aliasing';
+
+  @override
+  String get lineWidth => 'Line Width';
+
+  @override
+  String get similarityThreshold => 'Similarity Threshold';
+
+  @override
   String get gridWidth => 'Grid Width';
 
   @override

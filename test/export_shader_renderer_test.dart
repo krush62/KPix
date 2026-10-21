@@ -15,6 +15,7 @@
  */
 
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -53,7 +54,7 @@ Future<ui.Image> _source({required final int width, required final int height, r
 ExportShaderValues _lcd({final Map<String, Object> overrides = const <String, Object>{}})
 {
   final ExportShaderValues values = ExportShaderValues(definition: exportShaderDefinitions[ExportShaderType.lcd]!);
-  for (final ExportShaderParameter parameter in values.definition.parameters)
+  for (final ExportShaderParameter parameter in values.variant.parameters)
   {
     final Object? value = overrides[parameter.uniform];
     if (value != null)
@@ -82,6 +83,48 @@ List<int> _pixel(final (Uint8List, int) rendered, final int x, final int y)
 {
   final int i = (y * rendered.$2 + x) * 4;
   return rendered.$1.sublist(i, i + 4);
+}
+
+ExportShaderValues _upscale({required final String variant})
+{
+  final ExportShaderValues values = ExportShaderValues(definition: exportShaderDefinitions[ExportShaderType.upscale]!);
+  values.variantIndex = values.definition.variants.indexWhere((final ExportShaderVariant v) => v.name == variant);
+  return values;
+}
+
+/// The largest difference of any channel of any pixel from [color].
+int _maxDeviation({required final Uint8List rgba, required final List<int> color})
+{
+  int deviation = 0;
+  for (int i = 0; i < rgba.length; i++)
+  {
+    deviation = max(deviation, (rgba[i] - color[i % 4]).abs());
+  }
+  return deviation;
+}
+
+/// How many output pixels differ from plain pixel repetition of [sourceColor].
+int _differentFromNearest({required final (Uint8List, int) rendered, required final int scaling, required final List<int> Function(int x, int y) sourceColor})
+{
+  int count = 0;
+  final int height = rendered.$1.length ~/ (rendered.$2 * 4);
+  for (int y = 0; y < height; y++)
+  {
+    for (int x = 0; x < rendered.$2; x++)
+    {
+      final List<int> expected = sourceColor(x ~/ scaling, y ~/ scaling);
+      final List<int> actual = _pixel(rendered, x, y);
+      for (int c = 0; c < 4; c++)
+      {
+        if ((expected[c] - actual[c]).abs() > 8)
+        {
+          count++;
+          break;
+        }
+      }
+    }
+  }
+  return count;
 }
 
 bool _sameBytes(final Uint8List a, final Uint8List b)
@@ -180,6 +223,65 @@ void main()
         final (Uint8List, int) single = await _render(values: values, source: source, scaling: scaling);
 
         expect(decoded.width, source.width * scaling);
+        expect(_sameBytes(decoded.getBytes(order: img.ChannelOrder.rgba), single.$1), isTrue);
+        source.dispose();
+      });
+    });
+  });
+
+  group("upscale shader", () {
+    const ui.Color blue = ui.Color(0xFF3366CC);
+    List<int> staircase(final int x, final int y) => x > y ? <int>[255, 255, 255, 255] : <int>[0, 0, 0, 255];
+
+    for (final String variant in <String>["OmniScale", "xBR", "xBRZ", "CleanEdge"])
+    {
+      testWidgets("$variant keeps a single color as it is", (final WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final ui.Image source = await _source(width: 4, height: 3, color: (final int x, final int y) => blue);
+          final (Uint8List, int) out = await _render(values: _upscale(variant: variant), source: source, scaling: 3);
+
+          expect(out.$2, 12);
+          expect(_maxDeviation(rgba: out.$1, color: <int>[0x33, 0x66, 0xCC, 0xFF]), lessThanOrEqualTo(1));
+          source.dispose();
+        });
+      });
+
+      testWidgets("$variant smooths a diagonal staircase", (final WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final ui.Image source = await _source(width: 6, height: 6, color: (final int x, final int y) {
+            final List<int> c = staircase(x, y);
+            return ui.Color.fromARGB(c[3], c[0], c[1], c[2]);
+          },);
+          final (Uint8List, int) out = await _render(values: _upscale(variant: variant), source: source, scaling: 4);
+
+          expect(_differentFromNearest(rendered: out, scaling: 4, sourceColor: staircase), greaterThan(0));
+          source.dispose();
+        });
+      });
+
+      testWidgets("$variant keeps transparent areas transparent", (final WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final ui.Image source = await _source(width: 6, height: 6, color: (final int x, final int y) => x > y ? _red : _transparent);
+          final (Uint8List, int) out = await _render(values: _upscale(variant: variant), source: source, scaling: 4);
+
+          expect(_pixel(out, 2, 20)[3], 0, reason: "far inside the transparent half");
+          expect(_pixel(out, 20, 2), <int>[255, 0, 0, 255], reason: "far inside the red half");
+          source.dispose();
+        });
+      });
+    }
+
+    testWidgets("a tiled upscale export matches a single render", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        const int scaling = 7;
+        final ui.Image source = await _source(width: 300, height: 4, color: (final int x, final int y) => ui.Color.fromARGB(255, (x * 7) % 256, (y * 50) % 256, (x * 3) % 256));
+        expect(source.width * scaling, greaterThan(exportShaderMaxTileSize), reason: "setup: the export has to be tiled");
+        final ExportShaderValues values = _upscale(variant: "xBRZ");
+
+        final Uint8List png = (await renderExportShaderPng(values: values, source: source, scaling: scaling))!;
+        final img.Image decoded = img.decodePng(png)!;
+        final (Uint8List, int) single = await _render(values: values, source: source, scaling: scaling);
+
         expect(_sameBytes(decoded.getBytes(order: img.ChannelOrder.rgba), single.$1), isTrue);
         source.dispose();
       });

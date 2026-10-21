@@ -283,7 +283,20 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
                                   return ListView(
                                     padding: const EdgeInsets.symmetric(vertical: ShaderExportWidgetOptions.padding),
                                     children: <Widget>[
-                                      for (final ExportShaderParameter parameter in values.definition.parameters)
+                                      if (values.definition.variants.length > 1)
+                                        Padding(
+                                          padding: const EdgeInsets.only(bottom: ShaderExportWidgetOptions.padding),
+                                          child: SegmentedButton<int>(
+                                            segments: <ButtonSegment<int>>[
+                                              for (int i = 0; i < values.definition.variants.length; i++)
+                                                ButtonSegment<int>(value: i, label: Text(values.definition.variants[i].name)),
+                                            ],
+                                            selected: <int>{values.variantIndex},
+                                            showSelectedIcon: false,
+                                            onSelectionChanged: (final Set<int> selection) {values.variantIndex = selection.first;},
+                                          ),
+                                        ),
+                                      for (final ExportShaderParameter parameter in values.variant.parameters)
                                         _parameterRow(values: values, parameter: parameter, l10n: l10n),
                                     ],
                                   );

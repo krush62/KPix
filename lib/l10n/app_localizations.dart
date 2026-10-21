@@ -1904,6 +1904,42 @@ abstract class AppLocalizations {
   /// **'LCD'**
   String get shaderLcd;
 
+  /// No description provided for @shaderUpscale.
+  ///
+  /// In en, this message translates to:
+  /// **'Upscale'**
+  String get shaderUpscale;
+
+  /// No description provided for @colorTolerance.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Tolerance'**
+  String get colorTolerance;
+
+  /// No description provided for @smoothness.
+  ///
+  /// In en, this message translates to:
+  /// **'Smoothness'**
+  String get smoothness;
+
+  /// No description provided for @antiAliasing.
+  ///
+  /// In en, this message translates to:
+  /// **'Anti-Aliasing'**
+  String get antiAliasing;
+
+  /// No description provided for @lineWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Line Width'**
+  String get lineWidth;
+
+  /// No description provided for @similarityThreshold.
+  ///
+  /// In en, this message translates to:
+  /// **'Similarity Threshold'**
+  String get similarityThreshold;
+
   /// No description provided for @gridWidth.
   ///
   /// In en, this message translates to:

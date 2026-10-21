@@ -33,6 +33,8 @@ abstract final class ShaderPreviewWidgetOptions
   static const List<double> zoomLevels = <double>[0.25, 1.0 / 3.0, 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0];
   static const int renderIntervalMs = 100;
   static const int maxRegionSize = 4096;
+  /// Outputs up to this many pixels are rendered as a whole, so moving and zooming never waits for a render.
+  static const int fullRenderPixels = 2048 * 2048;
   static const double padding = 8.0;
   static const double borderRadius = 8.0;
   static const double checkerboardCellSize = 8.0;
@@ -76,7 +78,10 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
   Size _viewportSize = Size.zero;
   double _pixelRatio = 1.0;
   bool _isFitted = false;
-  bool _hasRenderChanges = true;
+  /// The output itself changed: values, scaling or source.
+  bool _hasContentChanges = true;
+  /// Only the view changed: moved, zoomed or resized.
+  bool _hasViewChanges = false;
   bool _isRendering = false;
   bool _isDisposed = false;
   int _pinchStartZoomIndex = 0;
@@ -90,9 +95,9 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
   {
     super.initState();
     _checkerboard = _createCheckerboard();
-    widget.values.addListener(_renderChanged);
-    _zoomIndex.addListener(_renderChanged);
-    _center.addListener(_renderChanged);
+    widget.values.addListener(_contentChanged);
+    _zoomIndex.addListener(_viewChanged);
+    _center.addListener(_viewChanged);
     _renderTimer = Timer.periodic(const Duration(milliseconds: ShaderPreviewWidgetOptions.renderIntervalMs), (final Timer t) {_renderCheck();});
   }
 
@@ -118,8 +123,8 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.values != widget.values)
     {
-      oldWidget.values.removeListener(_renderChanged);
-      widget.values.addListener(_renderChanged);
+      oldWidget.values.removeListener(_contentChanged);
+      widget.values.addListener(_contentChanged);
     }
     if (oldWidget.scaling != widget.scaling && oldWidget.source != null)
     {
@@ -130,12 +135,20 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
     {
       _isFitted = false;
     }
-    _hasRenderChanges = true;
+    if (oldWidget.values != widget.values || oldWidget.scaling != widget.scaling || oldWidget.source != widget.source)
+    {
+      _hasContentChanges = true;
+    }
   }
 
-  void _renderChanged()
+  void _contentChanged()
   {
-    _hasRenderChanges = true;
+    _hasContentChanges = true;
+  }
+
+  void _viewChanged()
+  {
+    _hasViewChanges = true;
   }
 
   /// Like the palette adjustment preview: an image may only be released once the frame that dropped it was drawn.
@@ -169,7 +182,7 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
   {
     _isDisposed = true;
     _renderTimer.cancel();
-    widget.values.removeListener(_renderChanged);
+    widget.values.removeListener(_contentChanged);
     final _RenderedRegion? last = _rendered.value;
     _rendered.dispose();
     _zoomIndex.dispose();
@@ -230,15 +243,59 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
     return (start, end);
   }
 
+  /// The part of the output to render: all of it when that is affordable, else the visible part with half a view more on each side.
+  ExportShaderRegion? _wantedRegion()
+  {
+    if (_outputWidth * _outputHeight <= ShaderPreviewWidgetOptions.fullRenderPixels)
+    {
+      return ExportShaderRegion(x: 0, y: 0, width: _outputWidth, height: _outputHeight);
+    }
+    final ExportShaderRegion? visible = _visibleRegion();
+    if (visible == null)
+    {
+      return null;
+    }
+    final (int, int) xRange = _withMargin(start: visible.x, length: visible.width, size: _outputWidth);
+    final (int, int) yRange = _withMargin(start: visible.y, length: visible.height, size: _outputHeight);
+    return ExportShaderRegion(x: xRange.$1, y: yRange.$1, width: xRange.$2 - xRange.$1, height: yRange.$2 - yRange.$1);
+  }
+
+  (int, int) _withMargin({required final int start, required final int length, required final int size})
+  {
+    final int length2 = min(length * 2, ShaderPreviewWidgetOptions.maxRegionSize);
+    final int first = (start + length ~/ 2 - length2 ~/ 2).clamp(0, max(0, size - length2));
+    return (first, min(size, first + length2));
+  }
+
+  bool _covers({required final ExportShaderRegion outer, required final ExportShaderRegion inner})
+  {
+    return inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
+  }
+
   void _renderCheck()
   {
     final ui.Image? source = widget.source;
-    if (!_hasRenderChanges || _isRendering || source == null || _viewportSize.isEmpty)
+    if (_isRendering || source == null || _viewportSize.isEmpty)
     {
       return;
     }
-    _hasRenderChanges = false;
-    final ExportShaderRegion? region = _visibleRegion();
+    if (!_hasContentChanges)
+    {
+      if (!_hasViewChanges)
+      {
+        return;
+      }
+      _hasViewChanges = false;
+      final _RenderedRegion? current = _rendered.value;
+      final ExportShaderRegion? visible = _visibleRegion();
+      if (visible == null || (current != null && current.scaling == widget.scaling && _covers(outer: current.region, inner: visible)))
+      {
+        return;
+      }
+    }
+    _hasContentChanges = false;
+    _hasViewChanges = false;
+    final ExportShaderRegion? region = _wantedRegion();
     if (region == null)
     {
       return;
@@ -382,7 +439,7 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
     if (pixelRatio != _pixelRatio)
     {
       _pixelRatio = pixelRatio;
-      _hasRenderChanges = true;
+      _hasViewChanges = true;
     }
     return ClipRRect(
       borderRadius: const BorderRadius.all(Radius.circular(ShaderPreviewWidgetOptions.borderRadius)),
@@ -394,7 +451,7 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
             if (size != _viewportSize)
             {
               _viewportSize = size;
-              _hasRenderChanges = true;
+              _hasViewChanges = true;
             }
             if (!_isFitted && widget.source != null && !size.isEmpty)
             {

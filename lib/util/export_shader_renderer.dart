@@ -83,9 +83,30 @@ Future<bool> _probeFlipY() async
   return bytes != null && bytes.getUint8(2) > bytes.getUint8(0);
 }
 
+Future<ui.Image> _render({
+  required final ExportShaderValues values,
+  required final ui.Image source,
+  required final int scaling,
+  required final ExportShaderRegion region,
+  required final bool flipY,
+}) async
+{
+  final ui.FragmentProgram program = await ui.FragmentProgram.fromAsset(values.variant.asset);
+  final ui.FragmentShader shader = program.fragmentShader();
+  shader.getUniformVec2("uOffset").set(region.x.toDouble(), region.y.toDouble());
+  shader.getUniformVec2("uSourceSize").set(source.width.toDouble(), source.height.toDouble());
+  shader.getUniformFloat("uScale").set(scaling.toDouble());
+  shader.getUniformFloat("uFlipY").set(flipY ? 1.0 : 0.0);
+  values.applyTo(shader: shader);
+  shader.setImageSampler(0, source);
+  final ui.Image image = await _paintShader(shader: shader, width: region.width, height: region.height);
+  shader.dispose();
+  return image;
+}
+
 /// Renders [region] of [source] scaled up by [scaling] and shaded with [values].
 ///
-/// Works on its own handle of [source], so the caller may dispose it while this is running.
+/// Works on its own handle of [source] and a copy of [values], so both may change while this is running.
 Future<ui.Image> renderExportShaderRegion({
   required final ExportShaderValues values,
   required final ui.Image source,
@@ -93,26 +114,26 @@ Future<ui.Image> renderExportShaderRegion({
   required final ExportShaderRegion region,
 }) async
 {
+  final ExportShaderValues snapshot = ExportShaderValues.from(other: values);
   final ui.Image sourceHandle = source.clone();
   try
   {
     final bool flipY = await _isFlipY();
-    final ui.FragmentProgram program = await ui.FragmentProgram.fromAsset(values.definition.asset);
-    final ui.FragmentShader shader = program.fragmentShader();
-    shader.getUniformVec2("uOffset").set(region.x.toDouble(), region.y.toDouble());
-    shader.getUniformVec2("uSourceSize").set(sourceHandle.width.toDouble(), sourceHandle.height.toDouble());
-    shader.getUniformFloat("uScale").set(scaling.toDouble());
-    shader.getUniformFloat("uFlipY").set(flipY ? 1.0 : 0.0);
-    values.applyTo(shader: shader);
-    shader.setImageSampler(0, sourceHandle);
-    final ui.Image image = await _paintShader(shader: shader, width: region.width, height: region.height);
-    shader.dispose();
-    return image;
+    return await _render(values: snapshot, source: sourceHandle, scaling: scaling, region: region, flipY: flipY);
   }
   finally
   {
     sourceHandle.dispose();
   }
+}
+
+//its own function, so the isolate only gets these plain values and not the images of the caller
+Future<Uint8List> _encodePngOffThread({required final int width, required final int height, required final Uint8List rgba})
+{
+  return runOffThread<Uint8List>(
+    debugLabel: "shader png encoding",
+    work: () => img.encodePng(img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4, order: img.ChannelOrder.rgba)),
+  );
 }
 
 /// Renders the whole shaded output of [source] and encodes it as PNG.
@@ -124,45 +145,53 @@ Future<Uint8List?> renderExportShaderPng({
 {
   final int width = source.width * scaling;
   final int height = source.height * scaling;
-
-  if (width <= exportShaderMaxTileSize && height <= exportShaderMaxTileSize)
+  final ExportShaderValues snapshot = ExportShaderValues.from(other: values);
+  final ui.Image sourceHandle = source.clone();
+  try
   {
-    final ui.Image image = await renderExportShaderRegion(values: values, source: source, scaling: scaling, region: ExportShaderRegion(x: 0, y: 0, width: width, height: height));
-    final ByteData? png = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-    return png?.buffer.asUint8List();
-  }
+    final bool flipY = await _isFlipY();
+    Future<ui.Image> render(final ExportShaderRegion region) => _render(values: snapshot, source: sourceHandle, scaling: scaling, region: region, flipY: flipY);
 
-  final Uint8List rgba = Uint8List(width * height * 4);
-  for (int tileY = 0; tileY < height; tileY += exportShaderMaxTileSize)
-  {
-    for (int tileX = 0; tileX < width; tileX += exportShaderMaxTileSize)
+    if (width <= exportShaderMaxTileSize && height <= exportShaderMaxTileSize)
     {
-      final ExportShaderRegion region = ExportShaderRegion(
-        x: tileX,
-        y: tileY,
-        width: min(width - tileX, exportShaderMaxTileSize),
-        height: min(height - tileY, exportShaderMaxTileSize),
-      );
-      final ui.Image tile = await renderExportShaderRegion(values: values, source: source, scaling: scaling, region: region);
-      final ByteData? tileBytes = await tile.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
-      tile.dispose();
-      if (tileBytes == null)
+      final ui.Image image = await render(ExportShaderRegion(x: 0, y: 0, width: width, height: height));
+      final ByteData? png = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      return png?.buffer.asUint8List();
+    }
+
+    final Uint8List rgba = Uint8List(width * height * 4);
+    for (int tileY = 0; tileY < height; tileY += exportShaderMaxTileSize)
+    {
+      for (int tileX = 0; tileX < width; tileX += exportShaderMaxTileSize)
       {
-        return null;
-      }
-      final Uint8List tilePixels = tileBytes.buffer.asUint8List(tileBytes.offsetInBytes, tileBytes.lengthInBytes);
-      final int rowLength = region.width * 4;
-      for (int row = 0; row < region.height; row++)
-      {
-        final int target = ((region.y + row) * width + region.x) * 4;
-        rgba.setRange(target, target + rowLength, tilePixels, row * rowLength);
+        final ExportShaderRegion region = ExportShaderRegion(
+          x: tileX,
+          y: tileY,
+          width: min(width - tileX, exportShaderMaxTileSize),
+          height: min(height - tileY, exportShaderMaxTileSize),
+        );
+        final ui.Image tile = await render(region);
+        final ByteData? tileBytes = await tile.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
+        tile.dispose();
+        if (tileBytes == null)
+        {
+          return null;
+        }
+        final Uint8List tilePixels = tileBytes.buffer.asUint8List(tileBytes.offsetInBytes, tileBytes.lengthInBytes);
+        final int rowLength = region.width * 4;
+        for (int row = 0; row < region.height; row++)
+        {
+          final int target = ((region.y + row) * width + region.x) * 4;
+          rgba.setRange(target, target + rowLength, tilePixels, row * rowLength);
+        }
       }
     }
-  }
 
-  return await runOffThread<Uint8List>(
-    debugLabel: "shader png encoding",
-    work: () => img.encodePng(img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4, order: img.ChannelOrder.rgba)),
-  );
+    return await _encodePngOffThread(width: width, height: height, rgba: rgba);
+  }
+  finally
+  {
+    sourceHandle.dispose();
+  }
 }

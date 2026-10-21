@@ -966,6 +966,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportProjectPalette => 'Export Project/Palette';
 
   @override
+  String get exportShaderImage => 'Export Shader Image [BETA]';
+
+  @override
   String get centerHorizontally => 'Center Horizontally';
 
   @override

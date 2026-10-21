@@ -426,6 +426,7 @@
 
   "saveProject": "Save Project",
   "exportProjectPalette": "Export Project/Palette",
+  "exportShaderImage": "Export Shader Image [BETA]",
 
   "centerHorizontally": "Center Horizontally",
   "centerVertically": "Center Vertically",

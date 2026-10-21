@@ -78,6 +78,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   KPixOverlay? _saveLoadWarningDialog;
   KPixOverlay? _saveImportWarningDialog;
   KPixOverlay? _exportDialog;
+  KPixOverlay? _shaderExportDialog;
   late KPixOverlay _aboutDialog;
   KPixOverlay? _preferencesDialog;
   late KPixOverlay _saveAsDialog;
@@ -113,6 +114,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onSaveFile: _saveFile,
       onSaveAsFile: _saveAsFile,
       onExportFile: _exportFile,
+      onShaderExport: _exportShaderImage,
     );
 
     _projectManagerDialog = getProjectManagerDialog(
@@ -186,6 +188,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _saveMenu.hide();
     _saveLoadWarningDialog?.hide();
     _exportDialog?.hide();
+    _shaderExportDialog?.hide();
     _aboutDialog.hide();
     _preferencesDialog?.hide();
     _saveAsDialog.hide();
@@ -384,6 +387,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   void _exportFile()
   {
     _exportDialog?.show(context: context);
+  }
+
+  void _exportShaderImage()
+  {
+    _shaderExportDialog?.show(context: context);
   }
 
 
@@ -585,6 +593,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onAcceptPalette: ({required final PaletteExportType paletteType, required final PaletteExportData saveData}) {
         _paletteSavePressed(saveData: saveData, paletteType: paletteType);
       },);
+
+    _shaderExportDialog ??= getShaderExportDialog(onDismiss: _closeAllMenus);
 
     _saveImportWarningDialog ??= getThreeButtonDialog(
       onYes: _saveImportWarningYes,

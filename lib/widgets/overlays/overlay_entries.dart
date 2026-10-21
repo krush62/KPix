@@ -39,6 +39,7 @@ import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/file/new_project_widget.dart';
 import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/file/save_as_widget.dart';
+import 'package:kpix/widgets/file/shader_export_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_add_new_layer_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_drawing_layer_menu.dart';
@@ -349,6 +350,7 @@ KPixOverlay getSaveMenu({
   required final Function() onSaveFile,
   required final Function() onSaveAsFile,
   required final Function() onExportFile,
+  required final Function() onShaderExport,
   required final GlobalKey anchorKey,
 })
 {
@@ -356,7 +358,7 @@ KPixOverlay getSaveMenu({
     onDismiss: onDismiss,
     onEscape: onDismiss,
     smokeOpacity: OverlayEntrySubMenuOptions.smokeOpacity,
-    content: (final BuildContext context) => OverlaySaveMenu(anchorKey: anchorKey, onSaveFile: onSaveFile, onSaveAsFile: onSaveAsFile, onExportFile: onExportFile),
+    content: (final BuildContext context) => OverlaySaveMenu(anchorKey: anchorKey, onSaveFile: onSaveFile, onSaveAsFile: onSaveAsFile, onExportFile: onExportFile, onShaderExport: onShaderExport,),
   );
 }
 
@@ -632,6 +634,23 @@ KPixOverlay getExportDialog({
     content: (final BuildContext context) => _centeredOnDesktop(child: exportWidget),
   );
 }
+
+
+/// An overlay holding the dialog for shaded images.
+KPixOverlay getShaderExportDialog({required final Function() onDismiss})
+{
+  final GlobalKey<ShaderExportWidgetState> shaderExportKey = GlobalKey<ShaderExportWidgetState>();
+  return _barrierOverlay(
+    smokeOpacity: ShaderExportWidgetOptions.smokeOpacity,
+    onEscape: () => shaderExportKey.currentState?.cancel(),
+    onEnter: () => shaderExportKey.currentState?.accept(),
+    content: (final BuildContext context) => Padding(
+      padding: const EdgeInsets.all(ShaderExportWidgetOptions.outsidePadding),
+      child: ShaderExportWidget(key: shaderExportKey, dismiss: onDismiss),
+    ),
+  );
+}
+
 
 /// An overlay holding the dialog for importing an image.
 KPixOverlay getImportDialog({

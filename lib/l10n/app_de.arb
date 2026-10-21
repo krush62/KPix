@@ -346,6 +346,7 @@
 
   "saveProject": "Projekt speichern",
   "exportProjectPalette": "Projekt/Palette exportieren",
+  "exportShaderImage": "Shader-Bild exportieren [BETA]",
 
   "centerHorizontally": "Horizontal zentrieren",
   "centerVertically": "Vertikal zentrieren",

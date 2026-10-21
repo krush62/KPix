@@ -985,6 +985,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get exportProjectPalette => 'Projekt/Palette exportieren';
 
   @override
+  String get exportShaderImage => 'Shader-Bild exportieren [BETA]';
+
+  @override
   String get centerHorizontally => 'Horizontal zentrieren';
 
   @override

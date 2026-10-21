@@ -1892,6 +1892,12 @@ abstract class AppLocalizations {
   /// **'Export Project/Palette'**
   String get exportProjectPalette;
 
+  /// No description provided for @exportShaderImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Shader Image [BETA]'**
+  String get exportShaderImage;
+
   /// No description provided for @centerHorizontally.
   ///
   /// In en, this message translates to:

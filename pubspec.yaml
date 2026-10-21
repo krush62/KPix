@@ -188,6 +188,10 @@ flutter:
     - docs/credits.md
     - docs/controls.md
 
+  shaders:
+    - shaders/flip_probe.frag
+    - shaders/lcd.frag
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

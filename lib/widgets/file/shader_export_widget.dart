@@ -16,6 +16,8 @@
  *
  */
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
@@ -23,11 +25,16 @@ import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/canvas_state.dart';
+import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/export_shader.dart';
 import 'package:kpix/models/export_types.dart';
+import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
+import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/file/shader_preview_widget.dart';
 
 abstract final class ShaderExportWidgetOptions
 {
@@ -38,14 +45,17 @@ abstract final class ShaderExportWidgetOptions
   static const double maxWidth = 1600.0;
   static const double maxHeight = 1000.0;
   static const int smokeOpacity = 128;
-  static const int renderIntervalMs = 100;
   static const double iconSize = 32.0;
+  static const int rowLabelFlex = 2;
+  static const int rowControlFlex = 4;
+  static const double resetButtonSize = 32.0;
 }
 
 class ShaderExportWidget extends StatefulWidget
 {
   final Function() dismiss;
-  const ShaderExportWidget({super.key, required this.dismiss});
+  final ShaderExportDataFn accept;
+  const ShaderExportWidget({super.key, required this.dismiss, required this.accept});
 
   @override
   State<ShaderExportWidget> createState() => ShaderExportWidgetState();
@@ -53,20 +63,64 @@ class ShaderExportWidget extends StatefulWidget
 
 class ShaderExportWidgetState extends State<ShaderExportWidget>
 {
+  //kept for the session, so reopening the dialog continues where it was left
+  static final Map<ExportShaderType, ExportShaderValues> _sessionValues = <ExportShaderType, ExportShaderValues>{};
+  static ExportShaderType _sessionShaderType = ExportShaderType.values.first;
+  static int _sessionScalingIndex = exportShadingScalingValues.indexOf(4);
+
   final String _extension = ImageExportData.exportTypeMap[ImageExportType.png]?.extension ?? "png";
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<String> _fileName = ValueNotifier<String>("");
   final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier<FileNameStatus>(FileNameStatus.available);
-  final ValueNotifier<int> _scalingIndex = ValueNotifier<int>(0);
+  final ValueNotifier<int> _scalingIndex = ValueNotifier<int>(_sessionScalingIndex);
+  final ValueNotifier<ExportShaderType> _shaderType = ValueNotifier<ExportShaderType>(_sessionShaderType);
+  final ValueNotifier<ui.Image?> _source = ValueNotifier<ui.Image?>(null);
   final CanvasState _canvasState = GetIt.I.get<CanvasState>();
+  final DocumentState _documentState = GetIt.I.get<DocumentState>();
+  bool _isDisposed = false;
 
   @override
   void initState()
   {
     super.initState();
-
-
+    final String? projectName = GetIt.I.get<ProjectSession>().projectName.value;
+    _fileName.value = projectName ?? "";
+    _updateFileNameStatus();
+    getImageFromLayers(
+      canvasSize: _canvasState.canvasSize,
+      layerCollection: _documentState.timeline.selectedFrame!.layerList,
+      selection: _documentState.selectionState.selection,
+    ).then((final ui.Image image) {
+      if (_isDisposed)
+      {
+        image.dispose();
+        return;
+      }
+      _source.value = image;
+    });
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.shaderExportFileNameTextFocus).requestFocus();
+  }
+
+  @override
+  void dispose()
+  {
+    _isDisposed = true;
+    _sessionShaderType = _shaderType.value;
+    _sessionScalingIndex = _scalingIndex.value;
+    final ui.Image? source = _source.value;
+    _fileName.dispose();
+    _fileNameStatus.dispose();
+    _scalingIndex.dispose();
+    _shaderType.dispose();
+    _source.dispose();
+    //the renderer works on its own handle of the source, so this one can go right away
+    source?.dispose();
+    super.dispose();
+  }
+
+  ExportShaderValues _valuesFor({required final ExportShaderType type})
+  {
+    return _sessionValues.putIfAbsent(type, () => ExportShaderValues(definition: exportShaderDefinitions[type]!));
   }
 
   void _changeDirectoryPressed()
@@ -88,14 +142,89 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
     _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: GetIt.I.get<AppPaths>().exportDir, extension: _extension);
   }
 
-  void accept()
+  /// Does nothing for an unusable name; an existing file is only replaced with [allowOverwrite].
+  void accept({final bool allowOverwrite = true})
   {
-    widget.dismiss();
+    final FileNameStatus status = _fileNameStatus.value;
+    if (status != FileNameStatus.available && !(allowOverwrite && status == FileNameStatus.overwrite))
+    {
+      return;
+    }
+    widget.accept(
+      exportData: ShaderExportData(
+        shaderValues: ExportShaderValues.from(other: _valuesFor(type: _shaderType.value)),
+        scaling: exportShadingScalingValues[_scalingIndex.value],
+        fileName: _fileName.value,
+        directory: GetIt.I.get<AppPaths>().exportDir,
+      ),
+    );
   }
 
   void cancel()
   {
     widget.dismiss();
+  }
+
+  Widget _parameterControl({required final ExportShaderValues values, required final ExportShaderParameter parameter})
+  {
+    switch (parameter)
+    {
+      case final ExportShaderSliderParameter slider:
+        final double value = values.valueOf<double>(parameter: slider);
+        return KPixSlider(
+          value: value,
+          min: slider.min,
+          max: slider.max,
+          divisions: slider.divisions,
+          gradientColors: slider.trackGradient,
+          label: slider.formatValue(value: value),
+          onChanged: (final double newValue) {values.setValue(parameter: slider, value: newValue);},
+          textStyle: Theme.of(context).textTheme.bodyLarge!,
+        );
+      case final ExportShaderToggleParameter toggle:
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: Switch(
+            value: values.valueOf<bool>(parameter: toggle),
+            onChanged: (final bool newValue) {values.setValue(parameter: toggle, value: newValue);},
+          ),
+        );
+    }
+  }
+
+  Widget _parameterRow({required final ExportShaderValues values, required final ExportShaderParameter parameter, required final AppLocalizations l10n})
+  {
+    final bool isDefault = values.isDefault(parameter: parameter);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: ShaderExportWidgetOptions.padding / 2),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            flex: ShaderExportWidgetOptions.rowLabelFlex,
+            child: Text(parameter.label(l10n), style: Theme.of(context).textTheme.titleMedium),
+          ),
+          Expanded(
+            flex: ShaderExportWidgetOptions.rowControlFlex,
+            child: _parameterControl(values: values, parameter: parameter),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: ShaderExportWidgetOptions.padding),
+            child: IconButton.outlined(
+              tooltip: l10n.resetValue,
+              icon: const Icon(TablerIcons.refresh),
+              onPressed: isDefault ? null : () {values.setValue(parameter: parameter, value: parameter.initialValue);},
+              style: IconButton.styleFrom(
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                minimumSize: const Size(ShaderExportWidgetOptions.resetButtonSize, ShaderExportWidgetOptions.resetButtonSize),
+                maximumSize: const Size(ShaderExportWidgetOptions.resetButtonSize, ShaderExportWidgetOptions.resetButtonSize),
+                iconSize: ShaderExportWidgetOptions.resetButtonSize - ShaderExportWidgetOptions.padding,
+                padding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -129,19 +258,40 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        SegmentedButton(
-                          segments: <ButtonSegment<int>>[
-                            ButtonSegment(value: 0, label: Text("Shader0")),
-                            ButtonSegment(value: 1, label: Text("Shader1")),
-                            ButtonSegment(value: 2, label: Text("Shader2")),
-                            ButtonSegment(value: 3, label: Text("Shader3")),
-                            ButtonSegment(value: 4, label: Text("Shader4")),
-                            ButtonSegment(value: 5, label: Text("Shader5")),
-                          ],
-                          selected: {0},
-                          showSelectedIcon: false,
+                        ValueListenableBuilder<ExportShaderType>(
+                          valueListenable: _shaderType,
+                          builder: (final BuildContext context, final ExportShaderType shaderType, final Widget? child) {
+                            return SegmentedButton<ExportShaderType>(
+                              segments: <ButtonSegment<ExportShaderType>>[
+                                for (final ExportShaderDefinition definition in exportShaderDefinitions.values)
+                                  ButtonSegment<ExportShaderType>(value: definition.type, label: Text(definition.name(l10n))),
+                              ],
+                              selected: <ExportShaderType>{shaderType},
+                              showSelectedIcon: false,
+                              onSelectionChanged: (final Set<ExportShaderType> selection) {_shaderType.value = selection.first;},
+                            );
+                          },
                         ),
-                        Expanded(child: Placeholder()),
+                        Expanded(
+                          child: ValueListenableBuilder<ExportShaderType>(
+                            valueListenable: _shaderType,
+                            builder: (final BuildContext context, final ExportShaderType shaderType, final Widget? child) {
+                              final ExportShaderValues values = _valuesFor(type: shaderType);
+                              return ListenableBuilder(
+                                listenable: values,
+                                builder: (final BuildContext context, final Widget? child) {
+                                  return ListView(
+                                    padding: const EdgeInsets.symmetric(vertical: ShaderExportWidgetOptions.padding),
+                                    children: <Widget>[
+                                      for (final ExportShaderParameter parameter in values.definition.parameters)
+                                        _parameterRow(values: values, parameter: parameter, l10n: l10n),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
                         // DIRECTORY
                         Row(
                           mainAxisSize: MainAxisSize.min,
@@ -232,8 +382,30 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
 
                   Expanded(
                     child: Column(
-                      children: [
-                        const Expanded(child: Placeholder()),
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Expanded(
+                          child: ValueListenableBuilder<ExportShaderType>(
+                            valueListenable: _shaderType,
+                            builder: (final BuildContext context, final ExportShaderType shaderType, final Widget? child) {
+                              return ValueListenableBuilder<int>(
+                                valueListenable: _scalingIndex,
+                                builder: (final BuildContext context, final int scalingIndex, final Widget? child) {
+                                  return ValueListenableBuilder<ui.Image?>(
+                                    valueListenable: _source,
+                                    builder: (final BuildContext context, final ui.Image? source, final Widget? child) {
+                                      return ShaderPreviewWidget(
+                                        source: source,
+                                        values: _valuesFor(type: shaderType),
+                                        scaling: exportShadingScalingValues[scalingIndex],
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -249,7 +421,7 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
                                   return KPixSlider(
                                     value: scalingIndexVal.toDouble(),
                                     max: exportShadingScalingValues.length.toDouble() - 1,
-                                    //divisions: exportScalingValues.length,
+                                    divisions: exportShadingScalingValues.length - 1,
                                     label: "${exportShadingScalingValues[scalingIndexVal]}:1",
                                     onChanged: (final double newVal){_scalingIndex.value = newVal.round();},
                                     textStyle: Theme.of(context).textTheme.bodyLarge!,
@@ -262,7 +434,7 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
                               child: ValueListenableBuilder<int>(
                                 valueListenable: _scalingIndex,
                                 builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
-                                  return Text(formatDimension(width: _canvasState.canvasSize.x *  exportScalingValues[scalingIndexVal], height: _canvasState.canvasSize.y *  exportScalingValues[scalingIndexVal]),
+                                  return Text(formatDimension(width: _canvasState.canvasSize.x * exportShadingScalingValues[scalingIndexVal], height: _canvasState.canvasSize.y * exportShadingScalingValues[scalingIndexVal]),
                                     textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium,
                                   );
                                 },
@@ -300,17 +472,22 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(ShaderExportWidgetOptions.padding),
-                    child: IconButton.outlined(
-                      tooltip: l10n.apply,
-                      icon: const Icon(TablerIcons.check),
-                      onPressed: accept,
+                    child: ValueListenableBuilder<FileNameStatus>(
+                      valueListenable: _fileNameStatus,
+                      builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
+                        return IconButton.outlined(
+                          tooltip: l10n.apply,
+                          icon: const Icon(TablerIcons.check),
+                          onPressed: status == FileNameStatus.available || status == FileNameStatus.overwrite ? accept : null,
+                        );
+                      },
                     ),
                   ),
                 ),
               ],
             ),
           ],
-        )
+        ),
       ),
     );
   }

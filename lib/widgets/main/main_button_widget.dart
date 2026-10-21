@@ -164,6 +164,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     exportAnimation(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName, l10n: l10n);});
   }
 
+  void _exportShaderImagePressed({required final ShaderExportData exportData})
+  {
+    //taken now: the export runs past the point where the context could be used
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    _exportLoadingDialog?.show(context: context);
+    exportShaderImage(exportData: exportData).then((final String? fName) {_exportFinished(fileName: fName, l10n: l10n);});
+  }
+
   void _exportFinished({required final String? fileName, required final AppLocalizations l10n})
   {
     if (fileName != null && fileName.isNotEmpty)
@@ -594,7 +602,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         _paletteSavePressed(saveData: saveData, paletteType: paletteType);
       },);
 
-    _shaderExportDialog ??= getShaderExportDialog(onDismiss: _closeAllMenus);
+    _shaderExportDialog ??= getShaderExportDialog(onDismiss: _closeAllMenus, onAccept: _exportShaderImagePressed);
 
     _saveImportWarningDialog ??= getThreeButtonDialog(
       onYes: _saveImportWarningYes,

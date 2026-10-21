@@ -1898,6 +1898,60 @@ abstract class AppLocalizations {
   /// **'Export Shader Image [BETA]'**
   String get exportShaderImage;
 
+  /// No description provided for @shaderLcd.
+  ///
+  /// In en, this message translates to:
+  /// **'LCD'**
+  String get shaderLcd;
+
+  /// No description provided for @gridWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid Width'**
+  String get gridWidth;
+
+  /// No description provided for @gridColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid Color'**
+  String get gridColor;
+
+  /// No description provided for @softness.
+  ///
+  /// In en, this message translates to:
+  /// **'Softness'**
+  String get softness;
+
+  /// No description provided for @subpixels.
+  ///
+  /// In en, this message translates to:
+  /// **'RGB Subpixels'**
+  String get subpixels;
+
+  /// No description provided for @gridOnTransparency.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid on Transparency'**
+  String get gridOnTransparency;
+
+  /// No description provided for @zoomIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom In'**
+  String get zoomIn;
+
+  /// No description provided for @zoomOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom Out'**
+  String get zoomOut;
+
+  /// No description provided for @zoomToFit.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit to View'**
+  String get zoomToFit;
+
   /// No description provided for @centerHorizontally.
   ///
   /// In en, this message translates to:

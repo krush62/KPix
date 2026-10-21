@@ -636,17 +636,19 @@ KPixOverlay getExportDialog({
 }
 
 
-/// An overlay holding the dialog for shaded images.
-KPixOverlay getShaderExportDialog({required final Function() onDismiss})
+/// An overlay holding the dialog for exporting an image through a shader.
+///
+/// Enter exports, but never over an existing file.
+KPixOverlay getShaderExportDialog({required final Function() onDismiss, required final ShaderExportDataFn onAccept})
 {
   final GlobalKey<ShaderExportWidgetState> shaderExportKey = GlobalKey<ShaderExportWidgetState>();
   return _barrierOverlay(
     smokeOpacity: ShaderExportWidgetOptions.smokeOpacity,
     onEscape: () => shaderExportKey.currentState?.cancel(),
-    onEnter: () => shaderExportKey.currentState?.accept(),
+    onEnter: () => shaderExportKey.currentState?.accept(allowOverwrite: false),
     content: (final BuildContext context) => Padding(
       padding: const EdgeInsets.all(ShaderExportWidgetOptions.outsidePadding),
-      child: ShaderExportWidget(key: shaderExportKey, dismiss: onDismiss),
+      child: ShaderExportWidget(key: shaderExportKey, dismiss: onDismiss, accept: onAccept),
     ),
   );
 }

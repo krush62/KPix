@@ -988,6 +988,33 @@ class AppLocalizationsDe extends AppLocalizations {
   String get exportShaderImage => 'Shader-Bild exportieren [BETA]';
 
   @override
+  String get shaderLcd => 'LCD';
+
+  @override
+  String get gridWidth => 'Gitterbreite';
+
+  @override
+  String get gridColor => 'Gitterfarbe';
+
+  @override
+  String get softness => 'Weichheit';
+
+  @override
+  String get subpixels => 'RGB-Subpixel';
+
+  @override
+  String get gridOnTransparency => 'Gitter auf Transparenz';
+
+  @override
+  String get zoomIn => 'Vergrößern';
+
+  @override
+  String get zoomOut => 'Verkleinern';
+
+  @override
+  String get zoomToFit => 'An Ansicht anpassen';
+
+  @override
   String get centerHorizontally => 'Horizontal zentrieren';
 
   @override

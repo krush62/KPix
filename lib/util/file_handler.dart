@@ -76,6 +76,7 @@ import 'package:kpix/models/stamp_manager_data.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/export_functions.dart';
+import 'package:kpix/util/export_shader_renderer.dart';
 import 'package:kpix/util/file_byte_reader.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
@@ -596,6 +597,35 @@ Future<String?> exportImage({required final ImageExportData exportData, required
     fileName: exportData.fileName,
     extension: exportData.extension,
     createData: () => _createImageData(exportData: exportData, exportType: exportType),
+  );
+}
+
+Future<Uint8List?> _createShaderImageData({required final ShaderExportData exportData}) async
+{
+  final DocumentState documentState = GetIt.I.get<DocumentState>();
+  final ui.Image source = await getImageFromLayers(
+    canvasSize: GetIt.I.get<CanvasState>().canvasSize,
+    layerCollection: documentState.timeline.selectedFrame!.layerList,
+    selection: documentState.selectionState.selection,
+  );
+  try
+  {
+    return await renderExportShaderPng(values: exportData.shaderValues, source: source, scaling: exportData.scaling);
+  }
+  finally
+  {
+    source.dispose();
+  }
+}
+
+Future<String?> exportShaderImage({required final ShaderExportData exportData}) async
+{
+  return await _runExport(
+    what: "shader image",
+    directory: exportData.directory,
+    fileName: exportData.fileName,
+    extension: exportData.extension,
+    createData: () => _createShaderImageData(exportData: exportData),
   );
 }
 

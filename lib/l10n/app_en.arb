@@ -469,6 +469,12 @@
   "outlineStrength": "Outline Strength",
   "colorLevels": "Color Levels",
   "muteColors": "Mute Colors",
+  "shaderMinScaling": "Scaling should be at least {factor}:1 for this shader.",
+  "@shaderMinScaling": {
+    "placeholders": {
+      "factor": {"type": "int"}
+    }
+  },
 
 
   "centerHorizontally": "Center Horizontally",

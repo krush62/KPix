@@ -122,8 +122,10 @@ class ExportShaderVariant
   final String name;
   final String asset;
   final List<ExportShaderParameter> parameters;
+  /// Below this export scaling the shader does not work or look as intended; null for no minimum.
+  final int? minScalingFactor;
 
-  const ExportShaderVariant({required this.name, required this.asset, this.parameters = const <ExportShaderParameter>[]});
+  const ExportShaderVariant({required this.name, required this.asset, this.parameters = const <ExportShaderParameter>[], this.minScalingFactor});
 }
 
 class ExportShaderDefinition
@@ -192,6 +194,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
       ExportShaderVariant(
         name: "LCD",
         asset: "shaders/lcd.frag",
+        minScalingFactor: 4,
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uBrightness", label: _brightnessLabel, min: 0.25, max: 3.0, initial: 1.0, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uGridWidth", label: _gridWidthLabel, min: 1.0, max: 6.0, initial: 1.0, divisions: 5, format: ExportShaderValueFormat.pixels),
@@ -284,6 +287,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
       ExportShaderVariant(
         name: "Clustered Dot",
         asset: "shaders/dither_clustered_dot.frag",
+        minScalingFactor: 4,
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
         ],
@@ -297,6 +301,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
       ExportShaderVariant(
         name: "CMYK/Halftone",
         asset: "shaders/effects_cmyk_halftone.frag",
+        minScalingFactor: 6,
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uDotSize", label: _dotSizeLabel, min: 4.0, max: 32.0, initial: 8.0, divisions: 28, format: ExportShaderValueFormat.pixels),
           ExportShaderSliderParameter(uniform: "uOriginalMix", label: _originalMixLabel, min: 0.0, max: 1.0, initial: 0.3, format: ExportShaderValueFormat.percent),
@@ -313,6 +318,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
       ExportShaderVariant(
         name: "Bead",
         asset: "shaders/effects_bead.frag",
+        minScalingFactor: 6,
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uBeadHigh", label: _outerRadiusLabel, min: 0.0, max: 0.71, initial: 0.45, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uBeadLow", label: _innerRadiusLabel, min: 0.0, max: 0.71, initial: 0.25, format: ExportShaderValueFormat.percent),
@@ -325,6 +331,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
       ExportShaderVariant(
         name: "Relief",
         asset: "shaders/effects_relief.frag",
+        minScalingFactor: 4,
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uLightAngle", label: _lightAngleLabel, min: 0.0, max: 360.0, initial: 135.0, divisions: 24, format: ExportShaderValueFormat.degrees),
           ExportShaderSliderParameter(uniform: "uDepth", label: _depthLabel, min: 0.0, max: 16.0, initial: 8.0, divisions: 16, format: ExportShaderValueFormat.pixels),
@@ -337,6 +344,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
       ExportShaderVariant(
         name: "Cel Shading",
         asset: "shaders/effects_cel.frag",
+        minScalingFactor: 4,
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uOutlineWidth", label: _outlineWidthLabel, min: 0.0, max: 4.0, initial: 1.0, divisions: 4, format: ExportShaderValueFormat.pixels),
           ExportShaderSliderParameter(uniform: "uOutlineStrength", label: _outlineStrengthLabel, min: 0.0, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.percent),

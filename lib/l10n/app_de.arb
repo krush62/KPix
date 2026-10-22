@@ -389,6 +389,7 @@
   "outlineStrength": "Umrissstärke",
   "colorLevels": "Farbstufen",
   "muteColors": "Gedämpfte Farben",
+  "shaderMinScaling": "Die Skalierung sollte für diesen Shader mindestens {factor}:1 betragen.",
 
   "centerHorizontally": "Horizontal zentrieren",
   "centerVertically": "Vertikal zentrieren",

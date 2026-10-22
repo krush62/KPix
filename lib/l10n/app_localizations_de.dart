@@ -1114,6 +1114,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get muteColors => 'Gedämpfte Farben';
 
   @override
+  String shaderMinScaling(int factor) {
+    return 'Die Skalierung sollte für diesen Shader mindestens $factor:1 betragen.';
+  }
+
+  @override
   String get centerHorizontally => 'Horizontal zentrieren';
 
   @override

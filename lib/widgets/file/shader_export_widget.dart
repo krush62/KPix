@@ -35,6 +35,7 @@ import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/file/shader_preview_widget.dart';
+import 'package:toastification/toastification.dart' show warningColor;
 
 abstract final class ShaderExportWidgetOptions
 {
@@ -192,6 +193,30 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
     }
   }
 
+  /// Tells that the chosen scaling is below what the shader needs; styled like a warning toast.
+  Widget _minScalingHint({required final int factor, required final AppLocalizations l10n})
+  {
+    return Padding(
+      padding: const EdgeInsets.only(top: ShaderExportWidgetOptions.padding * 2),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border.all(color: warningColor, width: ShaderExportWidgetOptions.dividerThickness),
+          borderRadius: const BorderRadius.all(Radius.circular(ShaderExportWidgetOptions.borderRadius)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(ShaderExportWidgetOptions.padding),
+          child: Row(
+            children: <Widget>[
+              const Icon(TablerIcons.exclamation_circle_filled, color: warningColor, size: ShaderExportWidgetOptions.iconSize * 0.75),
+              const SizedBox(width: ShaderExportWidgetOptions.padding),
+              Expanded(child: Text(l10n.shaderMinScaling(factor), style: Theme.of(context).textTheme.bodyLarge)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _parameterRow({required final ExportShaderValues values, required final ExportShaderParameter parameter, required final AppLocalizations l10n})
   {
     final bool isDefault = values.isDefault(parameter: parameter);
@@ -280,24 +305,42 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
                               return ListenableBuilder(
                                 listenable: values,
                                 builder: (final BuildContext context, final Widget? child) {
-                                  return ListView(
-                                    padding: const EdgeInsets.symmetric(vertical: ShaderExportWidgetOptions.padding),
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
                                     children: <Widget>[
-                                      if (values.definition.variants.length > 1)
-                                        Padding(
-                                          padding: const EdgeInsets.only(bottom: ShaderExportWidgetOptions.padding),
-                                          child: SegmentedButton<int>(
-                                            segments: <ButtonSegment<int>>[
-                                              for (int i = 0; i < values.definition.variants.length; i++)
-                                                ButtonSegment<int>(value: i, label: Text(values.definition.variants[i].name)),
-                                            ],
-                                            selected: <int>{values.variantIndex},
-                                            showSelectedIcon: false,
-                                            onSelectionChanged: (final Set<int> selection) {values.variantIndex = selection.first;},
-                                          ),
+                                      Expanded(
+                                        child: ListView(
+                                          padding: const EdgeInsets.symmetric(vertical: ShaderExportWidgetOptions.padding),
+                                          children: <Widget>[
+                                            if (values.definition.variants.length > 1)
+                                              Padding(
+                                                padding: const EdgeInsets.only(bottom: ShaderExportWidgetOptions.padding),
+                                                child: SegmentedButton<int>(
+                                                  segments: <ButtonSegment<int>>[
+                                                    for (int i = 0; i < values.definition.variants.length; i++)
+                                                      ButtonSegment<int>(value: i, label: Text(values.definition.variants[i].name)),
+                                                  ],
+                                                  selected: <int>{values.variantIndex},
+                                                  showSelectedIcon: false,
+                                                  onSelectionChanged: (final Set<int> selection) {values.variantIndex = selection.first;},
+                                                ),
+                                              ),
+                                            for (final ExportShaderParameter parameter in values.variant.parameters)
+                                              _parameterRow(values: values, parameter: parameter, l10n: l10n),
+                                          ],
                                         ),
-                                      for (final ExportShaderParameter parameter in values.variant.parameters)
-                                        _parameterRow(values: values, parameter: parameter, l10n: l10n),
+                                      ),
+                                      ValueListenableBuilder<int>(
+                                        valueListenable: _scalingIndex,
+                                        builder: (final BuildContext context, final int scalingIndex, final Widget? child) {
+                                          final int? minScaling = values.variant.minScalingFactor;
+                                          if (minScaling == null || exportShadingScalingValues[scalingIndex] >= minScaling)
+                                          {
+                                            return const SizedBox.shrink();
+                                          }
+                                          return _minScalingHint(factor: minScaling, l10n: l10n);
+                                        },
+                                      ),
                                     ],
                                   );
                                 },

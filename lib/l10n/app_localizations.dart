@@ -2150,6 +2150,12 @@ abstract class AppLocalizations {
   /// **'Mute Colors'**
   String get muteColors;
 
+  /// No description provided for @shaderMinScaling.
+  ///
+  /// In en, this message translates to:
+  /// **'Scaling should be at least {factor}:1 for this shader.'**
+  String shaderMinScaling(int factor);
+
   /// No description provided for @centerHorizontally.
   ///
   /// In en, this message translates to:

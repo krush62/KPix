@@ -1095,6 +1095,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get muteColors => 'Mute Colors';
 
   @override
+  String shaderMinScaling(int factor) {
+    return 'Scaling should be at least $factor:1 for this shader.';
+  }
+
+  @override
   String get centerHorizontally => 'Center Horizontally';
 
   @override

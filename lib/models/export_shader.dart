@@ -148,6 +148,7 @@ String _similarityThresholdLabel(final AppLocalizations l10n) => l10n.similarity
 // DITHERING STRINGS
 String _colorDepth(final AppLocalizations l10n) => l10n.colorDepth;
 String _tuneDithering(final AppLocalizations l10n) => l10n.tuneDithering;
+String _checkerWidth(final AppLocalizations l10n) => l10n.influence;
 
 const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <ExportShaderType, ExportShaderDefinition>{
   ExportShaderType.lcd: ExportShaderDefinition(
@@ -225,6 +226,14 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepth, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
           ExportShaderSliderParameter(uniform: "uDitherTune", label: _tuneDithering, min: -64.0, max: 64.0, initial: 0.0, divisions: 128, format: ExportShaderValueFormat.decimal),
+        ],
+      ),
+      ExportShaderVariant(
+        name: "Checkerboard",
+        asset: "shaders/dither_checkerboard.frag",
+        parameters: <ExportShaderParameter>[
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepth, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uCheckerWidth", label: _checkerWidth, min: 0.0, max: 1.0, initial: 0.5, format: ExportShaderValueFormat.decimal),
         ],
       ),
       ExportShaderVariant(

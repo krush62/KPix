@@ -1042,6 +1042,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get tuneDithering => 'Dithering anpassen';
 
   @override
+  String get influence => 'Einfluss';
+
+  @override
   String get centerHorizontally => 'Horizontal zentrieren';
 
   @override

@@ -2006,6 +2006,12 @@ abstract class AppLocalizations {
   /// **'Tune Dithering'**
   String get tuneDithering;
 
+  /// No description provided for @influence.
+  ///
+  /// In en, this message translates to:
+  /// **'Influence'**
+  String get influence;
+
   /// No description provided for @centerHorizontally.
   ///
   /// In en, this message translates to:

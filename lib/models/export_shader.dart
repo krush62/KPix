@@ -146,10 +146,13 @@ String _antiAliasingLabel(final AppLocalizations l10n) => l10n.antiAliasing;
 String _lineWidthLabel(final AppLocalizations l10n) => l10n.lineWidth;
 String _similarityThresholdLabel(final AppLocalizations l10n) => l10n.similarityThreshold;
 // DITHERING STRINGS
-String _colorDepth(final AppLocalizations l10n) => l10n.colorDepth;
-String _tuneDithering(final AppLocalizations l10n) => l10n.tuneDithering;
-String _bayerLevel(final AppLocalizations l10n) => l10n.bayerLevel;
-String _checkerWidth(final AppLocalizations l10n) => l10n.influence;
+String _colorDepthLabel(final AppLocalizations l10n) => l10n.colorDepth;
+String _tuneDitheringLabel(final AppLocalizations l10n) => l10n.tuneDithering;
+String _bayerLevelLabel(final AppLocalizations l10n) => l10n.bayerLevel;
+String _checkerWidthLabel(final AppLocalizations l10n) => l10n.influence;
+String _strengthLabel(final AppLocalizations l10n) => l10n.strength;
+String _roundingLabel(final AppLocalizations l10n) => l10n.rounding;
+String _fullRangeLabel(final AppLocalizations l10n) => l10n.fullRange;
 
 const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <ExportShaderType, ExportShaderDefinition>{
   ExportShaderType.lcd: ExportShaderDefinition(
@@ -217,32 +220,42 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         name: "Bayer",
         asset: "shaders/dither_bayer.frag",
         parameters: <ExportShaderParameter>[
-          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepth, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
-          ExportShaderSliderParameter(uniform: "uBayerLevel", label: _bayerLevel, min: 1.0, max: 4.0, initial: 2.0, divisions: 3, format: ExportShaderValueFormat.decimal),
-          ExportShaderSliderParameter(uniform: "uDitherTune", label: _tuneDithering, min: -64.0, max: 64.0, initial: 0.0, divisions: 128, format: ExportShaderValueFormat.decimal),
-        ],
-      ),
-      ExportShaderVariant(
-        name: "Noise",
-        asset: "shaders/dither_noise.frag",
-        parameters: <ExportShaderParameter>[
-          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepth, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
-          ExportShaderSliderParameter(uniform: "uDitherTune", label: _tuneDithering, min: -64.0, max: 64.0, initial: 0.0, divisions: 128, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uBayerLevel", label: _bayerLevelLabel, min: 1.0, max: 4.0, initial: 2.0, divisions: 3, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uDitherTune", label: _tuneDitheringLabel, min: -64.0, max: 64.0, initial: 0.0, divisions: 128, format: ExportShaderValueFormat.decimal),
         ],
       ),
       ExportShaderVariant(
         name: "Checkerboard",
         asset: "shaders/dither_checkerboard.frag",
         parameters: <ExportShaderParameter>[
-          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepth, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
-          ExportShaderSliderParameter(uniform: "uCheckerWidth", label: _checkerWidth, min: 0.0, max: 1.0, initial: 0.5, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uCheckerWidth", label: _checkerWidthLabel, min: 0.0, max: 1.0, initial: 0.5, format: ExportShaderValueFormat.decimal),
+        ],
+      ),
+      ExportShaderVariant(
+        name: "PSX",
+        asset: "shaders/dither_psx.frag",
+        parameters: <ExportShaderParameter>[
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 5.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uDitherStrength", label: _strengthLabel, min: 0.0, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderToggleParameter(uniform: "uRounding", label: _roundingLabel, initial: false),
+          ExportShaderToggleParameter(uniform: "uFullRange", label: _fullRangeLabel, initial: true),
+        ],
+      ),
+      ExportShaderVariant(
+        name: "Noise",
+        asset: "shaders/dither_noise.frag",
+        parameters: <ExportShaderParameter>[
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uDitherTune", label: _tuneDitheringLabel, min: -64.0, max: 64.0, initial: 0.0, divisions: 128, format: ExportShaderValueFormat.decimal),
         ],
       ),
       ExportShaderVariant(
         name: "Clustered Dot",
         asset: "shaders/dither_clustered_dot.frag",
         parameters: <ExportShaderParameter>[
-          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepth, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
         ],
       ),
     ],

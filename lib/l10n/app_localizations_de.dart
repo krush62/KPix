@@ -1048,6 +1048,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get influence => 'Einfluss';
 
   @override
+  String get strength => 'Stärke';
+
+  @override
+  String get rounding => 'Rundung';
+
+  @override
+  String get fullRange => 'Breitband';
+
+  @override
   String get centerHorizontally => 'Horizontal zentrieren';
 
   @override

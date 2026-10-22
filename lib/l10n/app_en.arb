@@ -447,6 +447,9 @@
   "tuneDithering": "Tune Dithering",
   "bayerLevel": "Bayer Level",
   "influence": "Influence",
+  "strength": "Strength",
+  "rounding": "Rounding",
+  "fullRange": "Full Range",
 
   "centerHorizontally": "Center Horizontally",
   "centerVertically": "Center Vertically",

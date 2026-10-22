@@ -2018,6 +2018,24 @@ abstract class AppLocalizations {
   /// **'Influence'**
   String get influence;
 
+  /// No description provided for @strength.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength'**
+  String get strength;
+
+  /// No description provided for @rounding.
+  ///
+  /// In en, this message translates to:
+  /// **'Rounding'**
+  String get rounding;
+
+  /// No description provided for @fullRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Range'**
+  String get fullRange;
+
   /// No description provided for @centerHorizontally.
   ///
   /// In en, this message translates to:

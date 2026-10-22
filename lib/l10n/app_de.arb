@@ -367,6 +367,9 @@
   "tuneDithering": "Dithering anpassen",
   "bayerLevel": "Bayer Level",
   "influence": "Einfluss",
+  "strength": "Stärke",
+  "rounding": "Rundung",
+  "fullRange": "Breitband",
 
   "centerHorizontally": "Horizontal zentrieren",
   "centerVertically": "Vertikal zentrieren",

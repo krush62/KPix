@@ -1910,6 +1910,12 @@ abstract class AppLocalizations {
   /// **'Smooth Edges'**
   String get shaderSmoothEdges;
 
+  /// No description provided for @shaderDithering.
+  ///
+  /// In en, this message translates to:
+  /// **'Dithering'**
+  String get shaderDithering;
+
   /// No description provided for @colorTolerance.
   ///
   /// In en, this message translates to:
@@ -1987,6 +1993,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fit to View'**
   String get zoomToFit;
+
+  /// No description provided for @colorDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Depth'**
+  String get colorDepth;
+
+  /// No description provided for @tuneDithering.
+  ///
+  /// In en, this message translates to:
+  /// **'Tune Dithering'**
+  String get tuneDithering;
 
   /// No description provided for @centerHorizontally.
   ///

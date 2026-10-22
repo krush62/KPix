@@ -195,6 +195,9 @@ flutter:
     - shaders/upscale_omniscale.frag
     - shaders/upscale_xbr.frag
     - shaders/upscale_xbrz.frag
+    - shaders/dither_bayer.frag
+    - shaders/dither_noise.frag
+    - shaders/dither_clustered_dot.frag
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

@@ -975,6 +975,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shaderSmoothEdges => 'Smooth Edges';
 
   @override
+  String get shaderDithering => 'Dithering';
+
+  @override
   String get colorTolerance => 'Color Tolerance';
 
   @override
@@ -1012,6 +1015,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get zoomToFit => 'Fit to View';
+
+  @override
+  String get colorDepth => 'Color Depth';
+
+  @override
+  String get tuneDithering => 'Tune Dithering';
 
   @override
   String get centerHorizontally => 'Center Horizontally';

@@ -429,6 +429,7 @@
   "exportShaderImage": "Export Shader Image [BETA]",
   "shaderLcd": "LCD",
   "shaderSmoothEdges": "Smooth Edges",
+  "shaderDithering": "Dithering",
   "colorTolerance": "Color Tolerance",
   "smoothness": "Smoothness",
   "antiAliasing": "Anti-Aliasing",
@@ -442,6 +443,8 @@
   "zoomIn": "Zoom In",
   "zoomOut": "Zoom Out",
   "zoomToFit": "Fit to View",
+  "colorDepth": "Color Depth",
+  "tuneDithering": "Tune Dithering",
 
   "centerHorizontally": "Center Horizontally",
   "centerVertically": "Center Vertically",

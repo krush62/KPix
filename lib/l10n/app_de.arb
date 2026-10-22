@@ -349,6 +349,7 @@
   "exportShaderImage": "Shader-Bild exportieren [BETA]",
   "shaderLcd": "LCD",
   "shaderSmoothEdges": "Kantenglättung",
+  "shaderDithering": "Dithering",
   "colorTolerance": "Farbtoleranz",
   "smoothness": "Glättung",
   "antiAliasing": "Kantenglättung",
@@ -362,6 +363,8 @@
   "zoomIn": "Vergrößern",
   "zoomOut": "Verkleinern",
   "zoomToFit": "An Ansicht anpassen",
+  "colorDepth": "Farbtiefe",
+  "tuneDithering": "Dithering anpassen",
 
   "centerHorizontally": "Horizontal zentrieren",
   "centerVertically": "Vertikal zentrieren",

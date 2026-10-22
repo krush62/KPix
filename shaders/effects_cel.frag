@@ -1,13 +1,8 @@
 #version 460 core
 precision highp float;
 
-/*
-   Cel shading, after "Advanced Cartoon shader I and II" from the libretro slang shaders
-   by guest(r) (guest.r@gmail.com)
-   License: GNU-GPL
-   Ported to Flutter: outline width in output pixels, the number of color levels as a parameter
-   (4 = the original), transparency counts for the outlines, black no longer normalizes a zero vector.
-*/
+// Cel shading: the original colors with adjustable saturation, and a sharp black line between cells of
+// different hues. Inspired by "Advanced Cartoon" from the libretro slang shaders.
 
 #include <flutter/runtime_effect.glsl>
 
@@ -17,87 +12,130 @@ uniform vec2 uSourceSize;
 uniform float uScale;
 uniform float uFlipY;
 
-uniform float uOutlineWidth;      // 0 .. 4, in output pixels (the original's border 1.0 at 8x = 1)
-uniform float uOutlineStrength;   // 0 .. 2, 1 = the original's sensitivity of 0.5
-uniform float uLevels;            // 2 .. 8, brightness and hue levels, 4 = the original
-uniform float uMuteColors;        // 0 / 1, the original's "mute colors" mode
+uniform float uOutlineWidth;      // 0 .. 4, in output pixels, 0 = no outline
+uniform float uOutlineStrength;   // 0 .. 1, opacity of the outline
+uniform float uThreshold;         // 0 .. 0.5, neighbors closer than this in color belong to the same cell
+uniform float uSaturation;        // 0 .. 2, 1 = the original colors
 
 uniform sampler2D uSource;
 
 out vec4 fragColor;
 
-// premultiplied source pixel under t (source pixels)
-vec4 tap(vec2 t)
+const vec3 luma = vec3(0.299, 0.587, 0.114);
+
+// unpremultiplied color and alpha of a source pixel
+vec4 sourcePixel(vec2 texel)
 {
-    vec2 uv = (floor(t) + 0.5) / uSourceSize;
+    vec2 uv = (texel + 0.5) / uSourceSize;
     uv.y = mix(uv.y, 1.0 - uv.y, uFlipY);
-    return texture(uSource, uv);
+    vec4 s = texture(uSource, uv);
+    return vec4(s.a > 0.0 ? s.rgb / s.a : vec3(0.0), s.a);
 }
 
-float diff(vec4 a, vec4 b)
+// hue (0 .. 1), saturation and value
+vec3 hsv(vec3 c)
 {
-    return dot(abs(a - b), vec4(1.0));
+    float maxC = max(c.r, max(c.g, c.b));
+    float delta = maxC - min(c.r, min(c.g, c.b));
+    float h = 0.0;
+    if (delta > 0.0)
+    {
+        if (maxC == c.r)
+        {
+            h = (c.g - c.b) / delta;
+        }
+        else if (maxC == c.g)
+        {
+            h = 2.0 + (c.b - c.r) / delta;
+        }
+        else
+        {
+            h = 4.0 + (c.r - c.g) / delta;
+        }
+        h = fract(h / 6.0);
+    }
+    return vec3(h, maxC > 0.0 ? delta / maxC : 0.0, maxC);
+}
+
+// mostly hue and saturation; brightness counts a quarter, so the shades of one color stay one cell,
+// and hue and saturation fade out towards black, where they cannot be seen
+float colorDistance(vec3 a, vec3 b)
+{
+    vec3 ha = hsv(a);
+    vec3 hb = hsv(b);
+    float hueDiff = abs(ha.x - hb.x);
+    hueDiff = 2.0 * min(hueDiff, 1.0 - hueDiff);
+    float visible = max(ha.z, hb.z);
+    float hue = hueDiff * min(ha.y, hb.y) * visible;
+    float sat = abs(ha.y - hb.y) * visible;
+    float value = 0.25 * abs(ha.z - hb.z);
+    return sqrt(hue * hue + sat * sat + value * value);
+}
+
+bool isTransparent(vec4 p)
+{
+    return p.a < 0.5;
+}
+
+bool sameCell(vec4 a, vec4 b)
+{
+    if (isTransparent(a) || isTransparent(b))
+    {
+        return isTransparent(a) && isTransparent(b);
+    }
+    return colorDistance(a.rgb, b.rgb) <= uThreshold;
+}
+
+// the line between two cells goes into the darker one, never onto transparency; ties go to the cell
+// left of or above the boundary, which is the current one when the neighbor lies in direction [dir]
+bool ownsLine(vec4 self, vec4 other, vec2 dir)
+{
+    if (isTransparent(self))
+    {
+        return false;
+    }
+    if (isTransparent(other))
+    {
+        return true;
+    }
+    float diff = dot(self.rgb, luma) - dot(other.rgb, luma);
+    if (abs(diff) > 0.0001)
+    {
+        return diff < 0.0;
+    }
+    return dir.x + dir.y > 0.0;
 }
 
 void main()
 {
-    vec2 t = (FlutterFragCoord().xy + uOffset) / uScale;
-    float w = max(uOutlineWidth, 0.0) / uScale;
-    vec2 dx = vec2(w, 0.0);
-    vec2 dy = vec2(0.0, w);
-    vec2 dg1 = vec2(w, w);
-    vec2 dg2 = vec2(-w, w);
+    vec2 q = FlutterFragCoord().xy + uOffset;
+    vec2 texel = floor(q / uScale);
+    vec4 self = sourcePixel(texel);
 
-    vec4 c00 = tap(t - dg1);
-    vec4 c10 = tap(t - dy);
-    vec4 c20 = tap(t + dg2);
-    vec4 c01 = tap(t - dx);
-    vec4 center = tap(t);
-    vec4 c21 = tap(t + dx);
-    vec4 c02 = tap(t - dg2);
-    vec4 c12 = tap(t + dy);
-    vec4 c22 = tap(t + dg1);
-    vec3 dt = vec3(1.0, 1.0, 1.0);
-
-    float alpha = center.a;
-    vec3 c11 = alpha > 0.0 ? center.rgb / alpha : vec3(0.0);
-
-    // edges: color changes across the pixel, stronger on dark colors
-    float d1 = diff(c00, c22);
-    float d2 = diff(c20, c02);
-    float hl = diff(c01, c21);
-    float vl = diff(c10, c12);
-    float d = 0.5 * max(uOutlineStrength, 0.0) * (d1 + d2 + hl + vl) / (dot(c11, dt) + 0.15);
-    float outline = 1.1 - d * sqrt(d);
-
-    float levels = max(floor(uLevels + 0.5), 1.0);
-    float brightness = length(c11);
-    // hue direction; black has none and stays black through the brightness below
-    vec3 direction = brightness > 0.0 ? c11 / brightness : vec3(0.0);
-
-    vec3 rgb;
-    if (uMuteColors < 0.5)
+    // a pixel is on the line when a different cell lies within the outline width, seen from its centre
+    float width = min(max(floor(uOutlineWidth + 0.5), 0.0), uScale);
+    float line = 0.0;
+    if (width > 0.0)
     {
-        float lc = levels * brightness;
-        float f = fract(lc); f *= f;
-        lc = (floor(lc) + f * f) / levels + 0.05;
-        vec3 hue = levels * direction;
-        vec3 frct = fract(hue); frct *= frct;
-        hue = floor(hue) + 0.05 * dt + frct * frct;
-        rgb = lc * outline * hue / levels;
-    }
-    else
-    {
-        float lc = (levels + 1.0) * brightness;
-        lc = (floor(lc) + pow(fract(lc), 4.0)) / (levels + 1.0);
-        vec3 hue = levels * direction;
-        vec3 frct = fract(hue); frct *= frct;
-        hue = floor(hue) + frct * frct;
-        hue = hue * lc / levels;
-        lc *= 0.577;
-        hue = mix(hue, lc * dt, lc);
-        rgb = outline * hue;
+        for (int y = -1; y <= 1; y++)
+        {
+            for (int x = -1; x <= 1; x++)
+            {
+                vec2 dir = vec2(float(x), float(y));
+                vec2 other = floor((q + dir * width) / uScale);
+                if (other != texel)
+                {
+                    vec4 neighbor = sourcePixel(other);
+                    if (!sameCell(self, neighbor) && ownsLine(self, neighbor, dir))
+                    {
+                        line = 1.0;
+                    }
+                }
+            }
+        }
     }
 
-    fragColor = vec4(clamp(rgb, 0.0, 1.0) * alpha, alpha);
+    vec3 color = clamp(mix(vec3(dot(self.rgb, luma)), self.rgb, max(uSaturation, 0.0)), 0.0, 1.0);
+    vec3 rgb = mix(color, vec3(0.0), line * clamp(uOutlineStrength, 0.0, 1.0));
+    fragColor = vec4(rgb * self.a, self.a);
 }

@@ -182,8 +182,7 @@ String _heightFromBrightnessLabel(final AppLocalizations l10n) => l10n.heightFro
 String _colorLabel(final AppLocalizations l10n) => l10n.color;
 String _outlineWidthLabel(final AppLocalizations l10n) => l10n.outlineWidth;
 String _outlineStrengthLabel(final AppLocalizations l10n) => l10n.outlineStrength;
-String _colorLevelsLabel(final AppLocalizations l10n) => l10n.colorLevels;
-String _muteColorsLabel(final AppLocalizations l10n) => l10n.muteColors;
+String _saturationLabel(final AppLocalizations l10n) => l10n.saturation;
 
 
 const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <ExportShaderType, ExportShaderDefinition>{
@@ -347,9 +346,9 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         minScalingFactor: 4,
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uOutlineWidth", label: _outlineWidthLabel, min: 0.0, max: 4.0, initial: 1.0, divisions: 4, format: ExportShaderValueFormat.pixels),
-          ExportShaderSliderParameter(uniform: "uOutlineStrength", label: _outlineStrengthLabel, min: 0.0, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.percent),
-          ExportShaderSliderParameter(uniform: "uLevels", label: _colorLevelsLabel, min: 2.0, max: 8.0, initial: 4.0, divisions: 6, format: ExportShaderValueFormat.integer),
-          ExportShaderToggleParameter(uniform: "uMuteColors", label: _muteColorsLabel, initial: false),
+          ExportShaderSliderParameter(uniform: "uOutlineStrength", label: _outlineStrengthLabel, min: 0.0, max: 1.0, initial: 1.0, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uThreshold", label: _similarityThresholdLabel, min: 0.0, max: 0.5, initial: 0.1, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uSaturation", label: _saturationLabel, min: 0.0, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.percent),
         ],
       ),
     ],

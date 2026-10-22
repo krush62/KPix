@@ -1089,12 +1089,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get outlineStrength => 'Outline Strength';
 
   @override
-  String get colorLevels => 'Color Levels';
-
-  @override
-  String get muteColors => 'Mute Colors';
-
-  @override
   String shaderMinScaling(int factor) {
     return 'Scaling should be at least $factor:1 for this shader.';
   }

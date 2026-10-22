@@ -2138,18 +2138,6 @@ abstract class AppLocalizations {
   /// **'Outline Strength'**
   String get outlineStrength;
 
-  /// No description provided for @colorLevels.
-  ///
-  /// In en, this message translates to:
-  /// **'Color Levels'**
-  String get colorLevels;
-
-  /// No description provided for @muteColors.
-  ///
-  /// In en, this message translates to:
-  /// **'Mute Colors'**
-  String get muteColors;
-
   /// No description provided for @shaderMinScaling.
   ///
   /// In en, this message translates to:

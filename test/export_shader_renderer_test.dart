@@ -336,22 +336,72 @@ void main()
   });
 
   group("cel shading shader", () {
-    testWidgets("gives flat areas one color without outlines", (final WidgetTester tester) async {
+    testWidgets("keeps the original color of flat areas, without outlines", (final WidgetTester tester) async {
       await tester.runAsync(() async {
         final ui.Image source = await _source(width: 3, height: 3, color: (final int x, final int y) => const ui.Color(0xFF3366CC));
         final (Uint8List, int) out = await _render(values: _effect(variant: "Cel Shading"), source: source, scaling: 8);
 
-        expect(_maxDeviation(rgba: out.$1, color: _pixel(out, 0, 0)), lessThanOrEqualTo(1));
+        expect(_maxDeviation(rgba: out.$1, color: <int>[0x33, 0x66, 0xCC, 0xFF]), lessThanOrEqualTo(1));
         source.dispose();
       });
     });
 
-    testWidgets("draws an outline where colors change", (final WidgetTester tester) async {
+    testWidgets("turns grey without saturation", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 1, height: 1, color: (final int x, final int y) => const ui.Color(0xFF3366CC));
+        final (Uint8List, int) out = await _render(values: _effect(variant: "Cel Shading", overrides: <String, Object>{"uSaturation": 0.0}), source: source, scaling: 4);
+
+        final List<int> grey = _pixel(out, 2, 2);
+        expect(grey[0], closeTo(grey[1], 1));
+        expect(grey[1], closeTo(grey[2], 1));
+        source.dispose();
+      });
+    });
+
+    testWidgets("keeps shades of one hue in one cell, but outlines another hue", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        //dark red, red, green
+        const List<ui.Color> colors = <ui.Color>[ui.Color(0xFFA01818), ui.Color(0xFFE02020), ui.Color(0xFF20C020)];
+        final ui.Image source = await _source(width: 3, height: 1, color: (final int x, final int y) => colors[x]);
+        final (Uint8List, int) out = await _render(values: _effect(variant: "Cel Shading"), source: source, scaling: 8);
+
+        expect(_pixel(out, 7, 4), <int>[0xA0, 0x18, 0x18, 0xFF], reason: "no line between the two reds");
+        expect(_pixel(out, 15, 4), <int>[0, 0, 0, 255], reason: "a line between red and green, in the darker red");
+        source.dispose();
+      });
+    });
+
+    testWidgets("draws one sharp black line into the darker cell", (final WidgetTester tester) async {
       await tester.runAsync(() async {
         final ui.Image source = await _source(width: 2, height: 1, color: (final int x, final int y) => x == 0 ? const ui.Color(0xFFE0E0E0) : const ui.Color(0xFF3366CC));
         final (Uint8List, int) out = await _render(values: _effect(variant: "Cel Shading"), source: source, scaling: 8);
 
-        expect(_pixel(out, 7, 4)[0], lessThan(_pixel(out, 3, 4)[0] - 40), reason: "the last light pixel before the edge is darkened");
+        expect(_pixel(out, 8, 4), <int>[0, 0, 0, 255], reason: "first column of the darker blue cell");
+        expect(_pixel(out, 7, 4), _pixel(out, 3, 4), reason: "the light cell keeps its color up to the edge");
+        expect(_pixel(out, 9, 4), _pixel(out, 12, 4), reason: "the line is one pixel wide");
+        source.dispose();
+      });
+    });
+
+    testWidgets("makes the line as wide as the outline width", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 2, height: 1, color: (final int x, final int y) => x == 0 ? const ui.Color(0xFFE0E0E0) : const ui.Color(0xFF3366CC));
+        final (Uint8List, int) out = await _render(values: _effect(variant: "Cel Shading", overrides: <String, Object>{"uOutlineWidth": 3.0}), source: source, scaling: 8);
+
+        expect(_pixel(out, 10, 4), <int>[0, 0, 0, 255]);
+        expect(_pixel(out, 11, 4), _pixel(out, 13, 4));
+        source.dispose();
+      });
+    });
+
+    testWidgets("puts similar colors into one cell below the threshold", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 2, height: 1, color: (final int x, final int y) => x == 0 ? const ui.Color(0xFF808080) : const ui.Color(0xFF8C8C8C));
+        final (Uint8List, int) similar = await _render(values: _effect(variant: "Cel Shading"), source: source, scaling: 8);
+        final (Uint8List, int) exact = await _render(values: _effect(variant: "Cel Shading", overrides: <String, Object>{"uThreshold": 0.0}), source: source, scaling: 8);
+
+        expect(_pixel(similar, 7, 4), _pixel(similar, 3, 4), reason: "no line with the default threshold");
+        expect(_pixel(exact, 7, 4), <int>[0, 0, 0, 255], reason: "a line when the colors have to match exactly");
         source.dispose();
       });
     });

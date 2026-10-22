@@ -26,5 +26,4 @@ Ported from the libretro slang shaders (https://github.com/libretro/slang-shader
 OmniScale by Lior Halphon (MIT)\
 xBR by Hyllian (MIT)\
 xBRZ by Zenju (GPLv3), freescale version based on Hyllian's xBR code (MIT)\
-cleanEdge by torcado (MIT)\
-Advanced Cartoon (Cel Shading) by guest(r) (GPL)
+cleanEdge by torcado (MIT)

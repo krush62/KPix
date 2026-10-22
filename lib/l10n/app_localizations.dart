@@ -1916,6 +1916,12 @@ abstract class AppLocalizations {
   /// **'Dithering'**
   String get shaderDithering;
 
+  /// No description provided for @shaderEffects.
+  ///
+  /// In en, this message translates to:
+  /// **'Effects'**
+  String get shaderEffects;
+
   /// No description provided for @colorTolerance.
   ///
   /// In en, this message translates to:
@@ -2035,6 +2041,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Full Range'**
   String get fullRange;
+
+  /// No description provided for @dotSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Dot Size'**
+  String get dotSize;
 
   /// No description provided for @centerHorizontally.
   ///

@@ -200,6 +200,7 @@ flutter:
     - shaders/dither_clustered_dot.frag
     - shaders/dither_checkerboard.frag
     - shaders/dither_psx.frag
+    - shaders/effects_cmyk_halftone.frag
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

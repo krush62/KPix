@@ -25,6 +25,7 @@ enum ExportShaderType
   lcd,
   upscale,
   dithering,
+  effects,
 }
 
 /// How the value of an [ExportShaderSliderParameter] is shown.
@@ -132,6 +133,7 @@ class ExportShaderDefinition
 String _lcdName(final AppLocalizations l10n) => l10n.shaderLcd;
 String _smoothEdgesName(final AppLocalizations l10n) => l10n.shaderSmoothEdges;
 String _ditheringName(final AppLocalizations l10n) => l10n.shaderDithering;
+String _effectsName(final AppLocalizations l10n) => l10n.shaderEffects;
 // LCD STRINGS
 String _brightnessLabel(final AppLocalizations l10n) => l10n.brightness;
 String _gridWidthLabel(final AppLocalizations l10n) => l10n.gridWidth;
@@ -153,6 +155,8 @@ String _checkerWidthLabel(final AppLocalizations l10n) => l10n.influence;
 String _strengthLabel(final AppLocalizations l10n) => l10n.strength;
 String _roundingLabel(final AppLocalizations l10n) => l10n.rounding;
 String _fullRangeLabel(final AppLocalizations l10n) => l10n.fullRange;
+//EFFECTS STRINGS
+String _dotSizeLabel(final AppLocalizations l10n) => l10n.dotSize;
 
 const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <ExportShaderType, ExportShaderDefinition>{
   ExportShaderType.lcd: ExportShaderDefinition(
@@ -256,6 +260,19 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         asset: "shaders/dither_clustered_dot.frag",
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
+        ],
+      ),
+    ],
+  ),
+  ExportShaderType.effects: ExportShaderDefinition(
+    type: ExportShaderType.effects,
+    name: _effectsName,
+    variants: <ExportShaderVariant>[
+      ExportShaderVariant(
+        name: "CMYK/Halftone",
+        asset: "shaders/effects_cmyk_halftone.frag",
+        parameters: <ExportShaderParameter>[
+          ExportShaderSliderParameter(uniform: "uDotSize", label: _dotSizeLabel, min: 4.0, max: 32.0, initial: 8.0, divisions: 28, format: ExportShaderValueFormat.pixels),
         ],
       ),
     ],

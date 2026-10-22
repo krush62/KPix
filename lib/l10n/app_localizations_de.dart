@@ -997,6 +997,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shaderDithering => 'Dithering';
 
   @override
+  String get shaderEffects => 'Effekte';
+
+  @override
   String get colorTolerance => 'Farbtoleranz';
 
   @override
@@ -1055,6 +1058,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get fullRange => 'Breitband';
+
+  @override
+  String get dotSize => 'Punktgröße';
 
   @override
   String get centerHorizontally => 'Horizontal zentrieren';

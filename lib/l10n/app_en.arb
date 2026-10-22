@@ -430,6 +430,7 @@
   "shaderLcd": "LCD",
   "shaderSmoothEdges": "Smooth Edges",
   "shaderDithering": "Dithering",
+  "shaderEffects": "Effects",
   "colorTolerance": "Color Tolerance",
   "smoothness": "Smoothness",
   "antiAliasing": "Anti-Aliasing",
@@ -450,6 +451,7 @@
   "strength": "Strength",
   "rounding": "Rounding",
   "fullRange": "Full Range",
+  "dotSize": "Dot Size",
 
   "centerHorizontally": "Center Horizontally",
   "centerVertically": "Center Vertically",

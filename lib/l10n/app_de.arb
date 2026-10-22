@@ -350,6 +350,7 @@
   "shaderLcd": "LCD",
   "shaderSmoothEdges": "Kantenglättung",
   "shaderDithering": "Dithering",
+  "shaderEffects": "Effekte",
   "colorTolerance": "Farbtoleranz",
   "smoothness": "Glättung",
   "antiAliasing": "Kantenglättung",
@@ -370,6 +371,7 @@
   "strength": "Stärke",
   "rounding": "Rundung",
   "fullRange": "Breitband",
+  "dotSize": "Punktgröße",
 
   "centerHorizontally": "Horizontal zentrieren",
   "centerVertically": "Vertikal zentrieren",

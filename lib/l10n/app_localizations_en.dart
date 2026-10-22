@@ -1053,6 +1053,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dotShape => 'Dot Shape';
 
   @override
+  String get diamond => 'Diamond';
+
+  @override
   String get misregistration => 'Misregistration';
 
   @override

@@ -2066,6 +2066,12 @@ abstract class AppLocalizations {
   /// **'Dot Shape'**
   String get dotShape;
 
+  /// No description provided for @diamond.
+  ///
+  /// In en, this message translates to:
+  /// **'Diamond'**
+  String get diamond;
+
   /// No description provided for @misregistration.
   ///
   /// In en, this message translates to:

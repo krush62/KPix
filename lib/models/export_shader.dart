@@ -125,7 +125,9 @@ final class ExportShaderChoiceParameter extends ExportShaderParameter
 {
   final List<String Function(AppLocalizations l10n)> options;
   final int initial;
-  const ExportShaderChoiceParameter({required super.uniform, required super.label, required this.options, required this.initial, super.section});
+  /// Written instead of the index, one per option, where the shader expects other numbers.
+  final List<double>? values;
+  const ExportShaderChoiceParameter({required super.uniform, required super.label, required this.options, required this.initial, this.values, super.section});
 
   @override
   Object get initialValue => initial;
@@ -133,7 +135,8 @@ final class ExportShaderChoiceParameter extends ExportShaderParameter
   @override
   void apply({required final FragmentShader shader, required final Object value})
   {
-    shader.getUniformFloat(uniform).set((value as int).toDouble());
+    final int index = value as int;
+    shader.getUniformFloat(uniform).set(values?[index] ?? index.toDouble());
   }
 }
 
@@ -180,6 +183,10 @@ String _similarityThresholdLabel(final AppLocalizations l10n) => l10n.similarity
 String _colorDepthLabel(final AppLocalizations l10n) => l10n.colorDepth;
 String _tuneDitheringLabel(final AppLocalizations l10n) => l10n.tuneDithering;
 String _bayerLevelLabel(final AppLocalizations l10n) => l10n.bayerLevel;
+String _bayer2Option(final AppLocalizations l10n) => "2×2";
+String _bayer4Option(final AppLocalizations l10n) => "4×4";
+String _bayer8Option(final AppLocalizations l10n) => "8×8";
+String _bayer16Option(final AppLocalizations l10n) => "16×16";
 String _checkerWidthLabel(final AppLocalizations l10n) => l10n.influence;
 String _strengthLabel(final AppLocalizations l10n) => l10n.strength;
 String _roundingLabel(final AppLocalizations l10n) => l10n.rounding;
@@ -189,6 +196,9 @@ String _dotSizeLabel(final AppLocalizations l10n) => l10n.dotSize;
 String _originalMixLabel(final AppLocalizations l10n) => l10n.originalMix;
 String _dotGainLabel(final AppLocalizations l10n) => l10n.dotGain;
 String _dotShapeLabel(final AppLocalizations l10n) => l10n.dotShape;
+String _roundOption(final AppLocalizations l10n) => l10n.round;
+String _diamondOption(final AppLocalizations l10n) => l10n.diamond;
+String _squareOption(final AppLocalizations l10n) => l10n.square;
 String _angleLabel(final AppLocalizations l10n) => l10n.angle;
 String _misregistrationLabel(final AppLocalizations l10n) => l10n.misregistration;
 String _backgroundBrightnessLabel(final AppLocalizations l10n) => l10n.backgroundBrightness;
@@ -338,7 +348,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         asset: "shaders/dither_bayer.frag",
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
-          ExportShaderSliderParameter(uniform: "uBayerLevel", label: _bayerLevelLabel, min: 1.0, max: 4.0, initial: 2.0, divisions: 3, format: ExportShaderValueFormat.decimal),
+          ExportShaderChoiceParameter(uniform: "uBayerLevel", label: _bayerLevelLabel, options: <String Function(AppLocalizations)>[_bayer2Option, _bayer4Option, _bayer8Option, _bayer16Option], values: <double>[1.0, 2.0, 3.0, 4.0], initial: 1),
           ExportShaderSliderParameter(uniform: "uDitherTune", label: _tuneDitheringLabel, min: -64.0, max: 64.0, initial: 0.0, divisions: 128, format: ExportShaderValueFormat.decimal),
         ],
       ),
@@ -391,7 +401,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
           ExportShaderSliderParameter(uniform: "uOriginalMix", label: _originalMixLabel, min: 0.0, max: 1.0, initial: 0.3, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uDotGain", label: _dotGainLabel, min: 0.5, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.decimal),
           ExportShaderSliderParameter(uniform: "uSoftness", label: _softnessLabel, min: 0.0, max: 2.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
-          ExportShaderSliderParameter(uniform: "uDotShape", label: _dotShapeLabel, min: 0.0, max: 2.0, divisions: 2, initial: 0.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderChoiceParameter(uniform: "uDotShape", label: _dotShapeLabel, options: <String Function(AppLocalizations)>[_roundOption, _diamondOption, _squareOption], initial: 0),
           ExportShaderSliderParameter(uniform: "uAngle", label: _angleLabel, min: 0.0, max: 90.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
           ExportShaderSliderParameter(uniform: "uMisregistration", label: _misregistrationLabel, min: 0.0, max: 3.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
           ExportShaderSliderParameter(uniform: "uBackgroundBrightness", label: _backgroundBrightnessLabel, min: 0.0, max: 1.0, initial: 0.8, format: ExportShaderValueFormat.percent),

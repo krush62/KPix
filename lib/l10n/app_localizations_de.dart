@@ -1072,6 +1072,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get dotShape => 'Punktform';
 
   @override
+  String get diamond => 'Raute';
+
+  @override
   String get misregistration => 'Fehlregistrierung';
 
   @override

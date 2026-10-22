@@ -428,6 +428,73 @@ void main()
     });
   });
 
+  group("choice parameters", () {
+    testWidgets("the Bayer options reach the shader as levels 1 to 4", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        //at 1 bit and this gray only the highest threshold(s) of each matrix switch a pixel on, so the output repeats with the matrix size
+        final ui.Image source = await _source(width: 32, height: 32, color: (final int x, final int y) => const ui.Color(0xFF454545));
+        final ExportShaderDefinition definition = exportShaderDefinitions[ExportShaderType.dithering]!;
+        int period(final (Uint8List, int) out)
+        {
+          for (final int p in <int>[1, 2, 4, 8, 16])
+          {
+            bool repeats = true;
+            for (int y = 0; y < 32 - p && repeats; y++)
+            {
+              for (int x = 0; x < 32 - p && repeats; x++)
+              {
+                final int c = _pixel(out, x, y)[0];
+                repeats = c == _pixel(out, x + p, y)[0] && c == _pixel(out, x, y + p)[0];
+              }
+            }
+            if (repeats)
+            {
+              return p;
+            }
+          }
+          return -1;
+        }
+
+        final List<int> periods = <int>[];
+        for (int option = 0; option < 4; option++)
+        {
+          final ExportShaderValues values = ExportShaderValues(definition: definition);
+          values.variantIndex = definition.variants.indexWhere((final ExportShaderVariant v) => v.name == "Bayer");
+          for (final ExportShaderParameter parameter in values.variant.parameters)
+          {
+            if (parameter.uniform == "uBayerLevel")
+            {
+              values.setValue(parameter: parameter, value: option);
+            }
+            else if (parameter.uniform == "uColorDepth")
+            {
+              values.setValue(parameter: parameter, value: 1.0);
+            }
+          }
+          periods.add(period(await _render(values: values, source: source, scaling: 1)));
+        }
+
+        expect(periods, <int>[2, 4, 8, 16]);
+        source.dispose();
+      });
+    });
+
+    testWidgets("every dot shape draws different dots", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 4, height: 4, color: (final int x, final int y) => const ui.Color(0xFF8040C0));
+        final List<Uint8List> shapes = <Uint8List>[
+          for (int shape = 0; shape < 3; shape++)
+            (await _render(values: _effect(variant: "CMYK/Halftone", overrides: <String, Object>{"uDotShape": shape}), source: source, scaling: 8)).$1,
+        ];
+
+        expect(_sameBytes(shapes[0], shapes[1]), isFalse);
+        expect(_sameBytes(shapes[1], shapes[2]), isFalse);
+        expect(_sameBytes(shapes[0], shapes[2]), isFalse);
+        source.dispose();
+      });
+    });
+  });
+
   group("crt shader", () {
     const Map<String, Object> allOff = <String, Object>{
       "uMedium": 0, "uSignal": 0, "uArtifacts": 0.0, "uNoise": 0.0, "uGhosting": 0.0, "uEncoding": 0, "uPhaseError": 0.0, "uSharpness": 0.0,

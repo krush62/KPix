@@ -2006,6 +2006,12 @@ abstract class AppLocalizations {
   /// **'Tune Dithering'**
   String get tuneDithering;
 
+  /// No description provided for @bayerLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bayer Level'**
+  String get bayerLevel;
+
   /// No description provided for @influence.
   ///
   /// In en, this message translates to:

@@ -445,6 +445,7 @@
   "zoomToFit": "Fit to View",
   "colorDepth": "Color Depth",
   "tuneDithering": "Tune Dithering",
+  "bayerLevel": "Bayer Level",
   "influence": "Influence",
 
   "centerHorizontally": "Center Horizontally",

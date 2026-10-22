@@ -2,10 +2,10 @@
 precision highp float;
 
 /*
- * gizmo98 bayer 4x4 dithering shader
+ * gizmo98 bayer dithering shader
  * Copyright (C) 2023 gizmo98
  * GPL-2.0-or-later – https://github.com/gizmo98/gizmo-crt-shader
- * Ported to Flutter (EGA palette removed).
+ * Ported to Flutter: EGA palette removed, variable Bayer matrix size.
  */
 
 #include <flutter/runtime_effect.glsl>
@@ -18,32 +18,50 @@ uniform float uFlipY;
 
 uniform float uColorDepth;   // 1.0 .. 8.0 (bits per channel)
 uniform float uDitherTune;   // -64.0 .. 64.0
+uniform float uBayerLevel;   // 1 = 2x2, 2 = 4x4, 3 = 8x8, 4 = 16x16
 
 uniform sampler2D uSource;
 
 out vec4 fragColor;
+
+const int MAX_BITS = 4;      // 2^4 = 16x16 maximum
 
 float bitAt(float n, float k)
 {
     return mod(floor(n / k), 2.0);
 }
 
-// bayerMatrix[x][y] of the original 4x4 matrix, value 0..15
-float bayer4(float x, float y)
+// Bayer matrix value for a (2^bits) x (2^bits) matrix, range 0 .. n*n-1
+float bayer(float x, float y, float bits)
 {
-    float x0 = bitAt(x, 1.0);
-    float x1 = bitAt(x, 2.0);
-    float y0 = bitAt(y, 1.0);
-    float y1 = bitAt(y, 2.0);
-    return 8.0 * abs(x0 - y0) + 4.0 * x0 + 2.0 * abs(x1 - y1) + x1;
+    float value = 0.0;
+    float bitWeight = 1.0;                        // 2^i
+    float outWeight = pow(4.0, bits - 1.0);       // 4^(bits-1-i)
+
+    for (int i = 0; i < MAX_BITS; i++)
+    {
+        if (float(i) < bits)
+        {
+            float xi = bitAt(x, bitWeight);
+            float yi = bitAt(y, bitWeight);
+            value += (2.0 * abs(xi - yi) + xi) * outWeight;
+            bitWeight *= 2.0;
+            outWeight /= 4.0;
+        }
+    }
+    return value;
 }
 
 vec3 ditherPattern(vec3 rgb, vec2 coord)
 {
-    vec2 st = floor(mod(coord, 4.0));
-    float threshold = bayer4(st.x, st.y);
+    float bits = clamp(floor(uBayerLevel + 0.5), 1.0, float(MAX_BITS));
+    float n = pow(2.0, bits);
+
+    vec2 st = floor(mod(coord, n));
+    float threshold = bayer(st.x, st.y, bits);
+
     float multiplier = pow(2.0, 8.0 - uColorDepth) - 1.0;
-    threshold = (threshold / 15.0) - 0.5;
+    threshold = (threshold / (n * n - 1.0)) - 0.5;
     threshold *= (multiplier + uDitherTune) / 255.0;
     return rgb + threshold;
 }

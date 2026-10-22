@@ -365,6 +365,7 @@
   "zoomToFit": "An Ansicht anpassen",
   "colorDepth": "Farbtiefe",
   "tuneDithering": "Dithering anpassen",
+  "bayerLevel": "Bayer Level",
   "influence": "Einfluss",
 
   "centerHorizontally": "Horizontal zentrieren",

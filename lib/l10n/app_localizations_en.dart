@@ -1023,6 +1023,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tuneDithering => 'Tune Dithering';
 
   @override
+  String get bayerLevel => 'Bayer Level';
+
+  @override
   String get influence => 'Influence';
 
   @override

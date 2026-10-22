@@ -14,7 +14,7 @@ uniform float uScale;
 uniform float uFlipY;
 
 // medium
-uniform float uMedium;         // 0 = none, 1 = VHS, 2 = Betamax
+uniform float uMedium;         // 0 = none, 1 = VHS, 2 = Betamax, 3 = 8mm
 uniform float uWear;           // 0 .. 1
 // signal
 uniform float uSignal;         // 0 = RGB, 1 = S-Video, 2 = composite, 3 = RF
@@ -88,10 +88,16 @@ vec3 decode(vec3 s, bool pal)
     return mat3(1.0, 1.0, 1.0, 0.956, -0.272, -1.106, 0.621, -0.647, 1.703) * s;
 }
 
-// a VHS or Betamax tape with some wear
+// a VHS, Betamax or 8mm tape with some wear
 bool isTape()
 {
-    return (isMode(uMedium, 1.0) || isMode(uMedium, 2.0)) && uWear > 0.0;
+    return uMedium > 0.5 && uWear > 0.0;
+}
+
+// the value for the current tape format
+float byTape(float vhs, float betamax, float video8)
+{
+    return isMode(uMedium, 1.0) ? vhs : (isMode(uMedium, 2.0) ? betamax : video8);
 }
 
 // whether the chain carries luma and chroma separately (any analog signal or a tape)
@@ -107,17 +113,40 @@ vec3 lineSignal(float x, float r)
     float wear = clamp(uWear, 0.0, 1.0);
     bool tape = isTape();
     bool vhs = tape && isMode(uMedium, 1.0);
+    bool betamax = tape && isMode(uMedium, 2.0);
     float signal = floor(uSignal + 0.5);
     bool pal = isMode(uEncoding, 1.0);
     bool yc = separateChroma();
 
-    // tape: per line timing jitter (Betamax runs steadier) and the head switching distortion at the bottom
+    // tape: per line timing jitter (Betamax runs steadiest) and the head switching distortion at the bottom
     if (tape)
     {
-        x += (hash(vec2(r, 17.0)) - 0.5) * (vhs ? 0.8 : 0.4) * wear;
+        x += (hash(vec2(r, 17.0)) - 0.5) * byTape(0.8, 0.4, 0.6) * wear;
         if (r >= uSourceSize.y - max(2.0, floor(uSourceSize.y * 0.02)))
         {
             x += (2.0 + 3.0 * hash(vec2(r, 5.0))) * wear;
+        }
+    }
+
+    // the thin metal tape of 8mm drops out often: the deck fills most dropouts with the line above,
+    // the others flash white
+    float sampleRow = r;
+    float dropout = 0.0;
+    if (tape && isMode(uMedium, 3.0))
+    {
+        float cell = floor(x / 6.0);
+        vec2 id = vec2(cell, r + 0.375);
+        float begin = cell * 6.0 + 3.0 * hash(id + 0.25);
+        if (hash(id) < 0.08 * wear && x >= begin && x < begin + 1.0 + 2.0 * hash(id + 0.5))
+        {
+            if (hash(id + 0.75) < 0.7)
+            {
+                sampleRow = r - 1.0;
+            }
+            else
+            {
+                dropout = 1.0;
+            }
         }
     }
 
@@ -125,16 +154,16 @@ vec3 lineSignal(float x, float r)
     float sigmaY = signal < 0.5 ? 0.05 : (signal < 1.5 ? 0.35 : (signal < 2.5 ? 0.55 : 0.7));
     float sigmaC = signal < 0.5 ? 0.05 : (signal < 1.5 ? 0.9 : (signal < 2.5 ? 1.2 : 1.4));
     // tapes record chroma with a fraction of the bandwidth: delayed and smeared to the right;
-    // Betamax has more bandwidth than VHS, so it stays sharper and smears less
+    // Betamax has the most bandwidth, so it stays sharper and smears less
     float sigmaLead = sigmaC;
     float sigmaTrail = sigmaC;
     float chromaDelay = 0.0;
     if (tape)
     {
-        sigmaY = sqrt(sigmaY * sigmaY + (vhs ? 0.5 : 0.12) * wear * wear);
-        sigmaLead = sqrt(sigmaC * sigmaC + (vhs ? 1.0 : 0.5) * wear * wear);
-        sigmaTrail = sqrt(sigmaC * sigmaC + (vhs ? 9.0 : 5.0) * wear * wear);
-        chromaDelay = (vhs ? 0.6 : 0.4) * wear;
+        sigmaY = sqrt(sigmaY * sigmaY + byTape(0.5, 0.12, 0.3) * wear * wear);
+        sigmaLead = sqrt(sigmaC * sigmaC + byTape(1.0, 0.5, 0.8) * wear * wear);
+        sigmaTrail = sqrt(sigmaC * sigmaC + byTape(9.0, 5.0, 7.0) * wear * wear);
+        chromaDelay = byTape(0.6, 0.4, 0.5) * wear;
     }
     sigmaLead = min(sigmaLead, 2.4);
     sigmaTrail = min(sigmaTrail, 2.4);
@@ -154,7 +183,7 @@ vec3 lineSignal(float x, float r)
     {
         float column = base + float(k);
         float d = column + 0.5 - x;
-        vec3 c = sourcePixel(vec2(column, r));
+        vec3 c = sourcePixel(vec2(column, sampleRow));
         vec3 e = yc ? encode(c, pal) : c;
 
         float wy = gauss(d, sigmaY);
@@ -200,11 +229,11 @@ vec3 lineSignal(float x, float r)
 
         if (tape)
         {
-            // tape noise, worst in the color; finer and weaker on Betamax
-            float grain = vhs ? 2.0 : 3.0;
-            float blotch = vhs ? 3.0 : 2.0;
-            s.x += (hash(vec2(floor(x * grain), r + 0.25)) - 0.5) * (vhs ? 0.06 : 0.04) * wear;
-            s.yz += (vec2(hash(vec2(floor(x / blotch), r + 0.5)), hash(vec2(floor(x / blotch), r + 0.75))) - 0.5) * (vhs ? 0.12 : 0.06) * wear;
+            // tape noise, worst in the color; finer and weaker on Betamax, strongest on 8mm
+            float grain = byTape(2.0, 3.0, 2.0);
+            float blotch = byTape(3.0, 2.0, 3.0);
+            s.x += (hash(vec2(floor(x * grain), r + 0.25)) - 0.5) * byTape(0.06, 0.04, 0.1) * wear;
+            s.yz += (vec2(hash(vec2(floor(x / blotch), r + 0.5)), hash(vec2(floor(x / blotch), r + 0.75))) - 0.5) * byTape(0.12, 0.06, 0.1) * wear;
             if (vhs)
             {
                 // the color-under recording: pale colors that drop out for a line now and then, milky blacks and dull whites
@@ -212,11 +241,18 @@ vec3 lineSignal(float x, float r)
                 s.x = 0.07 * wear + s.x * (1.0 - 0.15 * wear);
                 wide.x = 0.07 * wear + wide.x * (1.0 - 0.15 * wear);
             }
-            else
+            else if (betamax)
             {
                 // Betamax keeps most of the color, and the deck's detail enhancer draws crisp halos around edges
                 s.yz *= 1.0 - 0.1 * wear;
                 s.x += 0.6 * wear * lumaDetail;
+            }
+            else
+            {
+                // 8mm keeps more color than VHS and lifts the blacks less; a dropout flashes white
+                s.yz *= (1.0 - 0.25 * wear) * (1.0 - dropout);
+                s.x = mix(0.04 * wear + s.x * (1.0 - 0.08 * wear), 0.8 + 0.4 * (hash(vec2(floor(x * 4.0), r + 0.625)) - 0.5), dropout);
+                wide.x = 0.04 * wear + wide.x * (1.0 - 0.08 * wear);
             }
         }
 
@@ -238,7 +274,7 @@ vec3 lineSignal(float x, float r)
         float hue = radians(uPhaseError);
         if (tape)
         {
-            hue += (hash(vec2(r, 23.0)) - 0.5) * (vhs ? 0.5 : 0.2) * wear;
+            hue += (hash(vec2(r, 23.0)) - 0.5) * byTape(0.5, 0.2, 0.35) * wear;
         }
         if (pal && mod(r, 2.0) >= 1.0)
         {

@@ -474,6 +474,7 @@ void main()
     final Map<String, (Map<String, Object>, Map<String, Object>)> stages = <String, (Map<String, Object>, Map<String, Object>)>{
       "VHS": (const <String, Object>{}, <String, Object>{"uMedium": 1, "uWear": 0.5}),
       "Betamax": (const <String, Object>{}, <String, Object>{"uMedium": 2, "uWear": 0.5}),
+      "8mm": (const <String, Object>{}, <String, Object>{"uMedium": 3, "uWear": 0.5}),
       "S-Video": (const <String, Object>{}, sVideo),
       "composite artifacts": (composite, <String, Object>{"uSignal": 2, "uArtifacts": 0.5}),
       "RF": (composite, <String, Object>{"uSignal": 3}),

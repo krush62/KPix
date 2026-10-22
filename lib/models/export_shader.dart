@@ -128,7 +128,7 @@ class ExportShaderDefinition
 }
 
 String _lcdName(final AppLocalizations l10n) => l10n.shaderLcd;
-String _upscaleName(final AppLocalizations l10n) => l10n.shaderUpscale;
+String _upscaleName(final AppLocalizations l10n) => l10n.shaderSmoothEdges;
 String _brightnessLabel(final AppLocalizations l10n) => l10n.brightness;
 String _gridWidthLabel(final AppLocalizations l10n) => l10n.gridWidth;
 String _gridColorLabel(final AppLocalizations l10n) => l10n.gridColor;
@@ -165,6 +165,15 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
     name: _upscaleName,
     variants: <ExportShaderVariant>[
       ExportShaderVariant(
+        name: "CleanEdge",
+        asset: "shaders/upscale_clean_edge.frag",
+        parameters: <ExportShaderParameter>[
+          //the shader clamps the width to this range while 2:1 slopes are on
+          ExportShaderSliderParameter(uniform: "uLineWidth", label: _lineWidthLabel, min: 0.44, max: 1.14, initial: 1.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uSimilarityThreshold", label: _similarityThresholdLabel, min: 0.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
+        ],
+      ),
+      ExportShaderVariant(
         name: "OmniScale",
         asset: "shaders/upscale_omniscale.frag",
         parameters: <ExportShaderParameter>[
@@ -186,15 +195,6 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         asset: "shaders/upscale_xbrz.frag",
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uColorTolerance", label: _colorToleranceLabel, min: 0.0, max: 0.5, initial: 30.0 / 255.0, format: ExportShaderValueFormat.decimal),
-        ],
-      ),
-      ExportShaderVariant(
-        name: "CleanEdge",
-        asset: "shaders/upscale_clean_edge.frag",
-        parameters: <ExportShaderParameter>[
-          //the shader clamps the width to this range while 2:1 slopes are on
-          ExportShaderSliderParameter(uniform: "uLineWidth", label: _lineWidthLabel, min: 0.44, max: 1.14, initial: 1.0, format: ExportShaderValueFormat.decimal),
-          ExportShaderSliderParameter(uniform: "uSimilarityThreshold", label: _similarityThresholdLabel, min: 0.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
         ],
       ),
     ],

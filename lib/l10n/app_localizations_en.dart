@@ -972,7 +972,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shaderLcd => 'LCD';
 
   @override
-  String get shaderUpscale => 'Upscale';
+  String get shaderSmoothEdges => 'Smooth Edges';
 
   @override
   String get colorTolerance => 'Color Tolerance';

@@ -1904,11 +1904,11 @@ abstract class AppLocalizations {
   /// **'LCD'**
   String get shaderLcd;
 
-  /// No description provided for @shaderUpscale.
+  /// No description provided for @shaderSmoothEdges.
   ///
   /// In en, this message translates to:
-  /// **'Upscale'**
-  String get shaderUpscale;
+  /// **'Smooth Edges'**
+  String get shaderSmoothEdges;
 
   /// No description provided for @colorTolerance.
   ///

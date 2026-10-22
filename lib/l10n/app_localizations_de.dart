@@ -991,7 +991,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shaderLcd => 'LCD';
 
   @override
-  String get shaderUpscale => 'Hochskalieren';
+  String get shaderSmoothEdges => 'Kantenglättung';
 
   @override
   String get colorTolerance => 'Farbtoleranz';

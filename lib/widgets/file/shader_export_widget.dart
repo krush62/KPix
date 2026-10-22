@@ -305,6 +305,12 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
                             },
                           ),
                         ),
+                        Divider(
+                          color: Theme.of(context).primaryColorLight,
+                          thickness: ShaderExportWidgetOptions.dividerThickness,
+                          height: ShaderExportWidgetOptions.dividerThickness + (ShaderExportWidgetOptions.padding * 2),
+                        ),
+
                         // DIRECTORY
                         Row(
                           mainAxisSize: MainAxisSize.min,

@@ -428,7 +428,7 @@
   "exportProjectPalette": "Export Project/Palette",
   "exportShaderImage": "Export Shader Image [BETA]",
   "shaderLcd": "LCD",
-  "shaderUpscale": "Upscale",
+  "shaderSmoothEdges": "Smooth Edges",
   "colorTolerance": "Color Tolerance",
   "smoothness": "Smoothness",
   "antiAliasing": "Anti-Aliasing",

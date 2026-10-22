@@ -162,8 +162,8 @@ String _dotGainLabel(final AppLocalizations l10n) => l10n.dotGain;
 String _dotShapeLabel(final AppLocalizations l10n) => l10n.dotShape;
 String _angleLabel(final AppLocalizations l10n) => l10n.angle;
 String _misregistrationLabel(final AppLocalizations l10n) => l10n.misregistration;
-String _paperBrightnessLabel(final AppLocalizations l10n) => l10n.paperBrightness;
-String _paperWarmthLabel(final AppLocalizations l10n) => l10n.paperWarmth;
+String _backgroundBrightnessLabel(final AppLocalizations l10n) => l10n.backgroundBrightness;
+String _backgroundWarmthLabel(final AppLocalizations l10n) => l10n.backgroundWarmth;
 
 const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <ExportShaderType, ExportShaderDefinition>{
   ExportShaderType.lcd: ExportShaderDefinition(
@@ -286,8 +286,8 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
           ExportShaderSliderParameter(uniform: "uDotShape", label: _dotShapeLabel, min: 0.0, max: 2.0, divisions: 2, initial: 0.0, format: ExportShaderValueFormat.decimal),
           ExportShaderSliderParameter(uniform: "uAngle", label: _angleLabel, min: 0.0, max: 90.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
           ExportShaderSliderParameter(uniform: "uMisregistration", label: _misregistrationLabel, min: 0.0, max: 3.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
-          ExportShaderSliderParameter(uniform: "uPaperBrightness", label: _paperBrightnessLabel, min: 0.0, max: 1.0, initial: 0.8, format: ExportShaderValueFormat.percent),
-          ExportShaderSliderParameter(uniform: "uPaperWarmth", label: _paperWarmthLabel, min: -1.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uBackgroundBrightness", label: _backgroundBrightnessLabel, min: 0.0, max: 1.0, initial: 0.8, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uBackgroundWarmth", label: _backgroundWarmthLabel, min: -1.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
 
         ],
       ),

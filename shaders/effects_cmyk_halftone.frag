@@ -18,8 +18,8 @@ uniform float uSoftness;         // 0 .. 2, edge softness in output pixels
 uniform float uDotShape;         // 0 = round, 1 = diamond, 2 = square
 uniform float uAngle;            // 0 .. 90, global screen rotation in degrees
 uniform float uMisregistration;  // 0 .. 3, C/M/Y layer shift in output pixels
-uniform float uPaperBrightness;  // 0 .. 1, 1 = white paper
-uniform float uPaperWarmth;      // -1 .. 1, cool .. neutral .. warm
+uniform float uBackgroundBrightness;  // 0 .. 1, 1 = white background
+uniform float uBackgroundWarmth;      // -1 .. 1, cool .. neutral .. warm
 
 uniform sampler2D uSource;
 
@@ -76,14 +76,14 @@ float screenDot(vec2 p, mat2 m, float cellSize, float ink)
     return coverage * step(0.0001, ink);
 }
 
-// paper color from brightness and warmth
-vec3 paperColor()
+// background color from brightness and warmth
+vec3 backgroundColor()
 {
-    float w = clamp(uPaperWarmth, -1.0, 1.0);
+    float w = clamp(uBackgroundWarmth, -1.0, 1.0);
     vec3 warm = vec3(1.0, 0.94, 0.80);   // newsprint beige
     vec3 cool = vec3(0.85, 0.93, 1.0);   // bluish white
     vec3 tint = w >= 0.0 ? mix(vec3(1.0), warm, w) : mix(vec3(1.0), cool, -w);
-    return tint * clamp(uPaperBrightness, 0.0, 1.0);
+    return tint * clamp(uBackgroundBrightness, 0.0, 1.0);
 }
 
 void main()
@@ -120,8 +120,8 @@ void main()
 
     vec3 texcolor = center.rgb;
 
-    // inks printed on (tinted) paper
-    vec3 rgbscreen = paperColor() * (1.0 - vec3(c, m, y));
+    // inks printed on (tinted) background
+    vec3 rgbscreen = backgroundColor() * (1.0 - vec3(c, m, y));
     rgbscreen = mix(rgbscreen, texcolor, k);   // K dots show the original color
 
     vec3 rgb = mix(rgbscreen, texcolor, clamp(uOriginalMix, 0.0, 1.0));

@@ -2072,17 +2072,17 @@ abstract class AppLocalizations {
   /// **'Misregistration'**
   String get misregistration;
 
-  /// No description provided for @paperBrightness.
+  /// No description provided for @backgroundBrightness.
   ///
   /// In en, this message translates to:
-  /// **'Paper Brightness'**
-  String get paperBrightness;
+  /// **'Background Brightness'**
+  String get backgroundBrightness;
 
-  /// No description provided for @paperWarmth.
+  /// No description provided for @backgroundWarmth.
   ///
   /// In en, this message translates to:
-  /// **'Paper Warmth'**
-  String get paperWarmth;
+  /// **'Background Warmth'**
+  String get backgroundWarmth;
 
   /// No description provided for @centerHorizontally.
   ///

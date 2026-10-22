@@ -1075,10 +1075,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get misregistration => 'Fehlregistrierung';
 
   @override
-  String get paperBrightness => 'Papier-Helligkeit';
+  String get backgroundBrightness => 'Hintergrund-Helligkeit';
 
   @override
-  String get paperWarmth => 'Papier-Weißabgleich';
+  String get backgroundWarmth => 'Hintergrund-Weißabgleich';
 
   @override
   String get centerHorizontally => 'Horizontal zentrieren';

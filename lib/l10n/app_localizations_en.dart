@@ -1056,10 +1056,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get misregistration => 'Misregistration';
 
   @override
-  String get paperBrightness => 'Paper Brightness';
+  String get backgroundBrightness => 'Background Brightness';
 
   @override
-  String get paperWarmth => 'Paper Warmth';
+  String get backgroundWarmth => 'Background Warmth';
 
   @override
   String get centerHorizontally => 'Center Horizontally';

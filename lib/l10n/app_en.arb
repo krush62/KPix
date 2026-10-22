@@ -456,8 +456,8 @@
   "dotGain": "Dot Gain",
   "dotShape": "Dot Shape",
   "misregistration": "Misregistration",
-  "paperBrightness": "Paper Brightness",
-  "paperWarmth": "Paper Warmth",
+  "backgroundBrightness": "Background Brightness",
+  "backgroundWarmth": "Background Warmth",
 
   "centerHorizontally": "Center Horizontally",
   "centerVertically": "Center Vertically",

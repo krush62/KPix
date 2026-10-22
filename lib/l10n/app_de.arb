@@ -376,8 +376,8 @@
   "dotGain": "Punktverstärkung",
   "dotShape": "Punktform",
   "misregistration": "Fehlregistrierung",
-  "paperBrightness": "Papier-Helligkeit",
-  "paperWarmth": "Papier-Weißabgleich",
+  "backgroundBrightness": "Hintergrund-Helligkeit",
+  "backgroundWarmth": "Hintergrund-Weißabgleich",
 
   "centerHorizontally": "Horizontal zentrieren",
   "centerVertically": "Vertikal zentrieren",

@@ -14,7 +14,7 @@ uniform float uScale;
 uniform float uFlipY;
 
 // medium
-uniform float uMedium;         // 0 = none, 1 = VHS, 2 = Betamax, 3 = 8mm
+uniform float uMedium;         // 0 = none, 1 = VHS, 2 = Betamax, 3 = Video8
 uniform float uWear;           // 0 .. 1
 // signal
 uniform float uSignal;         // 0 = RGB, 1 = S-Video, 2 = composite, 3 = RF
@@ -88,7 +88,7 @@ vec3 decode(vec3 s, bool pal)
     return mat3(1.0, 1.0, 1.0, 0.956, -0.272, -1.106, 0.621, -0.647, 1.703) * s;
 }
 
-// a VHS, Betamax or 8mm tape with some wear
+// a VHS, Betamax or Video8 tape with some wear
 bool isTape()
 {
     return uMedium > 0.5 && uWear > 0.0;
@@ -128,7 +128,7 @@ vec3 lineSignal(float x, float r)
         }
     }
 
-    // the thin metal tape of 8mm drops out often: the deck fills most dropouts with the line above,
+    // the thin metal tape of Video8 drops out often: the deck fills most dropouts with the line above,
     // the others flash white
     float sampleRow = r;
     float dropout = 0.0;
@@ -229,7 +229,7 @@ vec3 lineSignal(float x, float r)
 
         if (tape)
         {
-            // tape noise, worst in the color; finer and weaker on Betamax, strongest on 8mm
+            // tape noise, worst in the color; finer and weaker on Betamax, strongest on Video8
             float grain = byTape(2.0, 3.0, 2.0);
             float blotch = byTape(3.0, 2.0, 3.0);
             s.x += (hash(vec2(floor(x * grain), r + 0.25)) - 0.5) * byTape(0.06, 0.04, 0.1) * wear;
@@ -249,7 +249,7 @@ vec3 lineSignal(float x, float r)
             }
             else
             {
-                // 8mm keeps more color than VHS and lifts the blacks less; a dropout flashes white
+                // Video8 keeps more color than VHS and lifts the blacks less; a dropout flashes white
                 s.yz *= (1.0 - 0.25 * wear) * (1.0 - dropout);
                 s.x = mix(0.04 * wear + s.x * (1.0 - 0.08 * wear), 0.8 + 0.4 * (hash(vec2(floor(x * 4.0), r + 0.625)) - 0.5), dropout);
                 wide.x = 0.04 * wear + wide.x * (1.0 - 0.08 * wear);

@@ -26,6 +26,7 @@ import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/export_shader.dart';
 import 'package:kpix/util/export_shader_renderer.dart';
 import 'package:logger/logger.dart';
+import 'package:toastification/toastification.dart' show warningColor;
 
 abstract final class ShaderPreviewWidgetOptions
 {
@@ -40,9 +41,12 @@ abstract final class ShaderPreviewWidgetOptions
   static const double checkerboardCellSize = 8.0;
   static const Color checkerboardLight = Color(0xFF9A9A9A);
   static const Color checkerboardDark = Color(0xFF6A6A6A);
+  static const double hintBorderWidth = 2.0;
+  static const double hintIconSize = 24.0;
 }
 
 /// Shows the visible part of the shaded output at its real resolution; drag to move, scroll or pinch to zoom.
+/// Warns next to the zoom controls when the scaling is below the shader's minimum.
 class ShaderPreviewWidget extends StatefulWidget
 {
   /// The image at 1:1, null while it is still being rendered.
@@ -431,6 +435,41 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
     );
   }
 
+  /// Styled like a warning toast; follows variant changes of the values.
+  Widget _minScalingHint({required final AppLocalizations l10n})
+  {
+    return ListenableBuilder(
+      listenable: widget.values,
+      builder: (final BuildContext context, final Widget? child) {
+        final int? minScaling = widget.values.variant.minScalingFactor;
+        if (minScaling == null || widget.scaling >= minScaling)
+        {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: const EdgeInsets.only(right: ShaderPreviewWidgetOptions.padding),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              border: Border.all(color: warningColor, width: ShaderPreviewWidgetOptions.hintBorderWidth),
+              borderRadius: const BorderRadius.all(Radius.circular(ShaderPreviewWidgetOptions.borderRadius)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: ShaderPreviewWidgetOptions.padding),
+              child: Row(
+                children: <Widget>[
+                  const Icon(TablerIcons.exclamation_circle_filled, color: warningColor, size: ShaderPreviewWidgetOptions.hintIconSize),
+                  const SizedBox(width: ShaderPreviewWidgetOptions.padding),
+                  Flexible(child: Text(l10n.shaderMinScaling(minScaling), style: Theme.of(context).textTheme.bodyLarge)),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(final BuildContext context)
   {
@@ -490,9 +529,19 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
                 if (widget.source == null)
                   const Center(child: CircularProgressIndicator()),
                 Positioned(
+                  left: ShaderPreviewWidgetOptions.padding,
                   right: ShaderPreviewWidgetOptions.padding,
                   bottom: ShaderPreviewWidgetOptions.padding,
-                  child: _zoomControls(l10n: l10n),
+                  //same height for the hint and the zoom controls
+                  child: IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Expanded(child: _minScalingHint(l10n: l10n)),
+                        _zoomControls(l10n: l10n),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             );

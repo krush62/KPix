@@ -452,6 +452,12 @@
   "rounding": "Rounding",
   "fullRange": "Full Range",
   "dotSize": "Dot Size",
+  "originalMix": "Original Mix",
+  "dotGain": "Dot Gain",
+  "dotShape": "Dot Shape",
+  "misregistration": "Misregistration",
+  "paperBrightness": "Paper Brightness",
+  "paperWarmth": "Paper Warmth",
 
   "centerHorizontally": "Center Horizontally",
   "centerVertically": "Center Vertically",

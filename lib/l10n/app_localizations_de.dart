@@ -1063,6 +1063,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get dotSize => 'Punktgröße';
 
   @override
+  String get originalMix => 'Original-Mix';
+
+  @override
+  String get dotGain => 'Punktverstärkung';
+
+  @override
+  String get dotShape => 'Punktform';
+
+  @override
+  String get misregistration => 'Fehlregistrierung';
+
+  @override
+  String get paperBrightness => 'Papier-Helligkeit';
+
+  @override
+  String get paperWarmth => 'Papier-Weißabgleich';
+
+  @override
   String get centerHorizontally => 'Horizontal zentrieren';
 
   @override

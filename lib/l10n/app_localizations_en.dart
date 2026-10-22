@@ -1044,6 +1044,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dotSize => 'Dot Size';
 
   @override
+  String get originalMix => 'Original Mix';
+
+  @override
+  String get dotGain => 'Dot Gain';
+
+  @override
+  String get dotShape => 'Dot Shape';
+
+  @override
+  String get misregistration => 'Misregistration';
+
+  @override
+  String get paperBrightness => 'Paper Brightness';
+
+  @override
+  String get paperWarmth => 'Paper Warmth';
+
+  @override
   String get centerHorizontally => 'Center Horizontally';
 
   @override

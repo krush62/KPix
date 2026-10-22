@@ -372,6 +372,12 @@
   "rounding": "Rundung",
   "fullRange": "Breitband",
   "dotSize": "Punktgröße",
+  "originalMix": "Original-Mix",
+  "dotGain": "Punktverstärkung",
+  "dotShape": "Punktform",
+  "misregistration": "Fehlregistrierung",
+  "paperBrightness": "Papier-Helligkeit",
+  "paperWarmth": "Papier-Weißabgleich",
 
   "centerHorizontally": "Horizontal zentrieren",
   "centerVertically": "Vertikal zentrieren",

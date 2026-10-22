@@ -157,6 +157,13 @@ String _roundingLabel(final AppLocalizations l10n) => l10n.rounding;
 String _fullRangeLabel(final AppLocalizations l10n) => l10n.fullRange;
 //EFFECTS STRINGS
 String _dotSizeLabel(final AppLocalizations l10n) => l10n.dotSize;
+String _originalMixLabel(final AppLocalizations l10n) => l10n.originalMix;
+String _dotGainLabel(final AppLocalizations l10n) => l10n.dotGain;
+String _dotShapeLabel(final AppLocalizations l10n) => l10n.dotShape;
+String _angleLabel(final AppLocalizations l10n) => l10n.angle;
+String _misregistrationLabel(final AppLocalizations l10n) => l10n.misregistration;
+String _paperBrightnessLabel(final AppLocalizations l10n) => l10n.paperBrightness;
+String _paperWarmthLabel(final AppLocalizations l10n) => l10n.paperWarmth;
 
 const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <ExportShaderType, ExportShaderDefinition>{
   ExportShaderType.lcd: ExportShaderDefinition(
@@ -273,6 +280,15 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         asset: "shaders/effects_cmyk_halftone.frag",
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uDotSize", label: _dotSizeLabel, min: 4.0, max: 32.0, initial: 8.0, divisions: 28, format: ExportShaderValueFormat.pixels),
+          ExportShaderSliderParameter(uniform: "uOriginalMix", label: _originalMixLabel, min: 0.0, max: 1.0, initial: 0.3, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uDotGain", label: _dotGainLabel, min: 0.5, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uSoftness", label: _softnessLabel, min: 0.0, max: 2.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uDotShape", label: _dotShapeLabel, min: 0.0, max: 2.0, divisions: 2, initial: 0.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uAngle", label: _angleLabel, min: 0.0, max: 90.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uMisregistration", label: _misregistrationLabel, min: 0.0, max: 3.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uPaperBrightness", label: _paperBrightnessLabel, min: 0.0, max: 1.0, initial: 0.8, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uPaperWarmth", label: _paperWarmthLabel, min: -1.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
+
         ],
       ),
     ],

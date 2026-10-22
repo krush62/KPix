@@ -2048,6 +2048,42 @@ abstract class AppLocalizations {
   /// **'Dot Size'**
   String get dotSize;
 
+  /// No description provided for @originalMix.
+  ///
+  /// In en, this message translates to:
+  /// **'Original Mix'**
+  String get originalMix;
+
+  /// No description provided for @dotGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Dot Gain'**
+  String get dotGain;
+
+  /// No description provided for @dotShape.
+  ///
+  /// In en, this message translates to:
+  /// **'Dot Shape'**
+  String get dotShape;
+
+  /// No description provided for @misregistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Misregistration'**
+  String get misregistration;
+
+  /// No description provided for @paperBrightness.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper Brightness'**
+  String get paperBrightness;
+
+  /// No description provided for @paperWarmth.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper Warmth'**
+  String get paperWarmth;
+
   /// No description provided for @centerHorizontally.
   ///
   /// In en, this message translates to:

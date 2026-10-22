@@ -1102,6 +1102,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get heightFromBrightness => 'Höhe aus Helligkeit';
 
   @override
+  String get outlineWidth => 'Umrissbreite';
+
+  @override
+  String get outlineStrength => 'Umrissstärke';
+
+  @override
+  String get colorLevels => 'Farbstufen';
+
+  @override
+  String get muteColors => 'Gedämpfte Farben';
+
+  @override
   String get centerHorizontally => 'Horizontal zentrieren';
 
   @override

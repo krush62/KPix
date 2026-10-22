@@ -1083,6 +1083,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get heightFromBrightness => 'Height from Brightness';
 
   @override
+  String get outlineWidth => 'Outline Width';
+
+  @override
+  String get outlineStrength => 'Outline Strength';
+
+  @override
+  String get colorLevels => 'Color Levels';
+
+  @override
+  String get muteColors => 'Mute Colors';
+
+  @override
   String get centerHorizontally => 'Center Horizontally';
 
   @override

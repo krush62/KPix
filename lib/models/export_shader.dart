@@ -35,6 +35,7 @@ enum ExportShaderValueFormat
   pixels,
   decimal,
   degrees,
+  integer,
 }
 
 /// A value of an export shader the user can change.
@@ -93,6 +94,8 @@ final class ExportShaderSliderParameter extends ExportShaderParameter
         return value.toStringAsFixed(2);
       case ExportShaderValueFormat.degrees:
         return "${value.round()}°";
+      case ExportShaderValueFormat.integer:
+        return "${value.round()}";
     }
   }
 }
@@ -175,6 +178,10 @@ String _depthLabel(final AppLocalizations l10n) => l10n.depth;
 String _bevelWidthLabel(final AppLocalizations l10n) => l10n.bevelWidth;
 String _heightFromBrightnessLabel(final AppLocalizations l10n) => l10n.heightFromBrightness;
 String _colorLabel(final AppLocalizations l10n) => l10n.color;
+String _outlineWidthLabel(final AppLocalizations l10n) => l10n.outlineWidth;
+String _outlineStrengthLabel(final AppLocalizations l10n) => l10n.outlineStrength;
+String _colorLevelsLabel(final AppLocalizations l10n) => l10n.colorLevels;
+String _muteColorsLabel(final AppLocalizations l10n) => l10n.muteColors;
 
 
 const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <ExportShaderType, ExportShaderDefinition>{
@@ -325,6 +332,16 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
           ExportShaderSliderParameter(uniform: "uBrightnessInfluence", label: _heightFromBrightnessLabel, min: 0.0, max: 1.0, initial: 1.0, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uStrength", label: _strengthLabel, min: 0.0, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uColorAmount", label: _colorLabel, min: 0.0, max: 1.0, initial: 1.0, format: ExportShaderValueFormat.percent),
+        ],
+      ),
+      ExportShaderVariant(
+        name: "Cel Shading",
+        asset: "shaders/effects_cel.frag",
+        parameters: <ExportShaderParameter>[
+          ExportShaderSliderParameter(uniform: "uOutlineWidth", label: _outlineWidthLabel, min: 0.0, max: 4.0, initial: 1.0, divisions: 4, format: ExportShaderValueFormat.pixels),
+          ExportShaderSliderParameter(uniform: "uOutlineStrength", label: _outlineStrengthLabel, min: 0.0, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uLevels", label: _colorLevelsLabel, min: 2.0, max: 8.0, initial: 4.0, divisions: 6, format: ExportShaderValueFormat.integer),
+          ExportShaderToggleParameter(uniform: "uMuteColors", label: _muteColorsLabel, initial: false),
         ],
       ),
     ],

@@ -94,9 +94,14 @@ ExportShaderValues _upscale({required final String variant})
 
 ExportShaderValues _relief({final Map<String, Object> overrides = const <String, Object>{}})
 {
+  return _effect(variant: "Relief", overrides: overrides);
+}
+
+ExportShaderValues _effect({required final String variant, final Map<String, Object> overrides = const <String, Object>{}})
+{
   final ExportShaderDefinition definition = exportShaderDefinitions[ExportShaderType.effects]!;
   final ExportShaderValues values = ExportShaderValues(definition: definition);
-  values.variantIndex = definition.variants.indexWhere((final ExportShaderVariant v) => v.name == "Relief");
+  values.variantIndex = definition.variants.indexWhere((final ExportShaderVariant v) => v.name == variant);
   for (final ExportShaderParameter parameter in values.variant.parameters)
   {
     final Object? value = overrides[parameter.uniform];
@@ -325,6 +330,39 @@ void main()
         expect(_pixel(out, 15, 12)[0], lessThan(100), reason: "right bevel faces away");
         expect(_pixel(out, 12, 12)[0], closeTo(128, 1), reason: "flat top keeps its color");
         expect(_pixel(out, 4, 12)[3], 0, reason: "transparent stays transparent");
+        source.dispose();
+      });
+    });
+  });
+
+  group("cel shading shader", () {
+    testWidgets("gives flat areas one color without outlines", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 3, height: 3, color: (final int x, final int y) => const ui.Color(0xFF3366CC));
+        final (Uint8List, int) out = await _render(values: _effect(variant: "Cel Shading"), source: source, scaling: 8);
+
+        expect(_maxDeviation(rgba: out.$1, color: _pixel(out, 0, 0)), lessThanOrEqualTo(1));
+        source.dispose();
+      });
+    });
+
+    testWidgets("draws an outline where colors change", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 2, height: 1, color: (final int x, final int y) => x == 0 ? const ui.Color(0xFFE0E0E0) : const ui.Color(0xFF3366CC));
+        final (Uint8List, int) out = await _render(values: _effect(variant: "Cel Shading"), source: source, scaling: 8);
+
+        expect(_pixel(out, 7, 4)[0], lessThan(_pixel(out, 3, 4)[0] - 40), reason: "the last light pixel before the edge is darkened");
+        source.dispose();
+      });
+    });
+
+    testWidgets("keeps black black and transparency transparent", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 2, height: 1, color: (final int x, final int y) => x == 0 ? const ui.Color(0xFF000000) : _transparent);
+        final (Uint8List, int) out = await _render(values: _effect(variant: "Cel Shading"), source: source, scaling: 8);
+
+        expect(_pixel(out, 3, 4), <int>[0, 0, 0, 255]);
+        expect(_pixel(out, 12, 4)[3], 0);
         source.dispose();
       });
     });

@@ -385,6 +385,10 @@
   "depth": "Tiefe",
   "bevelWidth": "Fasenbreite",
   "heightFromBrightness": "Höhe aus Helligkeit",
+  "outlineWidth": "Umrissbreite",
+  "outlineStrength": "Umrissstärke",
+  "colorLevels": "Farbstufen",
+  "muteColors": "Gedämpfte Farben",
 
   "centerHorizontally": "Horizontal zentrieren",
   "centerVertically": "Vertikal zentrieren",

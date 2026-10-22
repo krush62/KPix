@@ -465,6 +465,10 @@
   "depth": "Depth",
   "bevelWidth": "Bevel Width",
   "heightFromBrightness": "Height from Brightness",
+  "outlineWidth": "Outline Width",
+  "outlineStrength": "Outline Strength",
+  "colorLevels": "Color Levels",
+  "muteColors": "Mute Colors",
 
 
   "centerHorizontally": "Center Horizontally",

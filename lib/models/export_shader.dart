@@ -34,6 +34,7 @@ enum ExportShaderValueFormat
   percent,
   pixels,
   decimal,
+  degrees,
 }
 
 /// A value of an export shader the user can change.
@@ -90,6 +91,8 @@ final class ExportShaderSliderParameter extends ExportShaderParameter
         return "${value.round()} px";
       case ExportShaderValueFormat.decimal:
         return value.toStringAsFixed(2);
+      case ExportShaderValueFormat.degrees:
+        return "${value.round()}°";
     }
   }
 }
@@ -164,6 +167,15 @@ String _angleLabel(final AppLocalizations l10n) => l10n.angle;
 String _misregistrationLabel(final AppLocalizations l10n) => l10n.misregistration;
 String _backgroundBrightnessLabel(final AppLocalizations l10n) => l10n.backgroundBrightness;
 String _backgroundWarmthLabel(final AppLocalizations l10n) => l10n.backgroundWarmth;
+String _outerRadiusLabel(final AppLocalizations l10n) => l10n.outerRadius;
+String _innerRadiusLabel(final AppLocalizations l10n) => l10n.innerRadius;
+String _sharpnessLabel(final AppLocalizations l10n) => l10n.sharpness;
+String _lightAngleLabel(final AppLocalizations l10n) => l10n.lightAngle;
+String _depthLabel(final AppLocalizations l10n) => l10n.depth;
+String _bevelWidthLabel(final AppLocalizations l10n) => l10n.bevelWidth;
+String _heightFromBrightnessLabel(final AppLocalizations l10n) => l10n.heightFromBrightness;
+String _colorLabel(final AppLocalizations l10n) => l10n.color;
+
 
 const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <ExportShaderType, ExportShaderDefinition>{
   ExportShaderType.lcd: ExportShaderDefinition(
@@ -289,6 +301,30 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
           ExportShaderSliderParameter(uniform: "uBackgroundBrightness", label: _backgroundBrightnessLabel, min: 0.0, max: 1.0, initial: 0.8, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uBackgroundWarmth", label: _backgroundWarmthLabel, min: -1.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
 
+        ],
+      ),
+      ExportShaderVariant(
+        name: "Bead",
+        asset: "shaders/effects_bead.frag",
+        parameters: <ExportShaderParameter>[
+          ExportShaderSliderParameter(uniform: "uBeadHigh", label: _outerRadiusLabel, min: 0.0, max: 0.71, initial: 0.45, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uBeadLow", label: _innerRadiusLabel, min: 0.0, max: 0.71, initial: 0.25, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uBeadSharp", label: _sharpnessLabel, min: 1.0, max: 20.0, initial: 5.0, divisions: 19, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uBackgroundBrightness", label: _backgroundBrightnessLabel, min: 0.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uBackgroundWarmth", label: _backgroundWarmthLabel, min: -1.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
+
+        ],
+      ),
+      ExportShaderVariant(
+        name: "Relief",
+        asset: "shaders/effects_relief.frag",
+        parameters: <ExportShaderParameter>[
+          ExportShaderSliderParameter(uniform: "uLightAngle", label: _lightAngleLabel, min: 0.0, max: 360.0, initial: 135.0, divisions: 24, format: ExportShaderValueFormat.degrees),
+          ExportShaderSliderParameter(uniform: "uDepth", label: _depthLabel, min: 0.0, max: 16.0, initial: 8.0, divisions: 16, format: ExportShaderValueFormat.pixels),
+          ExportShaderSliderParameter(uniform: "uBevelWidth", label: _bevelWidthLabel, min: 1.0, max: 8.0, initial: 2.0, divisions: 7, format: ExportShaderValueFormat.pixels),
+          ExportShaderSliderParameter(uniform: "uBrightnessInfluence", label: _heightFromBrightnessLabel, min: 0.0, max: 1.0, initial: 1.0, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uStrength", label: _strengthLabel, min: 0.0, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uColorAmount", label: _colorLabel, min: 0.0, max: 1.0, initial: 1.0, format: ExportShaderValueFormat.percent),
         ],
       ),
     ],

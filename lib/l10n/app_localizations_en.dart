@@ -1062,6 +1062,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backgroundWarmth => 'Background Warmth';
 
   @override
+  String get outerRadius => 'Outer Radius';
+
+  @override
+  String get innerRadius => 'Inner Radius';
+
+  @override
+  String get sharpness => 'Sharpness';
+
+  @override
+  String get lightAngle => 'Light Angle';
+
+  @override
+  String get depth => 'Depth';
+
+  @override
+  String get bevelWidth => 'Bevel Width';
+
+  @override
+  String get heightFromBrightness => 'Height from Brightness';
+
+  @override
   String get centerHorizontally => 'Center Horizontally';
 
   @override

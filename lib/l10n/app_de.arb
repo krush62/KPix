@@ -378,6 +378,13 @@
   "misregistration": "Fehlregistrierung",
   "backgroundBrightness": "Hintergrund-Helligkeit",
   "backgroundWarmth": "Hintergrund-Weißabgleich",
+  "outerRadius": "Äußerer Radius",
+  "innerRadius": "Innerer Radius",
+  "sharpness": "Schärfe",
+  "lightAngle": "Lichtwinkel",
+  "depth": "Tiefe",
+  "bevelWidth": "Fasenbreite",
+  "heightFromBrightness": "Höhe aus Helligkeit",
 
   "centerHorizontally": "Horizontal zentrieren",
   "centerVertically": "Vertikal zentrieren",

@@ -2084,6 +2084,48 @@ abstract class AppLocalizations {
   /// **'Background Warmth'**
   String get backgroundWarmth;
 
+  /// No description provided for @outerRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Outer Radius'**
+  String get outerRadius;
+
+  /// No description provided for @innerRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Inner Radius'**
+  String get innerRadius;
+
+  /// No description provided for @sharpness.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharpness'**
+  String get sharpness;
+
+  /// No description provided for @lightAngle.
+  ///
+  /// In en, this message translates to:
+  /// **'Light Angle'**
+  String get lightAngle;
+
+  /// No description provided for @depth.
+  ///
+  /// In en, this message translates to:
+  /// **'Depth'**
+  String get depth;
+
+  /// No description provided for @bevelWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Bevel Width'**
+  String get bevelWidth;
+
+  /// No description provided for @heightFromBrightness.
+  ///
+  /// In en, this message translates to:
+  /// **'Height from Brightness'**
+  String get heightFromBrightness;
+
   /// No description provided for @centerHorizontally.
   ///
   /// In en, this message translates to:

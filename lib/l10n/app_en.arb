@@ -458,6 +458,14 @@
   "misregistration": "Misregistration",
   "backgroundBrightness": "Background Brightness",
   "backgroundWarmth": "Background Warmth",
+  "outerRadius": "Outer Radius",
+  "innerRadius": "Inner Radius",
+  "sharpness": "Sharpness",
+  "lightAngle": "Light Angle",
+  "depth": "Depth",
+  "bevelWidth": "Bevel Width",
+  "heightFromBrightness": "Height from Brightness",
+
 
   "centerHorizontally": "Center Horizontally",
   "centerVertically": "Center Vertically",

@@ -92,6 +92,22 @@ ExportShaderValues _upscale({required final String variant})
   return values;
 }
 
+ExportShaderValues _relief({final Map<String, Object> overrides = const <String, Object>{}})
+{
+  final ExportShaderDefinition definition = exportShaderDefinitions[ExportShaderType.effects]!;
+  final ExportShaderValues values = ExportShaderValues(definition: definition);
+  values.variantIndex = definition.variants.indexWhere((final ExportShaderVariant v) => v.name == "Relief");
+  for (final ExportShaderParameter parameter in values.variant.parameters)
+  {
+    final Object? value = overrides[parameter.uniform];
+    if (value != null)
+    {
+      values.setValue(parameter: parameter, value: value);
+    }
+  }
+  return values;
+}
+
 /// The largest difference of any channel of any pixel from [color].
 int _maxDeviation({required final Uint8List rgba, required final List<int> color})
 {
@@ -283,6 +299,32 @@ void main()
         final (Uint8List, int) single = await _render(values: values, source: source, scaling: scaling);
 
         expect(_sameBytes(decoded.getBytes(order: img.ChannelOrder.rgba), single.$1), isTrue);
+        source.dispose();
+      });
+    });
+  });
+
+  group("relief shader", () {
+    testWidgets("leaves flat areas as they are", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 3, height: 3, color: (final int x, final int y) => const ui.Color(0xFF3366CC));
+        final (Uint8List, int) out = await _render(values: _relief(), source: source, scaling: 8);
+
+        expect(_maxDeviation(rgba: out.$1, color: <int>[0x33, 0x66, 0xCC, 0xFF]), lessThanOrEqualTo(1));
+        source.dispose();
+      });
+    });
+
+    testWidgets("lights the bevels facing the light and shades the others", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        //a raised grey pixel on transparency, lit from the left
+        final ui.Image source = await _source(width: 3, height: 3, color: (final int x, final int y) => x == 1 && y == 1 ? const ui.Color(0xFF808080) : _transparent);
+        final (Uint8List, int) out = await _render(values: _relief(overrides: <String, Object>{"uBrightnessInfluence": 0.0, "uLightAngle": 180.0}), source: source, scaling: 8);
+
+        expect(_pixel(out, 8, 12)[0], greaterThan(150), reason: "left bevel faces the light");
+        expect(_pixel(out, 15, 12)[0], lessThan(100), reason: "right bevel faces away");
+        expect(_pixel(out, 12, 12)[0], closeTo(128, 1), reason: "flat top keeps its color");
+        expect(_pixel(out, 4, 12)[3], 0, reason: "transparent stays transparent");
         source.dispose();
       });
     });

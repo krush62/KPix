@@ -1081,6 +1081,27 @@ class AppLocalizationsDe extends AppLocalizations {
   String get backgroundWarmth => 'Hintergrund-Weißabgleich';
 
   @override
+  String get outerRadius => 'Äußerer Radius';
+
+  @override
+  String get innerRadius => 'Innerer Radius';
+
+  @override
+  String get sharpness => 'Schärfe';
+
+  @override
+  String get lightAngle => 'Lichtwinkel';
+
+  @override
+  String get depth => 'Tiefe';
+
+  @override
+  String get bevelWidth => 'Fasenbreite';
+
+  @override
+  String get heightFromBrightness => 'Höhe aus Helligkeit';
+
+  @override
   String get centerHorizontally => 'Horizontal zentrieren';
 
   @override

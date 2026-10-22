@@ -202,6 +202,7 @@ flutter:
     - shaders/dither_psx.frag
     - shaders/effects_cmyk_halftone.frag
     - shaders/effects_bead.frag
+    - shaders/effects_relief.frag
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

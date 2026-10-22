@@ -148,6 +148,16 @@ int _differentFromNearest({required final (Uint8List, int) rendered, required fi
   return count;
 }
 
+double _meanBrightness(final Uint8List rgba)
+{
+  int sum = 0;
+  for (int i = 0; i < rgba.length; i += 4)
+  {
+    sum += rgba[i] + rgba[i + 1] + rgba[i + 2];
+  }
+  return sum / (rgba.length / 4 * 3);
+}
+
 bool _sameBytes(final Uint8List a, final Uint8List b)
 {
   if (a.length != b.length)
@@ -413,6 +423,148 @@ void main()
 
         expect(_pixel(out, 3, 4), <int>[0, 0, 0, 255]);
         expect(_pixel(out, 12, 4)[3], 0);
+        source.dispose();
+      });
+    });
+  });
+
+  group("crt shader", () {
+    const Map<String, Object> allOff = <String, Object>{
+      "uMedium": 0, "uSignal": 0, "uArtifacts": 0.0, "uNoise": 0.0, "uGhosting": 0.0, "uEncoding": 0, "uPhaseError": 0.0, "uSharpness": 0.0,
+      "uConvergence": 0.0, "uScanlines": 0.0, "uMask": 0, "uBloom": 0.0, "uCurvature": 0.0, "uVignette": 0.0, "uBrightness": 1.0,
+    };
+    ExportShaderValues crt(final Map<String, Object> overrides)
+    {
+      final ExportShaderValues values = ExportShaderValues(definition: exportShaderDefinitions[ExportShaderType.crt]!);
+      for (final ExportShaderParameter parameter in values.variant.parameters)
+      {
+        final Object? value = overrides[parameter.uniform] ?? allOff[parameter.uniform];
+        if (value != null)
+        {
+          values.setValue(parameter: parameter, value: value);
+        }
+      }
+      return values;
+    }
+    ui.Color colorful(final int x, final int y) => <ui.Color>[const ui.Color(0xFFE04030), const ui.Color(0xFF30C040), const ui.Color(0xFF3060E0), const ui.Color(0xFFF0F0F0), const ui.Color(0xFF101010)][(x + 2 * y) % 5];
+
+    testWidgets("with every stage switched off, it is plain pixel scaling", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 8, height: 6, color: colorful);
+        final (Uint8List, int) out = await _render(values: crt(<String, Object>{}), source: source, scaling: 4);
+
+        int maxDiff = 0;
+        for (int y = 0; y < 24; y++)
+        {
+          for (int x = 0; x < 32; x++)
+          {
+            final ui.Color c = colorful(x ~/ 4, y ~/ 4);
+            final List<int> p = _pixel(out, x, y);
+            maxDiff = max(maxDiff, max((p[0] - (c.r * 255).round()).abs(), max((p[1] - (c.g * 255).round()).abs(), (p[2] - (c.b * 255).round()).abs())));
+          }
+        }
+        expect(maxDiff, lessThanOrEqualTo(1));
+        source.dispose();
+      });
+    });
+
+    //each stage against the same chain without it
+    const Map<String, Object> sVideo = <String, Object>{"uSignal": 1};
+    const Map<String, Object> composite = <String, Object>{"uSignal": 2};
+    final Map<String, (Map<String, Object>, Map<String, Object>)> stages = <String, (Map<String, Object>, Map<String, Object>)>{
+      "VHS": (const <String, Object>{}, <String, Object>{"uMedium": 1, "uWear": 0.5}),
+      "Betamax": (const <String, Object>{}, <String, Object>{"uMedium": 2, "uWear": 0.5}),
+      "S-Video": (const <String, Object>{}, sVideo),
+      "composite artifacts": (composite, <String, Object>{"uSignal": 2, "uArtifacts": 0.5}),
+      "RF": (composite, <String, Object>{"uSignal": 3}),
+      "noise": (const <String, Object>{}, <String, Object>{"uNoise": 0.5}),
+      "ghosting": (const <String, Object>{}, <String, Object>{"uGhosting": 0.5}),
+      "NTSC phase error": (sVideo, <String, Object>{"uSignal": 1, "uPhaseError": 20.0}),
+      "PAL": (sVideo, <String, Object>{"uSignal": 1, "uEncoding": 1}),
+      "sharpness": (const <String, Object>{}, <String, Object>{"uSharpness": 0.5}),
+      "convergence": (const <String, Object>{}, <String, Object>{"uConvergence": 0.5}),
+      "scanlines": (const <String, Object>{}, <String, Object>{"uScanlines": 0.5}),
+      "mask": (const <String, Object>{}, <String, Object>{"uMask": 1, "uMaskStrength": 0.5}),
+      "bloom": (const <String, Object>{}, <String, Object>{"uBloom": 0.5}),
+      "curvature": (const <String, Object>{}, <String, Object>{"uCurvature": 0.5}),
+      "vignette": (const <String, Object>{}, <String, Object>{"uVignette": 0.5}),
+      "brightness": (const <String, Object>{}, <String, Object>{"uBrightness": 1.5}),
+    };
+    for (final MapEntry<String, (Map<String, Object>, Map<String, Object>)> stage in stages.entries)
+    {
+      testWidgets("${stage.key} changes the image on its own", (final WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final ui.Image source = await _source(width: 8, height: 6, color: colorful);
+          final (Uint8List, int) off = await _render(values: crt(stage.value.$1), source: source, scaling: 4);
+          final (Uint8List, int) on = await _render(values: crt(stage.value.$2), source: source, scaling: 4);
+
+          expect(_sameBytes(off.$1, on.$1), isFalse);
+          source.dispose();
+        });
+      });
+    }
+
+    testWidgets("composite artifacts appear at color edges only, never on a plain area", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 24, height: 4, color: (final int x, final int y) => const ui.Color(0xFFE04030));
+        final List<Map<String, Object>> chains = <Map<String, Object>>[
+          composite,
+          <String, Object>{"uSignal": 3},
+          <String, Object>{"uSignal": 2, "uEncoding": 1},
+        ];
+        for (final Map<String, Object> chain in chains)
+        {
+          final (Uint8List, int) out = await _render(values: crt(<String, Object>{...chain, "uArtifacts": 1.0}), source: source, scaling: 4);
+          //source columns 8..15 are out of reach of the picture border
+          final List<int> reference = _pixel(out, 48, 8);
+          int maxDiff = 0;
+          for (int y = 4; y < 16; y++)
+          {
+            for (int x = 32; x < 64; x++)
+            {
+              final List<int> p = _pixel(out, x, y);
+              maxDiff = max(maxDiff, max((p[0] - reference[0]).abs(), max((p[1] - reference[1]).abs(), (p[2] - reference[2]).abs())));
+            }
+          }
+          expect(maxDiff, 0, reason: "$chain");
+        }
+        source.dispose();
+      });
+    });
+
+    testWidgets("VHS takes color away from plain areas, Betamax much less", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 16, height: 8, color: (final int x, final int y) => const ui.Color(0xFF3060E0));
+        double saturation(final (Uint8List, int) out)
+        {
+          double sum = 0;
+          for (int y = 4; y < 20; y++)
+          {
+            for (int x = 16; x < 48; x++)
+            {
+              final List<int> p = _pixel(out, x, y);
+              sum += max(p[0], max(p[1], p[2])) - min(p[0], min(p[1], p[2]));
+            }
+          }
+          return sum / (16 * 32);
+        }
+        final double off = saturation(await _render(values: crt(<String, Object>{}), source: source, scaling: 4));
+        final double vhs = saturation(await _render(values: crt(<String, Object>{"uMedium": 1, "uWear": 0.5}), source: source, scaling: 4));
+        final double betamax = saturation(await _render(values: crt(<String, Object>{"uMedium": 2, "uWear": 0.5}), source: source, scaling: 4));
+
+        expect(vhs, lessThan(off * 0.85));
+        expect(betamax, greaterThan(off * 0.9));
+        source.dispose();
+      });
+    });
+
+    testWidgets("keeps the average brightness with the default settings", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 8, height: 6, color: colorful);
+        final (Uint8List, int) off = await _render(values: crt(<String, Object>{}), source: source, scaling: 4);
+        final (Uint8List, int) standard = await _render(values: ExportShaderValues(definition: exportShaderDefinitions[ExportShaderType.crt]!), source: source, scaling: 4);
+
+        expect(_meanBrightness(standard.$1), closeTo(_meanBrightness(off.$1), _meanBrightness(off.$1) * 0.1));
         source.dispose();
       });
     });

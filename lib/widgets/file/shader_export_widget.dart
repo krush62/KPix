@@ -166,7 +166,7 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
     widget.dismiss();
   }
 
-  Widget _parameterControl({required final ExportShaderValues values, required final ExportShaderParameter parameter})
+  Widget _parameterControl({required final ExportShaderValues values, required final ExportShaderParameter parameter, required final AppLocalizations l10n})
   {
     switch (parameter)
     {
@@ -190,7 +190,44 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
             onChanged: (final bool newValue) {values.setValue(parameter: toggle, value: newValue);},
           ),
         );
+      case final ExportShaderChoiceParameter choice:
+        return SegmentedButton<int>(
+          segments: <ButtonSegment<int>>[
+            for (int i = 0; i < choice.options.length; i++)
+              ButtonSegment<int>(value: i, label: Text(choice.options[i](l10n))),
+          ],
+          selected: <int>{values.valueOf<int>(parameter: choice)},
+          showSelectedIcon: false,
+          onSelectionChanged: (final Set<int> selection) {values.setValue(parameter: choice, value: selection.first);},
+        );
     }
+  }
+
+  /// The parameter rows of [values], with a heading wherever the section changes.
+  List<Widget> _parameterRows({required final ExportShaderValues values, required final AppLocalizations l10n})
+  {
+    final List<Widget> rows = <Widget>[];
+    String? currentSection;
+    for (final ExportShaderParameter parameter in values.variant.parameters)
+    {
+      final String? section = parameter.section?.call(l10n);
+      if (section != null && section != currentSection)
+      {
+        if (currentSection != null)
+        {
+          rows.add(Divider(color: Theme.of(context).primaryColorLight, thickness: ShaderExportWidgetOptions.dividerThickness, height: ShaderExportWidgetOptions.padding * 3));
+        }
+        rows.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: ShaderExportWidgetOptions.padding / 2),
+            child: Text(section.toUpperCase(), style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center),
+          ),
+        );
+      }
+      currentSection = section;
+      rows.add(_parameterRow(values: values, parameter: parameter, l10n: l10n));
+    }
+    return rows;
   }
 
   /// Tells that the chosen scaling is below what the shader needs; styled like a warning toast.
@@ -230,7 +267,7 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
           ),
           Expanded(
             flex: ShaderExportWidgetOptions.rowControlFlex,
-            child: _parameterControl(values: values, parameter: parameter),
+            child: _parameterControl(values: values, parameter: parameter, l10n: l10n),
           ),
           Padding(
             padding: const EdgeInsets.only(left: ShaderExportWidgetOptions.padding),
@@ -325,8 +362,7 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
                                                   onSelectionChanged: (final Set<int> selection) {values.variantIndex = selection.first;},
                                                 ),
                                               ),
-                                            for (final ExportShaderParameter parameter in values.variant.parameters)
-                                              _parameterRow(values: values, parameter: parameter, l10n: l10n),
+                                            ..._parameterRows(values: values, l10n: l10n),
                                           ],
                                         ),
                                       ),

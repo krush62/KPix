@@ -22,6 +22,7 @@ import 'package:kpix/l10n/app_localizations.dart';
 /// The shaders that can be applied to an exported image.
 enum ExportShaderType
 {
+  crt,
   lcd,
   upscale,
   dithering,
@@ -45,7 +46,9 @@ sealed class ExportShaderParameter
 {
   final String uniform;
   final String Function(AppLocalizations l10n) label;
-  const ExportShaderParameter({required this.uniform, required this.label});
+  /// The heading of the group this parameter belongs to; the dialog shows a heading where it changes.
+  final String Function(AppLocalizations l10n)? section;
+  const ExportShaderParameter({required this.uniform, required this.label, this.section});
 
   Object get initialValue;
   void apply({required final FragmentShader shader, required final Object value});
@@ -71,6 +74,7 @@ final class ExportShaderSliderParameter extends ExportShaderParameter
     required this.format,
     this.divisions,
     this.trackGradient,
+    super.section,
   });
 
   @override
@@ -104,7 +108,7 @@ final class ExportShaderSliderParameter extends ExportShaderParameter
 final class ExportShaderToggleParameter extends ExportShaderParameter
 {
   final bool initial;
-  const ExportShaderToggleParameter({required super.uniform, required super.label, required this.initial});
+  const ExportShaderToggleParameter({required super.uniform, required super.label, required this.initial, super.section});
 
   @override
   Object get initialValue => initial;
@@ -113,6 +117,23 @@ final class ExportShaderToggleParameter extends ExportShaderParameter
   void apply({required final FragmentShader shader, required final Object value})
   {
     shader.getUniformFloat(uniform).set((value as bool) ? 1.0 : 0.0);
+  }
+}
+
+/// One of several named options, written as its index.
+final class ExportShaderChoiceParameter extends ExportShaderParameter
+{
+  final List<String Function(AppLocalizations l10n)> options;
+  final int initial;
+  const ExportShaderChoiceParameter({required super.uniform, required super.label, required this.options, required this.initial, super.section});
+
+  @override
+  Object get initialValue => initial;
+
+  @override
+  void apply({required final FragmentShader shader, required final Object value})
+  {
+    shader.getUniformFloat(uniform).set((value as int).toDouble());
   }
 }
 
@@ -183,9 +204,72 @@ String _colorLabel(final AppLocalizations l10n) => l10n.color;
 String _outlineWidthLabel(final AppLocalizations l10n) => l10n.outlineWidth;
 String _outlineStrengthLabel(final AppLocalizations l10n) => l10n.outlineStrength;
 String _saturationLabel(final AppLocalizations l10n) => l10n.saturation;
+//CRT STRINGS
+String _crtName(final AppLocalizations l10n) => l10n.shaderCrt;
+String _mediumSection(final AppLocalizations l10n) => l10n.medium;
+String _signalSection(final AppLocalizations l10n) => l10n.signal;
+String _colorEncodingSection(final AppLocalizations l10n) => l10n.colorEncoding;
+String _tvSection(final AppLocalizations l10n) => l10n.tv;
+String _mediumLabel(final AppLocalizations l10n) => l10n.medium;
+String _wearLabel(final AppLocalizations l10n) => l10n.wear;
+String _signalLabel(final AppLocalizations l10n) => l10n.signal;
+String _artifactsLabel(final AppLocalizations l10n) => l10n.artifacts;
+String _noiseLabel(final AppLocalizations l10n) => l10n.noise;
+String _ghostingLabel(final AppLocalizations l10n) => l10n.ghosting;
+String _encodingLabel(final AppLocalizations l10n) => l10n.encoding;
+String _phaseErrorLabel(final AppLocalizations l10n) => l10n.phaseError;
+String _convergenceLabel(final AppLocalizations l10n) => l10n.convergence;
+String _scanlinesLabel(final AppLocalizations l10n) => l10n.scanlines;
+String _maskLabel(final AppLocalizations l10n) => l10n.mask;
+String _maskStrengthLabel(final AppLocalizations l10n) => l10n.maskStrength;
+String _bloomLabel(final AppLocalizations l10n) => l10n.bloom;
+String _curvatureLabel(final AppLocalizations l10n) => l10n.curvature;
+String _vignetteLabel(final AppLocalizations l10n) => l10n.vignette;
+String _noneOption(final AppLocalizations l10n) => l10n.none;
+String _vhsOption(final AppLocalizations l10n) => "VHS";
+String _betamaxOption(final AppLocalizations l10n) => "Betamax";
+String _rgbOption(final AppLocalizations l10n) => "RGB";
+String _sVideoOption(final AppLocalizations l10n) => "S-Video";
+String _compositeOption(final AppLocalizations l10n) => "Composite";
+String _rfOption(final AppLocalizations l10n) => "RF";
+String _ntscOption(final AppLocalizations l10n) => "NTSC";
+String _palOption(final AppLocalizations l10n) => "PAL";
+String _apertureGrilleOption(final AppLocalizations l10n) => l10n.apertureGrille;
+String _slotMaskOption(final AppLocalizations l10n) => l10n.slotMask;
+String _shadowMaskOption(final AppLocalizations l10n) => l10n.shadowMask;
 
 
 const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <ExportShaderType, ExportShaderDefinition>{
+  ExportShaderType.crt: ExportShaderDefinition(
+    type: ExportShaderType.crt,
+    name: _crtName,
+    variants: <ExportShaderVariant>[
+      ExportShaderVariant(
+        name: "CRT",
+        asset: "shaders/crt.frag",
+        minScalingFactor: 4,
+        parameters: <ExportShaderParameter>[
+          ExportShaderChoiceParameter(uniform: "uMedium", label: _mediumLabel, section: _mediumSection, options: <String Function(AppLocalizations)>[_noneOption, _vhsOption, _betamaxOption], initial: 1),
+          ExportShaderSliderParameter(uniform: "uWear", label: _wearLabel, section: _mediumSection, min: 0.0, max: 1.0, initial: 0.5, format: ExportShaderValueFormat.percent),
+          ExportShaderChoiceParameter(uniform: "uSignal", label: _signalLabel, section: _signalSection, options: <String Function(AppLocalizations)>[_rgbOption, _sVideoOption, _compositeOption, _rfOption], initial: 2),
+          ExportShaderSliderParameter(uniform: "uArtifacts", label: _artifactsLabel, section: _signalSection, min: 0.0, max: 1.0, initial: 0.3, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uNoise", label: _noiseLabel, section: _signalSection, min: 0.0, max: 1.0, initial: 0.15, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uGhosting", label: _ghostingLabel, section: _signalSection, min: 0.0, max: 1.0, initial: 0.15, format: ExportShaderValueFormat.percent),
+          ExportShaderChoiceParameter(uniform: "uEncoding", label: _encodingLabel, section: _colorEncodingSection, options: <String Function(AppLocalizations)>[_ntscOption, _palOption], initial: 0),
+          ExportShaderSliderParameter(uniform: "uPhaseError", label: _phaseErrorLabel, section: _colorEncodingSection, min: -45.0, max: 45.0, initial: 0.0, divisions: 18, format: ExportShaderValueFormat.degrees),
+          ExportShaderSliderParameter(uniform: "uSharpness", label: _sharpnessLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.5, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uConvergence", label: _convergenceLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.3, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uScanlines", label: _scanlinesLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.6, format: ExportShaderValueFormat.percent),
+          ExportShaderChoiceParameter(uniform: "uMask", label: _maskLabel, section: _tvSection, options: <String Function(AppLocalizations)>[_noneOption, _apertureGrilleOption, _slotMaskOption, _shadowMaskOption], initial: 1),
+          ExportShaderSliderParameter(uniform: "uMaskStrength", label: _maskStrengthLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.2, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uBloom", label: _bloomLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.15, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uCurvature", label: _curvatureLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uVignette", label: _vignetteLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.4, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uBrightness", label: _brightnessLabel, section: _tvSection, min: 0.5, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.percent),
+        ],
+      ),
+    ],
+  ),
   ExportShaderType.lcd: ExportShaderDefinition(
     type: ExportShaderType.lcd,
     name: _lcdName,

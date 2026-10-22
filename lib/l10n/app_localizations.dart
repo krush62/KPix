@@ -2126,6 +2126,138 @@ abstract class AppLocalizations {
   /// **'Height from Brightness'**
   String get heightFromBrightness;
 
+  /// No description provided for @shaderCrt.
+  ///
+  /// In en, this message translates to:
+  /// **'CRT'**
+  String get shaderCrt;
+
+  /// No description provided for @medium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get medium;
+
+  /// No description provided for @signal.
+  ///
+  /// In en, this message translates to:
+  /// **'Signal'**
+  String get signal;
+
+  /// No description provided for @colorEncoding.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Encoding'**
+  String get colorEncoding;
+
+  /// No description provided for @tv.
+  ///
+  /// In en, this message translates to:
+  /// **'TV'**
+  String get tv;
+
+  /// No description provided for @wear.
+  ///
+  /// In en, this message translates to:
+  /// **'Wear'**
+  String get wear;
+
+  /// No description provided for @artifacts.
+  ///
+  /// In en, this message translates to:
+  /// **'Artifacts'**
+  String get artifacts;
+
+  /// No description provided for @noise.
+  ///
+  /// In en, this message translates to:
+  /// **'Noise'**
+  String get noise;
+
+  /// No description provided for @ghosting.
+  ///
+  /// In en, this message translates to:
+  /// **'Ghosting'**
+  String get ghosting;
+
+  /// No description provided for @encoding.
+  ///
+  /// In en, this message translates to:
+  /// **'Encoding'**
+  String get encoding;
+
+  /// No description provided for @phaseError.
+  ///
+  /// In en, this message translates to:
+  /// **'Phase Error'**
+  String get phaseError;
+
+  /// No description provided for @convergence.
+  ///
+  /// In en, this message translates to:
+  /// **'Convergence'**
+  String get convergence;
+
+  /// No description provided for @scanlines.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanlines'**
+  String get scanlines;
+
+  /// No description provided for @mask.
+  ///
+  /// In en, this message translates to:
+  /// **'Mask'**
+  String get mask;
+
+  /// No description provided for @maskStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Mask Strength'**
+  String get maskStrength;
+
+  /// No description provided for @bloom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bloom'**
+  String get bloom;
+
+  /// No description provided for @curvature.
+  ///
+  /// In en, this message translates to:
+  /// **'Curvature'**
+  String get curvature;
+
+  /// No description provided for @vignette.
+  ///
+  /// In en, this message translates to:
+  /// **'Vignette'**
+  String get vignette;
+
+  /// No description provided for @none.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get none;
+
+  /// No description provided for @apertureGrille.
+  ///
+  /// In en, this message translates to:
+  /// **'Grille'**
+  String get apertureGrille;
+
+  /// No description provided for @slotMask.
+  ///
+  /// In en, this message translates to:
+  /// **'Slot'**
+  String get slotMask;
+
+  /// No description provided for @shadowMask.
+  ///
+  /// In en, this message translates to:
+  /// **'Shadow'**
+  String get shadowMask;
+
   /// No description provided for @outlineWidth.
   ///
   /// In en, this message translates to:

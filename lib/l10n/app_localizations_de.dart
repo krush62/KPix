@@ -1102,6 +1102,72 @@ class AppLocalizationsDe extends AppLocalizations {
   String get heightFromBrightness => 'Höhe aus Helligkeit';
 
   @override
+  String get shaderCrt => 'Röhre';
+
+  @override
+  String get medium => 'Medium';
+
+  @override
+  String get signal => 'Signal';
+
+  @override
+  String get colorEncoding => 'Farbkodierung';
+
+  @override
+  String get tv => 'Fernseher';
+
+  @override
+  String get wear => 'Abnutzung';
+
+  @override
+  String get artifacts => 'Artefakte';
+
+  @override
+  String get noise => 'Rauschen';
+
+  @override
+  String get ghosting => 'Geisterbilder';
+
+  @override
+  String get encoding => 'Kodierung';
+
+  @override
+  String get phaseError => 'Phasenfehler';
+
+  @override
+  String get convergence => 'Konvergenz';
+
+  @override
+  String get scanlines => 'Bildzeilen';
+
+  @override
+  String get mask => 'Maske';
+
+  @override
+  String get maskStrength => 'Maskenstärke';
+
+  @override
+  String get bloom => 'Leuchten';
+
+  @override
+  String get curvature => 'Wölbung';
+
+  @override
+  String get vignette => 'Vignette';
+
+  @override
+  String get none => 'Keine';
+
+  @override
+  String get apertureGrille => 'Streifen';
+
+  @override
+  String get slotMask => 'Schlitz';
+
+  @override
+  String get shadowMask => 'Loch';
+
+  @override
   String get outlineWidth => 'Umrissbreite';
 
   @override

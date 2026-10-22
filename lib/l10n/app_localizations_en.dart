@@ -1083,6 +1083,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String get heightFromBrightness => 'Height from Brightness';
 
   @override
+  String get shaderCrt => 'CRT';
+
+  @override
+  String get medium => 'Medium';
+
+  @override
+  String get signal => 'Signal';
+
+  @override
+  String get colorEncoding => 'Color Encoding';
+
+  @override
+  String get tv => 'TV';
+
+  @override
+  String get wear => 'Wear';
+
+  @override
+  String get artifacts => 'Artifacts';
+
+  @override
+  String get noise => 'Noise';
+
+  @override
+  String get ghosting => 'Ghosting';
+
+  @override
+  String get encoding => 'Encoding';
+
+  @override
+  String get phaseError => 'Phase Error';
+
+  @override
+  String get convergence => 'Convergence';
+
+  @override
+  String get scanlines => 'Scanlines';
+
+  @override
+  String get mask => 'Mask';
+
+  @override
+  String get maskStrength => 'Mask Strength';
+
+  @override
+  String get bloom => 'Bloom';
+
+  @override
+  String get curvature => 'Curvature';
+
+  @override
+  String get vignette => 'Vignette';
+
+  @override
+  String get none => 'None';
+
+  @override
+  String get apertureGrille => 'Grille';
+
+  @override
+  String get slotMask => 'Slot';
+
+  @override
+  String get shadowMask => 'Shadow';
+
+  @override
   String get outlineWidth => 'Outline Width';
 
   @override

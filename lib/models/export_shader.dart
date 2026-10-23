@@ -248,6 +248,7 @@ String _compositeOption(final AppLocalizations l10n) => "Composite";
 String _rfOption(final AppLocalizations l10n) => "RF";
 String _ntscOption(final AppLocalizations l10n) => "NTSC";
 String _palOption(final AppLocalizations l10n) => "PAL";
+String _secamOption(final AppLocalizations l10n) => "SECAM";
 String _apertureGrilleOption(final AppLocalizations l10n) => l10n.apertureGrille;
 String _slotMaskOption(final AppLocalizations l10n) => l10n.slotMask;
 String _shadowMaskOption(final AppLocalizations l10n) => l10n.shadowMask;
@@ -279,7 +280,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
           ExportShaderSliderParameter(uniform: "uArtifacts", label: _artifactsLabel, section: _signalSection, min: 0.0, max: 1.0, initial: 0.3, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uNoise", label: _noiseLabel, section: _signalSection, min: 0.0, max: 1.0, initial: 0.15, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uGhosting", label: _ghostingLabel, section: _signalSection, min: 0.0, max: 1.0, initial: 0.15, format: ExportShaderValueFormat.percent),
-          ExportShaderChoiceParameter(uniform: "uEncoding", label: _encodingLabel, section: _colorEncodingSection, options: <String Function(AppLocalizations)>[_ntscOption, _palOption], initial: 0),
+          ExportShaderChoiceParameter(uniform: "uEncoding", label: _encodingLabel, section: _colorEncodingSection, options: <String Function(AppLocalizations)>[_ntscOption, _palOption, _secamOption], initial: 0),
           ExportShaderSliderParameter(uniform: "uPhaseError", label: _phaseErrorLabel, section: _colorEncodingSection, min: -45.0, max: 45.0, initial: 0.0, divisions: 18, format: ExportShaderValueFormat.degrees),
           ExportShaderSliderParameter(uniform: "uSharpness", label: _sharpnessLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.5, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uConvergence", label: _convergenceLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.3, format: ExportShaderValueFormat.percent),

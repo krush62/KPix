@@ -22,7 +22,7 @@ uniform float uArtifacts;      // 0 .. 1, composite cross-talk: dot crawl and ra
 uniform float uNoise;          // 0 .. 1, snow
 uniform float uGhosting;       // 0 .. 1, delayed echo of the signal
 // color encoding
-uniform float uEncoding;       // 0 = NTSC, 1 = PAL
+uniform float uEncoding;       // 0 = NTSC, 1 = PAL, 2 = SECAM (its Db and Dr are scaled U and V, so it uses YUV)
 uniform float uPhaseError;     // -45 .. 45 degrees
 // TV
 uniform float uSharpness;      // 0 .. 1, edge peaking
@@ -178,6 +178,8 @@ vec3 lineSignal(float x, float r)
     bool betamax = tape && isMode(uMedium, 2.0);
     float signal = floor(uSignal + 0.5);
     bool pal = isMode(uEncoding, 1.0);
+    bool secam = isMode(uEncoding, 2.0);
+    bool secamFire = secam && signal > 1.5;
     bool yc = separateChroma();
 
     // tape: per line timing jitter (Betamax runs steadiest)
@@ -236,13 +238,22 @@ vec3 lineSignal(float x, float r)
     float weightC = 0.0;
     float weightWide = 0.0;
     float weightGhost = 0.0;
+    float fire = 0.0;
+    float previousLuma = 0.0;
     float base = floor(x);
     for (int k = -7; k <= 7; k++)
     {
         float column = base + float(k);
         float d = column + 0.5 - x;
         vec3 c = mediumPixel(vec2(column, sampleRow));
-        vec3 e = encode(c, pal);
+        vec3 e = encode(c, pal || secam);
+        if (secamFire && k > -7)
+        {
+            // the strongest luma edge at or left of x, fading to the right
+            float edgeOffset = column - x;
+            fire = max(fire, abs(e.x - previousLuma) * (edgeOffset <= 0.0 ? exp(edgeOffset / 1.5) : 0.0));
+        }
+        previousLuma = e.x;
 
         float wy = gauss(d, sigmaY);
         float dc = d + chromaDelay;
@@ -308,26 +319,42 @@ vec3 lineSignal(float x, float r)
         // is decoded as color (rainbows); the pattern follows the encoding
         if (signal > 1.5)
         {
-            float period = pal ? 1.2 : 1.5;
-            float phase = 2.0 * PI * x / period + r * (pal ? 1.5 * PI : PI);
+            float period = pal || secam ? 1.2 : 1.5;
+            // per line NTSC flips the subcarrier, PAL turns it by 270 degrees, SECAM flips it every third line
+            float linePhase = secam ? PI * step(2.0, mod(r, 3.0)) : r * (pal ? 1.5 * PI : PI);
+            float phase = 2.0 * PI * x / period + linePhase;
             vec2 carrier = vec2(cos(phase), sin(phase));
             float artifacts = clamp(uArtifacts, 0.0, 1.0);
             s.x += artifacts * dot(chromaDetail, carrier);
-            s.yz += 0.5 * artifacts * lumaDetail * carrier;
+            if (secam)
+            {
+                // SECAM fire: luma edges upset the FM color demodulator, which flares up to the right in the
+                // color difference the line carries, mostly blue (Db) or red (Dr)
+                float flare = artifacts * fire * 0.8 * max(hash(vec2(floor(x / 3.0), r + 0.4)) - 0.5, 0.0);
+                float odd = mod(r, 2.0);
+                s.yz += flare * vec2(1.0 - odd, odd);
+            }
+            else
+            {
+                s.yz += 0.5 * artifacts * lumaDetail * carrier;
+            }
         }
 
-        // a phase error turns the hue, on a tape it wanders from line to line;
-        // PAL flips the phase every other line, so its delay line averages the error out
-        float hue = radians(uPhaseError);
-        if (tape)
+        // a phase error turns the hue, on a tape it wanders from line to line; PAL flips the phase every
+        // other line, so its delay line averages the error out, and the FM color of SECAM has no phase at all
+        if (!secam)
         {
-            hue += (hash(vec2(r, 23.0)) - 0.5) * byTape(0.5, 0.2, 0.35) * wear;
+            float hue = radians(uPhaseError);
+            if (tape)
+            {
+                hue += (hash(vec2(r, 23.0)) - 0.5) * byTape(0.5, 0.2, 0.35) * wear;
+            }
+            if (pal && mod(r, 2.0) >= 1.0)
+            {
+                hue = -hue;
+            }
+            s.yz = vec2(s.y * cos(hue) - s.z * sin(hue), s.y * sin(hue) + s.z * cos(hue));
         }
-        if (pal && mod(r, 2.0) >= 1.0)
-        {
-            hue = -hue;
-        }
-        s.yz = vec2(s.y * cos(hue) - s.z * sin(hue), s.y * sin(hue) + s.z * cos(hue));
     }
 
     // snow, strongest over the air (adding it to luma equals adding it to R, G and B alike)
@@ -421,8 +448,10 @@ void main()
     // per scanline the green beam, the misconverged red and blue beams, and the previous line for the chroma
     bool yc = separateChroma();
     bool pal = isMode(uEncoding, 1.0);
-    // the PAL delay line averages the chroma of two lines, so does the comb filter of a tape deck
-    bool blendLines = yc && (pal || isTape());
+    bool secam = isMode(uEncoding, 2.0);
+    // the PAL delay line averages the chroma of two lines, so does the comb filter of a tape deck;
+    // SECAM sends one color difference per line and takes the other one from the line before
+    bool blendLines = yc && (pal || secam || isTape());
     float lineBlend = pal ? 0.5 : 0.5 * min(2.0 * uWear, 1.0);
     float convergence = clamp(uConvergence, 0.0, 1.0);
     // Technicolor prints the three dye records one after another, so a worn print shows color fringes
@@ -462,9 +491,18 @@ void main()
             }
             if (blendLines)
             {
-                s.yz = mix(s.yz, previousChroma, lineBlend);
+                if (secam)
+                {
+                    // Db on even lines, Dr on odd ones
+                    float odd = mod(r0 + float(row), 2.0);
+                    s.yz = vec2(mix(s.y, previousChroma.x, odd), mix(previousChroma.y, s.z, odd));
+                }
+                else
+                {
+                    s.yz = mix(s.yz, previousChroma, lineBlend);
+                }
             }
-            s = decode(s, pal);
+            s = decode(s, pal || secam);
             if (b == 0)
             {
                 color = s;

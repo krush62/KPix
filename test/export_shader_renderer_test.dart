@@ -551,6 +551,8 @@ void main()
       "ghosting": (const <String, Object>{}, <String, Object>{"uGhosting": 0.5}),
       "NTSC phase error": (sVideo, <String, Object>{"uSignal": 1, "uPhaseError": 20.0}),
       "PAL": (sVideo, <String, Object>{"uSignal": 1, "uEncoding": 1}),
+      "SECAM": (sVideo, <String, Object>{"uSignal": 1, "uEncoding": 2}),
+      "SECAM fire": (<String, Object>{"uSignal": 2, "uEncoding": 2}, <String, Object>{"uSignal": 2, "uEncoding": 2, "uArtifacts": 0.5}),
       "sharpness": (const <String, Object>{}, <String, Object>{"uSharpness": 0.5}),
       "convergence": (const <String, Object>{}, <String, Object>{"uConvergence": 0.5}),
       "scanlines": (const <String, Object>{}, <String, Object>{"uScanlines": 0.5}),
@@ -581,6 +583,7 @@ void main()
           composite,
           <String, Object>{"uSignal": 3},
           <String, Object>{"uSignal": 2, "uEncoding": 1},
+          <String, Object>{"uSignal": 2, "uEncoding": 2},
         ];
         for (final Map<String, Object> chain in chains)
         {
@@ -624,6 +627,17 @@ void main()
 
         expect(vhs, lessThan(off * 0.85));
         expect(betamax, greaterThan(off * 0.9));
+        source.dispose();
+      });
+    });
+
+    testWidgets("SECAM ignores the phase error, its color is frequency modulated", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 8, height: 6, color: colorful);
+        final (Uint8List, int) straight = await _render(values: crt(<String, Object>{"uSignal": 1, "uEncoding": 2}), source: source, scaling: 4);
+        final (Uint8List, int) shifted = await _render(values: crt(<String, Object>{"uSignal": 1, "uEncoding": 2, "uPhaseError": 30.0}), source: source, scaling: 4);
+
+        expect(_sameBytes(straight.$1, shifted.$1), isTrue);
         source.dispose();
       });
     });

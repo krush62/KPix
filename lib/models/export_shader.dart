@@ -361,7 +361,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         asset: "shaders/color_adjust.frag",
         parameters: <ExportShaderParameter>[
           ExportShaderChoiceParameter(uniform: "uPalette", label: _paletteLabel, options: <String Function(AppLocalizations)>[_noneOption, _cgaOption, _egaOption, _pico8Option, _dmgOption, _c64Option, _zxOption], initial: 0),
-          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 8.0, format: ExportShaderValueFormat.integer),
           ExportShaderSliderParameter(uniform: "uBrightness", label: _brightnessLabel, min: -1.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
           ExportShaderSliderParameter(uniform: "uContrast", label: _contrastLabel, min: 0.0, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.decimal),
           ExportShaderSliderParameter(uniform: "uSaturation", label: _saturationLabel, min: 0.0, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.decimal),
@@ -379,7 +379,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         name: "Bayer",
         asset: "shaders/dither_bayer.frag",
         parameters: <ExportShaderParameter>[
-          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.integer),
           ExportShaderChoiceParameter(uniform: "uBayerLevel", label: _bayerLevelLabel, options: <String Function(AppLocalizations)>[_bayer2Option, _bayer4Option, _bayer8Option, _bayer16Option], values: <double>[1.0, 2.0, 3.0, 4.0], initial: 1),
           ExportShaderSliderParameter(uniform: "uDitherTune", label: _tuneDitheringLabel, min: -64.0, max: 64.0, initial: 0.0, divisions: 128, format: ExportShaderValueFormat.decimal),
         ],
@@ -388,15 +388,15 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         name: "Checkerboard",
         asset: "shaders/dither_checkerboard.frag",
         parameters: <ExportShaderParameter>[
-          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
-          ExportShaderSliderParameter(uniform: "uCheckerWidth", label: _checkerWidthLabel, min: 0.0, max: 1.0, initial: 0.5, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.integer),
+          ExportShaderSliderParameter(uniform: "uCheckerWidth", label: _checkerWidthLabel, min: 0.0, max: 1.0, initial: 0.5, format: ExportShaderValueFormat.percent),
         ],
       ),
       ExportShaderVariant(
         name: "PSX",
         asset: "shaders/dither_psx.frag",
         parameters: <ExportShaderParameter>[
-          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 5.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 5.0, format: ExportShaderValueFormat.integer),
           ExportShaderSliderParameter(uniform: "uDitherStrength", label: _strengthLabel, min: 0.0, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.decimal),
           ExportShaderToggleParameter(uniform: "uRounding", label: _roundingLabel, initial: false),
           ExportShaderToggleParameter(uniform: "uFullRange", label: _fullRangeLabel, initial: true),
@@ -406,7 +406,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         name: "Noise",
         asset: "shaders/dither_noise.frag",
         parameters: <ExportShaderParameter>[
-          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.integer),
           ExportShaderSliderParameter(uniform: "uDitherTune", label: _tuneDitheringLabel, min: -64.0, max: 64.0, initial: 0.0, divisions: 128, format: ExportShaderValueFormat.decimal),
         ],
       ),
@@ -415,7 +415,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         asset: "shaders/dither_clustered_dot.frag",
         minScalingFactor: 4,
         parameters: <ExportShaderParameter>[
-          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.integer),
         ],
       ),
     ],
@@ -434,7 +434,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
           ExportShaderSliderParameter(uniform: "uDotGain", label: _dotGainLabel, min: 0.5, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.decimal),
           ExportShaderSliderParameter(uniform: "uSoftness", label: _softnessLabel, min: 0.0, max: 2.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
           ExportShaderChoiceParameter(uniform: "uDotShape", label: _dotShapeLabel, options: <String Function(AppLocalizations)>[_roundOption, _diamondOption, _squareOption], initial: 0),
-          ExportShaderSliderParameter(uniform: "uAngle", label: _angleLabel, min: 0.0, max: 90.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uAngle", label: _angleLabel, min: 0.0, max: 90.0, initial: 0.0, format: ExportShaderValueFormat.degrees),
           ExportShaderSliderParameter(uniform: "uMisregistration", label: _misregistrationLabel, min: 0.0, max: 3.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
           ExportShaderSliderParameter(uniform: "uBackgroundBrightness", label: _backgroundBrightnessLabel, min: 0.0, max: 1.0, initial: 0.8, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uBackgroundWarmth", label: _backgroundWarmthLabel, min: -1.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),

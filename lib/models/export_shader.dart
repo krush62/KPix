@@ -25,6 +25,7 @@ enum ExportShaderType
   crt,
   lcd,
   upscale,
+  color,
   dithering,
   effects,
 }
@@ -166,6 +167,7 @@ String _lcdName(final AppLocalizations l10n) => l10n.shaderLcd;
 String _smoothEdgesName(final AppLocalizations l10n) => l10n.shaderSmoothEdges;
 String _ditheringName(final AppLocalizations l10n) => l10n.shaderDithering;
 String _effectsName(final AppLocalizations l10n) => l10n.shaderEffects;
+String _colorName(final AppLocalizations l10n) => l10n.color;
 // LCD STRINGS
 String _brightnessLabel(final AppLocalizations l10n) => l10n.brightness;
 String _gridWidthLabel(final AppLocalizations l10n) => l10n.gridWidth;
@@ -249,7 +251,17 @@ String _palOption(final AppLocalizations l10n) => "PAL";
 String _apertureGrilleOption(final AppLocalizations l10n) => l10n.apertureGrille;
 String _slotMaskOption(final AppLocalizations l10n) => l10n.slotMask;
 String _shadowMaskOption(final AppLocalizations l10n) => l10n.shadowMask;
-
+// COLOR STRINGS
+String _paletteLabel(final AppLocalizations l10n) => l10n.palette;
+String _cgaOption(final AppLocalizations l10n) => "CGA";
+String _egaOption(final AppLocalizations l10n) => "EGA";
+String _pico8Option(final AppLocalizations l10n) => "PICO-8";
+String _dmgOption(final AppLocalizations l10n) => "DMG";
+String _c64Option(final AppLocalizations l10n) => "C64";
+String _zxOption(final AppLocalizations l10n) => "ZX";
+String _contrastLabel(final AppLocalizations l10n) => l10n.contrast;
+String _whiteBalanceLabel(final AppLocalizations l10n) => l10n.whiteBalance;
+String _tintLabel(final AppLocalizations l10n) => l10n.tint;
 
 const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <ExportShaderType, ExportShaderDefinition>{
   ExportShaderType.crt: ExportShaderDefinition(
@@ -336,6 +348,25 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         asset: "shaders/upscale_xbrz.frag",
         parameters: <ExportShaderParameter>[
           ExportShaderSliderParameter(uniform: "uColorTolerance", label: _colorToleranceLabel, min: 0.0, max: 0.5, initial: 30.0 / 255.0, format: ExportShaderValueFormat.decimal),
+        ],
+      ),
+    ],
+  ),
+  ExportShaderType.color: ExportShaderDefinition(
+    type: ExportShaderType.color,
+    name: _colorName,
+    variants: <ExportShaderVariant>[
+      ExportShaderVariant(
+        name: "Color",
+        asset: "shaders/color_adjust.frag",
+        parameters: <ExportShaderParameter>[
+          ExportShaderChoiceParameter(uniform: "uPalette", label: _paletteLabel, options: <String Function(AppLocalizations)>[_noneOption, _cgaOption, _egaOption, _pico8Option, _dmgOption, _c64Option, _zxOption], initial: 0),
+          ExportShaderSliderParameter(uniform: "uColorDepth", label: _colorDepthLabel, min: 1.0, max: 8.0, divisions: 7, initial: 2.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uBrightness", label: _brightnessLabel, min: -1.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uContrast", label: _contrastLabel, min: 0.0, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uSaturation", label: _saturationLabel, min: 0.0, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uTemperature", label: _whiteBalanceLabel, min: -1.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uTint", label: _tintLabel, min: -1.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.decimal),
         ],
       ),
     ],

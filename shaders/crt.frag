@@ -14,7 +14,7 @@ uniform float uScale;
 uniform float uFlipY;
 
 // medium
-uniform float uMedium;         // 0 = none, 1 = VHS, 2 = Betamax, 3 = Video8
+uniform float uMedium;         // 0 = none, 1 = VHS, 2 = Betamax, 3 = Video8, 4 = Technicolor film
 uniform float uWear;           // 0 .. 1
 // signal
 uniform float uSignal;         // 0 = RGB, 1 = S-Video, 2 = composite, 3 = RF
@@ -41,7 +41,8 @@ out vec4 fragColor;
 
 const float PI = 3.14159265;
 
-// opacity of the white Video8 dropout specks (0 = invisible, 1 = solid white flash)
+// maximum opacity of the white Video8 dropout specks (0 = invisible, 1 = solid white flash);
+// each speck gets a random opacity between 0 and this value
 const float VIDEO8_DROPOUT_OPACITY = 0.3;
 
 bool isMode(float value, float mode)
@@ -94,7 +95,65 @@ vec3 decode(vec3 s, bool pal)
 // a VHS, Betamax or Video8 tape with some wear
 bool isTape()
 {
-    return uMedium > 0.5 && uWear > 0.0;
+    return uMedium > 0.5 && uMedium < 3.5 && uWear > 0.0;
+}
+
+// a Technicolor (three-strip dye transfer) film print, scanned by a telecine
+bool isFilm()
+{
+    return isMode(uMedium, 4.0);
+}
+
+// the source pixel as it appears on the medium: unchanged for tapes (they work on the signal),
+// a dye transfer print for film
+vec3 mediumPixel(vec2 texel)
+{
+    vec3 c = sourcePixel(texel);
+    if (!isFilm() || texel.x < 0.0 || texel.y < 0.0 || texel.x >= uSourceSize.x || texel.y >= uSourceSize.y)
+    {
+        return c;
+    }
+    float wear = clamp(uWear, 0.0, 1.0);
+
+    // three separate black and white records printed with pure dyes: every channel is cleaned of
+    // the others, which gives the typical deep, pure primaries (crimson reds, rich greens, strong blues)
+    c = mat3(1.30, -0.12, -0.06,
+            -0.20, 1.28, -0.18,
+            -0.10, -0.16, 1.24) * c;
+    c = clamp(c, 0.0, 1.0);
+
+    // extra saturation on top
+    float luma = dot(c, vec3(0.299, 0.587, 0.114));
+    c = clamp(mix(vec3(luma), c, 1.15), 0.0, 1.0);
+
+    // print contrast: an S-curve with dense, inky blacks
+    c = mix(c, c * c * (3.0 - 2.0 * c), 0.45);
+    c = max(c - 0.04, 0.0) / 0.96;
+
+    // warm, golden highlights and slightly cool, teal shadows
+    c *= mix(vec3(0.94, 1.0, 1.06), vec3(1.04, 1.01, 0.94), smoothstep(0.0, 1.0, luma));
+
+    // grain: three independent dye layers, strongest in the midtones; even a new print has some
+    vec3 grain = vec3(hash(texel + 0.13), hash(texel + 0.47), hash(texel + 0.81)) - 0.5;
+    c += grain * (0.08 + 0.25 * wear) * 4.0 * c * (1.0 - c);
+
+    // vertical scratches along the running direction, broken into segments; they let light through
+    if (hash(vec2(texel.x, 41.0)) < 0.015 * wear && hash(vec2(texel.x, floor(texel.y / 16.0) + 0.5)) < 0.7)
+    {
+        c = mix(c, vec3(1.0), 0.2 + 0.2 * hash(vec2(texel.x, texel.y + 0.25)));
+    }
+
+    // dust: specks on the print block the light, the rarer ones from the negative show bright
+    vec2 cell = floor(texel / 8.0);
+    vec2 spot = cell * 8.0 + floor(7.0 * vec2(hash(cell + 3.1), hash(cell + 5.7)));
+    vec2 d = texel - spot;
+    float size = hash(cell + 7.3) < 0.3 ? 2.0 : 1.0;
+    if (hash(cell + 1.9) < 0.15 * wear && d.x >= 0.0 && d.y >= 0.0 && d.x < size && d.y < size)
+    {
+        c = hash(cell + 9.1) < 0.75 ? c * 0.15 : mix(c, vec3(1.0), 0.6);
+    }
+
+    return clamp(c, 0.0, 1.0);
 }
 
 // the value for the current tape format
@@ -182,7 +241,7 @@ vec3 lineSignal(float x, float r)
     {
         float column = base + float(k);
         float d = column + 0.5 - x;
-        vec3 c = sourcePixel(vec2(column, sampleRow));
+        vec3 c = mediumPixel(vec2(column, sampleRow));
         vec3 e = yc ? encode(c, pal) : c;
 
         float wy = gauss(d, sigmaY);
@@ -390,6 +449,11 @@ void main()
     bool blendLines = yc && (pal || isTape());
     float lineBlend = pal ? 0.5 : 0.5 * min(2.0 * uWear, 1.0);
     float convergence = clamp(uConvergence, 0.0, 1.0);
+    // Technicolor prints the three dye records one after another, so a worn print shows color fringes
+    float registration = isFilm() ? clamp(uWear, 0.0, 1.0) : 0.0;
+    float offsetR = -convergence + 0.4 * registration;
+    float offsetB = convergence - 0.3 * registration;
+    bool splitBeams = convergence > 0.0 || registration > 0.0;
     vec3 c0 = vec3(0.0);
     vec3 c1 = vec3(0.0);
     for (int row = 0; row < 2; row++)
@@ -397,11 +461,11 @@ void main()
         vec3 color = vec3(0.0);
         for (int b = 0; b < 3; b++)
         {
-            if (b > 0 && convergence <= 0.0)
+            if (b > 0 && !splitBeams)
             {
                 continue;
             }
-            float x = t.x + (b == 1 ? -convergence : (b == 2 ? convergence : 0.0));
+            float x = t.x + (b == 1 ? offsetR : (b == 2 ? offsetB : 0.0));
             vec3 s = vec3(0.0);
             vec2 previousChroma = vec2(0.0);
             for (int line = 0; line < 2; line++)
@@ -473,7 +537,7 @@ void main()
             {
                 vec2 o = vec2(float(x), float(y)) * 1.5;
                 float w = exp(-dot(o, o) / 8.0);
-                glow += pow(sourcePixel(floor(t + o)), vec3(2.2)) * w;
+                glow += pow(mediumPixel(floor(t + o)), vec3(2.2)) * w;
                 weight += w;
             }
         }

@@ -199,6 +199,8 @@ class ColorSet
           backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _lightColors.light : _lightColors.normal),
           iconColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _lightColors.normal : _lightColors.light),
           padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 2.0, right: 2.0)),
+          shape: const WidgetStatePropertyAll<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.all(Radius.circular(8.0)))),
+          side: WidgetStatePropertyAll<BorderSide>(BorderSide(width: 1, color: _lightColors.light))
         ),
     ),
     textSelectionTheme: TextSelectionThemeData(
@@ -353,6 +355,9 @@ class ColorSet
           backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _darkColors.light : _darkColors.normal),
           iconColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _darkColors.normal : _darkColors.light),
           padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 2.0, right: 2.0)),
+          shape: const WidgetStatePropertyAll<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.all(Radius.circular(8.0)))),
+          side: WidgetStatePropertyAll<BorderSide>(BorderSide(width: 1, color: _darkColors.light))
+
         ),
     ),
     textSelectionTheme: TextSelectionThemeData(

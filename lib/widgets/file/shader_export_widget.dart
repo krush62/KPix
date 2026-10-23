@@ -299,15 +299,27 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
                           valueListenable: _shaderType,
                           builder: (final BuildContext context, final ExportShaderType shaderType, final Widget? child) {
                             return SegmentedButton<ExportShaderType>(
+                              style: Theme.of(context).segmentedButtonTheme.style!.copyWith(visualDensity: const VisualDensity(vertical: 1.5)),
                               segments: <ButtonSegment<ExportShaderType>>[
                                 for (final ExportShaderDefinition definition in exportShaderDefinitions.values)
-                                  ButtonSegment<ExportShaderType>(value: definition.type, label: Text(definition.name(l10n))),
+                                  ButtonSegment<ExportShaderType>(
+                                    value: definition.type,
+                                    label: Text(
+                                      style: Theme.of(context).textTheme.titleSmall!.apply(color: definition.type == shaderType ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
+                                      definition.name(l10n).toUpperCase(),
+                                    ),
+                                  ),
                               ],
                               selected: <ExportShaderType>{shaderType},
                               showSelectedIcon: false,
                               onSelectionChanged: (final Set<ExportShaderType> selection) {_shaderType.value = selection.first;},
                             );
                           },
+                        ),
+                        Divider(
+                          color: Theme.of(context).primaryColorLight,
+                          thickness: ShaderExportWidgetOptions.dividerThickness,
+                          height: ShaderExportWidgetOptions.dividerThickness + (ShaderExportWidgetOptions.padding * 2),
                         ),
                         Expanded(
                           child: ValueListenableBuilder<ExportShaderType>(

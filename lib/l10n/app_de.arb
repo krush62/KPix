@@ -348,7 +348,7 @@
   "exportProjectPalette": "Projekt/Palette exportieren",
   "exportShaderImage": "Shader-Bild exportieren [BETA]",
   "shaderLcd": "LCD",
-  "shaderSmoothEdges": "Kantenglättung",
+  "shaderSmoothEdges": "Kanten",
   "shaderDithering": "Dithering",
   "shaderEffects": "Effekte",
   "colorTolerance": "Farbtoleranz",

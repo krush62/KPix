@@ -273,7 +273,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
           ExportShaderSliderParameter(uniform: "uScanlines", label: _scanlinesLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.6, format: ExportShaderValueFormat.percent),
           ExportShaderChoiceParameter(uniform: "uMask", label: _maskLabel, section: _tvSection, options: <String Function(AppLocalizations)>[_noneOption, _apertureGrilleOption, _slotMaskOption, _shadowMaskOption], initial: 1),
           ExportShaderSliderParameter(uniform: "uMaskStrength", label: _maskStrengthLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.2, format: ExportShaderValueFormat.percent),
-          ExportShaderSliderParameter(uniform: "uBloom", label: _bloomLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.15, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uBloom", label: _bloomLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.10, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uCurvature", label: _curvatureLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.0, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uVignette", label: _vignetteLabel, section: _tvSection, min: 0.0, max: 1.0, initial: 0.4, format: ExportShaderValueFormat.percent),
           ExportShaderSliderParameter(uniform: "uBrightness", label: _brightnessLabel, section: _tvSection, min: 0.5, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.percent),

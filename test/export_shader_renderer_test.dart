@@ -51,12 +51,14 @@ Future<ui.Image> _source({required final int width, required final int height, r
   return image;
 }
 
+/// Softness and subpixels start switched off, so the tests do not depend on the tuned defaults.
 ExportShaderValues _lcd({final Map<String, Object> overrides = const <String, Object>{}})
 {
+  final Map<String, Object> settings = <String, Object>{"uSoftness": 0.0, "uSubpixels": 0.0, ...overrides};
   final ExportShaderValues values = ExportShaderValues(definition: exportShaderDefinitions[ExportShaderType.lcd]!);
   for (final ExportShaderParameter parameter in values.variant.parameters)
   {
-    final Object? value = overrides[parameter.uniform];
+    final Object? value = settings[parameter.uniform];
     if (value != null)
     {
       values.setValue(parameter: parameter, value: value);
@@ -349,7 +351,7 @@ void main()
     testWidgets("keeps the original color of flat areas, without outlines", (final WidgetTester tester) async {
       await tester.runAsync(() async {
         final ui.Image source = await _source(width: 3, height: 3, color: (final int x, final int y) => const ui.Color(0xFF3366CC));
-        final (Uint8List, int) out = await _render(values: _effect(variant: "Cel Shading"), source: source, scaling: 8);
+        final (Uint8List, int) out = await _render(values: _effect(variant: "Cel Shading", overrides: <String, Object>{"uSaturation": 1.0}), source: source, scaling: 8);
 
         expect(_maxDeviation(rgba: out.$1, color: <int>[0x33, 0x66, 0xCC, 0xFF]), lessThanOrEqualTo(1));
         source.dispose();
@@ -373,7 +375,7 @@ void main()
         //dark red, red, green
         const List<ui.Color> colors = <ui.Color>[ui.Color(0xFFA01818), ui.Color(0xFFE02020), ui.Color(0xFF20C020)];
         final ui.Image source = await _source(width: 3, height: 1, color: (final int x, final int y) => colors[x]);
-        final (Uint8List, int) out = await _render(values: _effect(variant: "Cel Shading"), source: source, scaling: 8);
+        final (Uint8List, int) out = await _render(values: _effect(variant: "Cel Shading", overrides: <String, Object>{"uSaturation": 1.0}), source: source, scaling: 8);
 
         expect(_pixel(out, 7, 4), <int>[0xA0, 0x18, 0x18, 0xFF], reason: "no line between the two reds");
         expect(_pixel(out, 15, 4), <int>[0, 0, 0, 255], reason: "a line between red and green, in the darker red");

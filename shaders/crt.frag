@@ -168,8 +168,8 @@ bool separateChroma()
     return !isMode(uSignal, 0.0) || isTape();
 }
 
-// the signal of row [r] at position [x] (source pixels) after medium, signal and encoding:
-// Y and two chroma channels when separateChroma(), else R, G, B
+// the signal of row [r] at position [x] (source pixels) after medium, signal and encoding, always as Y and chroma:
+// with a color space branch instead, some mobile GPUs decoded RGB that was never encoded (pink image)
 vec3 lineSignal(float x, float r)
 {
     float wear = clamp(uWear, 0.0, 1.0);
@@ -242,22 +242,15 @@ vec3 lineSignal(float x, float r)
         float column = base + float(k);
         float d = column + 0.5 - x;
         vec3 c = mediumPixel(vec2(column, sampleRow));
-        vec3 e = yc ? encode(c, pal) : c;
+        vec3 e = encode(c, pal);
 
         float wy = gauss(d, sigmaY);
         float dc = d + chromaDelay;
         float wc = gauss(dc, dc < 0.0 ? sigmaTrail : sigmaLead);
         float ww = gauss(d, sigmaWide);
         float wg = gauss(d + ghostOffset, sigmaY);
-        if (yc)
-        {
-            sumMain += vec3(e.x * wy, e.yz * wc);
-            sumChromaFine += e.yz * wy;
-        }
-        else
-        {
-            sumMain += e * wy;
-        }
+        sumMain += vec3(e.x * wy, e.yz * wc);
+        sumChromaFine += e.yz * wy;
         sumWide += e * ww;
         sumGhost += e * wg;
         weightY += wy;
@@ -265,20 +258,16 @@ vec3 lineSignal(float x, float r)
         weightWide += ww;
         weightGhost += wg;
     }
-    vec3 s = yc ? vec3(sumMain.x / weightY, sumMain.yz / weightC) : sumMain / weightY;
+    vec3 s = vec3(sumMain.x / weightY, sumMain.yz / weightC);
     vec3 wide = sumWide / weightWide;
     vec3 ghost = sumGhost / weightGhost;
+    // over RGB the luma effects below hit all channels alike
+    float chromaLikeLuma = yc ? 0.0 : 1.0;
 
     // reflections in the cable or the antenna: a weaker copy a few pixels later
     float ghosting = 0.35 * clamp(uGhosting, 0.0, 1.0);
-    if (yc)
-    {
-        s.x = mix(s.x, ghost.x, ghosting);
-    }
-    else
-    {
-        s = mix(s, ghost, ghosting);
-    }
+    s.x = mix(s.x, ghost.x, ghosting);
+    s.yz = mix(s.yz, ghost.yz, ghosting * chromaLikeLuma);
 
     if (yc)
     {
@@ -341,32 +330,19 @@ vec3 lineSignal(float x, float r)
         s.yz = vec2(s.y * cos(hue) - s.z * sin(hue), s.y * sin(hue) + s.z * cos(hue));
     }
 
-    // snow, strongest over the air
+    // snow, strongest over the air (adding it to luma equals adding it to R, G and B alike)
     float noise = clamp(uNoise, 0.0, 1.0) * (signal > 2.5 ? 0.35 : 0.2);
     float n = hash(vec2(floor(x * 3.0), r + 0.125)) - 0.5;
-    if (yc)
+    s.x += n * noise;
+    if (signal > 2.5)
     {
-        s.x += n * noise;
-        if (signal > 2.5)
-        {
-            s.yz += (vec2(hash(vec2(floor(x * 3.0), r + 0.375)), hash(vec2(floor(x * 3.0), r + 0.625))) - 0.5) * noise * 0.5;
-        }
-    }
-    else
-    {
-        s += n * noise;
+        s.yz += (vec2(hash(vec2(floor(x * 3.0), r + 0.375)), hash(vec2(floor(x * 3.0), r + 0.625))) - 0.5) * noise * 0.5;
     }
 
     // the TV's sharpness control: edge peaking with its typical ringing
     float peaking = 1.5 * clamp(uSharpness, 0.0, 1.0);
-    if (yc)
-    {
-        s.x += peaking * (s.x - wide.x);
-    }
-    else
-    {
-        s += peaking * (s - wide);
-    }
+    s.x += peaking * (s.x - wide.x);
+    s.yz += peaking * chromaLikeLuma * (s.yz - wide.yz);
     return s;
 }
 
@@ -484,14 +460,11 @@ void main()
                     previousChroma = v.yz;
                 }
             }
-            if (yc)
+            if (blendLines)
             {
-                if (blendLines)
-                {
-                    s.yz = mix(s.yz, previousChroma, lineBlend);
-                }
-                s = decode(s, pal);
+                s.yz = mix(s.yz, previousChroma, lineBlend);
             }
+            s = decode(s, pal);
             if (b == 0)
             {
                 color = s;

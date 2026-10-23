@@ -386,7 +386,7 @@
   "depth": "Tiefe",
   "bevelWidth": "Fasenbreite",
   "heightFromBrightness": "Höhe aus Helligkeit",
-  "shaderCrt": "Röhre",
+  "shaderCrt": "CRT",
   "medium": "Medium",
   "signal": "Signal",
   "colorEncoding": "Farbkodierung",

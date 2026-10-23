@@ -1105,7 +1105,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get heightFromBrightness => 'Höhe aus Helligkeit';
 
   @override
-  String get shaderCrt => 'Röhre';
+  String get shaderCrt => 'CRT';
 
   @override
   String get medium => 'Medium';

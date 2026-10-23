@@ -144,7 +144,7 @@ vec3 lineSignal(float x, float r)
             }
             else
             {
-                dropout = VIDEO8_DROPOUT_OPACITY;
+                dropout = VIDEO8_DROPOUT_OPACITY * hash(id + 0.875);
             }
         }
     }

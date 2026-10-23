@@ -239,6 +239,7 @@ String _noneOption(final AppLocalizations l10n) => l10n.none;
 String _vhsOption(final AppLocalizations l10n) => "VHS";
 String _betamaxOption(final AppLocalizations l10n) => "Betamax";
 String _video8Option(final AppLocalizations l10n) => "Video8";
+String _technicolorOption(final AppLocalizations l10n) => "Technicolor";
 String _rgbOption(final AppLocalizations l10n) => "RGB";
 String _sVideoOption(final AppLocalizations l10n) => "S-Video";
 String _compositeOption(final AppLocalizations l10n) => "Composite";
@@ -260,7 +261,7 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         asset: "shaders/crt.frag",
         minScalingFactor: 4,
         parameters: <ExportShaderParameter>[
-          ExportShaderChoiceParameter(uniform: "uMedium", label: _mediumLabel, section: _mediumSection, options: <String Function(AppLocalizations)>[_noneOption, _vhsOption, _betamaxOption, _video8Option], initial: 1),
+          ExportShaderChoiceParameter(uniform: "uMedium", label: _mediumLabel, section: _mediumSection, options: <String Function(AppLocalizations)>[_noneOption, _vhsOption, _betamaxOption, _video8Option, _technicolorOption], initial: 1),
           ExportShaderSliderParameter(uniform: "uWear", label: _wearLabel, section: _mediumSection, min: 0.0, max: 1.0, initial: 0.5, format: ExportShaderValueFormat.percent),
           ExportShaderChoiceParameter(uniform: "uSignal", label: _signalLabel, section: _signalSection, options: <String Function(AppLocalizations)>[_rgbOption, _sVideoOption, _compositeOption, _rfOption], initial: 2),
           ExportShaderSliderParameter(uniform: "uArtifacts", label: _artifactsLabel, section: _signalSection, min: 0.0, max: 1.0, initial: 0.3, format: ExportShaderValueFormat.percent),

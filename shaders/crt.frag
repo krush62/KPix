@@ -41,6 +41,9 @@ out vec4 fragColor;
 
 const float PI = 3.14159265;
 
+// opacity of the white Video8 dropout specks (0 = invisible, 1 = solid white flash)
+const float VIDEO8_DROPOUT_OPACITY = 0.3;
+
 bool isMode(float value, float mode)
 {
     return abs(value - mode) < 0.5;
@@ -118,18 +121,14 @@ vec3 lineSignal(float x, float r)
     bool pal = isMode(uEncoding, 1.0);
     bool yc = separateChroma();
 
-    // tape: per line timing jitter (Betamax runs steadiest) and the head switching distortion at the bottom
+    // tape: per line timing jitter (Betamax runs steadiest)
     if (tape)
     {
         x += (hash(vec2(r, 17.0)) - 0.5) * byTape(0.8, 0.4, 0.6) * wear;
-        if (r >= uSourceSize.y - max(2.0, floor(uSourceSize.y * 0.02)))
-        {
-            x += (2.0 + 3.0 * hash(vec2(r, 5.0))) * wear;
-        }
     }
 
-    // the thin metal tape of Video8 drops out often: the deck fills most dropouts with the line above,
-    // the others flash white
+    // the thin metal tape of Video8 drops out often: the deck fills about half of the dropouts with the
+    // line above, the others show as faint white specks
     float sampleRow = r;
     float dropout = 0.0;
     if (tape && isMode(uMedium, 3.0))
@@ -137,15 +136,15 @@ vec3 lineSignal(float x, float r)
         float cell = floor(x / 6.0);
         vec2 id = vec2(cell, r + 0.375);
         float begin = cell * 6.0 + 3.0 * hash(id + 0.25);
-        if (hash(id) < 0.08 * wear && x >= begin && x < begin + 1.0 + 2.0 * hash(id + 0.5))
+        if (hash(id) < 0.12 * wear && x >= begin && x < begin + 1.0 + 2.0 * hash(id + 0.5))
         {
-            if (hash(id + 0.75) < 0.7)
+            if (hash(id + 0.75) < 0.45)
             {
                 sampleRow = r - 1.0;
             }
             else
             {
-                dropout = 1.0;
+                dropout = VIDEO8_DROPOUT_OPACITY;
             }
         }
     }
@@ -249,7 +248,7 @@ vec3 lineSignal(float x, float r)
             }
             else
             {
-                // Video8 keeps more color than VHS and lifts the blacks less; a dropout flashes white
+                // Video8 keeps more color than VHS and lifts the blacks less; a dropout shows as a faint white speck
                 s.yz *= (1.0 - 0.25 * wear) * (1.0 - dropout);
                 s.x = mix(0.04 * wear + s.x * (1.0 - 0.08 * wear), 0.8 + 0.4 * (hash(vec2(floor(x * 4.0), r + 0.625)) - 0.5), dropout);
                 wide.x = 0.04 * wear + wide.x * (1.0 - 0.08 * wear);
@@ -457,7 +456,7 @@ void main()
     vec3 sigma0 = mix(vec3(0.2), vec3(0.4), c0);
     vec3 sigma1 = mix(vec3(0.2), vec3(0.4), c1);
     vec3 beam = c0 * exp(-0.5 * (f * f) / (sigma0 * sigma0)) / (sigma0 * 2.5066)
-              + c1 * exp(-0.5 * ((1.0 - f) * (1.0 - f)) / (sigma1 * sigma1)) / (sigma1 * 2.5066);
+    + c1 * exp(-0.5 * ((1.0 - f) * (1.0 - f)) / (sigma1 * sigma1)) / (sigma1 * 2.5066);
     vec3 color = mix(f < 0.5 ? c0 : c1, beam, clamp(uScanlines, 0.0, 1.0));
 
     color *= maskColor(floor(q));

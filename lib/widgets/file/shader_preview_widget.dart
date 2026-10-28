@@ -43,9 +43,12 @@ abstract final class ShaderPreviewWidgetOptions
   static const Color checkerboardDark = Color(0xFF6A6A6A);
   static const double hintBorderWidth = 2.0;
   static const double hintIconSize = 24.0;
+  static const double previewHintSize = 32.0;
+  static const double previewHintBlur = 3.0;
 }
 
-/// Shows the visible part of the shaded output at its real resolution; drag to move, scroll or pinch to zoom.
+/// Shows the visible part of the shaded output at its real resolution; drag to move, scroll or pinch to zoom,
+/// hold to see the unshaded original at the same place.
 /// Warns next to the zoom controls when the scaling is below the shader's minimum.
 class ShaderPreviewWidget extends StatefulWidget
 {
@@ -76,6 +79,7 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
   final ValueNotifier<int> _zoomIndex = ValueNotifier<int>(_oneToOneIndex);
   /// The output pixel shown in the middle of the preview.
   final ValueNotifier<Offset> _center = ValueNotifier<Offset>(Offset.zero);
+  final ValueNotifier<bool> _showOriginal = ValueNotifier<bool>(false);
   late final ui.Image _checkerboard;
   late final Timer _renderTimer;
   final List<ui.Image> _imagesToRetire = <ui.Image>[];
@@ -191,6 +195,7 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
     _rendered.dispose();
     _zoomIndex.dispose();
     _center.dispose();
+    _showOriginal.dispose();
     if (last != null)
     {
       _retireImage(image: last.image);
@@ -505,22 +510,33 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
             return Stack(
               children: <Widget>[
                 Positioned.fill(
-                  child: Listener(
-                    onPointerSignal: _pointerSignal,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onScaleStart: _scaleStart,
-                      onScaleUpdate: _scaleUpdate,
-                      child: CustomPaint(
-                        painter: _ShaderPreviewPainter(
-                          rendered: _rendered,
-                          zoomIndex: _zoomIndex,
-                          center: _center,
-                          checkerboard: _checkerboard,
-                          originPhysical: _originPhysical,
-                          pixelRatio: _pixelRatio,
-                          scaling: widget.scaling,
-                          outputSize: Size(_outputWidth.toDouble(), _outputHeight.toDouble()),
+                  child: Tooltip(
+                    message: l10n.holdToShowOriginal,
+                    //a long press is how the original is asked for, the hover is left
+                    triggerMode: TooltipTriggerMode.manual,
+                    child: Listener(
+                      onPointerSignal: _pointerSignal,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        //a drag cancels the press, so moving the view shows the shaded output
+                        onTapDown: (final TapDownDetails details) {_showOriginal.value = true;},
+                        onTapUp: (final TapUpDetails details) {_showOriginal.value = false;},
+                        onTapCancel: () {_showOriginal.value = false;},
+                        onScaleStart: _scaleStart,
+                        onScaleUpdate: _scaleUpdate,
+                        child: CustomPaint(
+                          painter: _ShaderPreviewPainter(
+                            rendered: _rendered,
+                            zoomIndex: _zoomIndex,
+                            center: _center,
+                            showOriginal: _showOriginal,
+                            source: widget.source,
+                            checkerboard: _checkerboard,
+                            originPhysical: _originPhysical,
+                            pixelRatio: _pixelRatio,
+                            scaling: widget.scaling,
+                            outputSize: Size(_outputWidth.toDouble(), _outputHeight.toDouble()),
+                          ),
                         ),
                       ),
                     ),
@@ -528,6 +544,22 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
                 ),
                 if (widget.source == null)
                   const Center(child: CircularProgressIndicator()),
+                Positioned(
+                  top: ShaderPreviewWidgetOptions.padding,
+                  right: ShaderPreviewWidgetOptions.padding,
+                  //shows that there is something to press here; the image below it can be any color,
+                  //so the icon carries its own outline
+                  child: IgnorePointer(
+                    child: Icon(
+                      TablerIcons.click,
+                      size: ShaderPreviewWidgetOptions.previewHintSize,
+                      color: Theme.of(context).primaryColorLight,
+                      shadows: <Shadow>[
+                        Shadow(color: Theme.of(context).primaryColorDark, blurRadius: ShaderPreviewWidgetOptions.previewHintBlur),
+                      ],
+                    ),
+                  ),
+                ),
                 Positioned(
                   left: ShaderPreviewWidgetOptions.padding,
                   right: ShaderPreviewWidgetOptions.padding,
@@ -557,6 +589,8 @@ class _ShaderPreviewPainter extends CustomPainter
   final ValueNotifier<_RenderedRegion?> rendered;
   final ValueNotifier<int> zoomIndex;
   final ValueNotifier<Offset> center;
+  final ValueNotifier<bool> showOriginal;
+  final ui.Image? source;
   final ui.Image checkerboard;
   final Offset Function() originPhysical;
   final double pixelRatio;
@@ -567,12 +601,14 @@ class _ShaderPreviewPainter extends CustomPainter
     required this.rendered,
     required this.zoomIndex,
     required this.center,
+    required this.showOriginal,
+    required this.source,
     required this.checkerboard,
     required this.originPhysical,
     required this.pixelRatio,
     required this.scaling,
     required this.outputSize,
-  }) : super(repaint: Listenable.merge(<Listenable>[rendered, zoomIndex, center]));
+  }) : super(repaint: Listenable.merge(<Listenable>[rendered, zoomIndex, center, showOriginal]));
 
   @override
   void paint(final Canvas canvas, final Size size)
@@ -591,6 +627,19 @@ class _ShaderPreviewPainter extends CustomPainter
     canvas.drawRect(outputRect, Paint()
       ..shader = ImageShader(checkerboard, TileMode.repeated, TileMode.repeated, (Matrix4.diagonal3Values(cell, cell, 1)..setTranslationRaw(origin.dx, origin.dy, 0)).storage, filterQuality: FilterQuality.none,),
     );
+
+    final ui.Image? original = source;
+    if (showOriginal.value && original != null)
+    {
+      //plain pixel scaling, the export without the shader; blocks of a physical pixel or more stay sharp
+      canvas.drawImageRect(
+        original,
+        Rect.fromLTWH(0, 0, original.width.toDouble(), original.height.toDouble()),
+        outputRect,
+        Paint()..filterQuality = zoom * scaling >= 1.0 ? FilterQuality.none : FilterQuality.medium,
+      );
+      return;
+    }
 
     final _RenderedRegion? current = rendered.value;
     if (current != null)
@@ -614,6 +663,6 @@ class _ShaderPreviewPainter extends CustomPainter
   @override
   bool shouldRepaint(covariant final _ShaderPreviewPainter oldDelegate)
   {
-    return oldDelegate.pixelRatio != pixelRatio || oldDelegate.scaling != scaling || oldDelegate.outputSize != outputSize || oldDelegate.rendered != rendered;
+    return oldDelegate.pixelRatio != pixelRatio || oldDelegate.scaling != scaling || oldDelegate.outputSize != outputSize || oldDelegate.rendered != rendered || oldDelegate.source != source;
   }
 }

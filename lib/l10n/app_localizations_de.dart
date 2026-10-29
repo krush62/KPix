@@ -1462,6 +1462,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get touchDelay => 'Berührungsverzögerung';
 
   @override
+  String get showNavigationJoysticks => 'Navigations-Joysticks';
+
+  @override
   String get stampManager => 'Stempelverwaltung';
 
   @override

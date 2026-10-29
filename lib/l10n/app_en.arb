@@ -616,6 +616,7 @@
   "colorPickTimeout": "Color Pick Timeout",
 
   "touchDelay": "Touch Delay",
+  "showNavigationJoysticks": "Navigation Joysticks",
 
   "stampManager": "Stamp Manager",
   "deleteSelectedStamp": "Delete Selected Stamp",

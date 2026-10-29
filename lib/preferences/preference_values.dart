@@ -112,6 +112,7 @@ class TouchPreferenceContent
 {
   final ValueNotifier<double> zoomStepDistance;
   final ValueNotifier<int> singleTouchDelay;
+  final ValueNotifier<bool> showJoysticks;
 
   final double zoomStepDistanceMin;
   final double zoomStepDistanceMax;
@@ -125,6 +126,7 @@ class TouchPreferenceContent
     required final double zoomStepDistance,
     required final double zoomStepDistanceMin,
     required final double zoomStepDistanceMax,
+    required final bool showJoysticks,
   })
   {
     return TouchPreferenceContent._(
@@ -134,6 +136,7 @@ class TouchPreferenceContent
       zoomStepDistance: ValueNotifier<double>(zoomStepDistance.clamp(zoomStepDistanceMin, zoomStepDistanceMax)),
       zoomStepDistanceMin: zoomStepDistanceMin,
       zoomStepDistanceMax: zoomStepDistanceMax,
+      showJoysticks: ValueNotifier<bool>(showJoysticks),
     );
   }
 
@@ -144,12 +147,14 @@ class TouchPreferenceContent
     required this.zoomStepDistance,
     required this.zoomStepDistanceMin,
     required this.zoomStepDistanceMax,
+    required this.showJoysticks,
   });
 
   void copyValuesFrom({required final TouchPreferenceContent other})
   {
     singleTouchDelay.value = other.singleTouchDelay.value;
     zoomStepDistance.value = other.zoomStepDistance.value;
+    showJoysticks.value = other.showJoysticks.value;
   }
 }
 

@@ -2804,6 +2804,12 @@ abstract class AppLocalizations {
   /// **'Touch Delay'**
   String get touchDelay;
 
+  /// No description provided for @showNavigationJoysticks.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation Joysticks'**
+  String get showNavigationJoysticks;
+
   /// No description provided for @stampManager.
   ///
   /// In en, this message translates to:

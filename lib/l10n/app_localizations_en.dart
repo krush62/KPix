@@ -1441,6 +1441,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get touchDelay => 'Touch Delay';
 
   @override
+  String get showNavigationJoysticks => 'Navigation Joysticks';
+
+  @override
   String get stampManager => 'Stamp Manager';
 
   @override

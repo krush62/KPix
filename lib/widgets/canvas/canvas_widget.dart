@@ -66,6 +66,7 @@ import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
+import 'package:kpix/widgets/canvas/touch_joystick_widget.dart';
 
 /// Layout options for [CanvasWidget].
 abstract final class _CanvasOptions
@@ -81,6 +82,10 @@ abstract final class _CanvasOptions
   static const int cursorTimeout = 100;
   static const int hoverExitDelay = 50;
   static const int reportedHoverTimeout = 1000;
+  static const double joystickPadding = 16.0;
+  static const double joystickPanSpeed = 1500.0;
+  static const double joystickZoomRateMin = 2.0;
+  static const double joystickZoomRateMax = 12.0;
 }
 
 /// Status of the touch pointer.
@@ -172,6 +177,8 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
   final Map<int, TouchPointerStatus> _touchPointers = <int, TouchPointerStatus>{};
   double _initialTouchZoomDistance = 0.0;
   int _touchZoomStartLevel = 1;
+  double _joystickZoomProgress = 0.0;
+  int _joystickZoomDirection = 0;
 
   /// Every periodic timer this state started, so [dispose] can stop all of them.
   ///
@@ -1216,6 +1223,45 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     }
   }
 
+  void _joystickPan({required final Offset deflection, required final double seconds})
+  {
+    _cancelOptimalZoom();
+    //squared for finer control near the center
+    final double speed = deflection.distanceSquared * _CanvasOptions.joystickPanSpeed;
+    _setOffset(newOffset: _canvasOffset.value - (deflection / deflection.distance) * speed * seconds);
+  }
+
+  void _joystickZoom({required final Offset deflection, required final double seconds})
+  {
+    _cancelOptimalZoom();
+    final int direction = deflection.dy < 0.0 ? 1 : (deflection.dy > 0.0 ? -1 : 0);
+    if (direction != _joystickZoomDirection)
+    {
+      //a fresh deflection zooms one step at once
+      _joystickZoomDirection = direction;
+      _joystickZoomProgress = direction.toDouble();
+    }
+    final double rate = _CanvasOptions.joystickZoomRateMin + (_CanvasOptions.joystickZoomRateMax - _CanvasOptions.joystickZoomRateMin) * deflection.dy.abs();
+    _joystickZoomProgress += direction * rate * seconds;
+    final int steps = _joystickZoomProgress.truncate();
+    if (steps != 0)
+    {
+      _joystickZoomProgress -= steps;
+      final Offset center = _viewportSize.center(Offset.zero);
+      final Offset centerBeforeZoom = (center - _canvasOffset.value) / _viewState.zoomFactor.toDouble();
+      if (_viewState.setZoomLevelByDistance(startZoomLevel: _viewState.zoomFactor, steps: steps))
+      {
+        _setOffset(newOffset: center - (centerBeforeZoom * _viewState.zoomFactor.toDouble()));
+      }
+    }
+  }
+
+  void _joystickZoomRelease()
+  {
+    _joystickZoomDirection = 0;
+    _joystickZoomProgress = 0.0;
+  }
+
 
   @override
   Widget build(final BuildContext context) {
@@ -1258,6 +1304,37 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
               ),
             ),
           ),
+        ),
+        ValueListenableBuilder<bool>(
+          valueListenable: _touchPrefs.showJoysticks,
+          builder: (final BuildContext context, final bool showJoysticks, final Widget? child)
+          {
+            if (!showJoysticks)
+            {
+              return const SizedBox.shrink();
+            }
+            return Stack(
+              children: <Widget>[
+                Positioned(
+                  left: _CanvasOptions.joystickPadding,
+                  bottom: _CanvasOptions.joystickPadding,
+                  child: TouchJoystickWidget(
+                    axis: JoystickAxis.vertical,
+                    onTick: _joystickZoom,
+                    onRelease: _joystickZoomRelease,
+                  ),
+                ),
+                Positioned(
+                  right: _CanvasOptions.joystickPadding,
+                  bottom: _CanvasOptions.joystickPadding,
+                  child: TouchJoystickWidget(
+                    axis: JoystickAxis.free,
+                    onTick: _joystickPan,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         ValueListenableBuilder<ToolType>(
           valueListenable: GetIt.I.get<ToolState>().selectedToolNotifier,

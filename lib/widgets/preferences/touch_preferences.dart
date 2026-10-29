@@ -54,6 +54,10 @@ class _TouchPreferencesState extends State<TouchPreferences>
           divisions: (widget.prefs.zoomStepDistanceMax - widget.prefs.zoomStepDistanceMin).round(),
           labelBuilder: (final double val) => "${val.round()}px",
         ),
+        PrefSwitchRow(
+          label: l10n.showNavigationJoysticks,
+          notifier: widget.prefs.showJoysticks,
+        ),
       ],
     );
   }

@@ -508,6 +508,7 @@
   "colorPickTimeout": "Pipetten-Timeout",
 
   "touchDelay": "Berührungsverzögerung",
+  "showNavigationJoysticks": "Navigations-Joysticks",
 
   "stampManager": "Stempelverwaltung",
   "deleteSelectedStamp": "Ausgewählten Stempel löschen",

@@ -148,6 +148,8 @@ enum PreferenceBool
   Gui_ShowCursorInfo(defaultValue: true),
   Gui_CursorInfoRight(defaultValue: true),
 
+  TouchOptions_ShowJoysticks(defaultValue: false),
+
 
   ;
   const PreferenceBool({
@@ -431,6 +433,7 @@ class PreferenceManager
       zoomStepDistance: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistance),
       zoomStepDistanceMin: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMin),
       zoomStepDistanceMax: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMax),
+      showJoysticks: _getValueB(PreferenceBool.TouchOptions_ShowJoysticks),
     );
 
     final DesktopPreferenceContent desktopContent = DesktopPreferenceContent(
@@ -512,7 +515,8 @@ class PreferenceManager
 
     //TOUCH PREFERENCES
     _intMap[PreferenceInt.TouchOptions_SingleTouchDelay]!.value = touchPreferenceContent.singleTouchDelay.value;
-    _doubleMap[PreferenceDouble.TouchOptions_ZoomStepDistanceMax]!.value = touchPreferenceContent.zoomStepDistance.value;
+    _doubleMap[PreferenceDouble.TouchOptions_ZoomStepDistance]!.value = touchPreferenceContent.zoomStepDistance.value;
+    _boolMap[PreferenceBool.TouchOptions_ShowJoysticks]!.value = touchPreferenceContent.showJoysticks.value;
 
     //DESKTOP PREFERENCES
     if (desktopPreferenceContent.cursorType.value != CursorType.fromId(_intMap[PreferenceInt.DesktopOptions_CursorType]!.value))

@@ -140,6 +140,10 @@ jobs:
         if: ${{ matrix.enabled }}
         run: flutter pub get
 
+      - name: Flutter • Licenses
+        if: ${{ matrix.enabled }}
+        run: dart run tool/generate_licenses.dart
+
       - name: Android • Setup signing
         if: ${{ matrix.enabled }}
         shell: bash
@@ -236,6 +240,10 @@ jobs:
       - name: Flutter • Dependencies
         if: ${{ matrix.enabled }}
         run: flutter pub get
+
+      - name: Flutter • Licenses
+        if: ${{ matrix.enabled }}
+        run: dart run tool/generate_licenses.dart
 
       - name: Install Linux build deps
         if: ${{ matrix.enabled && matrix.platform == 'linux' }}
@@ -539,6 +547,8 @@ jobs:
 
       - run: flutter pub get
 
+      - run: dart run tool/generate_licenses.dart
+
       - run: flutter build web --release
 
       - run: |
@@ -576,6 +586,9 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Generate licenses
+        run: dart run tool/generate_licenses.dart
 
       - name: Build macOS app
         run: flutter build macos --release

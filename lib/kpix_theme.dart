@@ -20,9 +20,10 @@ import 'package:flutter/material.dart';
 class ThemeNotifier extends ChangeNotifier
 {
   ThemeMode _themeMode = ThemeMode.system;
+
   ThemeMode get themeMode
   {
-   return _themeMode;
+    return _themeMode;
   }
 
   set themeMode(final ThemeMode theme)
@@ -30,87 +31,119 @@ class ThemeNotifier extends ChangeNotifier
     _themeMode = theme;
     notifyListeners();
   }
-
-  @override
-  void notifyListeners()
-  {
-    super.notifyListeners();
-  }
 }
 
 /// Currently used theme (system/light/dark).
 final ThemeNotifier themeSettings = ThemeNotifier();
 
+/// Base colors of a theme, exposed to widgets as [ThemeData.primaryColor],
+/// [ThemeData.primaryColorLight] and [ThemeData.primaryColorDark].
 class ColorSet
 {
+  final Brightness brightness;
   final Color normal;
   final Color light;
   final Color dark;
-  final int alphaB;
-  final int overlayAlpha;
-  final double elevation;
 
   const ColorSet({
+    required this.brightness,
     required this.normal,
     required this.light,
     required this.dark,
-    this.overlayAlpha = 32,
-    this.alphaB = 100,
-    this.elevation = 16.0,
   });
+
+  bool get isDark => brightness == Brightness.dark;
 }
 
+const Color notificationGreen = Color.fromARGB(200, 50, 200, 50);
 
-  const Color notificationGreen = Color.fromARGB(200, 50, 200, 50);
-  ColorSet _lightColors = ColorSet(normal: Colors.grey[350]!, light: Colors.grey[600]!, dark: Colors.grey[100]!);
+final ColorSet _lightColors = ColorSet(brightness: Brightness.light, normal: Colors.grey[350]!, light: Colors.grey[600]!, dark: Colors.grey[100]!);
+final ColorSet _darkColors = ColorSet(brightness: Brightness.dark, normal: Colors.grey[800]!, light: Colors.grey[400]!, dark: Colors.grey[900]!);
 
-  ButtonStyle _generalButtonStyle = ButtonStyle(
-    foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => (states.contains(WidgetState.disabled) ? _lightColors.normal : _lightColors.light)),
-    backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _lightColors.dark : _lightColors.normal),
-    overlayColor: WidgetStateProperty.all(_lightColors.light.withAlpha(_lightColors.overlayAlpha)),
-    surfaceTintColor: WidgetStateProperty.all(_lightColors.light),
+const String _fontFamily = "Oxanium";
+const BorderRadius _borderRadius = BorderRadius.all(Radius.circular(8));
+const int _buttonOverlayAlpha = 32;
+const int _controlOverlayAlpha = 100;
+const double _elevation = 16.0;
+
+final ThemeData monochromeTheme = _buildTheme(colors: _lightColors);
+final ThemeData monochromeThemeDark = _buildTheme(colors: _darkColors);
+
+TextStyle _textStyle({required final double size, required final double height, required final double spacing, required final FontWeight weight, required final Color color})
+{
+  return TextStyle(fontSize: size, height: height, letterSpacing: spacing, fontWeight: weight, color: color, fontFamily: _fontFamily);
+}
+
+TextTheme _buildTextTheme({required final Color color})
+{
+  TextStyle style(final double size, final double height, final double spacing, final FontWeight weight)
+  {
+    return _textStyle(size: size, height: height, spacing: spacing, weight: weight, color: color);
+  }
+
+  return TextTheme(
+    displayLarge: style(57, 1.2, 0.0, FontWeight.w400),
+    displayMedium: style(45, 1.2, 0.0, FontWeight.w400),
+    displaySmall: style(36, 1.2, 0.0, FontWeight.w400),
+
+    headlineLarge: style(32, 1.2, 0.0, FontWeight.w400),
+    headlineMedium: style(28, 1.4, 0.0, FontWeight.w400),
+    headlineSmall: style(24, 1.4, 0.0, FontWeight.w400),
+
+    titleLarge: style(22, 1.4, 0.0, FontWeight.w600),
+    titleMedium: style(16, 1.4, 0.15, FontWeight.w600),
+    titleSmall: style(14, 1.4, 0.1, FontWeight.w600),
+
+    labelLarge: style(14, 1.4, 0.1, FontWeight.w600),
+    labelMedium: style(12, 1.4, 0.5, FontWeight.w600),
+    labelSmall: style(11, 1.4, 0.5, FontWeight.w600),
+
+    bodyLarge: style(14, 1.5, 0.15, FontWeight.w400),
+    bodyMedium: style(12, 1.5, 0.25, FontWeight.w600),
+    bodySmall: style(10, 1.5, 0.4, FontWeight.w600),
+  );
+}
+
+WidgetStateProperty<T> _whenDisabled<T>({required final T disabled, required final T enabled})
+{
+  return WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? disabled : enabled);
+}
+
+WidgetStateProperty<T> _whenSelected<T>({required final T selected, required final T unselected})
+{
+  return WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? selected : unselected);
+}
+
+ThemeData _buildTheme({required final ColorSet colors})
+{
+  final bool isDark = colors.isDark;
+
+  final ButtonStyle generalButtonStyle = ButtonStyle(
+    foregroundColor: _whenDisabled(disabled: colors.normal, enabled: colors.light),
+    backgroundColor: _whenDisabled(disabled: colors.dark, enabled: colors.normal),
+    overlayColor: WidgetStatePropertyAll<Color>(colors.light.withAlpha(_buttonOverlayAlpha)),
+    surfaceTintColor: WidgetStatePropertyAll<Color>(colors.light),
     padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _lightColors.normal) : BorderSide(color: _lightColors.light)),
-    shape: WidgetStateProperty.all(
-      const RoundedRectangleBorder(
-        borderRadius:
-        BorderRadius.all(Radius.circular(8)),
-      ),
-    ),
+    side: _whenDisabled(disabled: BorderSide(color: colors.normal), enabled: BorderSide(color: colors.light)),
+    shape: const WidgetStatePropertyAll<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: _borderRadius)),
   );
 
+  // The light theme shows tooltips inverted.
+  final Color tooltipBackground = isDark ? colors.dark : colors.light;
+  final Color tooltipText = isDark ? colors.light : colors.dark;
 
-  ThemeData monochromeTheme = ThemeData(
-
-    primaryColor: _lightColors.normal,
-    primaryColorLight: _lightColors.light,
-    primaryColorDark: _lightColors.dark,
+  return ThemeData(
+    primaryColor: colors.normal,
+    primaryColorLight: colors.light,
+    primaryColorDark: colors.dark,
 
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.grey,
+      brightness: colors.brightness,
     ),
-    textTheme: TextTheme(
-      displayLarge: TextStyle(fontSize: 57, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
-      displayMedium: TextStyle(fontSize: 45, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
-      displaySmall: TextStyle(fontSize: 36, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
 
-      headlineLarge: TextStyle(fontSize: 32, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
-      headlineMedium: TextStyle(fontSize: 28, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
-      headlineSmall: TextStyle(fontSize: 24, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
-
-      titleLarge: TextStyle(fontSize: 22, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
-      titleMedium: TextStyle(fontSize: 16, height: 1.4, letterSpacing: 0.15, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
-      titleSmall: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
-
-      labelLarge: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
-      labelMedium: TextStyle(fontSize: 12, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
-      labelSmall: TextStyle(fontSize: 11, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
-
-      bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
-      bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
-      bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
-    ),
+    textTheme: _buildTextTheme(color: colors.light),
 
     tooltipTheme: TooltipThemeData(
       padding: const EdgeInsetsGeometry.all(6),
@@ -119,253 +152,83 @@ class ColorSet
       decoration: BoxDecoration(
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: _lightColors.light,
+            color: tooltipBackground,
             blurRadius: 8,
           ),
         ],
-        color: _lightColors.light,
-        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        color: tooltipBackground,
+        borderRadius: _borderRadius,
         border: BoxBorder.all(
           width: 2.0,
-          color: _lightColors.normal,
+          color: colors.normal,
         ),
       ),
-      textStyle: TextStyle(fontSize: 12, height: 1.4, letterSpacing: 0.7, fontWeight: FontWeight.w900, color: _lightColors.dark, fontFamily: "Oxanium"),
+      textStyle: _textStyle(size: 12, height: 1.4, spacing: 0.7, weight: FontWeight.w900, color: tooltipText),
     ),
 
     sliderTheme: SliderThemeData(
-      activeTrackColor: _lightColors.light,
-      inactiveTrackColor: _lightColors.dark,
-      thumbColor: _lightColors.light,
-      valueIndicatorColor: _lightColors.light,
-      valueIndicatorStrokeColor: _lightColors.normal,
-      overlayColor: _lightColors.dark.withAlpha(_lightColors.alphaB),
+      activeTrackColor: colors.light,
+      inactiveTrackColor: colors.dark,
+      thumbColor: colors.light,
+      valueIndicatorColor: colors.light,
+      valueIndicatorStrokeColor: colors.normal,
+      overlayColor: (isDark ? colors.light : colors.dark).withAlpha(_controlOverlayAlpha),
       valueIndicatorTextStyle: TextStyle(
-          color: _lightColors.dark,
+        color: isDark ? colors.normal : colors.dark,
       ),
       showValueIndicator: ShowValueIndicator.onDrag,
-
-    ),
-    switchTheme: SwitchThemeData(
-      thumbColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? _lightColors.normal : _lightColors.light) : _lightColors.normal),
-      trackColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? _lightColors.dark :_lightColors.normal) : _lightColors.dark),
-      trackOutlineColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _lightColors.normal : _lightColors.light),
-      overlayColor: WidgetStateProperty.all(_lightColors.normal.withAlpha(_lightColors.alphaB)),
-
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-        enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-                color: _lightColors.light,
-            ),
-        ),
-        focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-                color: _lightColors.light,
-            ),
-        ),
-    ),
-
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: _generalButtonStyle,
-    ),
-
-    filledButtonTheme: FilledButtonThemeData(
-      style: _generalButtonStyle,
-    ),
-
-    iconButtonTheme: IconButtonThemeData(
-      style: _generalButtonStyle,
-    ),
-
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ButtonStyle(
-        elevation: WidgetStateProperty.all(_lightColors.elevation),
-        shadowColor: WidgetStateProperty.all(_lightColors.dark),
-        foregroundColor: WidgetStateProperty.all(_lightColors.light),
-        backgroundColor: WidgetStateProperty.all(_lightColors.dark),
-        overlayColor: WidgetStateProperty.all(_lightColors.dark),
-        surfaceTintColor: WidgetStateProperty.all(_lightColors.light),
-        side: WidgetStateProperty.all(
-          BorderSide(
-            color: _lightColors.light,
-          ),
-        ),
-      ),
-    ),
-    segmentedButtonTheme: SegmentedButtonThemeData(
-        style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _lightColors.normal : _lightColors.light),
-          backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _lightColors.light : _lightColors.normal),
-          iconColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _lightColors.normal : _lightColors.light),
-          padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 2.0, right: 2.0)),
-          shape: const WidgetStatePropertyAll<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.all(Radius.circular(8.0)))),
-          side: WidgetStatePropertyAll<BorderSide>(BorderSide(width: 1, color: _lightColors.light))
-        ),
-    ),
-    textSelectionTheme: TextSelectionThemeData(
-      cursorColor: _lightColors.light,
-    ),
-    radioTheme: RadioThemeData(
-      backgroundColor: WidgetStateColor.resolveWith((final Set<WidgetState> states) => _lightColors.normal),
-      fillColor:  WidgetStateColor.resolveWith((final Set<WidgetState> states) => _lightColors.light),
-    ),
-
-  );
-
-
-
-
-  ColorSet _darkColors = ColorSet(normal: Colors.grey[800]!, light: Colors.grey[400]!, dark: Colors.grey[900]!);
-  ButtonStyle _generalButtonStyleDark = ButtonStyle(
-    foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => (states.contains(WidgetState.disabled) ? _darkColors.normal : _darkColors.light)),
-    backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _darkColors.dark : _darkColors.normal),
-    overlayColor: WidgetStateProperty.all(_darkColors.light.withAlpha(_darkColors.overlayAlpha)),
-    surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
-    padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
-    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _darkColors.normal) : BorderSide(color: _darkColors.light)),
-    shape: WidgetStateProperty.all(
-      const RoundedRectangleBorder(
-        borderRadius:
-        BorderRadius.all(Radius.circular(8)),
-      ),
-    ),
-  );
-  ThemeData monochromeThemeDark = ThemeData(
-
-    primaryColor: _darkColors.normal,
-    primaryColorLight: _darkColors.light,
-    primaryColorDark: _darkColors.dark,
-
-
-    colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.grey,
-        brightness: Brightness.dark,
-    ),
-
-    //fontFamily: "PixelFonts",
-
-    textTheme: TextTheme(
-        displayLarge: monochromeTheme.textTheme.displayLarge!.copyWith(color: _darkColors.light),
-        displayMedium: monochromeTheme.textTheme.displayMedium!.copyWith(color: _darkColors.light),
-        displaySmall: monochromeTheme.textTheme.displaySmall!.copyWith(color: _darkColors.light),
-
-        headlineLarge: monochromeTheme.textTheme.headlineLarge!.copyWith(color: _darkColors.light),
-        headlineMedium: monochromeTheme.textTheme.headlineMedium!.copyWith(color: _darkColors.light),
-        headlineSmall: monochromeTheme.textTheme.headlineSmall!.copyWith(color: _darkColors.light),
-
-        titleLarge: monochromeTheme.textTheme.titleLarge!.copyWith(color: _darkColors.light),
-        titleMedium: monochromeTheme.textTheme.titleMedium!.copyWith(color: _darkColors.light),
-        titleSmall: monochromeTheme.textTheme.titleSmall!.copyWith(color: _darkColors.light),
-
-        labelLarge: monochromeTheme.textTheme.labelLarge!.copyWith(color: _darkColors.light),
-        labelMedium: monochromeTheme.textTheme.labelMedium!.copyWith(color: _darkColors.light),
-        labelSmall: monochromeTheme.textTheme.labelSmall!.copyWith(color: _darkColors.light),
-
-        bodyLarge: monochromeTheme.textTheme.bodyLarge!.copyWith(color: _darkColors.light),
-        bodyMedium: monochromeTheme.textTheme.bodyMedium!.copyWith(color: _darkColors.light),
-        bodySmall: monochromeTheme.textTheme.bodySmall!.copyWith(color: _darkColors.light),
-    ),
-
-    tooltipTheme: TooltipThemeData(
-      waitDuration: monochromeTheme.tooltipTheme.waitDuration,
-      showDuration: monochromeTheme.tooltipTheme.showDuration,
-      padding: monochromeTheme.tooltipTheme.padding,
-      decoration: BoxDecoration(
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: _darkColors.dark,
-            blurRadius: 8,
-          ),
-        ],
-        color: _darkColors.dark,
-        borderRadius: const BorderRadius.all(Radius.circular(8)),
-        border: BoxBorder.all(
-          width: 2.0,
-          color: _darkColors.normal,
-        ),
-      ),
-      textStyle: monochromeTheme.tooltipTheme.textStyle!.copyWith(color: _darkColors.light),
-    ),
-
-    sliderTheme: SliderThemeData(
-      activeTrackColor: _darkColors.light,
-      inactiveTrackColor: _darkColors.dark,
-      thumbColor: _darkColors.light,
-      valueIndicatorColor: _darkColors.light,
-      valueIndicatorStrokeColor: _darkColors.normal,
-      overlayColor: _darkColors.light.withAlpha(_darkColors.alphaB),
-      valueIndicatorTextStyle: TextStyle(
-        color: _darkColors.normal,
-      ),
-      showValueIndicator: ShowValueIndicator.onDrag,
-
     ),
 
     switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? _darkColors.normal : _darkColors.light) : _darkColors.normal),
-        trackColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? _darkColors.dark : _darkColors.normal) : _darkColors.dark),
-        trackOutlineColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _darkColors.normal : _darkColors.light),
-        overlayColor: WidgetStateProperty.all(_darkColors.light.withAlpha(_darkColors.alphaB)),
+      thumbColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) && !states.contains(WidgetState.disabled) ? colors.light : colors.normal),
+      trackColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) && !states.contains(WidgetState.disabled) ? colors.normal : colors.dark),
+      trackOutlineColor: _whenDisabled(disabled: colors.normal, enabled: colors.light),
+      overlayColor: WidgetStatePropertyAll<Color>((isDark ? colors.light : colors.normal).withAlpha(_controlOverlayAlpha)),
     ),
 
     inputDecorationTheme: InputDecorationTheme(
       enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(
-              color: _darkColors.light,
-          ),
+        borderSide: BorderSide(color: colors.light),
       ),
       focusedBorder: UnderlineInputBorder(
-        borderSide: BorderSide(
-          color: _darkColors.light,
-        ),
+        borderSide: BorderSide(color: colors.light),
       ),
     ),
 
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: _generalButtonStyleDark,
-    ),
-
-    filledButtonTheme: FilledButtonThemeData(
-      style: _generalButtonStyleDark,
-    ),
-
-    iconButtonTheme: IconButtonThemeData(
-      style: _generalButtonStyleDark,
-    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(style: generalButtonStyle),
+    filledButtonTheme: FilledButtonThemeData(style: generalButtonStyle),
+    iconButtonTheme: IconButtonThemeData(style: generalButtonStyle),
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        elevation: WidgetStateProperty.all(_darkColors.elevation),
-        shadowColor: WidgetStateProperty.all(_darkColors.dark),
-        foregroundColor: WidgetStateProperty.all(_darkColors.light),
-        backgroundColor: WidgetStateProperty.all(_darkColors.dark),
-        overlayColor: WidgetStateProperty.all(_darkColors.normal),
-        surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
-          side: WidgetStateProperty.all(BorderSide(
-              color: _darkColors.light,
-          ),
-        ),
+        elevation: const WidgetStatePropertyAll<double>(_elevation),
+        shadowColor: WidgetStatePropertyAll<Color>(colors.dark),
+        foregroundColor: WidgetStatePropertyAll<Color>(colors.light),
+        backgroundColor: WidgetStatePropertyAll<Color>(colors.dark),
+        overlayColor: WidgetStatePropertyAll<Color>(isDark ? colors.normal : colors.dark),
+        surfaceTintColor: WidgetStatePropertyAll<Color>(colors.light),
+        side: WidgetStatePropertyAll<BorderSide>(BorderSide(color: colors.light)),
       ),
     ),
-    segmentedButtonTheme: SegmentedButtonThemeData(
-        style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _darkColors.normal : _darkColors.light),
-          backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _darkColors.light : _darkColors.normal),
-          iconColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _darkColors.normal : _darkColors.light),
-          padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 2.0, right: 2.0)),
-          shape: const WidgetStatePropertyAll<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.all(Radius.circular(8.0)))),
-          side: WidgetStatePropertyAll<BorderSide>(BorderSide(width: 1, color: _darkColors.light))
 
-        ),
-    ),
-    textSelectionTheme: TextSelectionThemeData(
-          cursorColor: _darkColors.light,
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        foregroundColor: _whenSelected(selected: colors.normal, unselected: colors.light),
+        backgroundColor: _whenSelected(selected: colors.light, unselected: colors.normal),
+        iconColor: _whenSelected(selected: colors.normal, unselected: colors.light),
+        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 2.0)),
+        shape: const WidgetStatePropertyAll<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: _borderRadius)),
+        side: WidgetStatePropertyAll<BorderSide>(BorderSide(color: colors.light)),
       ),
+    ),
+
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: colors.light,
+    ),
 
     radioTheme: RadioThemeData(
-      backgroundColor: WidgetStateColor.resolveWith((final Set<WidgetState> states) => _darkColors.normal),
-      fillColor:  WidgetStateColor.resolveWith((final Set<WidgetState> states) => _darkColors.light),
+      backgroundColor: WidgetStatePropertyAll<Color>(colors.normal),
+      fillColor: WidgetStatePropertyAll<Color>(colors.light),
     ),
   );
+}

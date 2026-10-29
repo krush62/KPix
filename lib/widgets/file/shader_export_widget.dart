@@ -18,6 +18,7 @@
 
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
@@ -98,7 +99,11 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
       }
       _source.value = image;
     });
-    _hotkeyManager.getFocusNode(id: FocusNodeEntry.shaderExportFileNameTextFocus).requestFocus();
+    //the on-screen keyboard would cover half of the dialog
+    if (defaultTargetPlatform != TargetPlatform.android)
+    {
+      _hotkeyManager.getFocusNode(id: FocusNodeEntry.shaderExportFileNameTextFocus).requestFocus();
+    }
   }
 
   @override

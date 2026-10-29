@@ -149,6 +149,15 @@ class _TextFocusSuppressor implements HotkeySuppressor
 
 class HotkeyManager
 {
+  //the focus traversal of the app consumes their key down, so they fire on key up only
+  static const Set<SingleActivator> _keyUpActivators = <SingleActivator>{
+    SingleActivator(LogicalKeyboardKey.arrowLeft),
+    SingleActivator(LogicalKeyboardKey.arrowRight),
+    SingleActivator(LogicalKeyboardKey.arrowUp),
+    SingleActivator(LogicalKeyboardKey.arrowDown),
+    SingleActivator(LogicalKeyboardKey.tab),
+  };
+
   bool _isActive = true;
   final Set<Object> _suppressors = <Object>{};
   late final _TextFocusSuppressor _textFocusSuppressor = _TextFocusSuppressor(focusNodes: _focusNodes);
@@ -208,7 +217,9 @@ class HotkeyManager
     _createShortcuts();
     _createNotifiers();
     _createCallbackMap();
-    _createFocusNodeListeners();
+    _createFocusNodes();
+    //a focused text field that is removed (e.g. with its dialog) never notifies its own node
+    FocusManager.instance.addListener(_checkListeners);
   }
 
   void handleMouseEvent(final PointerDownEvent event)
@@ -249,15 +260,7 @@ class HotkeyManager
       //ARROW KEY AND TAB HANDLING
       if (evt is KeyUpEvent && !_altIsPressed.value && !_controlIsPressed.value && !_shiftIsPressed.value)
       {
-        const Set<SingleActivator> actionActivators = <SingleActivator>{
-          SingleActivator(LogicalKeyboardKey.arrowLeft),
-          SingleActivator(LogicalKeyboardKey.arrowRight),
-          SingleActivator(LogicalKeyboardKey.arrowUp),
-          SingleActivator(LogicalKeyboardKey.arrowDown),
-          SingleActivator(LogicalKeyboardKey.tab),
-        };
-
-        for (final SingleActivator activator in actionActivators)
+        for (final SingleActivator activator in _keyUpActivators)
         {
           if (evt.logicalKey == activator.trigger)
           {
@@ -450,7 +453,7 @@ class HotkeyManager
     final Map<SingleActivator, VoidCallback> cbMap = <SingleActivator, VoidCallback>{};
     for (final MapEntry<SingleActivator, HotkeyAction> shortCutEntry in _shortCutMap.entries)
     {
-      if (_actionMap[shortCutEntry.value] != null)
+      if (_actionMap[shortCutEntry.value] != null && !_keyUpActivators.contains(shortCutEntry.key))
       {
         cbMap[shortCutEntry.key] = _actionMap[shortCutEntry.value]!;
       }
@@ -458,13 +461,11 @@ class HotkeyManager
     _callbackMap.value = cbMap;
   }
 
-  void _createFocusNodeListeners()
+  void _createFocusNodes()
   {
     for (final FocusNodeEntry entry in FocusNodeEntry.values)
     {
-      final FocusNode fn = FocusNode();
-      _focusNodes[entry] = fn;
-      fn.addListener(_checkListeners);
+      _focusNodes[entry] = FocusNode();
     }
   }
 

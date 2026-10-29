@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
@@ -185,6 +186,32 @@ void main()
       overlay.isVisible = false;
       manager.activateCallbacks(source: overlay);
       expect(manager.callbackMap, isNotEmpty);
+    });
+
+    testWidgets("hiding a dialog whose text field still has focus re-enables the hotkeys", (final WidgetTester tester) async {
+      final HotkeyManager manager = HotkeyManager();
+      GetIt.I.registerSingleton<HotkeyManager>(manager);
+      addTearDown(GetIt.I.reset);
+      await _pumpHost(tester, manager);
+
+      final FocusNode dialogField = manager.getFocusNode(id: FocusNodeEntry.newProjectWidthTextFocus);
+      final KPixOverlay dialog = KPixOverlay(
+        entry: OverlayEntry(builder: (final BuildContext context) => Material(child: TextField(focusNode: dialogField))),
+      );
+      dialog.show(context: tester.element(find.byType(TextField)));
+      await tester.pump();
+      dialogField.requestFocus();
+      await tester.pump();
+      expect(manager.callbackMap, isEmpty);
+
+      //confirming with enter or tapping a button by touch leaves the field focused
+      dialog.hide();
+      await tester.pump();
+      expect(manager.callbackMap, isNotEmpty);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      expect(manager.shiftIsPressed, isTrue);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
     });
 
     testWidgets("hiding one of two overlays keeps the hotkeys disabled", (final WidgetTester tester) async {

@@ -83,16 +83,51 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
       _animationController.forward();
     }
 
-    _hotkeyManager.addListener(func: () {widget.timeline.togglePlaying();}, action: HotkeyAction.timelinePlay);
-    _hotkeyManager.addListener(func: () {widget.timeline.selectNextFrame();}, action: HotkeyAction.timelineNextFrame);
-    _hotkeyManager.addListener(func: () {widget.timeline.selectPreviousFrame();}, action: HotkeyAction.timelinePreviousFrame);
-    _hotkeyManager.addListener(func: () {if (!widget.timeline.isPlaying.value && widget.timeline.frames.value.length > 1 && widget.timeline.selectedFrameIndex > 0) widget.timeline.moveFrameLeft();}, action: HotkeyAction.timelineMoveFrameLeft);
-    _hotkeyManager.addListener(func: () {if (!widget.timeline.isPlaying.value && widget.timeline.frames.value.length > 1 && widget.timeline.selectedFrameIndex < widget.timeline.frames.value.length - 1) widget.timeline.moveFrameRight();}, action: HotkeyAction.timelineMoveFrameRight);
-    _hotkeyManager.addListener(func: () {_toggleFrameBlending();}, action: HotkeyAction.timelineToggleFrameBlending);
-    _hotkeyManager.addListener(func: () {_expandView();}, action: HotkeyAction.timelineExpand);
-    _hotkeyManager.addListener(func: () {_collapseView();}, action: HotkeyAction.timelineCollapse);
+    _hotkeyManager.addListener(func: _togglePlayingHotkey, action: HotkeyAction.timelinePlay);
+    _hotkeyManager.addListener(func: _nextFrameHotkey, action: HotkeyAction.timelineNextFrame);
+    _hotkeyManager.addListener(func: _previousFrameHotkey, action: HotkeyAction.timelinePreviousFrame);
+    _hotkeyManager.addListener(func: _moveFrameLeftHotkey, action: HotkeyAction.timelineMoveFrameLeft);
+    _hotkeyManager.addListener(func: _moveFrameRightHotkey, action: HotkeyAction.timelineMoveFrameRight);
+    _hotkeyManager.addListener(func: _toggleFrameBlending, action: HotkeyAction.timelineToggleFrameBlending);
+    _hotkeyManager.addListener(func: _expandView, action: HotkeyAction.timelineExpand);
+    _hotkeyManager.addListener(func: _collapseView, action: HotkeyAction.timelineCollapse);
+  }
 
+  //the widget is remounted with every new project
+  @override
+  void dispose()
+  {
+    _hotkeyManager.removeListener(func: _togglePlayingHotkey, action: HotkeyAction.timelinePlay);
+    _hotkeyManager.removeListener(func: _nextFrameHotkey, action: HotkeyAction.timelineNextFrame);
+    _hotkeyManager.removeListener(func: _previousFrameHotkey, action: HotkeyAction.timelinePreviousFrame);
+    _hotkeyManager.removeListener(func: _moveFrameLeftHotkey, action: HotkeyAction.timelineMoveFrameLeft);
+    _hotkeyManager.removeListener(func: _moveFrameRightHotkey, action: HotkeyAction.timelineMoveFrameRight);
+    _hotkeyManager.removeListener(func: _toggleFrameBlending, action: HotkeyAction.timelineToggleFrameBlending);
+    _hotkeyManager.removeListener(func: _expandView, action: HotkeyAction.timelineExpand);
+    _hotkeyManager.removeListener(func: _collapseView, action: HotkeyAction.timelineCollapse);
+    _animationController.dispose();
+    isExpanded.dispose();
+    super.dispose();
+  }
 
+  void _togglePlayingHotkey() => widget.timeline.togglePlaying();
+  void _nextFrameHotkey() => widget.timeline.selectNextFrame();
+  void _previousFrameHotkey() => widget.timeline.selectPreviousFrame();
+
+  void _moveFrameLeftHotkey()
+  {
+    if (!widget.timeline.isPlaying.value && widget.timeline.frames.value.length > 1 && widget.timeline.selectedFrameIndex > 0)
+    {
+      widget.timeline.moveFrameLeft();
+    }
+  }
+
+  void _moveFrameRightHotkey()
+  {
+    if (!widget.timeline.isPlaying.value && widget.timeline.frames.value.length > 1 && widget.timeline.selectedFrameIndex < widget.timeline.frames.value.length - 1)
+    {
+      widget.timeline.moveFrameRight();
+    }
   }
 
   void _expandView()

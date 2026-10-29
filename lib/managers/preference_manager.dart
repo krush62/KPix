@@ -15,6 +15,7 @@
  */
 
 // ignore_for_file: constant_identifier_names
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_language.dart';
 import 'package:kpix/kpix_theme.dart';
@@ -148,14 +149,18 @@ enum PreferenceBool
   Gui_ShowCursorInfo(defaultValue: true),
   Gui_CursorInfoRight(defaultValue: true),
 
-  TouchOptions_ShowJoysticks(defaultValue: false),
+  TouchOptions_ShowJoysticks(defaultValue: false, defaultValueAndroid: true),
 
 
   ;
   const PreferenceBool({
     required this.defaultValue,
+    this.defaultValueAndroid,
   });
   final bool defaultValue;
+  final bool? defaultValueAndroid;
+
+  bool get platformDefaultValue => defaultTargetPlatform == TargetPlatform.android ? defaultValueAndroid ?? defaultValue : defaultValue;
 }
 
 enum PreferenceString
@@ -252,7 +257,7 @@ class PreferenceManager
 
     for (final PreferenceBool boolEnum in PreferenceBool.values)
     {
-      _boolMap[boolEnum] = _Pair<bool>(val: _prefs.getBool(boolEnum.name) ?? boolEnum.defaultValue);
+      _boolMap[boolEnum] = _Pair<bool>(val: _prefs.getBool(boolEnum.name) ?? boolEnum.platformDefaultValue);
     }
 
     for (final PreferenceString stringEnum in PreferenceString.values)

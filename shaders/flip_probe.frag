@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: Andreas Kruschinski
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 #include <flutter/runtime_effect.glsl>
 
 uniform vec2 uSize;

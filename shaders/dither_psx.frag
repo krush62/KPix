@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: Andreas Kruschinski
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 // PlayStation 1 style dithering with controls.
 // PS1 defaults: uColorDepth = 5, uDitherStrength = 1, uRounding = 0, uFullRange = 1
 

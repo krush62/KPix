@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: 2022 torcado
+// SPDX-License-Identifier: MIT
+
 #include <flutter/runtime_effect.glsl>
 
 // cleanEdge pixel art scaling by torcado, ported from the libretro slang version (ported to slang by hunterk),

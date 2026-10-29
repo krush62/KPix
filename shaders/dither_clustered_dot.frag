@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: Andreas Kruschinski
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 // Clustered-dot (halftone) dithering upscaler.
 // Each source pixel becomes one halftone cell of uScale x uScale output pixels.
 

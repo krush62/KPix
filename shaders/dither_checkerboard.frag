@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: Andreas Kruschinski
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 // Checkerboard dithering: each channel is either a solid quantized level
 // or a 50% checkerboard of the two nearest levels.
 

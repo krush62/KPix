@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: 2023 gizmo98
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 /*
  * gizmo98 bayer dithering shader
  * Copyright (C) 2023 gizmo98

@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: Andreas Kruschinski
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 // Cel shading: the original colors with adjustable saturation, and a sharp black line between cells of
 // different hues. Inspired by "Advanced Cartoon" from the libretro slang shaders.
 

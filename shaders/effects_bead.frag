@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: Themaister
+// SPDX-License-Identifier: LicenseRef-PublicDomain
+
 /*
    Bead shader
    Author: Themaister

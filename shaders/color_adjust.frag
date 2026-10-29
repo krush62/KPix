@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: Andreas Kruschinski
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 // Color manipulation: adjustments -> color reduction -> palette mapping.
 
 #include <flutter/runtime_effect.glsl>

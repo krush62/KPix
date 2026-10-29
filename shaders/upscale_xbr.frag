@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: 2011-2022 Hyllian <sergiogdb@gmail.com>
+// SPDX-License-Identifier: MIT
+
 #include <flutter/runtime_effect.glsl>
 
 // Hyllian's xBR-lv2 (standalone), ported from the libretro slang version, corner detection C.

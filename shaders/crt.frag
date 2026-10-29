@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: Andreas Kruschinski
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 // CRT: the analog chain from the medium over the signal and its color encoding to the TV.
 // One scanline per source row; the analog stages work along the lines in source pixels and in gamma
 // space like real video, the tube (beam, mask, glow) works in linear light and the mask in output pixels.

@@ -1,6 +1,10 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: 2011-2016 Hyllian <sergiogdb@gmail.com>
+// SPDX-FileCopyrightText: Zenju <zenju@gmx.de>
+// SPDX-License-Identifier: MIT AND GPL-3.0-only
+
 #include <flutter/runtime_effect.glsl>
 
 // xBRZ freescale, ported from the libretro slang version.

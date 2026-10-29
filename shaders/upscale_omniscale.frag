@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: 2015-2016 Lior Halphon
+// SPDX-License-Identifier: MIT
+
 #include <flutter/runtime_effect.glsl>
 
 // OmniScale by Lior Halphon, ported from the libretro slang version (ported to slang by hunterk).

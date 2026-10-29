@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: Andreas Kruschinski
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 // LCD: every source pixel is a cell of a liquid crystal panel. The grid and the subpixels work in gamma space;
 // the light of the panel (black level, backlight, glow, pixel shadow) works in linear light on top of them.
 

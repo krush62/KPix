@@ -1,7 +1,12 @@
 #version 460 core
 precision highp float;
 
-// CMYK halftone dot shader, ported to Flutter, with artistic controls.
+// SPDX-FileCopyrightText: Stefan Gustavson
+// SPDX-FileCopyrightText: hunterk
+// SPDX-License-Identifier: LicenseRef-PublicDomain
+
+// CMYK halftone dot shader, adapted from Stefan Gustavson's WebGL demo (public domain), ported from the
+// libretro slang version (ported by hunterk), with artistic controls.
 
 #include <flutter/runtime_effect.glsl>
 

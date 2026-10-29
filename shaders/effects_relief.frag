@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: Andreas Kruschinski
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 // Relief: every source pixel is raised by its brightness and/or alpha, the steps between them become
 // bevels, lit by a directional light. Flat areas keep their color, only the bevels get light and shadow.
 

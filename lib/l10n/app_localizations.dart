@@ -2264,6 +2264,54 @@ abstract class AppLocalizations {
   /// **'Shadow'**
   String get shadowMask;
 
+  /// No description provided for @panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Panel'**
+  String get panel;
+
+  /// No description provided for @panelColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Panel Colors'**
+  String get panelColors;
+
+  /// No description provided for @blackLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Black Level'**
+  String get blackLevel;
+
+  /// No description provided for @unevenBacklight.
+  ///
+  /// In en, this message translates to:
+  /// **'Uneven Backlight'**
+  String get unevenBacklight;
+
+  /// No description provided for @glow.
+  ///
+  /// In en, this message translates to:
+  /// **'Glow'**
+  String get glow;
+
+  /// No description provided for @glowRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Glow Radius'**
+  String get glowRadius;
+
+  /// No description provided for @pixelShadow.
+  ///
+  /// In en, this message translates to:
+  /// **'Pixel Shadow'**
+  String get pixelShadow;
+
+  /// No description provided for @shadowDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Shadow Distance'**
+  String get shadowDistance;
+
   /// No description provided for @outlineWidth.
   ///
   /// In en, this message translates to:

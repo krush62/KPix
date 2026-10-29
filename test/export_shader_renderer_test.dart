@@ -51,10 +51,13 @@ Future<ui.Image> _source({required final int width, required final int height, r
   return image;
 }
 
-/// Softness and subpixels start switched off, so the tests do not depend on the tuned defaults.
+/// Softness, subpixels and the panel light start switched off, so the tests do not depend on the tuned defaults.
 ExportShaderValues _lcd({final Map<String, Object> overrides = const <String, Object>{}})
 {
-  final Map<String, Object> settings = <String, Object>{"uSoftness": 0.0, "uSubpixels": 0.0, ...overrides};
+  final Map<String, Object> settings = <String, Object>{
+    "uSoftness": 0.0, "uSubpixels": 0.0, "uPanelColors": 0.0, "uBlackLevel": 0.0, "uUnevenness": 0.0, "uGlow": 0.0, "uPixelShadow": 0.0,
+    ...overrides,
+  };
   final ExportShaderValues values = ExportShaderValues(definition: exportShaderDefinitions[ExportShaderType.lcd]!);
   for (final ExportShaderParameter parameter in values.variant.parameters)
   {
@@ -244,12 +247,95 @@ void main()
       });
     });
 
+    final Map<String, Map<String, Object>> panelEffects = <String, Map<String, Object>>{
+      "panel colors": <String, Object>{"uPanelColors": 1.0},
+      "black level": <String, Object>{"uBlackLevel": 1.0},
+      "uneven backlight": <String, Object>{"uUnevenness": 1.0},
+      "glow": <String, Object>{"uGlow": 1.0},
+      "pixel shadow": <String, Object>{"uPixelShadow": 1.0},
+    };
+    for (final MapEntry<String, Map<String, Object>> effect in panelEffects.entries)
+    {
+      testWidgets("${effect.key} changes the image on its own", (final WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final ui.Image source = await _source(width: 5, height: 4, color: (final int x, final int y) => <ui.Color>[const ui.Color(0xFFE04030), const ui.Color(0xFF30C040), const ui.Color(0xFF3060E0), const ui.Color(0xFFF0F0F0), const ui.Color(0xFF101010)][(x + 2 * y) % 5]);
+          final (Uint8List, int) off = await _render(values: _lcd(), source: source, scaling: 6);
+          final (Uint8List, int) on = await _render(values: _lcd(overrides: effect.value), source: source, scaling: 6);
+
+          expect(_sameBytes(off.$1, on.$1), isFalse);
+          source.dispose();
+        });
+      });
+    }
+
+    testWidgets("glow lights the grid next to bright cells, not far away", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        //a white cell among black ones, under a black grid; one pixel wide lines are the last column of a cell
+        final ui.Image source = await _source(width: 6, height: 1, color: (final int x, final int y) => x == 1 ? const ui.Color(0xFFFFFFFF) : const ui.Color(0xFF000000));
+        final Map<String, Object> grid = <String, Object>{"uGridGray": 0.0, "uBrightness": 1.0, "uGlowRadius": 0.5};
+        final (Uint8List, int) dark = await _render(values: _lcd(overrides: grid), source: source, scaling: 8);
+        final (Uint8List, int) glowing = await _render(values: _lcd(overrides: <String, Object>{...grid, "uGlow": 1.0}), source: source, scaling: 8);
+
+        expect(_pixel(dark, 15, 3)[0], 0);
+        expect(_pixel(glowing, 15, 3)[0], greaterThan(60), reason: "the line next to the white cell");
+        expect(_pixel(glowing, 39, 3)[0], lessThan(8), reason: "a line three cells away");
+        expect(_pixel(glowing, 11, 3), _pixel(dark, 11, 3), reason: "the white cell itself");
+        source.dispose();
+      });
+    });
+
+    testWidgets("black level lets a little bluish backlight through black cells", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 1, height: 1, color: (final int x, final int y) => const ui.Color(0xFF000000));
+        final (Uint8List, int) out = await _render(values: _lcd(overrides: <String, Object>{"uBlackLevel": 1.0}), source: source, scaling: 4);
+
+        final List<int> p = _pixel(out, 1, 1);
+        expect(p[0], greaterThan(20));
+        expect(p[2], greaterThan(p[0]));
+        source.dispose();
+      });
+    });
+
+    testWidgets("panel colors mute saturated colors and keep white neutral", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 2, height: 1, color: (final int x, final int y) => x == 0 ? _red : const ui.Color(0xFFFFFFFF));
+        final (Uint8List, int) out = await _render(values: _lcd(overrides: <String, Object>{"uPanelColors": 1.0, "uBrightness": 1.0}), source: source, scaling: 4);
+
+        final List<int> red = _pixel(out, 1, 1);
+        expect(red[0], greaterThan(red[1]));
+        expect(red[1], greaterThan(40));
+        expect(red[2], greaterThan(40));
+        final List<int> white = _pixel(out, 5, 1);
+        expect(white[1], white[0]);
+        expect(white[2], white[0]);
+        source.dispose();
+      });
+    });
+
+    testWidgets("pixel shadow falls towards the bottom right of dark cells", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        //a black cell in white ones; a 50% grid leaves the colors unchanged
+        final ui.Image source = await _source(width: 3, height: 3, color: (final int x, final int y) => x == 1 && y == 1 ? const ui.Color(0xFF000000) : const ui.Color(0xFFFFFFFF));
+        final Map<String, Object> settings = <String, Object>{"uGridGray": 0.5, "uBrightness": 1.0, "uShadowDistance": 0.5};
+        final (Uint8List, int) plain = await _render(values: _lcd(overrides: settings), source: source, scaling: 8);
+        final (Uint8List, int) shaded = await _render(values: _lcd(overrides: <String, Object>{...settings, "uPixelShadow": 1.0}), source: source, scaling: 8);
+
+        expect(_pixel(shaded, 17, 12)[0], lessThan(_pixel(plain, 17, 12)[0] - 20), reason: "right of the black cell");
+        expect(_pixel(shaded, 6, 12), _pixel(plain, 6, 12), reason: "left of the black cell");
+        source.dispose();
+      });
+    });
+
     testWidgets("a tiled export matches a single render", (final WidgetTester tester) async {
       await tester.runAsync(() async {
         const int scaling = 7;
         final ui.Image source = await _source(width: 300, height: 4, color: (final int x, final int y) => ui.Color.fromARGB(x % 3 == 0 ? 0 : 255, (x * 7) % 256, (y * 50) % 256, 90));
         expect(source.width * scaling, greaterThan(exportShaderMaxTileSize), reason: "setup: the export has to be tiled");
-        final ExportShaderValues values = _lcd(overrides: <String, Object>{"uGridOnTransparency": true, "uSoftness": 0.5});
+        final ExportShaderValues values = _lcd(
+          overrides: <String, Object>{
+            "uGridOnTransparency": true, "uSoftness": 0.5, "uPanelColors": 0.5, "uBlackLevel": 0.5, "uUnevenness": 0.5, "uGlow": 0.6, "uPixelShadow": 0.5,
+          },
+        );
 
         final Uint8List png = (await renderExportShaderPng(values: values, source: source, scaling: scaling))!;
         final img.Image decoded = img.decodePng(png)!;

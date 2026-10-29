@@ -175,6 +175,15 @@ String _gridColorLabel(final AppLocalizations l10n) => l10n.gridColor;
 String _softnessLabel(final AppLocalizations l10n) => l10n.softness;
 String _subpixelsLabel(final AppLocalizations l10n) => l10n.subpixels;
 String _gridOnTransparencyLabel(final AppLocalizations l10n) => l10n.gridOnTransparency;
+String _gridSection(final AppLocalizations l10n) => l10n.grid;
+String _panelSection(final AppLocalizations l10n) => l10n.panel;
+String _panelColorsLabel(final AppLocalizations l10n) => l10n.panelColors;
+String _blackLevelLabel(final AppLocalizations l10n) => l10n.blackLevel;
+String _unevenBacklightLabel(final AppLocalizations l10n) => l10n.unevenBacklight;
+String _glowLabel(final AppLocalizations l10n) => l10n.glow;
+String _glowRadiusLabel(final AppLocalizations l10n) => l10n.glowRadius;
+String _pixelShadowLabel(final AppLocalizations l10n) => l10n.pixelShadow;
+String _shadowDistanceLabel(final AppLocalizations l10n) => l10n.shadowDistance;
 // SMOOTH EDGES STRINGS
 String _colorToleranceLabel(final AppLocalizations l10n) => l10n.colorTolerance;
 String _smoothnessLabel(final AppLocalizations l10n) => l10n.smoothness;
@@ -304,12 +313,19 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
         asset: "shaders/lcd.frag",
         minScalingFactor: 4,
         parameters: <ExportShaderParameter>[
-          ExportShaderSliderParameter(uniform: "uBrightness", label: _brightnessLabel, min: 0.25, max: 3.0, initial: 1.25, format: ExportShaderValueFormat.percent),
-          ExportShaderSliderParameter(uniform: "uGridWidth", label: _gridWidthLabel, min: 1.0, max: 6.0, initial: 1.0, divisions: 5, format: ExportShaderValueFormat.pixels),
-          ExportShaderSliderParameter(uniform: "uGridGray", label: _gridColorLabel, min: 0.0, max: 1.0, initial: 0.3, format: ExportShaderValueFormat.percent, trackGradient: <Color>[Color(0xFF000000), Color(0xFFFFFFFF)]),
-          ExportShaderSliderParameter(uniform: "uSoftness", label: _softnessLabel, min: 0.0, max: 1.0, initial: 0.3, format: ExportShaderValueFormat.percent),
-          ExportShaderSliderParameter(uniform: "uSubpixels", label: _subpixelsLabel, min: 0.0, max: 1.0, initial: 0.1, format: ExportShaderValueFormat.percent),
-          ExportShaderToggleParameter(uniform: "uGridOnTransparency", label: _gridOnTransparencyLabel, initial: false),
+          ExportShaderSliderParameter(uniform: "uGridWidth", label: _gridWidthLabel, section: _gridSection, min: 1.0, max: 6.0, initial: 1.0, divisions: 5, format: ExportShaderValueFormat.pixels),
+          ExportShaderSliderParameter(uniform: "uGridGray", label: _gridColorLabel, section: _gridSection, min: 0.0, max: 1.0, initial: 0.15, format: ExportShaderValueFormat.percent, trackGradient: <Color>[Color(0xFF000000), Color(0xFFFFFFFF)]),
+          ExportShaderSliderParameter(uniform: "uSoftness", label: _softnessLabel, section: _gridSection, min: 0.0, max: 1.0, initial: 0.3, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uSubpixels", label: _subpixelsLabel, section: _gridSection, min: 0.0, max: 1.0, initial: 0.1, format: ExportShaderValueFormat.percent),
+          ExportShaderToggleParameter(uniform: "uGridOnTransparency", label: _gridOnTransparencyLabel, section: _gridSection, initial: false),
+          ExportShaderSliderParameter(uniform: "uBrightness", label: _brightnessLabel, section: _panelSection, min: 0.25, max: 3.0, initial: 1.25, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uPanelColors", label: _panelColorsLabel, section: _panelSection, min: 0.0, max: 1.0, initial: 0.1, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uBlackLevel", label: _blackLevelLabel, section: _panelSection, min: 0.0, max: 1.0, initial: 0.25, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uUnevenness", label: _unevenBacklightLabel, section: _panelSection, min: 0.0, max: 1.0, initial: 0.15, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uGlow", label: _glowLabel, section: _panelSection, min: 0.0, max: 1.0, initial: 0.2, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uGlowRadius", label: _glowRadiusLabel, section: _panelSection, min: 0.5, max: 2.0, initial: 1.0, format: ExportShaderValueFormat.decimal),
+          ExportShaderSliderParameter(uniform: "uPixelShadow", label: _pixelShadowLabel, section: _panelSection, min: 0.0, max: 1.0, initial: 0.25, format: ExportShaderValueFormat.percent),
+          ExportShaderSliderParameter(uniform: "uShadowDistance", label: _shadowDistanceLabel, section: _panelSection, min: 0.0, max: 1.0, initial: 0.4, format: ExportShaderValueFormat.percent),
         ],
       ),
     ],

@@ -1152,6 +1152,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shadowMask => 'Shadow';
 
   @override
+  String get panel => 'Panel';
+
+  @override
+  String get panelColors => 'Panel Colors';
+
+  @override
+  String get blackLevel => 'Black Level';
+
+  @override
+  String get unevenBacklight => 'Uneven Backlight';
+
+  @override
+  String get glow => 'Glow';
+
+  @override
+  String get glowRadius => 'Glow Radius';
+
+  @override
+  String get pixelShadow => 'Pixel Shadow';
+
+  @override
+  String get shadowDistance => 'Shadow Distance';
+
+  @override
   String get outlineWidth => 'Outline Width';
 
   @override

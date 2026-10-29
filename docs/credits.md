@@ -26,4 +26,5 @@ Ported from the libretro slang shaders (https://github.com/libretro/slang-shader
 OmniScale by Lior Halphon (MIT)\
 xBR by Hyllian (MIT)\
 xBRZ by Zenju (GPLv3), freescale version based on Hyllian's xBR code (MIT)\
-cleanEdge by torcado (MIT)
+cleanEdge by torcado (MIT)\
+Game Boy Advance panel colors (LCD) from gba-color by Pokefan531 and hunterk (public domain)

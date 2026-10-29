@@ -1,0 +1,146 @@
+# Licenses of the shipped files that are not pub packages (fonts, shaders, data).
+# After changing this file, a shader header or a dependency, run: dart run tool/generate_licenses.dart
+#
+# Every shipped shader and font and every file in the `checked` asset folders must be covered:
+# - shaders declare `SPDX-FileCopyrightText` and `SPDX-License-Identifier` lines in their header;
+#   third-party shaders also need an entry below (name, description, url), without copyright and license,
+# - other files are listed under `own` (part of KPix) or in a `third_party` entry.
+# License texts live in LICENSES/<SPDX id>.txt. NOASSERTION (no license stated) requires a notice.
+
+checked:
+  - fonts/
+  - color_names/
+
+own:
+  - fonts/KPix.ttf
+  - fonts/*.svg
+
+third_party:
+  - name: Font End Dev
+    description: Pixel art fonts
+    url: https://fontenddev.com/
+    copyright:
+      - Font End Dev
+    license: CC-BY-4.0
+    files:
+      - fonts/Alkhemikal.*
+      - fonts/Cartridge.*
+      - fonts/Comicoro.*
+      - fonts/CyborgSister.*
+      - fonts/DigitalDisco.*
+      - fonts/DigitalDisco-Thin.*
+      - fonts/EnchantedSword.*
+      - fonts/EnterCommand.*
+      - fonts/EnterCommand-Bold.*
+      - fonts/EnterCommand-Italic.*
+      - fonts/FiveByFive.*
+      - fonts/GrapeSoda.*
+      - fonts/Kapel.*
+      - fonts/KiwiSoda.*
+      - fonts/Larceny.*
+      - fonts/LunchMenu.*
+      - fonts/LycheeSoda.*
+      - fonts/Microserif.*
+      - fonts/mousetrap.*
+      - fonts/mousetrap2.*
+      - fonts/Neutrino.*
+      - fonts/Notepen.*
+      - fonts/Optixal.*
+      - fonts/OwreKynge.*
+      - fonts/PearSoda.*
+      - fonts/PlanetaryContact.*
+      - fonts/Poco.*
+      - fonts/Quadrunde.*
+      - fonts/RootBeer.*
+      - fonts/Scriptorium.*
+      - fonts/Squarewave.*
+      - fonts/Squarewave-Bold.*
+
+  - name: Oxanium
+    description: User interface font
+    url: https://github.com/sevmeyer/oxanium
+    copyright:
+      - 2019 The Oxanium Project Authors
+    license: OFL-1.1
+    files:
+      - fonts/Oxanium-*.ttf
+
+  - name: xBR
+    description: xBR-lv2 upscaling shader, ported from the libretro slang shaders
+    url: https://github.com/libretro/slang-shaders
+    files:
+      - shaders/upscale_xbr.frag
+
+  - name: xBRZ
+    description: xBRZ freescale upscaling shader, ported from the libretro slang shaders
+    url: https://github.com/libretro/slang-shaders
+    files:
+      - shaders/upscale_xbrz.frag
+
+  - name: OmniScale
+    description: OmniScale upscaling shader, ported from the libretro slang shaders
+    url: https://github.com/LIJI32/SameBoy
+    files:
+      - shaders/upscale_omniscale.frag
+
+  - name: cleanEdge
+    description: cleanEdge upscaling shader, ported from the libretro slang shaders
+    url: https://gist.github.com/torcado194/e2794f5a4b22049ac0a41f972d14c329
+    files:
+      - shaders/upscale_clean_edge.frag
+
+  - name: gizmo98 dithering
+    description: Bayer and blue noise dithering shaders
+    url: https://github.com/gizmo98/gizmo-crt-shader
+    files:
+      - shaders/dither_bayer.frag
+      - shaders/dither_noise.frag
+
+  - name: Bead
+    description: Bead effect shader, ported from the libretro slang shaders
+    url: https://github.com/libretro/slang-shaders
+    files:
+      - shaders/effects_bead.frag
+
+  - name: CMYK Halftone
+    description: CMYK halftone dot shader, adapted from Stefan Gustavson's WebGL demo via the libretro slang shaders
+    url: https://github.com/libretro/slang-shaders
+    files:
+      - shaders/effects_cmyk_halftone.frag
+
+  - name: Color names
+    description: General color names from Name that Color and the Wikipedia lists of colors
+    url: https://chir.ag/projects/ntc/
+    copyright:
+      - Chirag Mehta (Name that Color, https://chir.ag/projects/ntc/)
+      - Wikipedia contributors (List of colors, https://en.wikipedia.org/wiki/List_of_colors_(alphabetical))
+    license: CC-BY-2.5 AND CC-BY-SA-4.0
+    files:
+      - color_names/general.csv
+
+  - name: PMS color names
+    description: Screen approximations of Pantone colors
+    license: NOASSERTION
+    notice: >-
+      The hex values come from publicly circulated Pantone-to-RGB conversion tables; no license is stated for them.
+      PANTONE is a registered trademark of Pantone LLC. KPix is not affiliated with or endorsed by Pantone.
+    files:
+      - color_names/pms.csv
+
+  - name: RAL color names
+    description: Screen approximations of RAL Classic and RAL Design System+ colors
+    license: NOASSERTION
+    notice: >-
+      The hex values come from publicly available RAL color charts; no license is stated for them.
+      RAL is a registered trademark of RAL gGmbH. KPix is not affiliated with or endorsed by RAL.
+    files:
+      - color_names/ral_*.csv
+
+  - name: DMC color names
+    description: Screen approximations of DMC embroidery floss colors
+    license: NOASSERTION
+    notice: >-
+      The hex values come from the community chart "DMC Cotton Floss converted to RGB Values"; no license is stated for it.
+      DMC is a registered trademark of DMC. KPix is not affiliated with or endorsed by DMC.
+    files:
+      - color_names/dmc.csv

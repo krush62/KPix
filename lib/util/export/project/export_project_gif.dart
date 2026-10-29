@@ -24,9 +24,9 @@ Future<Uint8List?> exportGIF({required final AnimationExportData exportData}) as
     return null;
   }
 
-  //quantizing and encoding a gif is the slow part, so it goes off the UI isolate
+  //encoding a gif is the slow part, so it goes off the UI isolate
   return await runOffThread<Uint8List>(
     debugLabel: "gif-export",
-    work: () => _encodeAnimation(frames: frames, format: _AnimationFormat.gif),
+    work: () => encodeAnimation(frames: frames, format: AnimationFormat.gif),
   );
 }

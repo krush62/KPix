@@ -105,8 +105,8 @@ class RenderedFrame
   final int durationMs;
 }
 
-/// The animated formats that [_encodeAnimation] can produce.
-enum _AnimationFormat
+/// The animated formats that [encodeAnimation] can produce.
+enum AnimationFormat
 {
   gif,
   apng,
@@ -159,23 +159,18 @@ Future<List<RenderedFrame>?> _renderAnimationFrames({
 /// Assembles [frames] into an animation and encodes it.
 ///
 /// Pure computation over plain data, so it can run on a background isolate. This
-/// is the expensive half of an animation export: quantizing and encoding a GIF
-/// takes seconds for anything but a tiny canvas.
-Uint8List _encodeAnimation({
+/// is the expensive half of an animation export, and seconds long for large
+/// canvases.
+@visibleForTesting
+Uint8List encodeAnimation({
   required final List<RenderedFrame> frames,
-  required final _AnimationFormat format,
+  required final AnimationFormat format,
 })
 {
-  final img.Image animation = img.Image(
-    width: frames.first.width,
-    height: frames.first.height,
-    numChannels: 4,
-  );
-
-  for (int i = 0; i < frames.length; i++)
+  img.Image? animation;
+  for (final RenderedFrame renderedFrame in frames)
   {
-    final RenderedFrame renderedFrame = frames[i];
-    final img.Image frame = img.Image.fromBytes(
+    final img.Image frame = (format == AnimationFormat.gif ? _toIndexedFrame(frame: renderedFrame) : null) ?? img.Image.fromBytes(
       width: renderedFrame.width,
       height: renderedFrame.height,
       bytes: renderedFrame.pixels.buffer,
@@ -184,9 +179,10 @@ Uint8List _encodeAnimation({
       frameDuration: renderedFrame.durationMs,
     );
 
-    if (i == 0)
+    //the first frame is what gets encoded when it is the only one
+    if (animation == null)
     {
-      animation.frames[0] = frame;
+      animation = frame;
     }
     else
     {
@@ -194,7 +190,60 @@ Uint8List _encodeAnimation({
     }
   }
 
-  return format == _AnimationFormat.gif ? img.encodeGif(animation) : img.encodePng(animation);
+  return format == AnimationFormat.gif ? img.encodeGif(animation!) : img.encodePng(animation!);
+}
+
+/// [frame] as a palette image, so the GIF encoder keeps its exact colors and
+/// transparency instead of quantizing and dithering it.
+///
+/// Returns null when the frame has more colors than a GIF palette holds.
+img.Image? _toIndexedFrame({required final RenderedFrame frame})
+{
+  const int transparentKey = -1;
+  final Uint8List pixels = frame.pixels;
+  final Uint8List indices = Uint8List(frame.width * frame.height);
+  final Map<int, int> indexOf = <int, int>{};
+  int lastKey = -2;
+  int lastIndex = 0;
+  for (int i = 0; i < indices.length; i++)
+  {
+    final int p = i * 4;
+    final int key = pixels[p + 3] == 0 ? transparentKey : (pixels[p] << 16) | (pixels[p + 1] << 8) | pixels[p + 2];
+    if (key != lastKey)
+    {
+      int? index = indexOf[key];
+      if (index == null)
+      {
+        if (indexOf.length == 256)
+        {
+          return null;
+        }
+        index = indexOf.length;
+        indexOf[key] = index;
+      }
+      lastKey = key;
+      lastIndex = index;
+    }
+    indices[i] = lastIndex;
+  }
+
+  final img.PaletteUint8 palette = img.PaletteUint8(indexOf.length, 4);
+  for (final MapEntry<int, int> entry in indexOf.entries)
+  {
+    final int key = entry.key;
+    if (key == transparentKey)
+    {
+      palette.setRgba(entry.value, 0, 0, 0, 0);
+    }
+    else
+    {
+      palette.setRgba(entry.value, (key >> 16) & 0xFF, (key >> 8) & 0xFF, key & 0xFF, 255);
+    }
+  }
+
+  final img.Image indexed = img.Image(width: frame.width, height: frame.height, palette: palette, frameDuration: frame.durationMs);
+  indexed.toUint8List().setAll(0, indices);
+  return indexed;
 }
 
 /// Zips [files] on a background isolate.

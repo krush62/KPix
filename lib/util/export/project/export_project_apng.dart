@@ -26,6 +26,6 @@ Future<Uint8List?> exportAPNG({required final AnimationExportData exportData}) a
 
   return await runOffThread<Uint8List>(
     debugLabel: "apng-export",
-    work: () => _encodeAnimation(frames: frames, format: _AnimationFormat.apng),
+    work: () => encodeAnimation(frames: frames, format: AnimationFormat.apng),
   );
 }

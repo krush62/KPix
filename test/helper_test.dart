@@ -32,14 +32,11 @@ void main() {
   testCoordinateSetI();
   testStackCol();
   testColorToString();
-  testPerfectSquare();
   testGcd();
   testAngleCalculation();
   testRgb2lab();
   testDeltaE();
   testIsPointInPolygon();
-  testPointToEdgeDistance();
-  testGetCoordinateNeighbors();
   testArgbToRgba();
   testIntToBytes();
   testFormatDimension();
@@ -177,14 +174,6 @@ void testStackCol()
       expect(stack.isEmpty, isFalse);
       expect(stack.isNotEmpty, isTrue);
       expect(stack.length, equals(1));
-      expect(stack.peek, equals(10));
-    });
-
-    test('peek returns last element without removing it', () {
-      stack.push(1);
-      stack.push(2);
-      expect(stack.peek, equals(2));
-      expect(stack.length, equals(2));
     });
 
     test('pop removes and returns last element', () {
@@ -193,15 +182,11 @@ void testStackCol()
       final int popped = stack.pop();
       expect(popped, equals(6));
       expect(stack.length, equals(1));
-      expect(stack.peek, equals(5));
+      expect(stack.pop(), equals(5));
     });
 
     test('pop throws error when empty', () {
       expect(() => stack.pop(), throwsA(isA<RangeError>()));
-    });
-
-    test('peek throws error when empty', () {
-      expect(() => stack.peek, throwsA(isA<StateError>()));
     });
   });
 
@@ -259,28 +244,6 @@ void testColorToString()
     });
   });
 
-}
-
-void testPerfectSquare()
-{
-  group('isPerfectSquare', () {
-    test('returns true for perfect squares', () {
-      expect(isPerfectSquare(number: 0), isTrue);
-      expect(isPerfectSquare(number: 1), isTrue);
-      expect(isPerfectSquare(number: 4), isTrue);
-      expect(isPerfectSquare(number: 9), isTrue);
-      expect(isPerfectSquare(number: 16), isTrue);
-      expect(isPerfectSquare(number: 25), isTrue);
-    });
-
-    test('returns false for non-perfect squares', () {
-      expect(isPerfectSquare(number: 2), isFalse);
-      expect(isPerfectSquare(number: 3), isFalse);
-      expect(isPerfectSquare(number: 5), isFalse);
-      expect(isPerfectSquare(number: 10), isFalse);
-      expect(isPerfectSquare(number: 26), isFalse);
-    });
-  });
 }
 
 void testGcd()
@@ -408,89 +371,55 @@ void testDeltaE()
 {
   group('getDeltaE', () {
     test('same color returns 0', () {
-      final double d1 = getDeltaE94(
+      final double d = getDeltaE00(
         redA: 0.3, greenA: 0.4, blueA: 0.5,
         redB: 0.3, greenB: 0.4, blueB: 0.5,
       );
-      final double d2 = getDeltaE00(
-        redA: 0.3, greenA: 0.4, blueA: 0.5,
-        redB: 0.3, greenB: 0.4, blueB: 0.5,
-      );
-      expect(d1, closeTo(0.0, 1e-8));
-      expect(d2, closeTo(0.0, 1e-8));
+      expect(d, closeTo(0.0, 1e-8));
     });
 
     test('white vs black (large difference)', () {
-      final double d1 = getDeltaE94(
+      final double d = getDeltaE00(
         redA: 1.0, greenA: 1.0, blueA: 1.0,
         redB: 0.0, greenB: 0.0, blueB: 0.0,
       );
-      final double d2 = getDeltaE00(
-        redA: 1.0, greenA: 1.0, blueA: 1.0,
-        redB: 0.0, greenB: 0.0, blueB: 0.0,
-      );
-      expect(d1, greaterThan(99.0));
-      expect(d2, greaterThan(99.0));
+      expect(d, greaterThan(99.0));
     });
 
     test('red vs green deltaE', () {
-      final double d1 = getDeltaE94(
+      final double d = getDeltaE00(
         redA: 1.0, greenA: 0.0, blueA: 0.0,
         redB: 0.0, greenB: 1.0, blueB: 0.0,
       );
-      final double d2 = getDeltaE00(
-        redA: 1.0, greenA: 0.0, blueA: 0.0,
-        redB: 0.0, greenB: 1.0, blueB: 0.0,
-      );
-      expect(d1, closeTo(73.43376, 1e-3));
-      expect(d2, closeTo(86.61501, 1e-3));
+      expect(d, closeTo(86.61501, 1e-3));
     });
 
     test('blue vs yellow deltaE', () {
-      final double d1 = getDeltaE94(
+      final double d = getDeltaE00(
         redA: 0.0, greenA: 0.0, blueA: 1.0,
         redB: 1.0, greenB: 1.0, blueB: 0.0,
       );
-      final double d2 = getDeltaE00(
-        redA: 0.0, greenA: 0.0, blueA: 1.0,
-        redB: 1.0, greenB: 1.0, blueB: 0.0,
-      );
-      expect(d1, closeTo(98.64386, 1e-3));
-      expect(d2, closeTo(103.4259, 1e-3));
+      expect(d, closeTo(103.4259, 1e-3));
     });
 
     test('slight variation deltaE', () {
-      final double d1 = getDeltaE94(
+      final double d = getDeltaE00(
         redA: 1.0, greenA: 0.0, blueA: 0.0,
         redB: 0.9, greenB: 0.0, blueB: 0.0,
       );
-      final double d2 = getDeltaE00(
-        redA: 1.0, greenA: 0.0, blueA: 0.0,
-        redB: 0.9, greenB: 0.0, blueB: 0.0,
-      );
-      expect(d1, closeTo(5.48, 0.015));
-      expect(d2, closeTo(5.48, 0.015));
+      expect(d, closeTo(5.48, 0.015));
     });
 
     test('symmetry: deltaE(A,B) == deltaE(B,A)', () {
-      final double d1_1 = getDeltaE94(
+      final double d1 = getDeltaE00(
         redA: 0.1, greenA: 0.2, blueA: 0.3,
         redB: 0.7, greenB: 0.6, blueB: 0.5,
       );
-      final double d1_2 = getDeltaE94(
+      final double d2 = getDeltaE00(
         redA: 0.7, greenA: 0.6, blueA: 0.5,
         redB: 0.1, greenB: 0.2, blueB: 0.3,
       );
-      final double d2_1 = getDeltaE00(
-        redA: 0.1, greenA: 0.2, blueA: 0.3,
-        redB: 0.7, greenB: 0.6, blueB: 0.5,
-      );
-      final double d2_2 = getDeltaE00(
-        redA: 0.7, greenA: 0.6, blueA: 0.5,
-        redB: 0.1, greenB: 0.2, blueB: 0.3,
-      );
-      expect(d1_1, closeTo(d1_2, 0.2));
-      expect(d2_1, closeTo(d2_2, 1e-12));
+      expect(d1, closeTo(d2, 1e-12));
     });
   });
 
@@ -586,254 +515,6 @@ void testIsPointInPolygon()
   });
 }
 
-void testPointToEdgeDistance()
-{
-  group('getPointToEdgeDistance', () {
-
-    test('point exactly on a vertex → distance = 0', () {
-      final List<CoordinateSetI> polygon = <CoordinateSetI>[
-        CoordinateSetI(x: 0, y: 0),
-        CoordinateSetI(x: 10, y: 0),
-        CoordinateSetI(x: 10, y: 10),
-        CoordinateSetI(x: 0, y: 10),
-      ];
-
-      final CoordinateSetI p = CoordinateSetI(x: 0, y: 0);
-
-      expect(
-        getPointToEdgeDistance(point: p, polygon: polygon),
-        closeTo(0.0, 1e-9),
-      );
-    });
-
-    test('point exactly on an edge → distance = 0', () {
-      final List<CoordinateSetI> polygon = <CoordinateSetI>[
-        CoordinateSetI(x: 0, y: 0),
-        CoordinateSetI(x: 10, y: 0),
-        CoordinateSetI(x: 10, y: 10),
-        CoordinateSetI(x: 0, y: 10),
-      ];
-
-      final CoordinateSetI p = CoordinateSetI(x: 5, y: 0); // on bottom edge
-
-      expect(
-        getPointToEdgeDistance(point: p, polygon: polygon),
-        closeTo(0.0, 1e-9),
-      );
-    });
-
-    test('point centered inside square → distance = half side length', () {
-      final List<CoordinateSetI> polygon = <CoordinateSetI>[
-        CoordinateSetI(x: 0, y: 0),
-        CoordinateSetI(x: 10, y: 0),
-        CoordinateSetI(x: 10, y: 10),
-        CoordinateSetI(x: 0, y: 10),
-      ];
-
-      final CoordinateSetI p = CoordinateSetI(x: 5, y: 5);
-      // distance to nearest edge: 5
-
-      expect(
-        getPointToEdgeDistance(point: p, polygon: polygon),
-        closeTo(5.0, 1e-9),
-      );
-    });
-
-    test('point outside square but near one edge → distance from that edge', () {
-      final List<CoordinateSetI> polygon = <CoordinateSetI>[
-        CoordinateSetI(x: 0, y: 0),
-        CoordinateSetI(x: 10, y: 0),
-        CoordinateSetI(x: 10, y: 10),
-        CoordinateSetI(x: 0, y: 10),
-      ];
-
-      final CoordinateSetI p = CoordinateSetI(x: 5, y: -2);
-      // distance to bottom edge y=0 → 2
-
-      expect(
-        getPointToEdgeDistance(point: p, polygon: polygon),
-        closeTo(2.0, 1e-9),
-      );
-    });
-
-    test('distance to vertical edge is computed correctly', () {
-      final List<CoordinateSetI> polygon = <CoordinateSetI>[
-        CoordinateSetI(x: 0, y: 0),
-        CoordinateSetI(x: 4, y: 0),
-        CoordinateSetI(x: 4, y: 6),
-        CoordinateSetI(x: 0, y: 6),
-      ];
-
-      final CoordinateSetI p = CoordinateSetI(x: 7, y: 3);
-      // nearest edge is x=4, distance = 3
-
-      expect(
-        getPointToEdgeDistance(point: p, polygon: polygon),
-        closeTo(3.0, 1e-9),
-      );
-    });
-
-    test('distance to diagonal edge (45° oriented)', () {
-      final List<CoordinateSetI> polygon = <CoordinateSetI>[
-        CoordinateSetI(x: 0, y: 0),
-        CoordinateSetI(x: 10, y: 10),
-        CoordinateSetI(x: 10, y: 0),
-      ];
-      // Triangle with hypotenuse from (0,0) → (10,10)
-
-      final CoordinateSetI p = CoordinateSetI(x: 0, y: 10);
-
-      // Distance from point (0,10) to diagonal line y=x:
-      // |x - y| / sqrt(2) = |0 - 10| / sqrt(2) = 10 / 1.4142... = 7.07106781
-
-      expect(
-        getPointToEdgeDistance(point: p, polygon: polygon),
-        closeTo(7.0710678118654755, 1e-6),
-      );
-    });
-
-    test('concave polygon: point inside indentation has correct minimum distance', () {
-      final List<CoordinateSetI> polygon = <CoordinateSetI>[
-        CoordinateSetI(x: 0, y: 0),
-        CoordinateSetI(x: 10, y: 0),
-        CoordinateSetI(x: 10, y: 10),
-        CoordinateSetI(x: 5, y: 5), // concave inward
-        CoordinateSetI(x: 0, y: 10),
-      ];
-
-      final CoordinateSetI p = CoordinateSetI(x: 6, y: 6);
-      // Nearest edge is the diagonal indentation edge: (10,10)-(5,5)
-      // Distance from (6,6) to that segment is sqrt(2) ≈ 1.4142
-
-      expect(
-        getPointToEdgeDistance(point: p, polygon: polygon),
-        closeTo(0.0, 1e-9),
-      );
-    });
-
-    test('concave polygon: point near indentation edge gives correct distance', () {
-      final List<CoordinateSetI> polygon = <CoordinateSetI>[
-        CoordinateSetI(x: 0, y: 0),
-        CoordinateSetI(x: 10, y: 0),
-        CoordinateSetI(x: 10, y: 10),
-        CoordinateSetI(x: 5, y: 5),
-        CoordinateSetI(x: 0, y: 10),
-      ];
-
-      final CoordinateSetI p = CoordinateSetI(x: 6, y: 7);
-
-      // Distance to line y=x = |6 - 7| / sqrt(2) = 1 / 1.414... ≈ 0.7071
-      expect(
-        getPointToEdgeDistance(point: p, polygon: polygon),
-        closeTo(0.70710678118, 1e-6),
-      );
-    });
-
-    test('polygon with only two points (degenerate) → behaves like a line segment', () {
-      final List<CoordinateSetI> polygon = <CoordinateSetI>[
-        CoordinateSetI(x: 0, y: 0),
-        CoordinateSetI(x: 10, y: 0),
-      ];
-
-      final CoordinateSetI p = CoordinateSetI(x: 5, y: 5);
-
-      expect(
-        getPointToEdgeDistance(point: p, polygon: polygon),
-        closeTo(5.0, 1e-9),
-      );
-    });
-
-    test('polygon with overlapping edges does not crash and gives correct distance', () {
-      final List<CoordinateSetI> polygon = <CoordinateSetI>[
-        CoordinateSetI(x: 0, y: 0),
-        CoordinateSetI(x: 10, y: 0),
-        CoordinateSetI(x: 10, y: 0), // duplicate vertex
-        CoordinateSetI(x: 10, y: 10),
-      ];
-
-      final CoordinateSetI p = CoordinateSetI(x: 10, y: 5);
-      final double result = getPointToEdgeDistance(point: p, polygon: polygon);
-      expect(result.isNaN, isTrue);
-    });
-
-  });
-}
-
-void testGetCoordinateNeighbors()
-{
-  group('getCoordinateNeighbors', () {
-    test('returns 4 cardinal neighbors when withDiagonals = false', () {
-      final CoordinateSetI pixel = CoordinateSetI(x: 5, y: 5);
-      final List<CoordinateSetI> neighbors = pixel.getNeighbors(withDiagonals: false);
-
-      final List<CoordinateSetI> expected = <CoordinateSetI>[
-        CoordinateSetI(x: 6, y: 5),
-        CoordinateSetI(x: 4, y: 5),
-        CoordinateSetI(x: 5, y: 6),
-        CoordinateSetI(x: 5, y: 4),
-      ];
-
-      expect(neighbors.length, 4);
-      expect(neighbors, containsAll(expected));
-    });
-
-    test('returns 8 neighbors when withDiagonals = true', () {
-      final CoordinateSetI pixel = CoordinateSetI(x: 5, y: 5);
-      final List<CoordinateSetI> neighbors = pixel.getNeighbors(withDiagonals: true);
-
-      final List<CoordinateSetI> expected = <CoordinateSetI>[
-        // cardinal
-        CoordinateSetI(x: 6, y: 5),
-        CoordinateSetI(x: 4, y: 5),
-        CoordinateSetI(x: 5, y: 6),
-        CoordinateSetI(x: 5, y: 4),
-        // diagonals
-        CoordinateSetI(x: 6, y: 6),
-        CoordinateSetI(x: 4, y: 4),
-        CoordinateSetI(x: 6, y: 4),
-        CoordinateSetI(x: 4, y: 6),
-      ];
-
-      expect(neighbors.length, 8);
-      expect(neighbors, containsAll(expected));
-    });
-
-    test('works for negative coordinates', () {
-      final CoordinateSetI pixel = CoordinateSetI(x: -2, y: -3);
-      final List<CoordinateSetI> neighbors = pixel.getNeighbors(withDiagonals: true);
-
-      final List<CoordinateSetI> expected = <CoordinateSetI>[
-        CoordinateSetI(x: -1, y: -3),
-        CoordinateSetI(x: -3, y: -3),
-        CoordinateSetI(x: -2, y: -2),
-        CoordinateSetI(x: -2, y: -4),
-        CoordinateSetI(x: -1, y: -2),
-        CoordinateSetI(x: -3, y: -4),
-        CoordinateSetI(x: -1, y: -4),
-        CoordinateSetI(x: -3, y: -2),
-      ];
-
-      expect(neighbors.length, 8);
-      expect(neighbors, containsAll(expected));
-    });
-
-    test('works for zero coordinates', () {
-      final CoordinateSetI pixel = CoordinateSetI(x: 0, y: 0);
-      final List<CoordinateSetI> neighbors = pixel.getNeighbors(withDiagonals: false);
-
-      final List<CoordinateSetI> expected = <CoordinateSetI>[
-        CoordinateSetI(x: 1, y: 0),
-        CoordinateSetI(x: -1, y: 0),
-        CoordinateSetI(x: 0, y: 1),
-        CoordinateSetI(x: 0, y: -1),
-      ];
-
-      expect(neighbors.length, 4);
-      expect(neighbors, containsAll(expected));
-    });
-  });
-}
-
 void testArgbToRgba()
 {
   group('argbToRgba', () {
@@ -900,42 +581,6 @@ void testAngleUtilities()
 
     test('angle = 0 returns 0', () {
       expect(normAngle(angle: 0), 0);
-    });
-  });
-
-  group('deg2rad', () {
-    test('0 degrees → 0 radians', () {
-      expect(deg2rad(angle: 0), 0);
-    });
-
-    test('180 degrees → π radians', () {
-      expect(deg2rad(angle: 180), closeTo(pi, 1e-9));
-    });
-
-    test('360 degrees → 2π radians', () {
-      expect(deg2rad(angle: 360), closeTo(2 * pi, 1e-9));
-    });
-
-    test('45 degrees → π/4 radians', () {
-      expect(deg2rad(angle: 45), closeTo(pi / 4, 1e-9));
-    });
-  });
-
-  group('rad2deg', () {
-    test('0 radians → 0 degrees', () {
-      expect(rad2deg(angle: 0), 0);
-    });
-
-    test('π radians → 180 degrees', () {
-      expect(rad2deg(angle: pi), closeTo(180, 1e-9));
-    });
-
-    test('2π radians → 360 degrees', () {
-      expect(rad2deg(angle: 2 * pi), closeTo(360, 1e-9));
-    });
-
-    test('π/4 radians → 45 degrees', () {
-      expect(rad2deg(angle: pi / 4), closeTo(45, 1e-9));
     });
   });
 

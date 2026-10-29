@@ -23,11 +23,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/canvas_state.dart';
-import 'package:kpix/models/color_types.dart';
-import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/kpix_painter_options.dart';
 import 'package:kpix/models/layer_manager.dart';
@@ -36,15 +33,12 @@ import 'package:kpix/models/project_session.dart';
 import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/pencil_painter.dart';
-import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/painting/stroke_preview.dart';
-import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
-import 'support/legacy_pencil_painter.dart';
 import 'support/selection_harness.dart';
 
 KPixPainterOptions _painterOptions()
@@ -108,24 +102,6 @@ Future<Map<String, int>> _composite({required final List<ContentRasterSet> raste
   return pixels;
 }
 
-/// What [painter] shows once the images it is still making have arrived: the
-/// preview is read until it stays the same for a while.
-Future<Map<String, int>> _settledComposite({required final IToolPainter painter}) async
-{
-  Map<String, int> last = await _composite(rasters: painter.contentRasters);
-  for (int i = 0; i < 20; i++)
-  {
-    await Future<void>.delayed(const Duration(milliseconds: 50));
-    final Map<String, int> current = await _composite(rasters: painter.contentRasters);
-    if (current.length == last.length && current.entries.every((final MapEntry<String, int> entry) => last[entry.key] == entry.value))
-    {
-      return current;
-    }
-    last = current;
-  }
-  return last;
-}
-
 /// Waits for [condition], giving up after about two seconds.
 Future<void> _waitFor({required final bool Function() condition}) async
 {
@@ -135,127 +111,7 @@ Future<void> _waitFor({required final bool Function() condition}) async
   }
 }
 
-enum _Target { layer, shadingLayer }
-
-class _Scenario
-{
-  final PencilShape shape;
-  final int size;
-  final bool pixelPerfect;
-  final double? symmetry;
-  final bool layersAbove;
-  final _Target target;
-
-  const _Scenario({required this.shape, required this.size, required this.pixelPerfect, this.symmetry, this.layersAbove = false, this.target = _Target.layer});
-
-  @override
-  String toString() => "${shape.name} size $size, pixel perfect $pixelPerfect, symmetry $symmetry, ${layersAbove ? "layers above, " : ""}${target.name}";
-}
-
 final CoordinateSetI _canvasSize = CoordinateSetI(x: 300, y: 300);
-
-/// Cursor positions of a stroke that crosses the tile borders at 128 and 256,
-/// with diagonal steps for pixel perfect and a jump.
-List<CoordinateSetI> _strokePath()
-{
-  final List<CoordinateSetI> path = <CoordinateSetI>[];
-  for (int x = 110; x < 150; x++)
-  {
-    path.add(CoordinateSetI(x: x, y: 120 + ((x ~/ 2).isEven ? x % 2 : 1 - x % 2)));
-  }
-  path.add(CoordinateSetI(x: 170, y: 135));
-  for (int step = 1; step <= 30; step++)
-  {
-    path.add(CoordinateSetI(x: 170 + step * 3 ~/ 4 + step ~/ 2, y: 135 - step ~/ 3));
-  }
-  return path;
-}
-
-/// Draws [_strokePath] with the painter [createPainter] makes, and returns what
-/// the preview shows every few positions and what is left of it once the
-/// stroke landed.
-Future<List<Map<String, int>>> _previewsOfStroke({required final WidgetTester tester, required final _Scenario scenario, required final IToolPainter Function() createPainter}) async
-{
-  final List<Map<String, int>> previews = <Map<String, int>>[];
-  await withProject(tester: tester, canvasSize: _canvasSize, body: (final ProjectSession projectSession) async {
-    final List<KPalRampData> ramps = GetIt.I.get<PaletteState>().colorRamps;
-    final ColorReference selected = ramps.first.references[2];
-    final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
-    final CoordinateColorMapNullable content = CoordinateColorMapNullable();
-    for (int x = 100; x < 280; x++)
-    {
-      for (int y = 110; y < 150; y++)
-      {
-        if ((x + y) % 5 == 0)
-        {
-          content[CoordinateSetI(x: x, y: y)] = selected;
-        }
-        else if ((x * y) % 7 == 1)
-        {
-          content[CoordinateSetI(x: x, y: y)] = ramps.first.references[4];
-        }
-      }
-    }
-    layer.setDataAll(list: content);
-    await settle();
-
-    GetIt.I.get<PaletteState>().colorSelected(color: selected);
-    final PencilOptions options = GetIt.I.get<ToolOptions>().pencilOptions;
-    options.shape.value = scenario.shape;
-    options.size.value = scenario.size;
-    options.pixelPerfect.value = scenario.pixelPerfect;
-    GetIt.I.get<ShaderOptions>().isEnabled.value = false;
-    GetIt.I.get<ShaderOptions>().shaderDirection.value = ShaderDirection.right;
-
-    RasterableLayerState target = layer;
-    if (scenario.layersAbove)
-    {
-      final DrawingLayerState above = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, addToHistoryStack: false).$2! as DrawingLayerState;
-      final CoordinateColorMapNullable cover = CoordinateColorMapNullable();
-      for (int x = 120; x < 200; x += 3)
-      {
-        for (int y = 110; y < 150; y += 2)
-        {
-          cover[CoordinateSetI(x: x, y: y)] = ramps[1].references[1];
-        }
-      }
-      above.setDataAll(list: cover);
-      final ShadingLayerState shadingAbove = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, addToHistoryStack: false).$2! as ShadingLayerState;
-      final HashMap<CoordinateSetI, int> shades = HashMap<CoordinateSetI, int>();
-      for (int x = 180; x < 260; x++)
-      {
-        for (int y = 110; y < 150; y++)
-        {
-          shades[CoordinateSetI(x: x, y: y)] = 1;
-        }
-      }
-      shadingAbove.addCoords(coords: shades);
-      await settle();
-      expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), same(layer), reason: "setup: the new layers went above the drawn one");
-    }
-    if (scenario.target == _Target.shadingLayer)
-    {
-      target = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, select: true, addToHistoryStack: false).$2! as ShadingLayerState;
-      await settle();
-    }
-
-    final IToolPainter painter = createPainter();
-    final List<CoordinateSetI> path = _strokePath();
-    for (int i = 0; i < path.length; i++)
-    {
-      painter.calculate(drawParams: _params(layer: target, cursor: path[i], primaryDown: true, symmetry: scenario.symmetry));
-      if (i % 12 == 11 || i == path.length - 1)
-      {
-        previews.add(await _settledComposite(painter: painter));
-      }
-    }
-    painter.calculate(drawParams: _params(layer: target, cursor: path.last, primaryDown: false, symmetry: scenario.symmetry));
-    await settle();
-    await _waitFor(condition: () => painter.contentRasters.isEmpty);
-    previews.add(await _composite(rasters: painter.contentRasters));
-  },);
-  return previews;
-}
 
 void main()
 {
@@ -332,32 +188,6 @@ void main()
         expect(updates, 0);
       });
     });
-  });
-
-  group("while a pencil stroke is drawn, the canvas shows what it showed before only the new pixels were rendered", () {
-    const List<_Scenario> scenarios = <_Scenario>[
-      _Scenario(shape: PencilShape.round, size: 3, pixelPerfect: true),
-      _Scenario(shape: PencilShape.square, size: 5, pixelPerfect: false, symmetry: 150.0),
-      _Scenario(shape: PencilShape.round, size: 2, pixelPerfect: true, layersAbove: true),
-      _Scenario(shape: PencilShape.round, size: 3, pixelPerfect: true, target: _Target.shadingLayer),
-    ];
-    for (final _Scenario scenario in scenarios)
-    {
-      testWidgets("$scenario", (final WidgetTester tester) async {
-        final List<Map<String, int>> expected = await _previewsOfStroke(tester: tester, scenario: scenario, createPainter: () => LegacyPencilPainter(painterOptions: _painterOptions()));
-        final List<Map<String, int>> actual = await _previewsOfStroke(tester: tester, scenario: scenario, createPainter: () => PencilPainter(painterOptions: _painterOptions()));
-        expect(expected.first, isNotEmpty, reason: "setup: the stroke shows");
-        expect(expected.last, isEmpty, reason: "setup: the preview is gone once the stroke landed");
-        expect(actual.length, expected.length);
-        for (int i = 0; i < expected.length; i++)
-        {
-          final Iterable<String> differences = <String>{...expected[i].keys, ...actual[i].keys}
-              .where((final String coord) => expected[i][coord] != actual[i][coord])
-              .map((final String coord) => "$coord: ${expected[i][coord]?.toRadixString(16)} became ${actual[i][coord]?.toRadixString(16)}");
-          expect(differences, isEmpty, reason: "preview ${i + 1} of ${expected.length}");
-        }
-      });
-    }
   });
 
   testWidgets("a landing stroke leaves the preview of the next stroke alone", (final WidgetTester tester) async {

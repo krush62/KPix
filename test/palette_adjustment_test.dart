@@ -95,13 +95,6 @@ void main()
       }
     });
 
-    test("is reported as neutral", ()
-    {
-      expect(const PaletteAdjustment().isNeutral, isTrue);
-      expect(const PaletteAdjustment(brightness: 1.0).isNeutral, isFalse);
-      expect(const PaletteAdjustment(hueSpread: -1.0).isNeutral, isFalse);
-    });
-
     test("keeps the settings an adjustment does not touch", ()
     {
       final KPalRampSettings original = _settings();

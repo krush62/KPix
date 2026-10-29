@@ -49,7 +49,6 @@ import 'package:logger/logger.dart';
 
 enum SelectionDirection
 {
-  undefined,
   left,
   right,
   top,
@@ -1113,12 +1112,6 @@ class SelectionList
       layer.removeDataAll(removeCoordList: coords);
     }
     _touch(notifyEmpty: notifyEmpty, claimOwner: true);
-  }
-
-  void addEmpty({required final CoordinateSetI coord})
-  {
-    _pixels.select(x: coord.x, y: coord.y, code: PaletteCodec.transparent);
-    _touch(claimOwner: true);
   }
 
   void addDirectly({required final CoordinateSetI coord, required final ColorReference? colRef})

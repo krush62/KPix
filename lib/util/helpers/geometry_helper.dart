@@ -126,27 +126,6 @@ class CoordinateSetI
     y = coordList.reduce((final CoordinateSetI a, final CoordinateSetI b) => a.y > b.y ? a : b).y;
   }
 
-  /// Returns a list of neighbors of the given pixel coordinate.
-  List<CoordinateSetI> getNeighbors({required final bool withDiagonals})
-  {
-    final List<CoordinateSetI> neighbors =  <CoordinateSetI>[
-      CoordinateSetI(x: x + 1, y: y),
-      CoordinateSetI(x: x - 1, y: y),
-      CoordinateSetI(x: x, y: y + 1),
-      CoordinateSetI(x: x, y: y - 1),
-    ];
-
-    if (withDiagonals)
-    {
-      neighbors.add(CoordinateSetI(x: x + 1, y: y + 1));
-      neighbors.add(CoordinateSetI(x: x - 1, y: y - 1));
-      neighbors.add(CoordinateSetI(x: x + 1, y: y - 1));
-      neighbors.add(CoordinateSetI(x: x - 1, y: y + 1));
-    }
-
-    return neighbors;
-  }
-
   /// Returns the distance between two coordinate sets.
   double distanceTo({required final CoordinateSetI b})
   {
@@ -160,26 +139,6 @@ const double twoPi = 2 * pi;
 double normAngle({required final double angle})
 {
   return angle - (twoPi * (angle / twoPi).floor());
-}
-
-/// Converts an angle in degrees to radians.
-double deg2rad({required final double angle})
-{
-  return angle * (pi / 180.0);
-}
-
-/// Converts an angle in radians to degrees.
-double rad2deg({required final double angle})
-{
-  return angle * (180.0 / pi);
-}
-
-
-/// Returns true if the square root of the [number] is an integer.
-bool isPerfectSquare({required final int number})
-{
-  final double squareRoot = sqrt(number);
-  return squareRoot % 1 == 0;
 }
 
 /// Calculates the greatest common divisor (GCD) of two integers.
@@ -252,39 +211,6 @@ bool isPointInPolygon({required final CoordinateSetI point, required final List<
   return windingNumber != 0;
 }
 
-
-/// Returns the distance between the point and the closest edge of the polygon.
-double getPointToEdgeDistance({required final CoordinateSetI point, required final List<CoordinateSetI> polygon})
-{
-  double minDistance = double.infinity;
-
-  for (int i = 0; i < polygon.length; i++)
-  {
-    final CoordinateSetI p1 = polygon[i];
-    final CoordinateSetI p2 = polygon[(i + 1) % polygon.length];
-
-    final int dx = p2.x - p1.x;
-    final int dy = p2.y - p1.y;
-
-    final int edgeLengthSquared = dx * dx + dy * dy;
-
-    final int vx = point.x - p1.x;
-    final int vy = point.y - p1.y;
-
-    final int dotProduct = vx * dx + vy * dy;
-
-    final double t = max(0, min(1, dotProduct / edgeLengthSquared));
-
-    final double closestX = p1.x + t * dx;
-    final double closestY = p1.y + t * dy;
-
-    final double distanceSquared = (point.x - closestX) * (point.x - closestX) + (point.y - closestY) * (point.y - closestY);
-
-    minDistance = min(minDistance, sqrt(distanceSquared));
-  }
-
-  return minDistance;
-}
 
 /// Returns a map from old indices to new indices.
 HashMap<int, int> remapIndices({required final int oldLength, required final int newLength})

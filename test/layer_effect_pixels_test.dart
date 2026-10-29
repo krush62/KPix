@@ -43,8 +43,7 @@ Frame _firstFrame()
   return GetIt.I.get<DocumentState>().timeline.frames.value.first;
 }
 
-/// How a drawing layer keeps and hands out the pixels of its effects. What
-/// the effects compute is pinned down by layer_effects_equivalence_test.dart.
+/// How a drawing layer keeps and hands out the pixels of its effects.
 void main()
 {
   final CoordinateSetI pixel = CoordinateSetI(x: 3, y: 3);

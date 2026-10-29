@@ -266,40 +266,6 @@ LabColor rgb2lab({
   return LabColor(L: L, A: A, B: B);
 }
 
-/// Computes the CIEDE94 color difference ΔE94 between two sRGB colors.
-///
-/// Inputs will be normalized sRGB components in [0, 1]. If your values are
-/// 0..255, divide each by 255.0 before calling.
-///
-/// Returns a non-negative ΔE94 (double).
-double getDeltaE94(
-    {required final double redA,
-      required final double greenA,
-      required final double blueA,
-      required final double redB,
-      required final double greenB,
-      required final double blueB,})
-{
-  final LabColor labA = rgb2lab(r: redA, g: greenA, b: blueA);
-  final LabColor labB = rgb2lab(r: redB, g: greenB, b: blueB);
-  final double deltaL = labA.L - labB.L;
-  final double deltaA = labA.A - labB.A;
-  final double deltaB = labA.B - labB.B;
-  final double c1 = sqrt(labA.A * labA.A + labA.B * labA.B);
-  final double c2 = sqrt(labB.A * labB.A + labB.B * labB.B);
-  final double deltaC = c1 - c2;
-  double deltaH = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
-  deltaH = deltaH < 0 ? 0 : sqrt(deltaH);
-  final double sc = 1.0 + 0.045 * c1;
-  final double sh = 1.0 + 0.015 * c1;
-  final double deltaLKlsl = deltaL / 1.0;
-  final double deltaCkcsc = deltaC / sc;
-  final double deltaHkhsh = deltaH / sh;
-  final double i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
-  return i < 0.0 ? 0.0 : sqrt(i);
-}
-
-
 /// Computes the CIEDE2000 color difference ΔE00 between two sRGB colors.
 ///
 /// Inputs will be normalized sRGB components in [0, 1]. If your values are

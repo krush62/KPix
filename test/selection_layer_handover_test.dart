@@ -296,8 +296,6 @@ void main()
       previous = selection.revision;
     }
 
-    selection.addEmpty(coord: pixel);
-    expectMoved("addEmpty");
     selection.addDirectly(coord: pixel, colRef: color);
     expectMoved("addDirectly");
     selection.addDirectlyAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));

@@ -256,8 +256,6 @@ abstract class IToolPainter
   //(the history state itself is added later by a polling timer and the user
   //may have selected a different layer by then)
   LayerState? historyLayer;
-  ContentRasterSet? _contentRaster;
-  int _contentRasterVersion = 0;
   StrokePreview? _strokePreview;
   //previews of strokes that are handed to their layer but not shown by it yet
   final List<StrokePreview> _landingPreviews = <StrokePreview>[];
@@ -470,18 +468,10 @@ abstract class IToolPainter
   /// The images of the content being drawn, in the order they are drawn.
   List<ContentRasterSet> get contentRasters
   {
-    final ContentRasterSet? contentRaster = _contentRaster;
     return <ContentRasterSet>[
       for (final StrokePreview preview in _landingPreviews) ...preview.rasters,
       ...?_strokePreview?.rasters,
-      if (contentRaster != null) contentRaster,
     ];
-  }
-
-  void setContentRasterData({required final ContentRasterSet content})
-  {
-      _contentRaster = content;
-      _contentRasterVersion++;
   }
 
   /// The preview of the stroke being drawn, started on first use.
@@ -549,26 +539,17 @@ abstract class IToolPainter
   /// meantime gets a preview of its own.
   void resetContentRaster({required final LayerState currentLayer})
   {
-    final int versionAtRequest = _contentRasterVersion;
     final StrokePreview? landingPreview = _strokePreview;
-    _strokePreview = null;
-    if (landingPreview != null)
+    if (landingPreview == null)
     {
-      _landingPreviews.add(landingPreview);
+      return;
     }
+    _strokePreview = null;
+    _landingPreviews.add(landingPreview);
     _waitForLayerToFinishRasterizing(currentLayer: currentLayer).then((final void _) {
-      //only clear if the content was not replaced in the meantime
-      //(e.g. by a newly started stroke)
-      if (_contentRasterVersion == versionAtRequest)
-      {
-        _contentRaster = null;
-      }
-      if (landingPreview != null)
-      {
-        _landingPreviews.remove(landingPreview);
-        landingPreview.dispose();
-        hasAsyncUpdate = true;
-      }
+      _landingPreviews.remove(landingPreview);
+      landingPreview.dispose();
+      hasAsyncUpdate = true;
     });
   }
 

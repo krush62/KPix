@@ -91,16 +91,6 @@ class PaletteAdjustment
       hueSpread: hueSpread ?? this.hueSpread,
     );
   }
-
-  /// Whether the adjustment leaves the palette as it is.
-  bool get isNeutral =>
-      brightness == PaletteAdjustmentConstraints.brightnessDefault &&
-      contrast == PaletteAdjustmentConstraints.contrastDefault &&
-      saturation == PaletteAdjustmentConstraints.saturationDefault &&
-      whiteBalance == PaletteAdjustmentConstraints.whiteBalanceDefault &&
-      tint == PaletteAdjustmentConstraints.tintDefault &&
-      hueShift == PaletteAdjustmentConstraints.hueShiftDefault &&
-      hueSpread == PaletteAdjustmentConstraints.hueSpreadDefault;
 }
 
 /// Applies [adjustment] to [settings] and returns the result.

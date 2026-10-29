@@ -43,8 +43,6 @@ class StackCol<T> {
 
   T pop() => _list.removeLast();
 
-  T get peek => _list.last;
-
   bool get isEmpty => _list.isEmpty;
 
   bool get isNotEmpty => _list.isNotEmpty;

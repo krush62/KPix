@@ -25,6 +25,7 @@ import 'package:kpix/models/file_constants.dart';
 enum ImageExportType
 {
   png,
+  webp,
   aseprite,
   photoshop,
   gimp,
@@ -38,6 +39,7 @@ enum AnimationExportType
 {
   gif,
   apng,
+  webp,
   zippedPng,
   //aseprite,
   //pixelorama,
@@ -134,6 +136,7 @@ class ImageExportData extends ExportData
 
   static const Map<ImageExportType, ImageExportData> exportTypeMap = <ImageExportType, ImageExportData>{
     ImageExportType.png : ImageExportData(name: "PNG", extension: "png", scalable: true),
+    ImageExportType.webp : ImageExportData(name: "WEBP", extension: "webp", scalable: true),
     ImageExportType.aseprite : ImageExportData(name: "ASEPRITE", extension: "aseprite", scalable: false),
     ImageExportType.photoshop : ImageExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
     ImageExportType.gimp : ImageExportData(name: "GIMP", extension: "xcf", scalable: false),
@@ -163,6 +166,7 @@ class AnimationExportData extends ImageExportData
   static const Map<AnimationExportType, AnimationExportData> exportTypeMap = <AnimationExportType, AnimationExportData>{
     AnimationExportType.gif : AnimationExportData(name: "GIF", extension: "gif", scalable: true, ),
     AnimationExportType.apng : AnimationExportData(name: "APNG", extension: "apng", scalable: true, ),
+    AnimationExportType.webp : AnimationExportData(name: "WEBP", extension: "webp", scalable: true, ),
     AnimationExportType.zippedPng : AnimationExportData(name: "PNG SEQUENCE", extension: "zip", scalable: true, ),
     //AnimationExportType.aseprite : AnimationExportData(name: "ASEPRITE", extension: "aseprite", scalable: false),
     //AnimationExportType.pixelorama : AnimationExportData(name: "PIXELORAMA", extension: "pxo", scalable: false),
@@ -196,6 +200,7 @@ String getAnimationExportTypeLabel({required final AnimationExportType type, req
       return l10n.texturePack.toUpperCase();
     case AnimationExportType.gif:
     case AnimationExportType.apng:
+    case AnimationExportType.webp:
       return AnimationExportData.exportTypeMap[type]!.name;
   }
 }

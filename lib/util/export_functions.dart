@@ -79,6 +79,7 @@ part 'export/project/export_project_png.dart';
 part 'export/project/export_project_psd.dart';
 part 'export/project/export_project_texture_pack.dart';
 part 'export/project/export_project_texture_pack_animation.dart';
+part 'export/project/export_project_webp.dart';
 part 'export/project/export_project_zipped_png.dart';
 
 
@@ -110,6 +111,7 @@ enum AnimationFormat
 {
   gif,
   apng,
+  webp,
 }
 
 /// Renders the exported frame range to raw pixels on the UI isolate.
@@ -167,6 +169,11 @@ Uint8List encodeAnimation({
   required final AnimationFormat format,
 })
 {
+  if (format == AnimationFormat.webp)
+  {
+    return _encodeWebPAnimation(frames: frames);
+  }
+
   img.Image? animation;
   for (final RenderedFrame renderedFrame in frames)
   {

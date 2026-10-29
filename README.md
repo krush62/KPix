@@ -101,6 +101,7 @@ KPix uses its own kpix format for storing project files. The file format documen
 #### 🖼Image Formats
 Projects can be exported to lossless images including transparency. Integer scaling is supported.
 - png
+- webp
 #### Application Formats
 Projects can be exported for usage in other applications. Special Layers will be either omitted (reference, grid) or merged (shading, dither).
 
@@ -129,6 +130,7 @@ Palettes can be exported for usage in other applications.
 Animation projects can be exported to the following formats
 - apng
 - gif
+- webp (lossless)
 - zipped png images
 
 ### Import Formats

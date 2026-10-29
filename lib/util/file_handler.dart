@@ -574,6 +574,8 @@ Future<Uint8List?> _createImageData({required final ImageExportData exportData, 
   {
     case ImageExportType.png:
       return await exportPNG(exportData: exportData, canvasSize: canvasSize, selection: selection, layerList: layerList,);
+    case ImageExportType.webp:
+      return await exportWebP(exportData: exportData, canvasSize: canvasSize, selection: selection, layerList: layerList,);
     case ImageExportType.aseprite:
       return await getAsepriteData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
     case ImageExportType.photoshop:
@@ -638,6 +640,8 @@ Future<Uint8List?> _createAnimationData({required final AnimationExportData expo
       return await exportAPNG(exportData: exportData);
     case AnimationExportType.gif:
       return await exportGIF(exportData: exportData);
+    case AnimationExportType.webp:
+      return await exportWebPAnimation(exportData: exportData);
     case AnimationExportType.zippedPng:
       return await exportZippedPng(exportData: exportData);
     case AnimationExportType.texturePack:

@@ -124,6 +124,7 @@ enum FocusNodeEntry
   savePaletteNameTextFocus,
   changeTextToolFocus,
   projectFilterTextFocus,
+  shaderExportFileNameTextFocus,
 }
 
 class HotkeyNotifier with ChangeNotifier {void actionPressed() {notifyListeners();}}

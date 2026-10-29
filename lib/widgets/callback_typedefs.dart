@@ -34,6 +34,7 @@ typedef ColorRampUpdateFn = void Function({required KPalRampData ramp, required 
 typedef ImageExportDataFn = void Function({required ImageExportData exportData, required ImageExportType exportType});
 typedef PaletteExportDataFn = void Function({required PaletteExportData saveData, required PaletteExportType paletteType});
 typedef AnimationExportDataFn = void Function({required AnimationExportData exportData, required AnimationExportType exportType});
+typedef ShaderExportDataFn = void Function({required ShaderExportData exportData});
 typedef CanvasSizeFn = void Function({required CoordinateSetI size, required CoordinateSetI offset});
 typedef NewFileFn = void Function({required CoordinateSetI size});
 typedef SaveFileFn = void Function({required String fileName, required Function()? callback});

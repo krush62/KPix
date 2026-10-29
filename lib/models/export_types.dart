@@ -15,6 +15,7 @@
  */
 
 import 'package:kpix/l10n/app_localizations.dart';
+import 'package:kpix/models/export_shader.dart';
 import 'package:kpix/models/file_constants.dart';
 
 /// What an export asks for: which format, at which scale, to which file.
@@ -118,6 +119,8 @@ class PaletteExportData extends ExportData
 /// Available export scaling values.
 const List<int> exportScalingValues = <int>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
+const List<int> exportShadingScalingValues = <int>[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
 /// [ExportData] specialization for images.
 class ImageExportData extends ExportData
 {
@@ -139,6 +142,13 @@ class ImageExportData extends ExportData
     //NOT USED:
     ImageExportType.kpix : ImageExportData(name: "KPIX", extension: fileExtensionKpix, scalable: false),
   };
+}
+
+/// [ExportData] specialization for a PNG run through an export shader.
+class ShaderExportData extends ImageExportData
+{
+  final ExportShaderValues shaderValues;
+  ShaderExportData({required this.shaderValues, required super.scaling, required super.fileName, required super.directory}) : super(name: "PNG", extension: "png", scalable: true);
 }
 
 /// [ExportData] specialization for animations.

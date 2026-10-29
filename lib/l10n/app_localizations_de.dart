@@ -985,6 +985,227 @@ class AppLocalizationsDe extends AppLocalizations {
   String get exportProjectPalette => 'Projekt/Palette exportieren';
 
   @override
+  String get exportShaderImage => 'Shader-Bild exportieren [BETA]';
+
+  @override
+  String get shaderLcd => 'LCD';
+
+  @override
+  String get shaderSmoothEdges => 'Kanten';
+
+  @override
+  String get shaderDithering => 'Dithering';
+
+  @override
+  String get shaderEffects => 'Effekte';
+
+  @override
+  String get colorTolerance => 'Farbtoleranz';
+
+  @override
+  String get smoothness => 'Glättung';
+
+  @override
+  String get antiAliasing => 'Kantenglättung';
+
+  @override
+  String get lineWidth => 'Linienbreite';
+
+  @override
+  String get similarityThreshold => 'Ähnlichkeitsschwelle';
+
+  @override
+  String get gridWidth => 'Gitterbreite';
+
+  @override
+  String get gridColor => 'Gitterfarbe';
+
+  @override
+  String get softness => 'Weichheit';
+
+  @override
+  String get subpixels => 'RGB-Subpixel';
+
+  @override
+  String get gridOnTransparency => 'Gitter auf Transparenz';
+
+  @override
+  String get zoomIn => 'Vergrößern';
+
+  @override
+  String get zoomOut => 'Verkleinern';
+
+  @override
+  String get zoomToFit => 'An Ansicht anpassen';
+
+  @override
+  String get colorDepth => 'Farbtiefe';
+
+  @override
+  String get tuneDithering => 'Dithering anpassen';
+
+  @override
+  String get bayerLevel => 'Bayer Level';
+
+  @override
+  String get influence => 'Einfluss';
+
+  @override
+  String get strength => 'Stärke';
+
+  @override
+  String get rounding => 'Rundung';
+
+  @override
+  String get fullRange => 'Breitband';
+
+  @override
+  String get dotSize => 'Punktgröße';
+
+  @override
+  String get originalMix => 'Original-Mix';
+
+  @override
+  String get dotGain => 'Punktverstärkung';
+
+  @override
+  String get dotShape => 'Punktform';
+
+  @override
+  String get diamond => 'Raute';
+
+  @override
+  String get misregistration => 'Fehlregistrierung';
+
+  @override
+  String get backgroundBrightness => 'Hintergrund-Helligkeit';
+
+  @override
+  String get backgroundWarmth => 'Hintergrund-Weißabgleich';
+
+  @override
+  String get outerRadius => 'Äußerer Radius';
+
+  @override
+  String get innerRadius => 'Innerer Radius';
+
+  @override
+  String get sharpness => 'Schärfe';
+
+  @override
+  String get lightAngle => 'Lichtwinkel';
+
+  @override
+  String get depth => 'Tiefe';
+
+  @override
+  String get bevelWidth => 'Fasenbreite';
+
+  @override
+  String get heightFromBrightness => 'Höhe aus Helligkeit';
+
+  @override
+  String get shaderCrt => 'CRT';
+
+  @override
+  String get medium => 'Medium';
+
+  @override
+  String get signal => 'Signal';
+
+  @override
+  String get colorEncoding => 'Farbkodierung';
+
+  @override
+  String get tv => 'Fernseher';
+
+  @override
+  String get wear => 'Abnutzung';
+
+  @override
+  String get artifacts => 'Artefakte';
+
+  @override
+  String get noise => 'Rauschen';
+
+  @override
+  String get ghosting => 'Geisterbilder';
+
+  @override
+  String get encoding => 'Kodierung';
+
+  @override
+  String get phaseError => 'Phasenfehler';
+
+  @override
+  String get convergence => 'Konvergenz';
+
+  @override
+  String get scanlines => 'Bildzeilen';
+
+  @override
+  String get mask => 'Maske';
+
+  @override
+  String get maskStrength => 'Maskenstärke';
+
+  @override
+  String get bloom => 'Leuchten';
+
+  @override
+  String get curvature => 'Wölbung';
+
+  @override
+  String get vignette => 'Vignette';
+
+  @override
+  String get none => 'Keine';
+
+  @override
+  String get apertureGrille => 'Streifen';
+
+  @override
+  String get slotMask => 'Schlitz';
+
+  @override
+  String get shadowMask => 'Loch';
+
+  @override
+  String get panel => 'Panel';
+
+  @override
+  String get panelColors => 'Panelfarben';
+
+  @override
+  String get blackLevel => 'Schwarzwert';
+
+  @override
+  String get unevenBacklight => 'Ungleichmäßige Beleuchtung';
+
+  @override
+  String get glow => 'Lichtschein';
+
+  @override
+  String get glowRadius => 'Lichtschein-Radius';
+
+  @override
+  String get pixelShadow => 'Pixelschatten';
+
+  @override
+  String get shadowDistance => 'Schattenabstand';
+
+  @override
+  String get outlineWidth => 'Umrissbreite';
+
+  @override
+  String get outlineStrength => 'Umrissstärke';
+
+  @override
+  String shaderMinScaling(int factor) {
+    return 'Die Skalierung sollte für diesen Shader mindestens $factor:1 betragen.';
+  }
+
+  @override
   String get centerHorizontally => 'Horizontal zentrieren';
 
   @override

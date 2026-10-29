@@ -63,6 +63,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
+  yaml: ^3.1.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -187,6 +188,25 @@ flutter:
     - palettes/
     - docs/credits.md
     - docs/controls.md
+
+  shaders:
+    - shaders/flip_probe.frag
+    - shaders/lcd.frag
+    - shaders/upscale_clean_edge.frag
+    - shaders/upscale_omniscale.frag
+    - shaders/upscale_xbr.frag
+    - shaders/upscale_xbrz.frag
+    - shaders/dither_bayer.frag
+    - shaders/dither_noise.frag
+    - shaders/dither_clustered_dot.frag
+    - shaders/dither_checkerboard.frag
+    - shaders/dither_psx.frag
+    - shaders/effects_cmyk_halftone.frag
+    - shaders/effects_bead.frag
+    - shaders/effects_relief.frag
+    - shaders/effects_cel.frag
+    - shaders/crt.frag
+    - shaders/color_adjust.frag
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

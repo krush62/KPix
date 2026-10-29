@@ -78,6 +78,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   KPixOverlay? _saveLoadWarningDialog;
   KPixOverlay? _saveImportWarningDialog;
   KPixOverlay? _exportDialog;
+  KPixOverlay? _shaderExportDialog;
   late KPixOverlay _aboutDialog;
   KPixOverlay? _preferencesDialog;
   late KPixOverlay _saveAsDialog;
@@ -113,6 +114,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onSaveFile: _saveFile,
       onSaveAsFile: _saveAsFile,
       onExportFile: _exportFile,
+      onShaderExport: _exportShaderImage,
     );
 
     _projectManagerDialog = getProjectManagerDialog(
@@ -162,6 +164,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     exportAnimation(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName, l10n: l10n);});
   }
 
+  void _exportShaderImagePressed({required final ShaderExportData exportData})
+  {
+    //taken now: the export runs past the point where the context could be used
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    _exportLoadingDialog?.show(context: context);
+    exportShaderImage(exportData: exportData).then((final String? fName) {_exportFinished(fileName: fName, l10n: l10n);});
+  }
+
   void _exportFinished({required final String? fileName, required final AppLocalizations l10n})
   {
     if (fileName != null && fileName.isNotEmpty)
@@ -186,6 +196,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _saveMenu.hide();
     _saveLoadWarningDialog?.hide();
     _exportDialog?.hide();
+    _shaderExportDialog?.hide();
     _aboutDialog.hide();
     _preferencesDialog?.hide();
     _saveAsDialog.hide();
@@ -384,6 +395,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   void _exportFile()
   {
     _exportDialog?.show(context: context);
+  }
+
+  void _exportShaderImage()
+  {
+    _shaderExportDialog?.show(context: context);
   }
 
 
@@ -585,6 +601,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onAcceptPalette: ({required final PaletteExportType paletteType, required final PaletteExportData saveData}) {
         _paletteSavePressed(saveData: saveData, paletteType: paletteType);
       },);
+
+    _shaderExportDialog ??= getShaderExportDialog(onDismiss: _closeAllMenus, onAccept: _exportShaderImagePressed);
 
     _saveImportWarningDialog ??= getThreeButtonDialog(
       onYes: _saveImportWarningYes,

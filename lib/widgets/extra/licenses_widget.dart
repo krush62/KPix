@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/oss_licenses.dart';
+import 'package:kpix/third_party_licenses.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
@@ -25,7 +26,7 @@ import 'package:kpix/widgets/overlays/overlay_entries.dart';
 class LicensesWidget extends StatelessWidget
 {
   final Function() onDismiss;
-  List<Package> get _licenses => allDependencies;
+  static const List<Package> _licenses = <Package>[...thirdPartyAssets, ...allDependencies];
   const LicensesWidget({super.key, required this.onDismiss});
 
 

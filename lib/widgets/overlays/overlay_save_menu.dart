@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -34,12 +35,14 @@ class OverlaySaveMenu extends StatefulWidget
   final Function() onSaveFile;
   final Function() onSaveAsFile;
   final Function() onExportFile;
+  final Function () onShaderExport;
   const OverlaySaveMenu({
     super.key,
     required this.anchorKey,
     required this.onSaveFile,
     required this.onSaveAsFile,
     required this.onExportFile,
+    required this.onShaderExport,
   });
 
   @override
@@ -116,7 +119,8 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
             children: <Widget>[
               _createMenuButton(tooltip: l10n.saveProject + _hotkeyManager.getShortcutString(action: HotkeyAction.generalSave, context: context), icon: Icons.save, onPressedFunc: widget.onSaveFile),
               _createMenuButton(tooltip: l10n.saveProjectAs + _hotkeyManager.getShortcutString(action: HotkeyAction.generalSaveAs, context: context), icon: Icons.save_as, onPressedFunc: widget.onSaveAsFile),
-              _createMenuButton(tooltip: l10n.exportProjectPalette + _hotkeyManager.getShortcutString(action: HotkeyAction.generalExport, context: context), icon: Icons.share, onPressedFunc: widget.onExportFile),
+              _createMenuButton(tooltip: l10n.exportProjectPalette + _hotkeyManager.getShortcutString(action: HotkeyAction.generalExport, context: context), icon: TablerIcons.file_export, onPressedFunc: widget.onExportFile),
+              _createMenuButton(tooltip: l10n.exportShaderImage, icon: TablerIcons.photo_share, onPressedFunc: widget.onShaderExport),
             ],
           ),
         ),

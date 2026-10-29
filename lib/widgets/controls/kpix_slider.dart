@@ -18,6 +18,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 
+final List<Color> _rainbowColors = List<Color>.generate(360, (final int hue) => KHSV(h: hue.toDouble(), s: 0.5, v: 0.7).toColor());
+
 /// A slider with the value displayed inside the bar.
 class KPixSlider extends StatefulWidget {
   final double value;
@@ -39,6 +41,8 @@ class KPixSlider extends StatefulWidget {
   final double topBottomPadding;
   final String? label;
   final bool isRainbow;
+  /// Shows these colors along the whole track with a thumb instead of a fill and value; [isRainbow] is a preset of this.
+  final List<Color>? gradientColors;
   final bool showPlusSignForPositive;
 
   const KPixSlider({
@@ -61,6 +65,7 @@ class KPixSlider extends StatefulWidget {
     this.topBottomPadding = 8.0,
     this.label,
     this.isRainbow = false,
+    this.gradientColors,
     this.showPlusSignForPositive = false,
     this.onChangedEnd,
   });
@@ -78,6 +83,7 @@ class _KPixSliderState extends State<KPixSlider>
     final Color fgColor = widget.activeTrackColor ?? Theme.of(context).primaryColorLight;
     final Color bgColor = widget.inActiveTrackColor ?? Theme.of(context).primaryColor;
     final Color disColor = widget.disabledColor ?? Theme.of(context).primaryColorDark;
+    final List<Color>? gradient = widget.gradientColors ?? (widget.isRainbow ? _rainbowColors : null);
 
 
     String displayText;
@@ -123,8 +129,8 @@ class _KPixSliderState extends State<KPixSlider>
             return SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 trackHeight: widget.trackHeight,
-                thumbShape: !widget.isRainbow ? SliderComponentShape.noThumb : _KPixSliderThumbShape(padding: widget.borderRadius / 2),
-                trackShape: _KPixSliderTrackShape(borderRadius: widget.borderRadius, strokeColor: bColor, strokeWidth: widget.borderWidth, isRainbow: widget.isRainbow),
+                thumbShape: gradient == null ? SliderComponentShape.noThumb : _KPixSliderThumbShape(padding: widget.borderRadius / 2),
+                trackShape: _KPixSliderTrackShape(borderRadius: widget.borderRadius, strokeColor: bColor, strokeWidth: widget.borderWidth, gradient: gradient),
                 activeTrackColor: fgColor,
                 inactiveTrackColor: currentInActiveTrackColor,
                 overlayShape: SliderComponentShape.noOverlay,
@@ -142,7 +148,7 @@ class _KPixSliderState extends State<KPixSlider>
                     onChangeEnd: widget.onChangedEnd,
                     divisions: widget.divisions,
                   ),
-                  if (!widget.isRainbow) Positioned.fill(
+                  if (gradient == null) Positioned.fill(
                     child: Center(
                       child: IgnorePointer(
                         child: Stack(
@@ -215,13 +221,13 @@ class _KPixSliderTrackShape extends RectangularSliderTrackShape {
   final double borderRadius;
   final double strokeWidth;
   final Color strokeColor;
-  final bool isRainbow;
+  final List<Color>? gradient;
 
   const _KPixSliderTrackShape({
     this.borderRadius = 4.0,
     this.strokeWidth = 2.0,
     this.strokeColor = Colors.black,
-    this.isRainbow = false,
+    this.gradient,
   });
 
 
@@ -259,11 +265,12 @@ class _KPixSliderTrackShape extends RectangularSliderTrackShape {
       ..color = isEnabled ? sliderTheme.inactiveTrackColor! : Colors.transparent
       ..style = PaintingStyle.fill;
 
-      if (isRainbow)
+      final List<Color>? gradientColors = gradient;
+      if (gradientColors != null)
       {
         activePaint = Paint()
           ..shader = LinearGradient(
-            colors: List<Color>.generate(360, (final int hue) => KHSV(h: hue.toDouble(), s: 0.5, v: 0.7).toColor()),
+            colors: gradientColors,
           ).createShader(trackRect);
       }
 
@@ -274,7 +281,7 @@ class _KPixSliderTrackShape extends RectangularSliderTrackShape {
         trackRect.bottom,
       );
 
-      if (!isRainbow)
+      if (gradientColors == null)
       {
         context.canvas.drawRRect(
           RRect.fromRectAndRadius(trackRect, Radius.circular(borderRadius)),
@@ -286,14 +293,14 @@ class _KPixSliderTrackShape extends RectangularSliderTrackShape {
       outlinePaint,
     );
 
-      if (!isRainbow && activeTrack.right < borderRadius * 2)
+      if (gradientColors == null && activeTrack.right < borderRadius * 2)
       {
         final RRect clipRect = RRect.fromLTRBR(trackRect.left - strokeWidth / 2, trackRect.top - strokeWidth / 2, trackRect.right + strokeWidth / 2, trackRect.bottom + strokeWidth / 2, Radius.circular(borderRadius));
         context.canvas.clipRRect(clipRect);
       }
 
       context.canvas.drawRRect(
-        RRect.fromRectAndRadius(isRainbow ? trackRect : activeTrack, Radius.circular(borderRadius)),
+        RRect.fromRectAndRadius(gradientColors != null ? trackRect : activeTrack, Radius.circular(borderRadius)),
         activePaint,
       );
 

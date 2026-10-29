@@ -1892,6 +1892,444 @@ abstract class AppLocalizations {
   /// **'Export Project/Palette'**
   String get exportProjectPalette;
 
+  /// No description provided for @exportShaderImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Shader Image [BETA]'**
+  String get exportShaderImage;
+
+  /// No description provided for @shaderLcd.
+  ///
+  /// In en, this message translates to:
+  /// **'LCD'**
+  String get shaderLcd;
+
+  /// No description provided for @shaderSmoothEdges.
+  ///
+  /// In en, this message translates to:
+  /// **'Smooth Edges'**
+  String get shaderSmoothEdges;
+
+  /// No description provided for @shaderDithering.
+  ///
+  /// In en, this message translates to:
+  /// **'Dithering'**
+  String get shaderDithering;
+
+  /// No description provided for @shaderEffects.
+  ///
+  /// In en, this message translates to:
+  /// **'Effects'**
+  String get shaderEffects;
+
+  /// No description provided for @colorTolerance.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Tolerance'**
+  String get colorTolerance;
+
+  /// No description provided for @smoothness.
+  ///
+  /// In en, this message translates to:
+  /// **'Smoothness'**
+  String get smoothness;
+
+  /// No description provided for @antiAliasing.
+  ///
+  /// In en, this message translates to:
+  /// **'Anti-Aliasing'**
+  String get antiAliasing;
+
+  /// No description provided for @lineWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Line Width'**
+  String get lineWidth;
+
+  /// No description provided for @similarityThreshold.
+  ///
+  /// In en, this message translates to:
+  /// **'Similarity Threshold'**
+  String get similarityThreshold;
+
+  /// No description provided for @gridWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid Width'**
+  String get gridWidth;
+
+  /// No description provided for @gridColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid Color'**
+  String get gridColor;
+
+  /// No description provided for @softness.
+  ///
+  /// In en, this message translates to:
+  /// **'Softness'**
+  String get softness;
+
+  /// No description provided for @subpixels.
+  ///
+  /// In en, this message translates to:
+  /// **'RGB Subpixels'**
+  String get subpixels;
+
+  /// No description provided for @gridOnTransparency.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid on Transparency'**
+  String get gridOnTransparency;
+
+  /// No description provided for @zoomIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom In'**
+  String get zoomIn;
+
+  /// No description provided for @zoomOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom Out'**
+  String get zoomOut;
+
+  /// No description provided for @zoomToFit.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit to View'**
+  String get zoomToFit;
+
+  /// No description provided for @colorDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Depth'**
+  String get colorDepth;
+
+  /// No description provided for @tuneDithering.
+  ///
+  /// In en, this message translates to:
+  /// **'Tune Dithering'**
+  String get tuneDithering;
+
+  /// No description provided for @bayerLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bayer Level'**
+  String get bayerLevel;
+
+  /// No description provided for @influence.
+  ///
+  /// In en, this message translates to:
+  /// **'Influence'**
+  String get influence;
+
+  /// No description provided for @strength.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength'**
+  String get strength;
+
+  /// No description provided for @rounding.
+  ///
+  /// In en, this message translates to:
+  /// **'Rounding'**
+  String get rounding;
+
+  /// No description provided for @fullRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Range'**
+  String get fullRange;
+
+  /// No description provided for @dotSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Dot Size'**
+  String get dotSize;
+
+  /// No description provided for @originalMix.
+  ///
+  /// In en, this message translates to:
+  /// **'Original Mix'**
+  String get originalMix;
+
+  /// No description provided for @dotGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Dot Gain'**
+  String get dotGain;
+
+  /// No description provided for @dotShape.
+  ///
+  /// In en, this message translates to:
+  /// **'Dot Shape'**
+  String get dotShape;
+
+  /// No description provided for @diamond.
+  ///
+  /// In en, this message translates to:
+  /// **'Diamond'**
+  String get diamond;
+
+  /// No description provided for @misregistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Misregistration'**
+  String get misregistration;
+
+  /// No description provided for @backgroundBrightness.
+  ///
+  /// In en, this message translates to:
+  /// **'Background Brightness'**
+  String get backgroundBrightness;
+
+  /// No description provided for @backgroundWarmth.
+  ///
+  /// In en, this message translates to:
+  /// **'Background Warmth'**
+  String get backgroundWarmth;
+
+  /// No description provided for @outerRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Outer Radius'**
+  String get outerRadius;
+
+  /// No description provided for @innerRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Inner Radius'**
+  String get innerRadius;
+
+  /// No description provided for @sharpness.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharpness'**
+  String get sharpness;
+
+  /// No description provided for @lightAngle.
+  ///
+  /// In en, this message translates to:
+  /// **'Light Angle'**
+  String get lightAngle;
+
+  /// No description provided for @depth.
+  ///
+  /// In en, this message translates to:
+  /// **'Depth'**
+  String get depth;
+
+  /// No description provided for @bevelWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Bevel Width'**
+  String get bevelWidth;
+
+  /// No description provided for @heightFromBrightness.
+  ///
+  /// In en, this message translates to:
+  /// **'Height from Brightness'**
+  String get heightFromBrightness;
+
+  /// No description provided for @shaderCrt.
+  ///
+  /// In en, this message translates to:
+  /// **'CRT'**
+  String get shaderCrt;
+
+  /// No description provided for @medium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get medium;
+
+  /// No description provided for @signal.
+  ///
+  /// In en, this message translates to:
+  /// **'Signal'**
+  String get signal;
+
+  /// No description provided for @colorEncoding.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Encoding'**
+  String get colorEncoding;
+
+  /// No description provided for @tv.
+  ///
+  /// In en, this message translates to:
+  /// **'TV'**
+  String get tv;
+
+  /// No description provided for @wear.
+  ///
+  /// In en, this message translates to:
+  /// **'Wear'**
+  String get wear;
+
+  /// No description provided for @artifacts.
+  ///
+  /// In en, this message translates to:
+  /// **'Artifacts'**
+  String get artifacts;
+
+  /// No description provided for @noise.
+  ///
+  /// In en, this message translates to:
+  /// **'Noise'**
+  String get noise;
+
+  /// No description provided for @ghosting.
+  ///
+  /// In en, this message translates to:
+  /// **'Ghosting'**
+  String get ghosting;
+
+  /// No description provided for @encoding.
+  ///
+  /// In en, this message translates to:
+  /// **'Encoding'**
+  String get encoding;
+
+  /// No description provided for @phaseError.
+  ///
+  /// In en, this message translates to:
+  /// **'Phase Error'**
+  String get phaseError;
+
+  /// No description provided for @convergence.
+  ///
+  /// In en, this message translates to:
+  /// **'Convergence'**
+  String get convergence;
+
+  /// No description provided for @scanlines.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanlines'**
+  String get scanlines;
+
+  /// No description provided for @mask.
+  ///
+  /// In en, this message translates to:
+  /// **'Mask'**
+  String get mask;
+
+  /// No description provided for @maskStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Mask Strength'**
+  String get maskStrength;
+
+  /// No description provided for @bloom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bloom'**
+  String get bloom;
+
+  /// No description provided for @curvature.
+  ///
+  /// In en, this message translates to:
+  /// **'Curvature'**
+  String get curvature;
+
+  /// No description provided for @vignette.
+  ///
+  /// In en, this message translates to:
+  /// **'Vignette'**
+  String get vignette;
+
+  /// No description provided for @none.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get none;
+
+  /// No description provided for @apertureGrille.
+  ///
+  /// In en, this message translates to:
+  /// **'Grille'**
+  String get apertureGrille;
+
+  /// No description provided for @slotMask.
+  ///
+  /// In en, this message translates to:
+  /// **'Slot'**
+  String get slotMask;
+
+  /// No description provided for @shadowMask.
+  ///
+  /// In en, this message translates to:
+  /// **'Shadow'**
+  String get shadowMask;
+
+  /// No description provided for @panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Panel'**
+  String get panel;
+
+  /// No description provided for @panelColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Panel Colors'**
+  String get panelColors;
+
+  /// No description provided for @blackLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Black Level'**
+  String get blackLevel;
+
+  /// No description provided for @unevenBacklight.
+  ///
+  /// In en, this message translates to:
+  /// **'Uneven Backlight'**
+  String get unevenBacklight;
+
+  /// No description provided for @glow.
+  ///
+  /// In en, this message translates to:
+  /// **'Glow'**
+  String get glow;
+
+  /// No description provided for @glowRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Glow Radius'**
+  String get glowRadius;
+
+  /// No description provided for @pixelShadow.
+  ///
+  /// In en, this message translates to:
+  /// **'Pixel Shadow'**
+  String get pixelShadow;
+
+  /// No description provided for @shadowDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Shadow Distance'**
+  String get shadowDistance;
+
+  /// No description provided for @outlineWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Outline Width'**
+  String get outlineWidth;
+
+  /// No description provided for @outlineStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Outline Strength'**
+  String get outlineStrength;
+
+  /// No description provided for @shaderMinScaling.
+  ///
+  /// In en, this message translates to:
+  /// **'Scaling should be at least {factor}:1 for this shader.'**
+  String shaderMinScaling(int factor);
+
   /// No description provided for @centerHorizontally.
   ///
   /// In en, this message translates to:

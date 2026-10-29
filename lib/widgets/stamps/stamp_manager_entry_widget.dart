@@ -15,6 +15,7 @@
  */
 
 import 'dart:ui' as ui;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:kpix/models/stamp_manager_data.dart';
 
@@ -29,7 +30,8 @@ class StampManagerEntryWidget extends StatefulWidget
 {
   final StampManagerEntryData entryData;
   final ValueNotifier<StampManagerEntryWidget?> selectedWidget;
-  const StampManagerEntryWidget({super.key, required this.entryData, required this.selectedWidget});
+  final Function() onOpen;
+  const StampManagerEntryWidget({super.key, required this.entryData, required this.selectedWidget, required this.onOpen});
 
   @override
   State<StampManagerEntryWidget> createState() => _StampManagerEntryWidgetState();
@@ -37,9 +39,22 @@ class StampManagerEntryWidget extends StatefulWidget
 
 class _StampManagerEntryWidgetState extends State<StampManagerEntryWidget>
 {
+  DateTime? _lastTap;
+
+  //detected by hand, since onDoubleTap would hold back every single tap
   void _onTap()
   {
-    widget.selectedWidget.value = widget;
+    final DateTime now = DateTime.now();
+    if (widget.selectedWidget.value == widget && _lastTap != null && now.difference(_lastTap!) <= kDoubleTapTimeout)
+    {
+      _lastTap = null;
+      widget.onOpen();
+    }
+    else
+    {
+      _lastTap = now;
+      widget.selectedWidget.value = widget;
+    }
   }
 
   @override

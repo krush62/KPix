@@ -308,6 +308,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
           key: ValueKey<String>(entryData.path),
           entryData: entryData,
           selectedPath: _projectManager.selectedPath,
+          onOpen: _loadProject,
         );
       },
     );

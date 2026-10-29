@@ -130,13 +130,13 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     //Default Palette
     //the list is built here but shown later, so the name is left empty and
     //PaletteManagerEntryData.displayName localizes it where it is rendered
-    pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: PaletteManagerEntryData(rampDataList: KPalRampData.getDefaultPalette(), isLocked: true, path: null, name: "")));
+    pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, onOpen: _applyPalette, entryData: PaletteManagerEntryData(rampDataList: KPalRampData.getDefaultPalette(), isLocked: true, path: null, name: "")));
 
     //Asset Palettes
     final List<PaletteManagerEntryData> assetPalettes = await loadPalettesFromAssets();
     for (final PaletteManagerEntryData palData in assetPalettes)
     {
-      pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: palData));
+      pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, onOpen: _applyPalette, entryData: palData));
     }
 
     //Internal Palettes
@@ -145,7 +145,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
       final List<PaletteManagerEntryData> internalPalettes = await loadPalettesFromInternal();
       for (final PaletteManagerEntryData palData in internalPalettes)
       {
-        pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: palData));
+        pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, onOpen: _applyPalette, entryData: palData));
       }
     }
 

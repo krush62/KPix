@@ -71,7 +71,7 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
         final List<StampManagerEntryData> stampList = stamps[sectionName]!;
         for (final StampManagerEntryData fileData in stampList)
         {
-          final StampManagerEntryWidget entryWidget = StampManagerEntryWidget(selectedWidget: _selectedWidget, entryData: fileData);
+          final StampManagerEntryWidget entryWidget = StampManagerEntryWidget(selectedWidget: _selectedWidget, entryData: fileData, onOpen: _loadStamp);
           fList.add(entryWidget);
           if (fileData == _stampManager.selectedStamp.value)
           {
@@ -125,12 +125,16 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
 
   void _loadStampPressed(final AppLocalizations _)
   {
+    _loadStamp();
+  }
+
+  void _loadStamp()
+  {
     final StampManagerEntryWidget? selectedStamp = _selectedWidget.value;
     if (selectedStamp != null)
     {
       widget.fileLoad(data: selectedStamp.entryData);
     }
-
   }
 
   Expanded _createExpandedButton({required final String tooltip, required final IconData icon, required final AppLocalizations l10n, required final void Function(AppLocalizations l10n) onPressedFunc, final bool isEnabled = true})

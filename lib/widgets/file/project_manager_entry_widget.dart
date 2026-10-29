@@ -15,6 +15,7 @@
  */
 
 import 'dart:ui' as ui;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/models/project_manager_data.dart';
@@ -33,24 +34,44 @@ abstract final class _ProjectManagerEntryOptions
 ///
 /// The selection is held as a path in [selectedPath] instead of a reference to
 /// this widget, so it survives the list being rebuilt when the cache updates.
-class ProjectManagerEntryWidget extends StatelessWidget
+class ProjectManagerEntryWidget extends StatefulWidget
 {
   final ProjectManagerEntryData entryData;
   final ValueNotifier<String?> selectedPath;
-  const ProjectManagerEntryWidget({super.key, required this.entryData, required this.selectedPath});
+  final Function() onOpen;
+  const ProjectManagerEntryWidget({super.key, required this.entryData, required this.selectedPath, required this.onOpen});
 
+  @override
+  State<ProjectManagerEntryWidget> createState() => _ProjectManagerEntryWidgetState();
+}
+
+class _ProjectManagerEntryWidgetState extends State<ProjectManagerEntryWidget>
+{
+  DateTime? _lastTap;
+
+  //detected by hand, since onDoubleTap would hold back every single tap
   void _onTap()
   {
-    selectedPath.value = entryData.path;
+    final DateTime now = DateTime.now();
+    if (widget.selectedPath.value == widget.entryData.path && _lastTap != null && now.difference(_lastTap!) <= kDoubleTapTimeout)
+    {
+      _lastTap = null;
+      widget.onOpen();
+    }
+    else
+    {
+      _lastTap = now;
+      widget.selectedPath.value = widget.entryData.path;
+    }
   }
 
   @override
   Widget build(final BuildContext context)
   {
     return ValueListenableBuilder<String?>(
-      valueListenable: selectedPath,
+      valueListenable: widget.selectedPath,
       builder: (final BuildContext context, final String? selected, final Widget? child) {
-        final bool isSelected = selected == entryData.path;
+        final bool isSelected = selected == widget.entryData.path;
         return GestureDetector(
           onTap: _onTap,
           child: DecoratedBox(
@@ -67,7 +88,7 @@ class ProjectManagerEntryWidget extends StatelessWidget
                 Expanded(
                   child: Center(
                     child: Text(
-                      entryData.name,
+                      widget.entryData.name,
                       style: Theme.of(context).textTheme.titleSmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
                   ),
@@ -76,8 +97,8 @@ class ProjectManagerEntryWidget extends StatelessWidget
                   flex: _ProjectManagerEntryOptions.layoutFlex,
                   child: Padding(
                     padding: const EdgeInsets.all(_ProjectManagerEntryOptions.borderWidth),
-                    child: entryData.thumbnail != null
-                        ? RawImage(image: entryData.thumbnail, fit: BoxFit.contain, filterQuality: ui.FilterQuality.none,)
+                    child: widget.entryData.thumbnail != null
+                        ? RawImage(image: widget.entryData.thumbnail, fit: BoxFit.contain, filterQuality: ui.FilterQuality.none,)
                         : Center(
                             child: Icon(
                               TablerIcons.photo_off,
@@ -90,7 +111,7 @@ class ProjectManagerEntryWidget extends StatelessWidget
                 Expanded(
                   child: Center(
                     child: Text(
-                      formatDateTime(dateTime: entryData.dateTime),
+                      formatDateTime(dateTime: widget.entryData.dateTime),
                       style: Theme.of(context).textTheme.titleSmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
                   ),

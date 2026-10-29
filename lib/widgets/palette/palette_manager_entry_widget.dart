@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/color_types.dart';
@@ -31,7 +32,8 @@ class PaletteManagerEntryWidget extends StatefulWidget
 {
   final PaletteManagerEntryData entryData;
   final ValueNotifier<PaletteManagerEntryWidget?> selectedWidget;
-  const PaletteManagerEntryWidget({super.key, required this.entryData, required this.selectedWidget});
+  final Function() onOpen;
+  const PaletteManagerEntryWidget({super.key, required this.entryData, required this.selectedWidget, required this.onOpen});
 
   @override
   State<PaletteManagerEntryWidget> createState() => _PaletteManagerEntryWidgetState();
@@ -39,10 +41,22 @@ class PaletteManagerEntryWidget extends StatefulWidget
 
 class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
 {
+  DateTime? _lastTap;
 
+  //detected by hand, since onDoubleTap would hold back every single tap
   void _onTap()
   {
-    widget.selectedWidget.value = widget;
+    final DateTime now = DateTime.now();
+    if (widget.selectedWidget.value == widget && _lastTap != null && now.difference(_lastTap!) <= kDoubleTapTimeout)
+    {
+      _lastTap = null;
+      widget.onOpen();
+    }
+    else
+    {
+      _lastTap = now;
+      widget.selectedWidget.value = widget;
+    }
   }
 
   @override

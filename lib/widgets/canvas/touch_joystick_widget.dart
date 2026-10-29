@@ -65,7 +65,7 @@ class TouchJoystickWidget extends StatefulWidget
 
 class _TouchJoystickWidgetState extends State<TouchJoystickWidget> with SingleTickerProviderStateMixin
 {
-  late final Ticker _ticker = createTicker(_tick);
+  late final Ticker _ticker;
   final ValueNotifier<Offset> _knob = ValueNotifier<Offset>(Offset.zero);
   int? _pointer;
   Offset _startPos = Offset.zero;
@@ -76,6 +76,13 @@ class _TouchJoystickWidgetState extends State<TouchJoystickWidget> with SingleTi
       : const Size(_TouchJoystickOptions.extent, _TouchJoystickOptions.extent);
 
   double get _travel => (_TouchJoystickOptions.extent - _TouchJoystickOptions.knobSize) / 2;
+
+  @override
+  void initState()
+  {
+    super.initState();
+    _ticker = createTicker(_tick);
+  }
 
   @override
   void dispose()

@@ -16,6 +16,7 @@
  *
  */
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
@@ -47,12 +48,127 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
   static const int _expansion4 = 2;
   static const int _expansion5 = 1;
 
+  Widget _label({required final String text})
+  {
+    return Expanded(
+      flex: _expansion2,
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Padding(
+          padding: const EdgeInsets.only(right: _padding / 2.0),
+          child: Text(text),
+        ),
+      ),
+    );
+  }
 
+  /// A switch usable while blending is enabled and, if given, [frames] is not zero.
+  Widget _optionSwitch({required final ValueNotifier<bool> option, final ValueListenable<int>? frames})
+  {
+    return ListenableBuilder(
+      listenable: Listenable.merge(<Listenable?>[widget.options.enabled, option, frames]),
+      builder: (final BuildContext context, final Widget? child) {
+        final bool isEnabled = widget.options.enabled.value && (frames == null || frames.value > 0);
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: Switch(
+            value: option.value,
+            onChanged: isEnabled ? (final bool newValue) {
+              option.value = newValue;
+              GetIt.I.get<ViewState>().repaintNotifier.repaint();
+            } : null,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _optionSlider({required final ValueListenable<num> option, required final double min, required final double max, final int decimals = 0, required final ValueChanged<double> onChanged})
+  {
+    return ListenableBuilder(
+      listenable: Listenable.merge(<Listenable>[widget.options.enabled, option]),
+      builder: (final BuildContext context, final Widget? child) {
+        return KPixSlider(
+          textStyle: Theme.of(context).textTheme.bodyMedium!,
+          value: option.value.toDouble(),
+          min: min,
+          max: max,
+          decimals: decimals,
+          onChanged: widget.options.enabled.value ? (final double newValue) {
+            onChanged(newValue);
+            GetIt.I.get<ViewState>().repaintNotifier.repaint();
+          } : null,
+        );
+      },
+    );
+  }
+
+  Widget _framesSlider({required final ValueNotifier<int> frames})
+  {
+    return _optionSlider(
+      option: frames,
+      min: FrameBlendingConstraints.frameOffsetMin.toDouble(),
+      max: FrameBlendingConstraints.frameOffsetMax.toDouble(),
+      onChanged: (final double newFrames) {
+        frames.value = newFrames.toInt();
+      },
+    );
+  }
+
+  Widget _sliderRow({required final String label, required final Widget slider, required final String switchLabel, required final Widget optionSwitch})
+  {
+    return Row(
+      children: <Widget>[
+        const Spacer(
+          // ignore: avoid_redundant_argument_values
+          flex: _expansion1,
+        ),
+        _label(text: label),
+        Expanded(
+          flex: _expansion3,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: slider,
+          ),
+        ),
+        Expanded(
+          flex: _expansion4,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Text(switchLabel),
+          ),
+        ),
+        Expanded(
+          // ignore: avoid_redundant_argument_values
+          flex: _expansion5,
+          child: optionSwitch,
+        ),
+      ],
+    );
+  }
+
+  Widget _switchRow({required final String label, required final ValueNotifier<bool> option})
+  {
+    return Row(
+      children: <Widget>[
+        const Spacer(
+          // ignore: avoid_redundant_argument_values
+          flex: _expansion1,
+        ),
+        _label(text: label),
+        Expanded(
+          flex: _expansion3 + _expansion4 + _expansion5,
+          child: _optionSwitch(option: option),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(final BuildContext context)
   {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final FrameBlendingOptions options = widget.options;
     return Column(
       children: <Widget>[
         KPixAnimationWidget(
@@ -76,7 +192,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                     Expanded(
                       flex: _expansion2 + _expansion3 + _expansion4 + _expansion5,
                       child: ValueListenableBuilder<bool>(
-                        valueListenable: widget.options.enabled,
+                        valueListenable: options.enabled,
                         builder: (final BuildContext context, final bool enabled, final Widget? child)
                         {
                           return Align(
@@ -85,7 +201,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                               value: enabled,
                               onChanged: (final bool newEnabled)
                               {
-                                widget.options.enabled.value = newEnabled;
+                                options.enabled.value = newEnabled;
                                 GetIt.I.get<ViewState>().repaintNotifier.repaint();
                               },
                             ),
@@ -96,347 +212,34 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                   ],
                 ),
 
-                //FRAMES BEFORE
-                Row(
-                  children: <Widget>[
-                   const Spacer(
-                     // ignore: avoid_redundant_argument_values
-                     flex: _expansion1,
-                   ),
-                    Expanded(
-                      flex: _expansion2,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: _padding / 2.0),
-                          child: Text(l10n.framesBefore),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: _expansion3,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: ValueListenableBuilder<bool>(
-                          valueListenable: widget.options.enabled,
-                          builder: (final BuildContext context1, final bool enabled, final Widget? child1) {
-                            return ValueListenableBuilder<int>(
-                              valueListenable: widget.options.framesBefore,
-                              builder: (final BuildContext context, final int framesBefore, final Widget? child)
-                              {
-                                return KPixSlider(
-                                  textStyle: Theme.of(context).textTheme.bodyMedium!,
-                                  value: framesBefore.toDouble(),
-                                  min: FrameBlendingConstraints.frameOffsetMin.toDouble(),
-                                  max: FrameBlendingConstraints.frameOffsetMax.toDouble(),
-                                  onChanged: enabled ? (final double newFramesBefore)
-                                  {
-                                    widget.options.framesBefore.value = newFramesBefore.toInt();
-                                    GetIt.I.get<ViewState>().repaintNotifier.repaint();
-                                  } : null,
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: _expansion4,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(l10n.wrapAround),
-                      ),
-                    ),
-                    Expanded(
-                      // ignore: avoid_redundant_argument_values
-                      flex: _expansion5,
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: widget.options.enabled,
-                        builder: (final BuildContext context2, final bool enabled, final Widget? child2) {
-                          return ValueListenableBuilder<int>(
-                            valueListenable: widget.options.framesBefore,
-                            builder: (final BuildContext context1, final int framesBefore, final Widget? child1) {
-                              return ValueListenableBuilder<bool>(
-                                valueListenable: widget.options.wrapAroundBefore,
-                                builder: (final BuildContext context, final bool wrapAroundBefore, final Widget? child) {
-                                  final bool isEnabled = enabled && framesBefore > 0;
-                                  return Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Switch(
-                                      value: wrapAroundBefore,
-                                      onChanged: isEnabled ? (final bool newWrapAroundBefore) {
-                                        widget.options.wrapAroundBefore.value = newWrapAroundBefore;
-                                        GetIt.I.get<ViewState>().repaintNotifier.repaint();
-                                      } : null,
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                _sliderRow(
+                  label: l10n.framesBefore,
+                  slider: _framesSlider(frames: options.framesBefore),
+                  switchLabel: l10n.wrapAround,
+                  optionSwitch: _optionSwitch(option: options.wrapAroundBefore, frames: options.framesBefore),
                 ),
-
-                //FRAMES AFTER
-                Row(
-                  children: <Widget>[
-
-                    const Spacer(
-                      // ignore: avoid_redundant_argument_values
-                      flex: _expansion1,
-                    ),
-                    Expanded(
-                      flex: _expansion2,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: _padding / 2.0),
-                          child: Text(l10n.framesAfter),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: _expansion3,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: ValueListenableBuilder<bool>(
-                          valueListenable: widget.options.enabled,
-                          builder: (final BuildContext context1, final bool enabled, final Widget? child1) {
-                            return ValueListenableBuilder<int>(
-                              valueListenable: widget.options.framesAfter,
-                              builder: (final BuildContext context, final int framesAfter, final Widget? child)
-                              {
-                                return KPixSlider(
-                                  textStyle: Theme.of(context).textTheme.bodyMedium!,
-                                  value: framesAfter.toDouble(),
-                                  min: FrameBlendingConstraints.frameOffsetMin.toDouble(),
-                                  max: FrameBlendingConstraints.frameOffsetMax.toDouble(),
-                                  onChanged: enabled ? (final double newFramesAfter)
-                                  {
-                                    widget.options.framesAfter.value = newFramesAfter.toInt();
-                                    GetIt.I.get<ViewState>().repaintNotifier.repaint();
-                                  } : null,
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: _expansion4,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(l10n.wrapAround),
-                      ),
-                    ),
-                    Expanded(
-                      // ignore: avoid_redundant_argument_values
-                      flex: _expansion5,
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: widget.options.enabled,
-                        builder: (final BuildContext context2, final bool enabled, final Widget? child2) {
-                          return ValueListenableBuilder<int>(
-                            valueListenable: widget.options.framesAfter,
-                            builder: (final BuildContext context1, final int framesAfter, final Widget? child1) {
-                              return ValueListenableBuilder<bool>(
-                                valueListenable: widget.options.wrapAroundAfter,
-                                builder: (final BuildContext context, final bool wrapAroundAfter, final Widget? child) {
-                                  final bool isEnabled = enabled && framesAfter > 0;
-                                  return Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Switch(
-                                      value: wrapAroundAfter,
-                                      onChanged: isEnabled ? (final bool newWrapAroundAfter) {
-                                        widget.options.wrapAroundAfter.value = newWrapAroundAfter;
-                                        GetIt.I.get<ViewState>().repaintNotifier.repaint();
-                                      } : null,
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                _sliderRow(
+                  label: l10n.framesAfter,
+                  slider: _framesSlider(frames: options.framesAfter),
+                  switchLabel: l10n.wrapAround,
+                  optionSwitch: _optionSwitch(option: options.wrapAroundAfter, frames: options.framesAfter),
                 ),
-
-                //Opacity
-                Row(
-                  children: <Widget>[
-
-                    const Spacer(
-                      // ignore: avoid_redundant_argument_values
-                      flex: _expansion1,
-                    ),
-                    Expanded(
-                      flex: _expansion2,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: _padding / 2.0),
-                          child: Text(l10n.opacity),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: _expansion3,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: ValueListenableBuilder<bool>(
-                          valueListenable: widget.options.enabled,
-                          builder: (final BuildContext context1, final bool enabled, final Widget? child1) {
-                            return ValueListenableBuilder<double>(
-                              valueListenable: widget.options.opacity,
-                              builder: (final BuildContext context, final double opacity, final Widget? child)
-                              {
-                                return KPixSlider(
-                                  textStyle: Theme.of(context).textTheme.bodyMedium!,
-                                  value: opacity,
-                                  min: FrameBlendingConstraints.opacityMin,
-                                  max: FrameBlendingConstraints.opacityMax,
-                                  decimals: 1,
-                                  //divisions: ((widget.options.opacityMax - widget.options.opacityMin) / widget.options.opacityStep).toInt(),
-                                  onChanged: enabled ? (final double newOpacity)
-                                  {
-                                    widget.options.opacity.value = newOpacity;
-                                    GetIt.I.get<ViewState>().repaintNotifier.repaint();
-                                  } : null,
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: _expansion4,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(l10n.gradual),
-                      ),
-                    ),
-                    Expanded(
-                      // ignore: avoid_redundant_argument_values
-                      flex: _expansion5,
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: widget.options.enabled,
-                        builder: (final BuildContext context2, final bool enabled, final Widget? child2) {
-                          return ValueListenableBuilder<bool>(
-                            valueListenable: widget.options.gradualOpacity,
-                            builder: (final BuildContext context, final bool gradualOpacity, final Widget? child) {
-                              return Align(
-                                alignment: Alignment.centerLeft,
-                                child: Switch(
-                                  value: gradualOpacity,
-                                  onChanged: enabled ? (final bool newGradualOpacity) {
-                                    widget.options.gradualOpacity.value = newGradualOpacity;
-                                    GetIt.I.get<ViewState>().repaintNotifier.repaint();
-                                  } : null,
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                _sliderRow(
+                  label: l10n.opacity,
+                  slider: _optionSlider(
+                    option: options.opacity,
+                    min: FrameBlendingConstraints.opacityMin,
+                    max: FrameBlendingConstraints.opacityMax,
+                    decimals: 1,
+                    onChanged: (final double newOpacity) {
+                      options.opacity.value = newOpacity;
+                    },
+                  ),
+                  switchLabel: l10n.gradual,
+                  optionSwitch: _optionSwitch(option: options.gradualOpacity),
                 ),
-
-
-                //Tinting
-                Row(
-                  children: <Widget>[
-                    const Spacer(
-                      // ignore: avoid_redundant_argument_values
-                      flex: _expansion1,
-                    ),
-                    Expanded(
-                      flex: _expansion2,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: _padding / 2.0),
-                          child: Text(l10n.tinting),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      // ignore: avoid_redundant_argument_values
-                      flex: _expansion3 + _expansion4 + _expansion5,
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: widget.options.enabled,
-                        builder: (final BuildContext context2, final bool enabled, final Widget? child2) {
-                          return ValueListenableBuilder<bool>(
-                            valueListenable: widget.options.tinting,
-                            builder: (final BuildContext context, final bool tinting, final Widget? child) {
-                              return Align(
-                                alignment: Alignment.centerLeft,
-                                child: Switch(
-                                  value: tinting,
-                                  onChanged: enabled ? (final bool newTintingValue) {
-                                    widget.options.tinting.value = newTintingValue;
-                                    GetIt.I.get<ViewState>().repaintNotifier.repaint();
-                                  } : null,
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-
-                //Active Layer Only
-                Row(
-                  children: <Widget>[
-                    const Spacer(
-                      // ignore: avoid_redundant_argument_values
-                      flex: _expansion1,
-                    ),
-                    Expanded(
-                      flex: _expansion2,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: _padding / 2.0),
-                          child: Text(l10n.activeLayerOnly),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      // ignore: avoid_redundant_argument_values
-                      flex: _expansion3 + _expansion4 + _expansion5,
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: widget.options.enabled,
-                        builder: (final BuildContext context2, final bool enabled, final Widget? child2) {
-                          return ValueListenableBuilder<bool>(
-                            valueListenable: widget.options.activeLayerOnly,
-                            builder: (final BuildContext context, final bool activeLayerOnly, final Widget? child) {
-                              return Align(
-                                alignment: Alignment.centerLeft,
-                                child: Switch(
-                                  value: activeLayerOnly,
-                                  onChanged: enabled ? (final bool newActiveLayerOnly) {
-                                    widget.options.activeLayerOnly.value = newActiveLayerOnly;
-                                    GetIt.I.get<ViewState>().repaintNotifier.repaint();
-                                  } : null,
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                _switchRow(label: l10n.tinting, option: options.tinting),
+                _switchRow(label: l10n.activeLayerOnly, option: options.activeLayerOnly),
                 const SizedBox(height: _padding,),
                 IconButton(
                   tooltip: l10n.close,

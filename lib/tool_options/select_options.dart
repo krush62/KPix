@@ -33,6 +33,43 @@ class SelectOptions extends IToolOptions
   final ValueNotifier<bool> keepAspectRatio = ValueNotifier<bool>(SelectConstraints.keepAspectRatioDefault);
   final ValueNotifier<bool> wandContinuous = ValueNotifier<bool>(SelectConstraints.wandContinuousDefault);
   final ValueNotifier<bool> wandWholeRamp = ValueNotifier<bool>(SelectConstraints.wandWholeRampDefault);
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
+
+  SelectOptions()
+  {
+    Listenable.merge(<Listenable>[_hotkeyManager.shiftNotifier, _hotkeyManager.altNotifier, _hotkeyManager.controlNotifier, unModifiedMode]).addListener(_updateMode);
+  }
+
+  void _updateMode()
+  {
+    final bool shiftPressed = _hotkeyManager.shiftIsPressed;
+    final bool altPressed = _hotkeyManager.altIsPressed;
+    final bool controlPressed = _hotkeyManager.controlIsPressed;
+    SelectMode newMode = unModifiedMode.value;
+    if (shiftPressed && !altPressed && !controlPressed)
+    {
+      newMode = SelectMode.add;
+    }
+    else if (shiftPressed && altPressed && !controlPressed)
+    {
+      newMode = SelectMode.subtract;
+    }
+    else if (shiftPressed && !altPressed && controlPressed)
+    {
+      newMode = SelectMode.intersect;
+    }
+    mode.value = newMode;
+  }
+
+  /// A mode chosen while a modifier is held only lasts until the modifiers change.
+  void chooseMode({required final SelectMode newMode})
+  {
+    if (_hotkeyManager.noModifierIsPressed())
+    {
+      unModifiedMode.value = newMode;
+    }
+    mode.value = newMode;
+  }
 
   static Column getWidget({
     required final BuildContext context,
@@ -125,31 +162,11 @@ class SelectOptions extends IToolOptions
     );
   }
 
-  /// The mode buttons; held modifiers take precedence over the chosen mode.
   static Widget _getModeSelector({required final SelectOptions selectOptions})
   {
-    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
-    return ListenableBuilder(
-      listenable: Listenable.merge(<Listenable>[hotkeyManager.shiftNotifier, hotkeyManager.altNotifier, hotkeyManager.controlNotifier, selectOptions.unModifiedMode]),
-      builder: (final BuildContext context, final Widget? child) {
-        final bool shiftPressed = hotkeyManager.shiftIsPressed;
-        final bool altPressed = hotkeyManager.altIsPressed;
-        final bool controlPressed = hotkeyManager.controlIsPressed;
-        SelectMode newMode = selectOptions.unModifiedMode.value;
-        if (shiftPressed && !altPressed && !controlPressed)
-        {
-          newMode = SelectMode.add;
-        }
-        else if (shiftPressed && altPressed && !controlPressed)
-        {
-          newMode = SelectMode.subtract;
-        }
-        else if (shiftPressed && !altPressed && controlPressed)
-        {
-          newMode = SelectMode.intersect;
-        }
-        selectOptions.mode.value = newMode;
-
+    return ValueListenableBuilder<SelectMode>(
+      valueListenable: selectOptions.mode,
+      builder: (final BuildContext context, final SelectMode mode, final Widget? child) {
         final List<ButtonSegment<SelectMode>> segList = <ButtonSegment<SelectMode>>[];
         for (final SelectMode sMode in SelectMode.values)
         {
@@ -167,15 +184,11 @@ class SelectOptions extends IToolOptions
 
         return SegmentedButton<SelectMode>(
           segments: segList,
-          selected: <SelectMode>{selectOptions.mode.value},
+          selected: <SelectMode>{mode},
           showSelectedIcon: false,
           onSelectionChanged: (final Set<SelectMode> modes)
           {
-            if (!shiftPressed && !altPressed && !controlPressed)
-            {
-              selectOptions.unModifiedMode.value = modes.first;
-            }
-            selectOptions.mode.value = modes.first;
+            selectOptions.chooseMode(newMode: modes.first);
           },
         );
       },

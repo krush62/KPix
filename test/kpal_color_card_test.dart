@@ -35,10 +35,19 @@ import 'support/selection_harness.dart';
 
 const Duration _touchTimeout = Duration(milliseconds: 1600);
 
+class _WatchedShift extends ValueNotifier<int>
+{
+  _WatchedShift() : super(0);
+  bool get isWatched => hasListeners;
+}
+
 /// One card between another, as in a ramp, and what it shows.
 class _Card
 {
-  final ShiftSet shifts = ShiftSet(hueShiftNotifier: ValueNotifier<int>(0), satShiftNotifier: ValueNotifier<int>(0), valShiftNotifier: ValueNotifier<int>(0));
+  final _WatchedShift hue = _WatchedShift();
+  final _WatchedShift sat = _WatchedShift();
+  final _WatchedShift val = _WatchedShift();
+  late final ShiftSet shifts = ShiftSet(hueShiftNotifier: hue, satShiftNotifier: sat, valShiftNotifier: val);
   final ValueNotifier<IdColor> color = ValueNotifier<IdColor>(IdColor(hsv: KHSV(h: 210, s: 0.6, v: 0.4), uuid: "a"));
 }
 
@@ -66,6 +75,11 @@ Future<void> _pumpCards(final WidgetTester tester, {required final _Card first, 
   await tester.runAsync(() async {
     await bootProject(canvasSize: CoordinateSetI(x: 8, y: 8));
   });
+  await _showCards(tester, first: first, second: second, firstShowsName: firstShowsName);
+}
+
+Future<void> _showCards(final WidgetTester tester, {required final _Card first, required final _Card second, final bool firstShowsName = true}) async
+{
   await tester.pumpWidget(ToastificationWrapper(child: MaterialApp(
     theme: monochromeTheme,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -82,10 +96,15 @@ Future<void> _pumpCards(final WidgetTester tester, {required final _Card first, 
   await _settleDown(tester);
 }
 
-/// Lets a touch timeout started by the test run out, and clears the project.
-Future<void> _close(final WidgetTester tester) async
+/// Clears the project, after letting a touch timeout started by the test run out.
+///
+/// Without [waitForTimeout], a timer still running fails the test at its end.
+Future<void> _close(final WidgetTester tester, {final bool waitForTimeout = true}) async
 {
-  await tester.pump(_touchTimeout);
+  if (waitForTimeout)
+  {
+    await tester.pump(_touchTimeout);
+  }
   await tester.pumpWidget(const SizedBox.shrink());
   for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
   {
@@ -288,6 +307,85 @@ void main()
       await _pumpCards(tester, first: card, second: _Card(), firstShowsName: false);
       expect(find.descendant(of: find.byType(KPalColorCardWidget).first, matching: find.text(colorToHexString(color: card.color.value.color, toUpper: true))), findsNothing);
       await _close(tester);
+    });
+  });
+
+  group("when it goes away", () {
+    testWidgets("it stops listening to all of its shifts", (final WidgetTester tester) async {
+      final _Card first = _Card();
+      final _Card second = _Card();
+      await _pumpCards(tester, first: first, second: second);
+      final List<_WatchedShift> shifts = <_WatchedShift>[first.hue, first.sat, first.val, second.hue, second.sat, second.val];
+      for (final _WatchedShift shift in shifts)
+      {
+        expect(shift.isWatched, isTrue);
+      }
+      await tester.pumpWidget(const SizedBox.shrink());
+      for (int i = 0; i < shifts.length; i++)
+      {
+        expect(shifts[i].isWatched, isFalse, reason: "shift $i");
+      }
+      await _close(tester, waitForTimeout: false);
+    });
+
+    testWidgets("a later shift starts nothing", (final WidgetTester tester) async {
+      final _Card card = _Card();
+      await _pumpCards(tester, first: card, second: _Card());
+      await tester.pumpWidget(const SizedBox.shrink());
+      card.hue.value = 3;
+      card.sat.value = 3;
+      card.val.value = 3;
+      expect(tester.takeException(), isNull);
+      await _close(tester, waitForTimeout: false);
+    });
+
+    testWidgets("it ends a touch timeout started by a tap", (final WidgetTester tester) async {
+      await _pumpCards(tester, first: _Card(), second: _Card());
+      await tester.tap(_colorArea(0));
+      await tester.pump();
+      await _close(tester, waitForTimeout: false);
+    });
+
+    testWidgets("it ends a touch timeout started by a shift", (final WidgetTester tester) async {
+      final _Card card = _Card();
+      await _pumpCards(tester, first: card, second: _Card());
+      card.val.value = 2;
+      await tester.pump();
+      await _close(tester, waitForTimeout: false);
+    });
+
+    testWidgets("the mouse may still be over it", (final WidgetTester tester) async {
+      await _pumpCards(tester, first: _Card(), second: _Card());
+      final TestGesture mouse = await _mouse(tester);
+      await mouse.moveTo(tester.getCenter(_colorArea(0)));
+      await _settleDown(tester);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await mouse.moveTo(Offset.zero);
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      await _close(tester, waitForTimeout: false);
+    });
+
+    testWidgets("opening it again leaves one card listening, which still works", (final WidgetTester tester) async {
+      final _Card first = _Card();
+      final _Card second = _Card();
+      await _pumpCards(tester, first: first, second: second);
+      for (int i = 0; i < 3; i++)
+      {
+        await tester.pumpWidget(const SizedBox.shrink());
+        expect(first.hue.isWatched, isFalse, reason: "closing $i");
+        await _showCards(tester, first: first, second: second);
+        expect(first.hue.isWatched, isTrue, reason: "opening $i");
+      }
+
+      first.hue.value = 4;
+      await _settleDown(tester);
+      expect(_slidersOpacity(tester), 1);
+      await tester.pump(_touchTimeout);
+      await _settleDown(tester);
+      expect(_slidersOpacity(tester), 0);
+      expect(_pencilOpacity(tester), 1);
+      await _close(tester, waitForTimeout: false);
     });
   });
 

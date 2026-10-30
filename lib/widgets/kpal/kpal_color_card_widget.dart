@@ -81,6 +81,17 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
     super.initState();
   }
 
+  @override
+  void dispose()
+  {
+    pressTimer?.cancel();
+    _hueSlider?.valueNotifier.removeListener(_showSliders);
+    _satSlider?.valueNotifier.removeListener(_showSliders);
+    _valSlider?.valueNotifier.removeListener(_showSliders);
+    _shouldShowSliders.dispose();
+    super.dispose();
+  }
+
   void _showSliders()
   {
     _shouldShowSliders.value = true;

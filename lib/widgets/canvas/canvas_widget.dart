@@ -1305,66 +1305,71 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
             ),
           ),
         ),
-        ValueListenableBuilder<bool>(
-          valueListenable: _touchPrefs.showJoysticks,
-          builder: (final BuildContext context, final bool showJoysticks, final Widget? child)
-          {
-            if (!showJoysticks)
-            {
-              return const SizedBox.shrink();
-            }
-            return Stack(
-              children: <Widget>[
-                Positioned(
-                  left: _CanvasOptions.joystickPadding,
-                  bottom: _CanvasOptions.joystickPadding,
-                  child: TouchJoystickWidget(
-                    axis: JoystickAxis.vertical,
-                    onTick: _joystickZoom,
-                    onRelease: _joystickZoomRelease,
-                  ),
-                ),
-                Positioned(
-                  right: _CanvasOptions.joystickPadding,
-                  bottom: _CanvasOptions.joystickPadding,
-                  child: TouchJoystickWidget(
-                    axis: JoystickAxis.free,
-                    onTick: _joystickPan,
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-        ValueListenableBuilder<ToolType>(
-          valueListenable: GetIt.I.get<ToolState>().selectedToolNotifier,
-          builder: (final BuildContext contextS, final ToolType toolType, final Widget? childS) {
-            return ValueListenableBuilder<bool>(
-              valueListenable: GetIt.I.get<DocumentState>().selectionState.selection.isEmptyNotifer,
-              builder: (final BuildContext contextT, final bool hasNoSelection, final Widget? childT) {
-                final bool shouldShow = toolType == ToolType.select || !hasNoSelection;
-                if (shouldShow)
+        //the joysticks end where the selection bar begins, so the bar never covers them
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Expanded(
+              child: ValueListenableBuilder<bool>(
+                valueListenable: _touchPrefs.showJoysticks,
+                builder: (final BuildContext context, final bool showJoysticks, final Widget? child)
                 {
-                  _selectionBarAnimationController.forward();
-                }
-                else
-                {
-                  _selectionBarAnimationController.reverse();
-                }
-                return IgnorePointer(
-                  ignoring: !shouldShow,
-                  child: childT,
+                  if (!showJoysticks)
+                  {
+                    return const SizedBox.shrink();
+                  }
+                  return Stack(
+                    children: <Widget>[
+                      Positioned(
+                        left: _CanvasOptions.joystickPadding,
+                        bottom: _CanvasOptions.joystickPadding,
+                        child: TouchJoystickWidget(
+                          axis: JoystickAxis.vertical,
+                          onTick: _joystickZoom,
+                          onRelease: _joystickZoomRelease,
+                        ),
+                      ),
+                      Positioned(
+                        right: _CanvasOptions.joystickPadding,
+                        bottom: _CanvasOptions.joystickPadding,
+                        child: TouchJoystickWidget(
+                          axis: JoystickAxis.free,
+                          onTick: _joystickPan,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            ValueListenableBuilder<ToolType>(
+              valueListenable: GetIt.I.get<ToolState>().selectedToolNotifier,
+              builder: (final BuildContext contextS, final ToolType toolType, final Widget? childS) {
+                return ValueListenableBuilder<bool>(
+                  valueListenable: GetIt.I.get<DocumentState>().selectionState.selection.isEmptyNotifer,
+                  builder: (final BuildContext contextT, final bool hasNoSelection, final Widget? childT) {
+                    final bool shouldShow = toolType == ToolType.select || !hasNoSelection;
+                    if (shouldShow)
+                    {
+                      _selectionBarAnimationController.forward();
+                    }
+                    else
+                    {
+                      _selectionBarAnimationController.reverse();
+                    }
+                    return IgnorePointer(
+                      ignoring: !shouldShow,
+                      child: childT,
+                    );
+                  },
+                  child: SizeTransition(
+                    sizeFactor: _selectionBarAnimation,
+                    child: const SelectionBarWidget(),
+                  ),
                 );
               },
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: SizeTransition(
-                  sizeFactor: _selectionBarAnimation,
-                  child: const SelectionBarWidget(),
-                ),
-              ),
-            );
-          },
+            ),
+          ],
         ),
       ],
     );

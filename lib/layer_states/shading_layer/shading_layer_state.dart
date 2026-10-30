@@ -48,8 +48,7 @@ import 'package:logger/logger.dart';
 class ShadingLayerState extends RasterableLayerState
 {
   final ShadingLayerSettings settings;
-  @protected
-  final HashMap<int, int> thumbnailBrightnessMap = HashMap<int, int>();
+  final HashMap<int, int> _thumbnailBrightnessMap = HashMap<int, int>();
   //the shading steps as signed pixels (see SignedPixels), canvas sized
   @protected
   PixelGrid shadingValues;
@@ -118,7 +117,7 @@ class ShadingLayerState extends RasterableLayerState
     final int brightnessStep = 255 ~/ (settings.shadingStepsMinus.value + settings.shadingStepsPlus.value + 1);
     for (int i = -settings.shadingStepsMinus.value; i <= settings.shadingStepsPlus.value; i++)
     {
-      thumbnailBrightnessMap[i] = counter * brightnessStep;
+      _thumbnailBrightnessMap[i] = counter * brightnessStep;
       counter++;
     }
   }
@@ -203,8 +202,12 @@ class ShadingLayerState extends RasterableLayerState
 
   int? getRawValueAt({required final CoordinateSetI coord})
   {
-    return getDisplayValueAt(coord: coord);
+    return shadingValues.getSigned(x: coord.x, y: coord.y);
   }
+
+  /// The step a pixel carrying [value] shades by at [x]|[y].
+  @protected
+  int stepAt({required final int value, required final int x, required final int y}) => value;
 
 
   void removeCoords({required final Iterable<CoordinateSetI> coords})
@@ -266,15 +269,14 @@ class ShadingLayerState extends RasterableLayerState
     }
   }
 
-  @protected
-  Uint8List neutralThumbnailBytes({required final int pixelCount})
+  Uint8List _neutralThumbnailBytes({required final int pixelCount})
   {
     final Uint8List bytes = Uint8List(pixelCount * 4);
     if (bytes.isEmpty)
     {
       return bytes;
     }
-    final int neutral = thumbnailBrightnessMap[0]!;
+    final int neutral = _thumbnailBrightnessMap[0]!;
     bytes[0] = neutral;
     bytes[1] = neutral;
     bytes[2] = neutral;
@@ -289,16 +291,14 @@ class ShadingLayerState extends RasterableLayerState
     return bytes;
   }
 
-  @protected
-  bool takeThumbnailStale()
+  bool _takeThumbnailStale()
   {
     final bool stale = _thumbnailStale;
     _thumbnailStale = false;
     return stale;
   }
 
-  @protected
-  ui.Image? keptThumbnail({required final Frame? frame, required final bool stale, required final CoordinateSetI canvasSize})
+  ui.Image? _keptThumbnail({required final Frame? frame, required final bool stale, required final CoordinateSetI canvasSize})
   {
     if (stale)
     {
@@ -312,10 +312,9 @@ class ShadingLayerState extends RasterableLayerState
     return current.clone();
   }
 
-  @protected
-  void writeThumbnailBrightness({required final Uint8List bytes, required final int index, required final int value})
+  void _writeThumbnailBrightness({required final Uint8List bytes, required final int index, required final int value})
   {
-    final int brightVal = thumbnailBrightnessMap[value] ?? 0;
+    final int brightVal = _thumbnailBrightnessMap[value] ?? 0;
     bytes[index] = brightVal;
     bytes[index + 1] = brightVal;
     bytes[index + 2] = brightVal;
@@ -332,7 +331,7 @@ class ShadingLayerState extends RasterableLayerState
     //changes that are not part of this render and must survive it
     final bool fullRenderForced = _forceFullRender;
     final List<DirtyRegion> renderRegions = List<DirtyRegion>.from(_dirtyRegions);
-    final bool thumbnailStale = takeThumbnailStale();
+    final bool thumbnailStale = _takeThumbnailStale();
     _forceFullRender = false;
     _dirtyRegions.clear();
 
@@ -436,11 +435,11 @@ class ShadingLayerState extends RasterableLayerState
     final bool thumbnailStale = true,
   }) async
   {
-    final ui.Image? kept = keptThumbnail(frame: frame, stale: thumbnailStale, canvasSize: canvasSize);
-    final Uint8List? byteDataThb = kept == null ? neutralThumbnailBytes(pixelCount: canvasSize.x * canvasSize.y) : null;
+    final ui.Image? kept = _keptThumbnail(frame: frame, stale: thumbnailStale, canvasSize: canvasSize);
+    final Uint8List? byteDataThb = kept == null ? _neutralThumbnailBytes(pixelCount: canvasSize.x * canvasSize.y) : null;
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final RasterPixels allColorPixels = RasterPixels.empty(width: canvasSize.x, height: canvasSize.y);
-    final List<RasterPixels> below = pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
+    final List<RasterPixels> below = _pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
 
     //a pixel without a shading step shows nothing and keeps the neutral
     //brightness, so only the ones that carry a step are worth walking
@@ -448,13 +447,12 @@ class ShadingLayerState extends RasterableLayerState
     {
       if (byteDataThb != null)
       {
-        writeThumbnailBrightness(bytes: byteDataThb, index: (y * canvasSize.x + x) * 4, value: valAt);
+        _writeThumbnailBrightness(bytes: byteDataThb, index: (y * canvasSize.x + x) * 4, value: valAt);
       }
-      final ColorReference? refCol = colorAmong(pixels: below, x: x, y: y);
+      final ColorReference? refCol = _colorAmong(pixels: below, x: x, y: y);
       if (refCol != null)
       {
-        final int currentColorIndex = refCol.colorIndex;
-        final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
+        final int targetColorIndex = (refCol.colorIndex + stepAt(value: valAt, x: x, y: y)).clamp(0, refCol.ramp.references.length - 1);
         final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
         allColorPixels.setColorAt(x: x, y: y, color: targetColor);
       }
@@ -573,23 +571,23 @@ class ShadingLayerState extends RasterableLayerState
   {
     final ByteData byteDataThb = ByteData(region.width * region.height * 4);
     final ByteData byteDataImg = ByteData(region.width * region.height * 4);
-    final List<RasterPixels> below = pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
+    final List<RasterPixels> below = _pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
 
     for (int y = region.y; y < region.y + region.height; y++)
     {
       for (int x = region.x; x < region.x + region.width; x++)
       {
         final int? valAt = shadingValues.getSigned(x: x, y: y);
-        int brightVal = thumbnailBrightnessMap[0]!;
+        int brightVal = _thumbnailBrightnessMap[0]!;
         ColorReference? shaded;
 
         if (valAt != null)
         {
-          brightVal = thumbnailBrightnessMap[valAt] ?? 0;
-          final ColorReference? refCol = colorAmong(pixels: below, x: x, y: y);
+          brightVal = _thumbnailBrightnessMap[valAt] ?? 0;
+          final ColorReference? refCol = _colorAmong(pixels: below, x: x, y: y);
           if (refCol != null)
           {
-            final int targetColorIndex = (refCol.colorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
+            final int targetColorIndex = (refCol.colorIndex + stepAt(value: valAt, x: x, y: y)).clamp(0, refCol.ramp.references.length - 1);
             shaded = refCol.ramp.references[targetColorIndex];
           }
         }
@@ -763,8 +761,7 @@ class ShadingLayerState extends RasterableLayerState
 
   /// What the visible layers below this one in [rasterLayers] showed in
   /// [frame] when they were last rastered, nearest first.
-  @protected
-  List<RasterPixels> pixelsBelow({required final List<RasterableLayerState> rasterLayers, required final int currentIndex, required final Frame? frame})
+  List<RasterPixels> _pixelsBelow({required final List<RasterableLayerState> rasterLayers, required final int currentIndex, required final Frame? frame})
   {
     final List<RasterPixels> below = <RasterPixels>[];
     for (int i = currentIndex + 1; i < rasterLayers.length; i++)
@@ -780,7 +777,7 @@ class ShadingLayerState extends RasterableLayerState
   }
 
   /// The color of the first of [pixels] that has one at [x]|[y].
-  static ColorReference? colorAmong({required final List<RasterPixels> pixels, required final int x, required final int y})
+  static ColorReference? _colorAmong({required final List<RasterPixels> pixels, required final int x, required final int y})
   {
     for (final RasterPixels layerPixels in pixels)
     {
@@ -877,7 +874,7 @@ class ShadingLayerState extends RasterableLayerState
     settings.removeListener(_settingsChanged);
     _isUpdateScheduled = false;
     shadingValues.clear();
-    thumbnailBrightnessMap.clear();
+    _thumbnailBrightnessMap.clear();
 
     final List<ui.Image?> images = <ui.Image?>[rasterImage.value, thumbnail.value, previousRaster];
     for (final RasterImagePair pair in rasterImageMap.value.values)

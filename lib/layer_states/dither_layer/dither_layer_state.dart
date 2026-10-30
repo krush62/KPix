@@ -15,26 +15,17 @@
  */
 
 
-import 'dart:async';
 import 'dart:collection';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/models/canvas_state.dart';
-import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_dither_layer.dart';
 import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history/history_ramp_data.dart';
-import 'package:kpix/models/time_line_state.dart';
-import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
-import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:kpix/widgets/layer_settings/shading_layer_settings_widget.dart';
 
 class DitherLayerState extends ShadingLayerState
@@ -209,130 +200,9 @@ class DitherLayerState extends ShadingLayerState
   }
 
 
-  @override
-  Future<DualRasterResult> createRasters() async
-  {
-    final DocumentState documentState = GetIt.I.get<DocumentState>();
-    final CanvasState canvasState = GetIt.I.get<CanvasState>();
-    final Map<Frame, RasterImagePair> rasterImages = <Frame, RasterImagePair>{};
-    final bool thumbnailStale = takeThumbnailStale();
-
-    int? currentIndex;
-    if (layerStack != null)
-    {
-      for (int i = 0; i < layerStack!.length; i++)
-      {
-        if (layerStack![i] == this)
-        {
-          currentIndex = i;
-          break;
-        }
-      }
-      if (currentIndex != null)
-      {
-        //a stack need not belong to the open canvas, an imported project's does not
-        final CoordinateSetI stackSize = CoordinateSetI(x: shadingValues.width, y: shadingValues.height);
-        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: stackSize, rasterLayers: layerStack!, currentIndex: currentIndex, frame: null, thumbnailStale: thumbnailStale);
-        return DualRasterResult(rasterImages: rasterImages, externalStackImages: externalStackImages);
-      }
-      else
-      {
-        return DualRasterResult(rasterImages: rasterImages);
-      }
-    }
-    else
-    {
-      final List<Frame> frames = documentState.timeline.findFramesForLayer(layer: this);
-      for (final Frame frame in frames)
-      {
-        final List<RasterableLayerState> rasterLayers = frame.layerList.getVisibleRasterLayers().toList(growable: false);
-        int? frameLayerIndex;
-        for (int i = 0; i < rasterLayers.length; i++)
-        {
-          if (rasterLayers[i] == this)
-          {
-            frameLayerIndex = i;
-            break;
-          }
-        }
-        if (frameLayerIndex != null)
-        {
-          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: canvasState.canvasSize, rasterLayers: rasterLayers, currentIndex: frameLayerIndex, frame: frame, thumbnailStale: thumbnailStale);
-          rasterImages[frame] = rasterImagePair;
-        }
-      }
-      return DualRasterResult(rasterImages: rasterImages);
-    }
-  }
-
-  Future<RasterImagePair> _createRasterFromLayers({required final CoordinateSetI canvasSize, required final List<RasterableLayerState> rasterLayers, required final int currentIndex, required final Frame? frame, required final bool thumbnailStale}) async
-  {
-    final ui.Image? kept = keptThumbnail(frame: frame, stale: thumbnailStale, canvasSize: canvasSize);
-    final Uint8List? byteDataThb = kept == null ? neutralThumbnailBytes(pixelCount: canvasSize.x * canvasSize.y) : null;
-    final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
-    final RasterPixels allColorPixels = RasterPixels.empty(width: canvasSize.x, height: canvasSize.y);
-    final List<RasterPixels> below = pixelsBelow(rasterLayers: rasterLayers, currentIndex: currentIndex, frame: frame);
-
-    shadingValues.forEachSigned(action: (final int x, final int y, final int valAt)
-    {
-      if (byteDataThb != null)
-      {
-        writeThumbnailBrightness(bytes: byteDataThb, index: (y * canvasSize.x + x) * 4, value: valAt);
-      }
-      final ColorReference? refCol = ShadingLayerState.colorAmong(pixels: below, x: x, y: y);
-      if (refCol != null)
-      {
-        final int currentColorIndex = refCol.colorIndex;
-        final int ditherVal = _ditherValue(value: valAt, x: x, y: y);
-        final int targetColorIndex = (currentColorIndex + ditherVal).clamp(0, refCol.ramp.references.length - 1);
-        final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
-        allColorPixels.setColorAt(x: x, y: y, color: targetColor);
-      }
-    },);
-    allColorPixels.writeRgba(target: byteDataImg, width: canvasSize.x, height: canvasSize.y);
-    setRasterPixels(pixels: allColorPixels, frame: frame);
-
-
-
-    ui.Image? thbImg = kept;
-    if (byteDataThb != null)
-    {
-      final Completer<ui.Image> completerThb = Completer<ui.Image>();
-      ui.decodeImageFromPixels(
-          byteDataThb,
-          canvasSize.x,
-          canvasSize.y,
-          ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
-      {
-        completerThb.complete(convertedImage);
-      }
-      );
-      thbImg = await completerThb.future;
-    }
-
-    final Completer<ui.Image> completerImg = Completer<ui.Image>();
-    ui.decodeImageFromPixels(
-        byteDataImg.buffer.asUint8List(),
-        canvasSize.x,
-        canvasSize.y,
-        ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
-    {
-      completerImg.complete(convertedImage);
-    }
-    );
-    final ui.Image rasterImg = await completerImg.future;
-    return RasterImagePair(raster: rasterImg, thumbnail: thbImg!);
-  }
-
-
-  @override
-  bool hasCoord({required final CoordinateSetI coord})
-  {
-    return shadingValues.getSigned(x: coord.x, y: coord.y) != null;
-  }
-
   /// The step the dither pattern of [value] makes at [x]|[y].
-  int _ditherValue({required final int value, required final int x, required final int y})
+  @override
+  int stepAt({required final int value, required final int x, required final int y})
   {
     return value != 0 && _ditherMap.containsKey(value) ? _ditherMap[value]![y % 4][x % 4] : 0;
   }
@@ -343,7 +213,7 @@ class DitherLayerState extends ShadingLayerState
     final int? valAt = getRawValueAt(coord: coord);
     if (valAt != null)
     {
-      return _ditherValue(value: valAt + shift, x: coord.x, y: coord.y);
+      return stepAt(value: valAt + shift, x: coord.x, y: coord.y);
     }
     else if (shift != 0)
     {
@@ -353,12 +223,6 @@ class DitherLayerState extends ShadingLayerState
     {
       return 0;
     }
-  }
-
-  @override
-  int? getRawValueAt({required final CoordinateSetI coord})
-  {
-    return shadingValues.getSigned(x: coord.x, y: coord.y);
   }
 
   @override

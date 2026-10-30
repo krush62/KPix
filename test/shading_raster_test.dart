@@ -245,4 +245,84 @@ void main()
       expect(regionalTwo, await shown(frame: frameTwo), reason: "the regional render of the second frame matches a full one");
     },);
   });
+
+  testWidgets("a dither layer stops tracking frames it has left", (final WidgetTester tester) async {
+    await withProject(tester: tester, canvasSize: _canvasSize, body: (final ProjectSession projectSession) async {
+      final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
+      final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
+      layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{CoordinateSetI(x: 1, y: 0): GetIt.I.get<PaletteState>().colorRamps.first.references[2]}));
+      await settle();
+      final DitherLayerState dither = GetIt.I.get<LayerManager>().addNewLayer(layerType: DitherLayerState, addToHistoryStack: false).$2! as DitherLayerState;
+      dither.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{CoordinateSetI(x: 1, y: 0): 8}));
+      await settle();
+      await _settleShading(layer: dither);
+
+      timeline.linkFrameRight();
+      timeline.selectFrameByIndex(index: 0);
+      await settle();
+      await _settleShading(layer: dither);
+      final Frame frameTwo = timeline.frames.value[1];
+      expect(dither.rasterPixelsByFrame.containsKey(frameTwo), isTrue, reason: "setup: both frames are tracked");
+
+      timeline.selectFrameByIndex(index: 1);
+      timeline.deleteFrame();
+      dither.doManualRaster = true;
+      await settle();
+      await _settleShading(layer: dither);
+
+      expect(dither.rasterPixelsByFrame.containsKey(frameTwo), isFalse);
+    },);
+  });
+
+  testWidgets("a dither layer's regional render keeps the pattern in place and matches a full one", (final WidgetTester tester) async {
+    final CoordinateSetI canvasSize = CoordinateSetI(x: 16, y: 8);
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
+      final KPalRampData ramp = GetIt.I.get<PaletteState>().colorRamps.first;
+      final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
+      final CoordinateColorMapNullable content = CoordinateColorMapNullable();
+      for (int y = 0; y < canvasSize.y; y++)
+      {
+        for (int x = 0; x < canvasSize.x; x++)
+        {
+          content[CoordinateSetI(x: x, y: y)] = ramp.references[2];
+        }
+      }
+      layer.setDataAll(list: content);
+      await settle();
+
+      final DitherLayerState dither = GetIt.I.get<LayerManager>().addNewLayer(layerType: DitherLayerState, addToHistoryStack: false).$2! as DitherLayerState;
+      //two rasters first, so the layer has an image to render regions onto
+      dither.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{CoordinateSetI(x: 0, y: 0): 8}));
+      await settle();
+      await _settleShading(layer: dither);
+      dither.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{CoordinateSetI(x: 1, y: 1): 8}));
+      await settle();
+      await _settleShading(layer: dither);
+      expect(dither.previousRaster, isNotNull, reason: "setup: the next raster can be regional");
+
+      final HashMap<CoordinateSetI, int> block = HashMap<CoordinateSetI, int>();
+      for (int y = 4; y < 7; y++)
+      {
+        for (int x = 12; x < 15; x++)
+        {
+          block[CoordinateSetI(x: x, y: y)] = 8;
+        }
+      }
+      dither.addCoords(coords: block);
+      await settle();
+      await _settleShading(layer: dither);
+      final Map<String, int> regional = await _pixels(image: dither.rasterImage.value!);
+
+      int rgbaOf({required final int colorIndex}) => argbToRgba(argb: ramp.references[colorIndex].getIdColor().color.toARGB32());
+      //step 8 is a checkerboard anchored to the canvas, not to the region
+      expect(regional["12|4"], rgbaOf(colorIndex: 3));
+      expect(regional["13|4"], rgbaOf(colorIndex: 2));
+      expect(regional["13|5"], rgbaOf(colorIndex: 3));
+      expect(regional["0|0"], rgbaOf(colorIndex: 3), reason: "what was rendered before stays");
+
+      dither.forceFullRender();
+      await _settleShading(layer: dither);
+      expect(regional, await _pixels(image: dither.rasterImage.value!));
+    },);
+  });
 }

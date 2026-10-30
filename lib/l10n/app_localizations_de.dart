@@ -1586,7 +1586,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get perspective => 'Perspektive';
 
   @override
-  String get perspectiveButton => 'PERSPEkTIVE';
+  String get perspectiveButton => 'PERSPEKTIVE';
 
   @override
   String get brightness => 'Helligkeit';

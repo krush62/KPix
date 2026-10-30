@@ -971,7 +971,7 @@ abstract class AppLocalizations {
   /// No description provided for @intersectWithSelection.
   ///
   /// In en, this message translates to:
-  /// **'IntersectWithSelection'**
+  /// **'Intersect with selection'**
   String get intersectWithSelection;
 
   /// No description provided for @pencil.

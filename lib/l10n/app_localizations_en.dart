@@ -482,7 +482,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subtractFromSelection => 'Subtract from Selection';
 
   @override
-  String get intersectWithSelection => 'IntersectWithSelection';
+  String get intersectWithSelection => 'Intersect with selection';
 
   @override
   String get pencil => 'Pencil';

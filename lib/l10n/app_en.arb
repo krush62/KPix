@@ -199,7 +199,7 @@
   "replaceSelection": "Replace Selection",
   "addToSelection": "Add to Selection",
   "subtractFromSelection": "Subtract from Selection",
-  "intersectWithSelection": "IntersectWithSelection",
+  "intersectWithSelection": "Intersect with selection",
 
   "pencil": "Pencil",
   "shape": "Shape",

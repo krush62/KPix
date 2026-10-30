@@ -27,8 +27,8 @@ enum SatCurve
 
   final int id;
 
-  static SatCurve fromId(final int id) {
-    return SatCurve.values.firstWhere((final SatCurve curve) => curve.id == id);
+  static SatCurve? fromId(final int id) {
+    return SatCurve.values.where((final SatCurve curve) => curve.id == id).firstOrNull;
   }
 }
 

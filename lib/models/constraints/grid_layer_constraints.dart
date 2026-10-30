@@ -57,10 +57,9 @@ enum GridType
   };
 
 
-  static GridType fromId(final int id)
+  static GridType? fromId(final int id)
   {
-    return GridType.values.firstWhere((final GridType gridType) => gridType.id == id,
-    );
+    return GridType.values.where((final GridType gridType) => gridType.id == id).firstOrNull;
   }
 }
 

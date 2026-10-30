@@ -73,8 +73,8 @@ enum OuterStrokeStyle implements StyleOption
   };
 
 
-  static OuterStrokeStyle fromId(final int id) {
-    return OuterStrokeStyle.values.firstWhere((final OuterStrokeStyle oss) => oss.id == id);
+  static OuterStrokeStyle? fromId(final int id) {
+    return OuterStrokeStyle.values.where((final OuterStrokeStyle oss) => oss.id == id).firstOrNull;
   }
 }
 
@@ -108,8 +108,8 @@ enum InnerStrokeStyle implements StyleOption
   };
 
 
-  static InnerStrokeStyle fromId(final int id) {
-    return InnerStrokeStyle.values.firstWhere((final InnerStrokeStyle iss) => iss.id == id);
+  static InnerStrokeStyle? fromId(final int id) {
+    return InnerStrokeStyle.values.where((final InnerStrokeStyle iss) => iss.id == id).firstOrNull;
   }
 }
 
@@ -136,8 +136,8 @@ enum DropShadowStyle implements StyleOption
     shade => l10n.shadowShaded,
   };
 
-  static DropShadowStyle fromId(final int id) {
-    return DropShadowStyle.values.firstWhere((final DropShadowStyle dss) => dss.id == id);
+  static DropShadowStyle? fromId(final int id) {
+    return DropShadowStyle.values.where((final DropShadowStyle dss) => dss.id == id).firstOrNull;
   }
 }
 

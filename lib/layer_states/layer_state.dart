@@ -40,8 +40,8 @@ enum LayerVisibilityState
     hidden => l10n.hidden,
   } ;
 
-  static LayerVisibilityState fromId(final int id) {
-    return LayerVisibilityState.values.firstWhere((final LayerVisibilityState lvs) => lvs.id == id);
+  static LayerVisibilityState? fromId(final int id) {
+    return LayerVisibilityState.values.where((final LayerVisibilityState lvs) => lvs.id == id).firstOrNull;
   }
 }
 
@@ -61,8 +61,8 @@ enum LayerLockState
     locked => l10n.locked
   } ;
 
-  static LayerLockState fromId(final int id) {
-    return LayerLockState.values.firstWhere((final LayerLockState lls) => lls.id == id);
+  static LayerLockState? fromId(final int id) {
+    return LayerLockState.values.where((final LayerLockState lls) => lls.id == id).firstOrNull;
   }
 }
 

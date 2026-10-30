@@ -39,7 +39,6 @@ class SelectOptions extends IToolOptions
     required final SelectOptions selectOptions,
   })
   {
-    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -60,69 +59,7 @@ class SelectOptions extends IToolOptions
               ),
               Expanded(
                 flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: hotkeyManager.shiftNotifier,
-                  builder: (final BuildContext _, final bool shiftPressed, final Widget? __) {
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: hotkeyManager.altNotifier,
-                      builder: (final BuildContext ___, final bool altPressed, final Widget? ____) {
-                        return ValueListenableBuilder<bool>(
-                          valueListenable: hotkeyManager.controlNotifier,
-                          builder: (final BuildContext ____, final bool controlPressed, final Widget? _____) {
-                            return ValueListenableBuilder<SelectMode>(
-                              valueListenable: selectOptions.unModifiedMode,
-                              builder: (final BuildContext _____, final SelectMode unModifiedMode, final Widget? ______) {
-                                SelectMode newMode = unModifiedMode;
-                                if (shiftPressed && !altPressed && !controlPressed)
-                                {
-                                  newMode = SelectMode.add;
-                                }
-                                else if (shiftPressed && altPressed && !controlPressed)
-                                {
-                                  newMode = SelectMode.subtract;
-                                }
-                                else if (shiftPressed && !altPressed && controlPressed)
-                                {
-                                  newMode = SelectMode.intersect;
-                                }
-                                selectOptions.mode.value = newMode;
-
-                                final List<ButtonSegment<SelectMode>> segList = <ButtonSegment<SelectMode>>[];
-                                for (final SelectMode sMode in SelectMode.values)
-                                {
-                                  segList.add(
-                                      ButtonSegment<SelectMode>(
-                                        value: sMode,
-                                        tooltip: sMode.label(AppLocalizations.of(context)!),
-                                        icon: Icon(
-                                          sMode.icon,
-                                          size: ToolSettingsWidgetOptions.smallIconSize,
-                                        ),
-                                      ),
-                                  );
-                                }
-
-                                return SegmentedButton<SelectMode>(
-                                  segments: segList,
-                                  selected: <SelectMode>{selectOptions.mode.value},
-                                  showSelectedIcon: false,
-                                  onSelectionChanged: (final Set<SelectMode> modes)
-                                  {
-                                    if (!shiftPressed && !altPressed && !controlPressed)
-                                    {
-                                      selectOptions.unModifiedMode.value = modes.first;
-                                    }
-                                    selectOptions.mode.value = modes.first;
-                                  },
-                                );
-                              },
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                ),
+                child: _getModeSelector(selectOptions: selectOptions),
               ),
             ],
           ),
@@ -160,30 +97,8 @@ class SelectOptions extends IToolOptions
                         alignment: Alignment.centerLeft,
                         child: Stack(
                           children: <Widget>[
-                            Visibility(
-                                visible: shape == SelectShape.rectangle || shape == SelectShape.ellipse,
-                                child: ValueListenableBuilder<bool>(
-                                  valueListenable: selectOptions.keepAspectRatio,
-                                  builder: (final BuildContext context, final bool keep, final Widget? child){
-                                    return Switch(
-                                        onChanged:  (final bool newVal) {selectOptions.keepAspectRatio.value = newVal;},
-                                        value: keep,
-                                    );
-                                  },
-                                ),
-                            ),
-                            Visibility(
-                                visible: shape == SelectShape.wand,
-                                child: ValueListenableBuilder<bool>(
-                                  valueListenable: selectOptions.wandContinuous,
-                                  builder: (final BuildContext context, final bool continuous, final Widget? child){
-                                    return Switch(
-                                      value: continuous,
-                                      onChanged: (final bool newVal) {selectOptions.wandContinuous.value = newVal;},
-                                    );
-                                  },
-                                ),
-                            ),
+                            _getSwitch(visible: shape == SelectShape.rectangle || shape == SelectShape.ellipse, notifier: selectOptions.keepAspectRatio),
+                            _getSwitch(visible: shape == SelectShape.wand, notifier: selectOptions.wandContinuous),
                           ],
                         ),
                       ),
@@ -207,6 +122,79 @@ class SelectOptions extends IToolOptions
           },
         ),
       ],
+    );
+  }
+
+  /// The mode buttons; held modifiers take precedence over the chosen mode.
+  static Widget _getModeSelector({required final SelectOptions selectOptions})
+  {
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
+    return ListenableBuilder(
+      listenable: Listenable.merge(<Listenable>[hotkeyManager.shiftNotifier, hotkeyManager.altNotifier, hotkeyManager.controlNotifier, selectOptions.unModifiedMode]),
+      builder: (final BuildContext context, final Widget? child) {
+        final bool shiftPressed = hotkeyManager.shiftIsPressed;
+        final bool altPressed = hotkeyManager.altIsPressed;
+        final bool controlPressed = hotkeyManager.controlIsPressed;
+        SelectMode newMode = selectOptions.unModifiedMode.value;
+        if (shiftPressed && !altPressed && !controlPressed)
+        {
+          newMode = SelectMode.add;
+        }
+        else if (shiftPressed && altPressed && !controlPressed)
+        {
+          newMode = SelectMode.subtract;
+        }
+        else if (shiftPressed && !altPressed && controlPressed)
+        {
+          newMode = SelectMode.intersect;
+        }
+        selectOptions.mode.value = newMode;
+
+        final List<ButtonSegment<SelectMode>> segList = <ButtonSegment<SelectMode>>[];
+        for (final SelectMode sMode in SelectMode.values)
+        {
+          segList.add(
+              ButtonSegment<SelectMode>(
+                value: sMode,
+                tooltip: sMode.label(AppLocalizations.of(context)!),
+                icon: Icon(
+                  sMode.icon,
+                  size: ToolSettingsWidgetOptions.smallIconSize,
+                ),
+              ),
+          );
+        }
+
+        return SegmentedButton<SelectMode>(
+          segments: segList,
+          selected: <SelectMode>{selectOptions.mode.value},
+          showSelectedIcon: false,
+          onSelectionChanged: (final Set<SelectMode> modes)
+          {
+            if (!shiftPressed && !altPressed && !controlPressed)
+            {
+              selectOptions.unModifiedMode.value = modes.first;
+            }
+            selectOptions.mode.value = modes.first;
+          },
+        );
+      },
+    );
+  }
+
+  static Widget _getSwitch({required final bool visible, required final ValueNotifier<bool> notifier})
+  {
+    return Visibility(
+      visible: visible,
+      child: ValueListenableBuilder<bool>(
+        valueListenable: notifier,
+        builder: (final BuildContext context, final bool value, final Widget? child){
+          return Switch(
+            value: value,
+            onChanged: (final bool newVal) {notifier.value = newVal;},
+          );
+        },
+      ),
     );
   }
 

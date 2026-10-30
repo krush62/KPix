@@ -29,7 +29,7 @@ import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/layer_manager.dart';
-import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/file_pickers.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/messages.dart';

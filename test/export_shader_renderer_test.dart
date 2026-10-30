@@ -24,8 +24,8 @@ import 'package:image/image.dart' as img;
 import 'package:kpix/models/export_shader.dart';
 import 'package:kpix/models/export_types.dart';
 import 'package:kpix/models/project_session.dart';
+import 'package:kpix/util/export_handler.dart';
 import 'package:kpix/util/export_shader_renderer.dart';
-import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:path/path.dart' as p;
 

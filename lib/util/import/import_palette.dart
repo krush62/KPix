@@ -16,7 +16,24 @@
  *
  */
 
-part of '../file_handler.dart';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_paths.dart';
+import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/constraints/kpal_constraints.dart';
+import 'package:kpix/models/file_constants.dart';
+import 'package:kpix/models/history/history_shift_set.dart';
+import 'package:kpix/models/io_types.dart';
+import 'package:kpix/models/palette_manager_data.dart';
+import 'package:kpix/util/file_byte_reader.dart';
+import 'package:kpix/util/helpers/file_helper.dart';
+import 'package:path/path.dart' as p;
+import 'package:uuid/uuid.dart';
 
 //original kpal uses a different id mapping
 const Map<int, SatCurve> _kpalKpixSatCurveMap =
@@ -97,12 +114,12 @@ Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required fin
     kPalRampSettings.hueShift = reader.getInt8();
     if (kPalRampSettings.hueShift < KPalConstraints.hueShiftMin || kPalRampSettings.hueShift > KPalConstraints.hueShiftMax) return LoadPaletteSet(status: "Invalid hue shift value in palette $i: ${kPalRampSettings.hueShift}");
     kPalRampSettings.hueShiftExp = reader.getFloat32(Endian.little);
-    if (kPalRampSettings.hueShiftExp < (KPalConstraints.hueShiftExpMin - _floatDelta) || kPalRampSettings.hueShiftExp > (KPalConstraints.hueShiftExpMax + _floatDelta)) return LoadPaletteSet(status: "Invalid hue shift exp value in palette $i: ${kPalRampSettings.hueShiftExp}");
+    if (kPalRampSettings.hueShiftExp < (KPalConstraints.hueShiftExpMin - fileFloatDelta) || kPalRampSettings.hueShiftExp > (KPalConstraints.hueShiftExpMax + fileFloatDelta)) return LoadPaletteSet(status: "Invalid hue shift exp value in palette $i: ${kPalRampSettings.hueShiftExp}");
     kPalRampSettings.hueShiftExp = kPalRampSettings.hueShiftExp.clamp(KPalConstraints.hueShiftExpMin, KPalConstraints.hueShiftExpMax);
     kPalRampSettings.satShift = reader.getInt8();
     if (kPalRampSettings.satShift < KPalConstraints.satShiftMin || kPalRampSettings.satShift > KPalConstraints.satShiftMax) return LoadPaletteSet(status: "Invalid sat shift value in palette $i: ${kPalRampSettings.satShift}");
     kPalRampSettings.satShiftExp = reader.getFloat32(Endian.little);
-    if (kPalRampSettings.satShiftExp < (KPalConstraints.satShiftExpMin - _floatDelta) || kPalRampSettings.satShiftExp > (KPalConstraints.satShiftExpMax + _floatDelta)) return LoadPaletteSet(status: "Invalid sat shift exp value in palette $i: ${kPalRampSettings.satShiftExp}");
+    if (kPalRampSettings.satShiftExp < (KPalConstraints.satShiftExpMin - fileFloatDelta) || kPalRampSettings.satShiftExp > (KPalConstraints.satShiftExpMax + fileFloatDelta)) return LoadPaletteSet(status: "Invalid sat shift exp value in palette $i: ${kPalRampSettings.satShiftExp}");
     kPalRampSettings.satShiftExp = kPalRampSettings.satShiftExp.clamp(KPalConstraints.satShiftExpMin, KPalConstraints.satShiftExpMax);
     kPalRampSettings.valueRangeMin = reader.getUint8();
     kPalRampSettings.valueRangeMax = reader.getUint8();

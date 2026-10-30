@@ -29,10 +29,10 @@ import 'package:kpix/models/history/history_drawing_layer.dart';
 import 'package:kpix/models/history/history_drawing_layer_settings.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_codec.dart';
-import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/helpers/pixel_grid.dart';
+import 'package:kpix/util/import/import_kpix.dart';
 
 const DrawingLayerSettingsConstraints _drawingConstraints = DrawingLayerSettingsConstraints(
   darkenBrightenMin: -5,

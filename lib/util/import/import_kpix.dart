@@ -16,7 +16,47 @@
  *
  */
 
-part of '../file_handler.dart';
+import 'dart:collection';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:archive/archive.dart' show ZLibDecoder;
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:kpix/kpix_constants.dart';
+import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
+import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/constraints/drawing_layer_settings_constraints.dart';
+import 'package:kpix/models/constraints/frame_constraints.dart';
+import 'package:kpix/models/constraints/grid_layer_constraints.dart';
+import 'package:kpix/models/constraints/kpal_constraints.dart';
+import 'package:kpix/models/constraints/reference_layer_constraints.dart';
+import 'package:kpix/models/constraints/shading_layer_settings_constraints.dart';
+import 'package:kpix/models/file_constants.dart';
+import 'package:kpix/models/history/history_color_reference.dart';
+import 'package:kpix/models/history/history_drawing_layer.dart';
+import 'package:kpix/models/history/history_drawing_layer_settings.dart';
+import 'package:kpix/models/history/history_frame.dart';
+import 'package:kpix/models/history/history_grid_layer.dart';
+import 'package:kpix/models/history/history_layer.dart';
+import 'package:kpix/models/history/history_layer_type.dart';
+import 'package:kpix/models/history/history_ramp_data.dart';
+import 'package:kpix/models/history/history_reference_layer.dart';
+import 'package:kpix/models/history/history_selection_state.dart';
+import 'package:kpix/models/history/history_shading_layer.dart';
+import 'package:kpix/models/history/history_shading_layer_settings.dart';
+import 'package:kpix/models/history/history_state.dart';
+import 'package:kpix/models/history/history_state_type.dart';
+import 'package:kpix/models/history/history_timeline.dart';
+import 'package:kpix/models/io_types.dart';
+import 'package:kpix/models/palette_codec.dart';
+import 'package:kpix/util/file_byte_reader.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/isolate_helper.dart';
+import 'package:kpix/util/helpers/pixel_grid.dart';
+import 'package:uuid/uuid.dart';
 
 HashMap<Alignment, bool> _unPackAlignments({required final int byte})
 {
@@ -63,7 +103,7 @@ class _ImportGuard
     required final double max,
     required final String label,
     required final double fallback,
-    final double delta = _floatDelta,
+    final double delta = fileFloatDelta,
   })
   {
     final double checked = ranged(

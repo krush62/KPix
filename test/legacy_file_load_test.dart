@@ -27,9 +27,9 @@ import 'package:kpix/models/history/history_shading_layer.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/project_session.dart';
-import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/pixel_grid.dart';
+import 'package:kpix/util/import/import_kpix.dart';
 
 import 'support/selection_harness.dart';
 

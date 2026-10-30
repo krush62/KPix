@@ -40,10 +40,10 @@ import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/export_functions.dart';
-import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/pixel_grid.dart';
+import 'package:kpix/util/import/import_kpix.dart';
 import 'package:kpix/util/typedefs.dart';
 
 import 'support/selection_harness.dart';

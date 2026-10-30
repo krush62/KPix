@@ -259,20 +259,20 @@ Future<Uint8List?> getGimpData({required final List<KPalRampData> colorRamps, re
   for (int i = 0; i < drawingLayers.length; i++)
   {
     layerOffsetsInsertPositions.add(offset);
-    setUint64(bytes: outBytes, offset: offset, value: 0);
+    _setUint64(bytes: outBytes, offset: offset, value: 0);
     offset+=8;
   }
 
-  setUint64(bytes: outBytes, offset: offset, value: 0); //end layer pointers
+  _setUint64(bytes: outBytes, offset: offset, value: 0); //end layer pointers
   offset+=8;
-  setUint64(bytes: outBytes, offset: offset, value: 0); //start/end channel pointers
+  _setUint64(bytes: outBytes, offset: offset, value: 0); //start/end channel pointers
   offset+=8;
 
 
   //LAYERS
   for (int i = 0; i < drawingLayers.length; i++)
   {
-    setUint64(bytes: outBytes, offset: layerOffsetsInsertPositions[i], value: offset);
+    _setUint64(bytes: outBytes, offset: layerOffsetsInsertPositions[i], value: offset);
 
     final DrawingLayerState currentLayer = drawingLayers[i];
     outBytes.setUint32(offset, canvasSize.x);
@@ -446,15 +446,15 @@ Future<Uint8List?> getGimpData({required final List<KPalRampData> colorRamps, re
 
     //HIERARCHY OFFSET
     final int hierarchyOffsetInsertPosition = offset;
-    setUint64(bytes: outBytes, offset: offset, value: 0);
+    _setUint64(bytes: outBytes, offset: offset, value: 0);
     offset+=8;
 
     //LAYER MASK
-    setUint64(bytes: outBytes, offset: offset, value: 0);
+    _setUint64(bytes: outBytes, offset: offset, value: 0);
     offset+=8;
 
     //HIERARCHY
-    setUint64(bytes: outBytes, offset: hierarchyOffsetInsertPosition, value: offset);
+    _setUint64(bytes: outBytes, offset: hierarchyOffsetInsertPosition, value: offset);
     outBytes.setUint32(offset, canvasSize.x);
     offset+=4;
     outBytes.setUint32(offset, canvasSize.y);
@@ -462,19 +462,19 @@ Future<Uint8List?> getGimpData({required final List<KPalRampData> colorRamps, re
     outBytes.setUint32(offset, 2);
     offset+=4;
     final int pointerInsertToLevel1 = offset;
-    setUint64(bytes: outBytes, offset: offset, value: 0);
+    _setUint64(bytes: outBytes, offset: offset, value: 0);
     offset+=8;
     final int pointerInsertToLevel2 = offset;
-    setUint64(bytes: outBytes, offset: offset, value: 0);
+    _setUint64(bytes: outBytes, offset: offset, value: 0);
     offset+=8;
     final int pointerInsertToLevel3 = offset;
-    setUint64(bytes: outBytes, offset: offset, value: 0);
+    _setUint64(bytes: outBytes, offset: offset, value: 0);
     offset+=8;
-    setUint64(bytes: outBytes, offset: offset, value: 0);
+    _setUint64(bytes: outBytes, offset: offset, value: 0);
     offset+=8;
 
     //LEVEL1
-    setUint64(bytes: outBytes, offset: pointerInsertToLevel1, value: offset);
+    _setUint64(bytes: outBytes, offset: pointerInsertToLevel1, value: offset);
     outBytes.setUint32(offset, canvasSize.x);
     offset+=4;
     outBytes.setUint32(offset, canvasSize.y);
@@ -484,16 +484,16 @@ Future<Uint8List?> getGimpData({required final List<KPalRampData> colorRamps, re
     for (int j = 0; j < currentTiles.length; j++)
     {
       tileOffsetsLv1.add(offset);
-      setUint64(bytes: outBytes, offset: offset, value: 0);
+      _setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
     }
-    setUint64(bytes: outBytes, offset: offset, value: 0);
+    _setUint64(bytes: outBytes, offset: offset, value: 0);
     offset+=8;
 
     //TILE DATA FOR LEVEL1
     for (int j = 0; j < currentTiles.length; j++)
     {
-      setUint64(bytes: outBytes, offset: tileOffsetsLv1[j], value: offset);
+      _setUint64(bytes: outBytes, offset: tileOffsetsLv1[j], value: offset);
       final List<int> currentTile = currentTiles[j];
       for (int k = 0; k < currentTile.length; k++)
       {
@@ -503,7 +503,7 @@ Future<Uint8List?> getGimpData({required final List<KPalRampData> colorRamps, re
     }
 
     //LEVEL2
-    setUint64(bytes: outBytes, offset: pointerInsertToLevel2, value: offset);
+    _setUint64(bytes: outBytes, offset: pointerInsertToLevel2, value: offset);
     outBytes.setUint32(offset, canvasSize.x ~/ 2);
     offset+=4;
     outBytes.setUint32(offset, canvasSize.y ~/ 2);
@@ -511,7 +511,7 @@ Future<Uint8List?> getGimpData({required final List<KPalRampData> colorRamps, re
     outBytes.setUint32(offset, 0);
     offset+=4;
     //LEVEL3
-    setUint64(bytes: outBytes, offset: pointerInsertToLevel3, value: offset);
+    _setUint64(bytes: outBytes, offset: pointerInsertToLevel3, value: offset);
     outBytes.setUint32(offset, canvasSize.x ~/ 4);
     offset+=4;
     outBytes.setUint32(offset, canvasSize.y ~/ 4);
@@ -521,4 +521,18 @@ Future<Uint8List?> getGimpData({required final List<KPalRampData> colorRamps, re
   }
 
   return outBytes.buffer.asUint8List();
+}
+
+void _setUint64({required final ByteData bytes, required final int offset, required final int value})
+{
+  //web has no 64 bit setter
+  if (kIsWeb)
+  {
+    bytes.setUint32(offset, (value >> 32) & 0xFFFFFFFF);
+    bytes.setUint32(offset + 4, value & 0xFFFFFFFF);
+  }
+  else
+  {
+    bytes.setUint64(offset, value);
+  }
 }

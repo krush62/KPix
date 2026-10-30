@@ -22,7 +22,7 @@ import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/canvas_size_constraints.dart';
 import 'package:kpix/models/constraints/kpal_constraints.dart';
 import 'package:kpix/models/io_types.dart';
-import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/file_pickers.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/image_importer.dart';

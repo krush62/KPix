@@ -22,8 +22,8 @@ import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/managers/font_manager.dart';
+import 'package:kpix/managers/stamp_loader.dart';
 import 'package:kpix/models/stamp_manager_data.dart';
-import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/png_helper.dart';
 
 void main() {

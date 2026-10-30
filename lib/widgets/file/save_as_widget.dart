@@ -22,7 +22,7 @@ import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/project_session.dart';
-import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/file_name_check.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';

@@ -22,7 +22,7 @@ import 'package:path/path.dart' as p;
 /// Guards the layering described in `docs/dev/import_cycles.md`.
 ///
 /// A library may import anything at its own layer or below, never above. The
-/// 23 exceptions below are what was left when that document's phases finished;
+/// 20 exceptions below are what was left when that document's phases finished;
 /// each is a design question rather than a misplaced declaration, and the list
 /// is meant to shrink and never grow.
 ///
@@ -56,17 +56,13 @@ const List<List<String>> _layers = <List<String>>[
 ///  * `tool_options/` mixes options data with the widgets that edit them, so the
 ///    state layer reaches up for the data and the options reach up for controls;
 ///  * `PreferenceManager` supplies constraint values at runtime;
-///  * the layer states build their own settings widgets;
-///  * three services legitimately call the file layer.
+///  * the layer states build their own settings widgets.
 const Set<String> _allowed = <String>{
   "lib/layer_states/dither_layer/dither_layer_state.dart -> lib/widgets/layer_settings/shading_layer_settings_widget.dart",
   "lib/layer_states/drawing_layer/drawing_layer_state.dart -> lib/managers/preference_manager.dart",
   "lib/layer_states/drawing_layer/drawing_layer_state.dart -> lib/widgets/layer_settings/drawing_layer_settings_widget.dart",
-  "lib/layer_states/layer_collection.dart -> lib/util/file_handler.dart",
   "lib/layer_states/shading_layer/shading_layer_state.dart -> lib/managers/preference_manager.dart",
   "lib/layer_states/shading_layer/shading_layer_state.dart -> lib/widgets/layer_settings/shading_layer_settings_widget.dart",
-  "lib/managers/project_manager.dart -> lib/util/file_handler.dart",
-  "lib/managers/stamp_manager.dart -> lib/util/file_handler.dart",
   "lib/models/document_state.dart -> lib/tool_options/tool_options.dart",
   "lib/models/history/history_manager.dart -> lib/managers/preference_manager.dart",
   "lib/models/project_session.dart -> lib/managers/preference_manager.dart",

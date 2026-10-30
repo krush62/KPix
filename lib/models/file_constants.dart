@@ -21,6 +21,7 @@
 /// sits below all of them.
 const int fileVersion = 6;
 const String magicNumber = "4B504958";
+const double fileFloatDelta = 0.01;
 /// Added to a shading step in a kpix file, so that 0 can mean "no step".
 const int shadingValueOffset = 128;
 const String fileExtensionKpix = "kpix";

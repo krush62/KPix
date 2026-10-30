@@ -16,7 +16,22 @@
  *
  */
 
-part of '../file_handler.dart';
+import 'dart:collection';
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_paths.dart';
+import 'package:kpix/models/file_constants.dart';
+import 'package:kpix/models/stamp_manager_data.dart';
+import 'package:kpix/util/helpers/file_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/isolate_helper.dart';
+import 'package:kpix/util/helpers/png_helper.dart';
+import 'package:path/path.dart' as p;
 
 Future<StampMap> loadStamps({required final bool loadUserStamps}) async
 {

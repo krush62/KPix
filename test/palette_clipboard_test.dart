@@ -34,9 +34,9 @@ import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/export_functions.dart';
-import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/import/import_kpix.dart';
 import 'package:kpix/util/typedefs.dart';
 
 import 'support/selection_harness.dart';

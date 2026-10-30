@@ -16,8 +16,8 @@
 
 
 import 'package:flutter/foundation.dart';
+import 'package:kpix/managers/stamp_loader.dart';
 import 'package:kpix/models/stamp_manager_data.dart';
-import 'package:kpix/util/file_handler.dart';
 
 /// Loads the stamps from disk and remembers which one is selected.
 class StampManager

@@ -19,9 +19,9 @@ import 'package:flutter/material.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_eraser_constraints.dart';
-import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 
 class EraserOptions extends IToolOptions
 {

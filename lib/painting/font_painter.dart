@@ -29,6 +29,7 @@ import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class FontPainter extends IToolPainter

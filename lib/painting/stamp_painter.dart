@@ -32,6 +32,7 @@ import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class StampPainter extends IToolPainter
@@ -77,11 +78,11 @@ class StampPainter extends IToolPainter
     final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
     if (drawParams.cursorPos != null)
     {
-      _cursorPosNorm.x = IToolPainter.getClosestPixel(
+      _cursorPosNorm.x = getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
           pixelSize: effPxlSize,)
           ;
-      _cursorPosNorm.y = IToolPainter.getClosestPixel(
+      _cursorPosNorm.y = getClosestPixel(
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
           pixelSize: effPxlSize,)
           ;

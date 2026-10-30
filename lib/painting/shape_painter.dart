@@ -36,6 +36,7 @@ import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/drawing_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class ShapePainter extends IToolPainter
@@ -74,8 +75,8 @@ class ShapePainter extends IToolPainter
       _modifiersDirty = false;
       if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dy != drawParams.primaryPressStart.dy)
       {
-        _normStartPos.x = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: effPxlSize);
-        _normStartPos.y = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: effPxlSize);
+        _normStartPos.x = getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: effPxlSize);
+        _normStartPos.y = getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: effPxlSize);
         _lastStartPos = drawParams.primaryPressStart;
       }
 

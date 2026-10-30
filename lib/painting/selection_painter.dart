@@ -28,6 +28,7 @@ import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 
 class SelectionPainter extends IToolPainter
 {
@@ -58,8 +59,8 @@ class SelectionPainter extends IToolPainter
       final DrawingLayerState drawingLayer = drawParams.currentRasterLayer! as DrawingLayerState;
       if (_lastStartPos != drawParams.primaryPressStart)
       {
-        _normStartPos.x = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: effPxlSize);
-        _normStartPos.y = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: effPxlSize);
+        _normStartPos.x = getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: effPxlSize);
+        _normStartPos.y = getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: effPxlSize);
         _lastStartPos = drawParams.primaryPressStart;
       }
       if (drawParams.cursorPosNorm != null)
@@ -300,10 +301,10 @@ class SelectionPainter extends IToolPainter
     {
       CoordinateSetI? cursorPosNorm = drawParams.cursorPos != null ?
       CoordinateSetI(
-          x: IToolPainter.getClosestPixel(
+          x: getClosestPixel(
               value: drawParams.cursorPos!.x - drawParams.offset.dx,
               pixelSize: effPxSize,),
-          y: IToolPainter.getClosestPixel(
+          y: getClosestPixel(
               value: drawParams.cursorPos!.y - drawParams.offset.dy,
               pixelSize: effPxSize,),)
           : null;

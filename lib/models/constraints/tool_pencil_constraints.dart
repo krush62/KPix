@@ -16,39 +16,7 @@
  *  
  */
 
-import 'package:kpix/l10n/app_localizations.dart';
-
-enum PencilShape
-{
-  round(0),
-  square(1);
-
-  const PencilShape(this.id);
-
-  final int id;
-
-  String label(final AppLocalizations l10n) => switch(this)
-  {
-    round => l10n.round,
-    square => l10n.square,
-  };
-
-  static Map<PencilShape, String> getLabelMap(final AppLocalizations l10n)
-  {
-    final Map<PencilShape, String> map = <PencilShape, String>{};
-    for (final PencilShape shape in PencilShape.values)
-    {
-      map[shape] = shape.label(l10n);
-    }
-    return map;
-  }
-
-  static PencilShape fromId(final int id)
-  {
-    return PencilShape.values.firstWhere((final PencilShape shape) => shape.id == id,
-    );
-  }
-}
+import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 
 abstract final class PencilConstraints
 {

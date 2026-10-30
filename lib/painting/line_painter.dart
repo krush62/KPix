@@ -22,7 +22,6 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/constraints/tool_line_constraints.dart';
-import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/status_bar_data.dart';
 import 'package:kpix/painting/content_raster_set.dart';
@@ -30,6 +29,7 @@ import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class LinePainter extends IToolPainter
@@ -374,7 +374,7 @@ class LinePainter extends IToolPainter
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
     final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
-    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: _contentPoints);
+    final List<CoordinateSetI> pathPoints = getBoundaryPath(coords: _contentPoints);
     final Path path = Path();
     if (pathPoints.isNotEmpty)
     {

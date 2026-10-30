@@ -56,6 +56,7 @@ import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 
 
 
@@ -230,7 +231,7 @@ class KPixPainter extends CustomPainter
         canvasSize: _canvasState.canvasSize,
         drawingSize: size,
         cursorPos: _coords.value,
-        cursorPosNorm: _coords.value != null ? CoordinateSetI(x: IToolPainter.getClosestPixel(value: _coords.value!.x - _offset.value.dx,pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio), y: IToolPainter.getClosestPixel(value: _coords.value!.y - _offset.value.dy,pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio)) : null,
+        cursorPosNorm: _coords.value != null ? CoordinateSetI(x: getClosestPixel(value: _coords.value!.x - _offset.value.dx,pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio), y: getClosestPixel(value: _coords.value!.y - _offset.value.dy,pixelSize: _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio)) : null,
         primaryDown: _primaryDown.value,
         secondaryDown: _secondaryDown.value,
         primaryPressStart: _primaryPressStart.value,

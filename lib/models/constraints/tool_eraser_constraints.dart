@@ -16,7 +16,7 @@
  *
  */
 
-import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
+import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 
 abstract final class EraserConstraints
 {

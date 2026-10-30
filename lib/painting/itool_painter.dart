@@ -16,7 +16,6 @@
 
 import 'dart:async';
 import 'dart:collection';
-import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -32,7 +31,6 @@ import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
-import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/kpix_painter_options.dart';
@@ -46,10 +44,9 @@ import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/painting/stroke_preview.dart';
 import 'package:kpix/preferences/preference_values.dart';
-import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
-import 'package:kpix/util/helpers/drawing_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:logger/logger.dart';
 
@@ -98,91 +95,6 @@ class DrawingParameters
         currentRasterLayer = currentLayer is RasterableLayerState ? currentLayer : null,
         currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null,
         currentGridLayer = currentLayer.runtimeType == GridLayerState ? (currentLayer as GridLayerState) : null;
-}
-
-class BorderCoordinateSetI
-{
-  final CoordinateSetI coord;
-  final List<List<CoordinateSetI>> borders;
-
-  factory BorderCoordinateSetI({required final bool left, required final bool right, required final bool top, required final bool bottom, required final CoordinateSetI coord})
-  {
-    List<List<CoordinateSetI>> borders = <List<CoordinateSetI>>[];
-    if (left && right && !top && !bottom)
-    {
-      borders = <List<CoordinateSetI>>[<CoordinateSetI>[coord, CoordinateSetI(x: coord.x, y: coord.y + 1)],<CoordinateSetI>[CoordinateSetI(x: coord.x + 1, y: coord.y), CoordinateSetI(x: coord.x + 1, y: coord.y + 1)]];
-    }
-    else if (!left && !right && top && bottom)
-    {
-      borders = <List<CoordinateSetI>>[<CoordinateSetI>[coord, CoordinateSetI(x: coord.x + 1, y: coord.y)],<CoordinateSetI>[CoordinateSetI(x: coord.x, y: coord.y + 1), CoordinateSetI(x: coord.x + 1, y: coord.y + 1)]];
-    }
-    else
-    {
-      final List<CoordinateSetI> path = <CoordinateSetI>[];
-      final CoordinateSetI tl = coord;
-      final CoordinateSetI tr = CoordinateSetI(x: coord.x + 1, y: coord.y);
-      final CoordinateSetI br = CoordinateSetI(x: coord.x + 1, y: coord.y + 1);
-      final CoordinateSetI bl = CoordinateSetI(x: coord.x, y: coord.y + 1);
-
-      if (top && !right && !bottom && !left) //top
-      {
-        path.addAll(<CoordinateSetI>[tl, tr]);
-      }
-      else if (!top && right && !bottom && !left) //right
-      {
-        path.addAll(<CoordinateSetI>[tr, br]);
-      }
-      else if (!top && !right && bottom && !left) //bottom
-      {
-        path.addAll(<CoordinateSetI>[br, bl]);
-      }
-      else if (!top && !right && !bottom && left) //left
-      {
-        path.addAll(<CoordinateSetI>[bl, tl]);
-      }
-      else if (top && right && !bottom && !left) //tr
-      {
-        path.addAll(<CoordinateSetI>[tl, tr, br]);
-      }
-      else if (!top && right && bottom && !left) //br
-      {
-        path.addAll(<CoordinateSetI>[tr, br, bl]);
-      }
-      else if (!top && !right && bottom && left) //bl
-      {
-        path.addAll(<CoordinateSetI>[br, bl, tl]);
-      }
-      else if (top && !right && !bottom && left) //tl
-      {
-        path.addAll(<CoordinateSetI>[bl, tl, tr]);
-      }
-      else if (!top && right && bottom && left) // - top
-      {
-        path.addAll(<CoordinateSetI>[tr, br, bl, tl]);
-      }
-      else if (top && !right && bottom && left) // - right
-      {
-        path.addAll(<CoordinateSetI>[br, bl, tl, tr]);
-      }
-      else if (top && right && !bottom && left) // - bottom
-      {
-        path.addAll(<CoordinateSetI>[bl, tl, tr, br]);
-      }
-      else if (top && right && bottom && !left) // - left
-      {
-        path.addAll(<CoordinateSetI>[tl, tr, br, bl]);
-      }
-      if (path.isNotEmpty)
-      {
-        borders = <List<CoordinateSetI>>[path];
-      }
-
-    }
-    return BorderCoordinateSetI._(coord: coord, borders: borders);
-  }
-
-  BorderCoordinateSetI._({required this.coord, required this.borders});
-
 }
 
 /// The color a pixel drawn on a layer shows on the canvas: the visible layers
@@ -384,137 +296,6 @@ abstract class IToolPainter
     drawParams.canvas.drawPath(path, drawParams.paint);
   }
 
-  Set<CoordinateSetI> getRoundSquareContentPoints({required final PencilShape shape, required final int size, required final CoordinateSetI position})
-  {
-    final CoordinateSetI startPos = CoordinateSetI(x: position.x - ((size - 1) ~/ 2), y: position.y - ((size - 1) ~/ 2));
-    final CoordinateSetI endPos = CoordinateSetI(x: position.x + (size ~/ 2), y: position.y + (size ~/ 2));
-    final Set<CoordinateSetI> coords = <CoordinateSetI>{};
-    if (shape == PencilShape.square)
-    {
-      for (int x = startPos.x; x <= endPos.x; x++)
-      {
-        for (int y = startPos.y; y <= endPos.y; y++)
-        {
-          coords.add(CoordinateSetI(x: x, y: y));
-        }
-      }
-    }
-    else if (shape == PencilShape.round) {
-      final double centerX = (startPos.x + endPos.x + 1) / 2.0;
-      final double centerY = (startPos.y + endPos.y + 1) / 2.0;
-      final double radiusX = (endPos.x - startPos.x + 1) / 2.0;
-      final double radiusY = (endPos.y - startPos.y + 1) / 2.0;
-
-      for (int x = startPos.x; x <= endPos.x; x++)
-      {
-        for (int y = startPos.y; y <= endPos.y; y++)
-        {
-          final double dx = (x + 0.5) - centerX;
-          final double dy = (y + 0.5) - centerY;
-          if ((dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY) <= 1)
-          {
-            coords.add(CoordinateSetI(x: x, y: y));
-          }
-        }
-      }
-    }
-    return coords;
-  }
-
-  //brushes as offsets from the stamping position, x and y taking turns, in the
-  //order getRoundSquareContentPoints lists their pixels
-  static final Map<(PencilShape, int), Int32List> _brushOffsets = <(PencilShape, int), Int32List>{};
-  //beyond this many pixels, the stamped area is too large for a bit mask and
-  //stamps are told apart by hashing instead
-  static const int _maxStampMaskArea = 1 << 25;
-
-  /// The pixels a brush of [shape] and [size] covers when stamped at each of
-  /// [positions]: the union of [getRoundSquareContentPoints] at every position,
-  /// in the order in which adding those sets one after another first reaches
-  /// each pixel.
-  ///
-  /// Consecutive stamps of a stroke cover mostly the same pixels. Rather than
-  /// building a set per stamp and merging it, the brush is worked out once and a
-  /// bit mask over the stamped area skips the pixels already covered.
-  Set<CoordinateSetI> getStampedContentPoints({required final PencilShape shape, required final int size, required final Iterable<CoordinateSetI> positions})
-  {
-    final Int32List offsets = _brushOffsets.putIfAbsent((shape, size), ()
-    {
-      final Set<CoordinateSetI> brush = getRoundSquareContentPoints(shape: shape, size: size, position: CoordinateSetI(x: 0, y: 0));
-      final Int32List brushOffsets = Int32List(brush.length * 2);
-      int i = 0;
-      for (final CoordinateSetI coord in brush)
-      {
-        brushOffsets[i++] = coord.x;
-        brushOffsets[i++] = coord.y;
-      }
-      return brushOffsets;
-    },);
-
-    final Set<CoordinateSetI> points = <CoordinateSetI>{};
-    if (offsets.isEmpty || positions.isEmpty)
-    {
-      return points;
-    }
-
-    int left = positions.first.x;
-    int right = left;
-    int top = positions.first.y;
-    int bottom = top;
-    for (final CoordinateSetI position in positions)
-    {
-      left = min(left, position.x);
-      right = max(right, position.x);
-      top = min(top, position.y);
-      bottom = max(bottom, position.y);
-    }
-    int offsetLeft = offsets[0];
-    int offsetRight = offsetLeft;
-    int offsetTop = offsets[1];
-    int offsetBottom = offsetTop;
-    for (int i = 0; i < offsets.length; i += 2)
-    {
-      offsetLeft = min(offsetLeft, offsets[i]);
-      offsetRight = max(offsetRight, offsets[i]);
-      offsetTop = min(offsetTop, offsets[i + 1]);
-      offsetBottom = max(offsetBottom, offsets[i + 1]);
-    }
-    left += offsetLeft;
-    top += offsetTop;
-    final int width = right + offsetRight - left + 1;
-    final int area = width * (bottom + offsetBottom - top + 1);
-
-    if (area > _maxStampMaskArea)
-    {
-      for (final CoordinateSetI position in positions)
-      {
-        for (int i = 0; i < offsets.length; i += 2)
-        {
-          points.add(CoordinateSetI(x: position.x + offsets[i], y: position.y + offsets[i + 1]));
-        }
-      }
-      return points;
-    }
-
-    final Uint8List covered = Uint8List((area + 7) >> 3);
-    for (final CoordinateSetI position in positions)
-    {
-      for (int i = 0; i < offsets.length; i += 2)
-      {
-        final int x = position.x + offsets[i];
-        final int y = position.y + offsets[i + 1];
-        final int bit = (y - top) * width + (x - left);
-        final int flag = 1 << (bit & 7);
-        if ((covered[bit >> 3] & flag) == 0)
-        {
-          covered[bit >> 3] |= flag;
-          points.add(CoordinateSetI(x: x, y: y));
-        }
-      }
-    }
-    return points;
-  }
-
   /// The images of the content being drawn, in the order they are drawn.
   List<ContentRasterSet> get contentRasters
   {
@@ -672,228 +453,6 @@ abstract class IToolPainter
     {
       return null;
     }
-  }
-
-  Set<CoordinateSetI> getLinePoints({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final int size, required final PencilShape shape})
-  {
-    Set<CoordinateSetI> linePoints = <CoordinateSetI>{};
-    final Set<CoordinateSetI> bresenhamPoints = bresenham(start: startPos, end: endPos).toSet();
-    if (size == 1)
-    {
-      linePoints = bresenhamPoints;
-    }
-    else
-    {
-      linePoints = getStampedContentPoints(shape: shape, size: size, positions: bresenhamPoints);
-    }
-    return linePoints;
-  }
-
-  AngleData? getClosestAngle({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final Set<AngleData> angles})
-  {
-    final double currentAngle = normAngle(angle: atan2(endPos.x - startPos.x, endPos.y - startPos.y));
-    AngleData? closestAngle;
-    double closestDist = 0.0;
-    for (final AngleData aData in angles)
-    {
-      final double angleDiff = (normAngle(angle: aData.angle) - currentAngle).abs();
-      final double currentDist = min(angleDiff, twoPi - angleDiff);
-      if (closestAngle == null || currentDist < closestDist)
-      {
-        closestAngle = aData;
-        closestDist = currentDist;
-      }
-    }
-    return closestAngle;
-  }
-
-  CoordinateSetI getIntegerRatioSnappedPoint({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final Set<AngleData> angles})
-  {
-    assert(angles.isNotEmpty);
-    final AngleData? closestAngle = getClosestAngle(startPos: startPos, endPos: endPos, angles: angles);
-    if (closestAngle == null) //should never happen
-    {
-      return CoordinateSetI.from(other: endPos);
-    }
-    //closest full multiple of the pattern vector keeps the snapped line regular
-    final int patternLengthSquared = (closestAngle.x * closestAngle.x) + (closestAngle.y * closestAngle.y);
-    final int projection = ((endPos.x - startPos.x) * closestAngle.x) + ((endPos.y - startPos.y) * closestAngle.y);
-    final int factor = (projection / patternLengthSquared).round();
-    return CoordinateSetI(x: startPos.x + (factor * closestAngle.x), y: startPos.y + (factor * closestAngle.y));
-  }
-
-  Set<CoordinateSetI> getIntegerRatioLinePoints({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final int size, required final PencilShape shape, required final Set<AngleData> angles})
-  {
-    Set<CoordinateSetI> linePoints = <CoordinateSetI>{};
-    assert(angles.isNotEmpty);
-    final AngleData? closestAngle = getClosestAngle(startPos: startPos, endPos: endPos, angles: angles);
-
-    if (closestAngle != null) //should never happen
-    {
-      double shortestDist = double.maxFinite;
-      final CoordinateSetI currentPos = CoordinateSetI.from(other: startPos);
-      final Set<CoordinateSetI> lPoints = <CoordinateSetI>{};
-      lPoints.add(CoordinateSetI.from(other: startPos));
-      bool firstRun = true;
-      do
-      {
-        final int startReducer = firstRun ? -1 : 0;
-        firstRun = false;
-        final Set<CoordinateSetI> currPoints = <CoordinateSetI>{};
-        if (closestAngle.x.abs() > closestAngle.y.abs())
-        {
-          for (int i = 0; i < closestAngle.x.abs() + startReducer; i++)
-          {
-            if (closestAngle.x > 0)
-            {
-              currentPos.x++;
-            }
-            else
-            {
-              currentPos.x--;
-            }
-            currPoints.add(CoordinateSetI.from(other: currentPos));
-          }
-          if (closestAngle.y > 0)
-          {
-            currentPos.y++;
-          }
-          else if (closestAngle.y < 0)
-          {
-            currentPos.y--;
-          }
-        }
-        else
-        {
-          for (int i = 0; i < closestAngle.y.abs() + startReducer; i++)
-          {
-            if (closestAngle.y > 0)
-            {
-              currentPos.y++;
-            }
-            else
-            {
-              currentPos.y--;
-            }
-            currPoints.add(CoordinateSetI.from(other: currentPos));
-          }
-          if (closestAngle.x > 0)
-          {
-            currentPos.x++;
-          }
-          else if (closestAngle.x < 0)
-          {
-            currentPos.x--;
-          }
-        }
-
-        final double dist = currentPos.distanceTo(b: endPos);
-        if (dist <= shortestDist)
-        {
-          shortestDist = dist;
-          lPoints.addAll(currPoints);
-        }
-        else
-        {
-          break;
-        }
-      } while(true);
-
-      if (size == 1)
-      {
-        linePoints = lPoints;
-      }
-      else
-      {
-        linePoints = getStampedContentPoints(shape: shape, size: size, positions: lPoints);
-      }
-    }
-
-    return linePoints;
-  }
-
-  static List<CoordinateSetI> getBoundaryPath({required final Set<CoordinateSetI> coords})
-  {
-    final List<CoordinateSetI> path = <CoordinateSetI>[];
-    if (coords.length == 1)
-    {
-      path.add(coords.last);
-      path.add(CoordinateSetI(x: coords.last.x + 1, y: coords.last.y));
-      path.add(CoordinateSetI(x: coords.last.x + 1, y: coords.last.y + 1));
-      path.add(CoordinateSetI(x: coords.last.x, y: coords.last.y + 1));
-    }
-    else
-    {
-      final List<BorderCoordinateSetI> boundaryPoints = <BorderCoordinateSetI>[];
-      for (final CoordinateSetI coord in coords)
-      {
-        final BorderCoordinateSetI bcoord = BorderCoordinateSetI(
-          coord: coord,
-          left: !coords.contains(CoordinateSetI(x: coord.x - 1, y: coord.y)),
-          right: !coords.contains(CoordinateSetI(x: coord.x + 1, y: coord.y)),
-          top: !coords.contains(CoordinateSetI(x: coord.x, y: coord.y - 1)),
-          bottom: !coords.contains(CoordinateSetI(x: coord.x, y: coord.y + 1)),
-        );
-
-        if (bcoord.borders.isNotEmpty)
-        {
-          boundaryPoints.add(bcoord);
-        }
-      }
-
-      bool itemAdded = true;
-      while (boundaryPoints.isNotEmpty && itemAdded)
-      {
-        itemAdded = false;
-        if (path.isEmpty)
-        {
-          final BorderCoordinateSetI bPoint = boundaryPoints[0];
-          path.addAll(bPoint.borders[0]);
-          if (bPoint.borders.length == 1)
-          {
-            boundaryPoints.remove(bPoint);
-          }
-          else if (bPoint.borders.length == 2)
-          {
-            bPoint.borders.removeAt(0);
-          }
-          itemAdded = true;
-        }
-        else
-        {
-          for (int i = 0; i < boundaryPoints.length; i++)
-          {
-            final BorderCoordinateSetI bPoint = boundaryPoints[i];
-            for (int j = 0; j < bPoint.borders.length; j++)
-            {
-              if (bPoint.borders[j][0] == path[path.length - 1])
-              {
-                path.addAll(bPoint.borders[j].sublist(1));
-                bPoint.borders.removeAt(j);
-                itemAdded = true;
-                break;
-              }
-              else if (bPoint.borders[j][bPoint.borders[j].length - 1] == path[0])
-              {
-                path.insertAll(0, bPoint.borders[j].sublist(0, bPoint.borders[j].length - 1));
-                bPoint.borders.removeAt(j);
-                itemAdded = true;
-                break;
-              }
-            }
-            if (itemAdded)
-            {
-              if (bPoint.borders.isEmpty)
-              {
-                boundaryPoints.remove(bPoint);
-              }
-              break;
-            }
-          }
-        }
-      }
-    }
-    return path;
   }
 
   CoordinateColorMap getPixelsToDraw({required final CoordinateSetI canvasSize, required final DrawingLayerState currentLayer, required final Set<CoordinateSetI> coords, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
@@ -1135,13 +694,6 @@ abstract class IToolPainter
     return pixelMap;
   }
 
-  static int getClosestPixel({required final double value, required final double pixelSize})
-  {
-    final double remainder = value % pixelSize;
-    final double lowerMultiple = value - remainder;
-    return (lowerMultiple / pixelSize).round();
-  }
-
   void dumpStampShading({required final ShadingLayerState shadingLayer, required final HashMap<CoordinateSetI, int> stampData, required final ShaderOptions shaderOptions})
   {
     final List<CoordinateSetI> removeCoords = <CoordinateSetI>[];
@@ -1193,86 +745,6 @@ abstract class IToolPainter
 
     hasHistoryData = true;
     resetContentRaster(currentLayer: shadingLayer);
-  }
-
-  Set<CoordinateSetI> getMirrorPoints({required final Set<CoordinateSetI> coords, required final CoordinateSetI canvasSize, required final double? symmetryX, required final double? symmetryY})
-  {
-    if (symmetryX == null && symmetryY == null)
-    {
-      return coords;
-    }
-
-    final Set<CoordinateSetI> mirrorPoints = <CoordinateSetI>{};
-    mirrorPoints.addAll(coords);
-
-    for (final CoordinateSetI coord in coords)
-    {
-      if (symmetryX != null)
-      {
-        final CoordinateSetI m = CoordinateSetI(x: (symmetryX * 2 - coord.x - 1).toInt(), y: coord.y);
-        if (m.x >= 0 && m.x < canvasSize.x)
-        {
-          mirrorPoints.add(m);
-        }
-      }
-      if (symmetryY != null)
-      {
-        final CoordinateSetI m = CoordinateSetI(x: coord.x, y: (symmetryY * 2 - coord.y - 1).toInt());
-        if (m.y >= 0 && m.y < canvasSize.y)
-        {
-          mirrorPoints.add(m);
-        }
-      }
-      if (symmetryX != null && symmetryY != null)
-      {
-        final CoordinateSetI m = CoordinateSetI(x: (symmetryX * 2 - coord.x - 1).toInt(), y: (symmetryY * 2 - coord.y - 1).toInt());
-        if (m.x >= 0 && m.x < canvasSize.x && m.y >= 0 && m.y < canvasSize.y)
-        {
-          mirrorPoints.add(m);
-        }
-      }
-    }
-    return mirrorPoints;
-  }
-
-  HashMap<CoordinateSetI, int> getStampMirrorPoints({required final HashMap<CoordinateSetI, int> stampData, required final CoordinateSetI canvasSize, required final double? symmetryX, required final double? symmetryY})
-  {
-    if (symmetryX == null && symmetryY == null)
-    {
-      return stampData;
-    }
-
-    final HashMap<CoordinateSetI, int> mirrorPoints = HashMap<CoordinateSetI, int>();
-    mirrorPoints.addAll(stampData);
-
-    for (final MapEntry<CoordinateSetI, int> entry in stampData.entries)
-    {
-      if (symmetryX != null)
-      {
-        final CoordinateSetI m = CoordinateSetI(x: (symmetryX * 2 - entry.key.x - 1).toInt(), y: entry.key.y);
-        if (m.x >= 0 && m.x < canvasSize.x)
-        {
-          mirrorPoints[m] = entry.value;
-        }
-      }
-      if (symmetryY != null)
-      {
-        final CoordinateSetI m = CoordinateSetI(x: entry.key.x, y: (symmetryY * 2 - entry.key.y - 1).toInt());
-        if (m.y >= 0 && m.y < canvasSize.y)
-        {
-          mirrorPoints[m] = entry.value;
-        }
-      }
-      if (symmetryX != null && symmetryY != null)
-      {
-        final CoordinateSetI m = CoordinateSetI(x: (symmetryX * 2 - entry.key.x - 1).toInt(), y: (symmetryY * 2 - entry.key.y - 1).toInt());
-        if (m.x >= 0 && m.x < canvasSize.x && m.y >= 0 && m.y < canvasSize.y)
-        {
-          mirrorPoints[m] = entry.value;
-        }
-      }
-    }
-    return mirrorPoints;
   }
 
   ui.Path getPathFromList({required final List<MapEntry<int, int>> pointList, required final CoordinateSetD offsetPos, required final double scaling})

@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -24,29 +23,7 @@ import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_line_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-
-class AngleData
-{
-  final int x;
-  final int y;
-  final double angle;
-
-  @override
-  bool operator ==(final Object other) =>
-      identical(this, other) ||
-          other is AngleData &&
-              angle == other.angle;
-
-  @override
-  int get hashCode => angle.hashCode;
-
-  @override
-  String toString() {
-    return "$x|$y|$angle";
-  }
-
-  AngleData({required this.x, required this.y}) : angle = atan2(x.toDouble(), y.toDouble());
-}
+import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 
 class LineOptions extends IToolOptions
 {

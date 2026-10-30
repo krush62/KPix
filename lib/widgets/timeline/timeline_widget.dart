@@ -296,20 +296,18 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
 
   List<Widget> _createRowWidgets() {
     final List<Frame> frames = widget.timeline.frames.value;
+    final int loopStartIndex = widget.timeline.loopStartIndex.value;
+    final int loopEndIndex = widget.timeline.loopEndIndex.value;
     final List<Widget> rowWidgets = <Widget>[];
 
-    final bool showMarkers = widget.timeline.loopStartIndex.value != 0 || widget.timeline.loopEndIndex.value != widget.timeline.frames.value.length - 1;
+    final bool showMarkers = loopStartIndex != 0 || loopEndIndex != frames.length - 1;
 
     for (int i = 0; i < frames.length; i++)
     {
       rowWidgets.add(
-        ValueListenableBuilder<int>(
-          valueListenable: widget.timeline.loopStartIndex,
-          builder: (final BuildContext context, final int loopStartIndex, final Widget? child) {
-            return Container(
-              width: widget.framePadding,
-              color: i == loopStartIndex && showMarkers ? Theme.of(context).primaryColorLight : Colors.transparent,);
-          },
+        Container(
+          width: widget.framePadding,
+          color: i == loopStartIndex && showMarkers ? Theme.of(context).primaryColorLight : Colors.transparent,
         ),
       );
 
@@ -350,13 +348,9 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
       );
 
       rowWidgets.add(
-        ValueListenableBuilder<int>(
-          valueListenable: widget.timeline.loopEndIndex,
-          builder: (final BuildContext context, final int loopEndIndex, final Widget? child) {
-            return Container(
-              width: widget.framePadding,
-              color: i == loopEndIndex && showMarkers ? Theme.of(context).primaryColorLight : Colors.transparent,);
-          },
+        Container(
+          width: widget.framePadding,
+          color: i == loopEndIndex && showMarkers ? Theme.of(context).primaryColorLight : Colors.transparent,
         ),
       );
     }
@@ -373,51 +367,31 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
         children: <Widget>[
           Padding(
             padding: EdgeInsets.all(widget.padding),
-            child: ValueListenableBuilder<int>(
-              valueListenable: widget.timeline.loopEndIndex,
-              builder: (final BuildContext context2, final int loopEndIndex, final Widget? child2) {
-                return ValueListenableBuilder<int>(
-                  valueListenable: widget.timeline.loopStartIndex,
-                  builder: (final BuildContext context1, final int loopStartIndex, final Widget? child) {
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: widget.timeline.isPlaying,
-                      builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                        return SizedBox(
-                          width: widget.buttonWidth,
-                          child: IconButton(
-                            tooltip: "${isPlaying ? l10n.pause : l10n.play}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay, context: context)}",
-                            onPressed: (loopEndIndex == loopStartIndex) ? null : () {
-                              widget.timeline.togglePlaying();
-                            },
-                            icon: Icon(isPlaying ? TablerIcons.player_pause_filled : TablerIcons.player_play_filled, size: widget.buttonWidth / 2,),
-                          ),
-                        );
-                      },
-                    );
-                  },
+            child: ListenableBuilder(
+              listenable: Listenable.merge(<Listenable>[widget.timeline.loopEndIndex, widget.timeline.loopStartIndex, widget.timeline.isPlaying]),
+              builder: (final BuildContext context, final Widget? child) {
+                final bool isPlaying = widget.timeline.isPlaying.value;
+                return SizedBox(
+                  width: widget.buttonWidth,
+                  child: IconButton(
+                    tooltip: "${isPlaying ? l10n.pause : l10n.play}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay, context: context)}",
+                    onPressed: (widget.timeline.loopEndIndex.value == widget.timeline.loopStartIndex.value) ? null : () {
+                      widget.timeline.togglePlaying();
+                    },
+                    icon: Icon(isPlaying ? TablerIcons.player_pause_filled : TablerIcons.player_play_filled, size: widget.buttonWidth / 2,),
+                  ),
                 );
               },
             ),
           ),
-          ValueListenableBuilder<int>(
-            valueListenable: widget.timeline.loopEndIndex,
-            builder: (final BuildContext context2, final int loopEndIndex, final Widget? child2) {
-              return ValueListenableBuilder<int>(
-                valueListenable: widget.timeline.loopStartIndex,
-                builder: (final BuildContext context1, final int loopStartIndex, final Widget? child1) {
-                  return ValueListenableBuilder<List<Frame>>(
-                    valueListenable: widget.timeline.frames,
-                    builder: (final BuildContext context, final List<Frame> frames, final Widget? child) {
-                      final List<Widget> rowEntries = _createRowWidgets();
-                      return Expanded(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: rowEntries,
-                        ),
-                      );
-                    },
-                  );
-                },
+          ListenableBuilder(
+            listenable: Listenable.merge(<Listenable>[widget.timeline.loopEndIndex, widget.timeline.loopStartIndex, widget.timeline.frames]),
+            builder: (final BuildContext context, final Widget? child) {
+              return Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: _createRowWidgets(),
+                ),
               );
             },
           ),
@@ -767,67 +741,33 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
       {
         timingWidgets.add(Container(color: borderColor, width: _borderWidth, height: height));
       }
-      final Widget w = ValueListenableBuilder<int>(
-        valueListenable: currentFrame.fps,
-        builder: (final BuildContext context, final int fps, final Widget? child) {
-          return ValueListenableBuilder<bool>(
-            valueListenable: _frameSelection.forIndex(index: i),
-            builder: (final BuildContext context, final bool isSelected, final Widget? child) {
-              return ValueListenableBuilder<bool>(
-                valueListenable: widget.timeline.isPlaying,
-                builder: (final BuildContext context1, final bool isPlaying, final Widget? child1) {
-                  return Tooltip(
-                    message: l10n.changeDuration,
-                    child: InkWell(
-                      onTap: () {
-                        widget.timeline.selectFrameByIndex(index: i);
-                        if (!isPlaying)
-                        {
-                          //created once, so Enter reads the value the user picked
-                          final FrameTimeWidget frameTimeWidget = FrameTimeWidget(frame: currentFrame, onDismiss: _frameTimeOverlayDismiss, onConfirmSingle: _frameTimeOverlayConfirmSingle, onConfirmAll: _frameTimeOverlayConfirmAll,);
-                          _frameTimeOverlay = KPixOverlay(
-                            onEscape: _frameTimeOverlayDismiss,
-                            onEnter: () {_frameTimeOverlayConfirmSingle(frame: currentFrame, value: frameTimeWidget.valueNotifier.value);},
-                            entry: OverlayEntry(
-                              builder: (final BuildContext context) => Stack(
-                                children: <Widget>[
-                                  ModalBarrier(
-                                    color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
-                                  ),
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Padding(
-                                        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                                        child: frameTimeWidget,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                          _frameTimeOverlay.show(context: context);
-                        }
-                      },
-                      child: Container(
-                        height: height,
-                        width: _cellWidth,
-                        color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
-                        child: Center(
-                          child: Text(
-                            "1/$fps",
-                            textAlign: TextAlign.center,
-                            style: isSelected ? Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold) : Theme.of(context).textTheme.titleSmall,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
+      final ValueListenable<bool> isSelected = _frameSelection.forIndex(index: i);
+      final Widget w = ListenableBuilder(
+        listenable: Listenable.merge(<Listenable>[currentFrame.fps, isSelected]),
+        builder: (final BuildContext context, final Widget? child) {
+          return Tooltip(
+            message: l10n.changeDuration,
+            child: InkWell(
+              onTap: () {
+                widget.timeline.selectFrameByIndex(index: i);
+                if (!widget.timeline.isPlaying.value)
+                {
+                  _showFrameTimeOverlay(frame: currentFrame);
+                }
+              },
+              child: Container(
+                height: height,
+                width: _cellWidth,
+                color: isSelected.value ? Theme.of(context).primaryColor : Colors.transparent,
+                child: Center(
+                  child: Text(
+                    "1/${currentFrame.fps.value}",
+                    textAlign: TextAlign.center,
+                    style: isSelected.value ? Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold) : Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+              ),
+            ),
           );
         },
       );
@@ -879,6 +819,226 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
     showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
   }
 
+  OverlayEntry _createDialogEntry({required final Widget dialog})
+  {
+    return OverlayEntry(
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
+          ModalBarrier(
+            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+                child: dialog,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFrameTimeOverlay({required final Frame frame})
+  {
+    //created once, so Enter reads the value the user picked
+    final FrameTimeWidget frameTimeWidget = FrameTimeWidget(frame: frame, onDismiss: _frameTimeOverlayDismiss, onConfirmSingle: _frameTimeOverlayConfirmSingle, onConfirmAll: _frameTimeOverlayConfirmAll,);
+    _frameTimeOverlay = KPixOverlay(
+      onEscape: _frameTimeOverlayDismiss,
+      onEnter: () {_frameTimeOverlayConfirmSingle(frame: frame, value: frameTimeWidget.valueNotifier.value);},
+      entry: _createDialogEntry(dialog: frameTimeWidget),
+    );
+    _frameTimeOverlay.show(context: context);
+  }
+
+  void _showFrameBlendingOverlay()
+  {
+    _frameBlendingOverlay = KPixOverlay(
+      onEscape: _frameBlendingOverlayDismiss,
+      onEnter: _frameBlendingOverlayDismiss,
+      entry: _createDialogEntry(dialog: FrameBlendingWidget(onDismiss: _frameBlendingOverlayDismiss, options: widget.frameBlendingOptions,)),
+    );
+    _frameBlendingOverlay.show(context: context);
+  }
+
+  /// Locked during playback and unless [isAllowed], whose inputs belong in [dependsOn].
+  Widget _createFrameButton({
+    required final String tooltip,
+    final HotkeyAction? hotkey,
+    required final IconData icon,
+    final List<Listenable> dependsOn = const <Listenable>[],
+    final bool Function()? isAllowed,
+    required final VoidCallback onPressed,
+  })
+  {
+    return ListenableBuilder(
+      listenable: Listenable.merge(<Listenable>[widget.timeline.isPlaying, ...dependsOn]),
+      builder: (final BuildContext context, final Widget? child) {
+        final bool isUsable = !widget.timeline.isPlaying.value && (isAllowed == null || isAllowed());
+        return SizedBox(
+          height: _cellHeight,
+          child: IconButton.outlined(
+            tooltip: hotkey == null ? tooltip : tooltip + _hotkeyManager.getShortcutString(action: hotkey, context: context),
+            onPressed: isUsable ? onPressed : null,
+            icon: Icon(icon),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _createFrameChangeButton({required final String tooltip, required final IconData icon, required final LayerActionResult Function() change})
+  {
+    return _createFrameButton(
+      tooltip: tooltip,
+      icon: icon,
+      onPressed: () {
+        showMessageForResult(result: change(), l10n: AppLocalizations.of(context)!);
+      },
+    );
+  }
+
+  Widget _createFrameActionRow({required final String tooltip, required final IconData icon, required final Widget left, required final Widget right})
+  {
+    return Row(
+      children: <Widget>[
+        Expanded(child: left),
+        const SizedBox(
+          width: _padding / 2,
+        ),
+        Tooltip(
+          message: tooltip,
+          child: Icon(
+            icon,
+            color: Theme.of(context).primaryColorLight,
+          ),
+        ),
+        const SizedBox(
+          width: _padding / 2,
+        ),
+        Expanded(child: right),
+      ],
+    );
+  }
+
+  Widget _createTransportPanel({required final AppLocalizations l10n})
+  {
+    final Timeline timeline = widget.timeline;
+    final List<Listenable> moveDependencies = <Listenable>[timeline.selectedFrameIndexNotifier, timeline.frames];
+    return Container(
+      width: _leftSideWidth,
+      decoration: BoxDecoration(
+        color: Theme.of(context).primaryColor,
+        borderRadius: const BorderRadius.all(
+          Radius.circular(_borderRadius),
+        ),
+        border: Border.all(
+          color: Theme.of(context).primaryColorLight,
+          width: _borderWidth,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(_padding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            ListenableBuilder(
+              listenable: Listenable.merge(<Listenable>[timeline.loopEndIndex, timeline.loopStartIndex, timeline.isPlaying]),
+              builder: (final BuildContext context, final Widget? child) {
+                final bool isPlaying = timeline.isPlaying.value;
+                return SizedBox(
+                  height: _cellHeight,
+                  child: IconButton.outlined(
+                    tooltip: "${isPlaying ? l10n.pause : l10n.play}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay, context: context)}",
+                    onPressed: timeline.loopStartIndex.value == timeline.loopEndIndex.value ? null : () {
+                      timeline.togglePlaying();
+                    },
+                    icon: Icon(isPlaying ? TablerIcons.player_pause_filled : TablerIcons.player_play_filled, size: _transportIconSize,),
+                  ),
+                );
+              },
+            ),
+            const Spacer(),
+            Divider(height: 16, thickness: 2, color: Theme.of(context).primaryColorLight,),
+            _createFrameActionRow(
+              tooltip: l10n.moveFrame,
+              icon: TablerIcons.arrows_left_right,
+              left: _createFrameButton(
+                tooltip: l10n.moveFrameLeft,
+                hotkey: HotkeyAction.timelineMoveFrameLeft,
+                icon: TablerIcons.chevron_left,
+                dependsOn: moveDependencies,
+                isAllowed: () => timeline.frames.value.length > 1 && timeline.selectedFrameIndex > 0,
+                onPressed: timeline.moveFrameLeft,
+              ),
+              right: _createFrameButton(
+                tooltip: l10n.moveFrameRight,
+                hotkey: HotkeyAction.timelineMoveFrameRight,
+                icon: TablerIcons.chevron_right,
+                dependsOn: moveDependencies,
+                isAllowed: () => timeline.frames.value.length > 1 && timeline.selectedFrameIndex < timeline.frames.value.length - 1,
+                onPressed: timeline.moveFrameRight,
+              ),
+            ),
+            const SizedBox(height: _padding),
+            _createFrameActionRow(
+              tooltip: l10n.addFrame,
+              icon: TablerIcons.file,
+              left: _createFrameChangeButton(tooltip: l10n.addFrameLeft, icon: TablerIcons.chevron_left, change: timeline.addNewFrameLeft),
+              right: _createFrameChangeButton(tooltip: l10n.addFrameRight, icon: TablerIcons.chevron_right, change: timeline.addNewFrameRight),
+            ),
+            const SizedBox(height: _padding),
+            _createFrameActionRow(
+              tooltip: l10n.copyFrame,
+              icon: TablerIcons.copy,
+              left: _createFrameChangeButton(tooltip: l10n.copyFrameLeft, icon: TablerIcons.chevron_left, change: timeline.copyFrameLeft),
+              right: _createFrameChangeButton(tooltip: l10n.copyFrameRight, icon: TablerIcons.chevron_right, change: timeline.copyFrameRight),
+            ),
+            const SizedBox(height: _padding),
+            _createFrameActionRow(
+              tooltip: l10n.createLinkedFrame,
+              icon: TablerIcons.link,
+              left: _createFrameChangeButton(tooltip: l10n.createLinkedFrameLeft, icon: TablerIcons.chevron_left, change: timeline.linkFrameLeft),
+              right: _createFrameChangeButton(tooltip: l10n.createLinkedFrameRight, icon: TablerIcons.chevron_right, change: timeline.linkFrameRight),
+            ),
+            const SizedBox(height: _padding),
+            _createFrameButton(
+              tooltip: l10n.deleteFrame,
+              icon: TablerIcons.trash,
+              dependsOn: <Listenable>[timeline.frames],
+              isAllowed: () => timeline.frames.value.length > 1,
+              onPressed: timeline.deleteFrame,
+            ),
+            Divider(height: 16, thickness: 2, color: Theme.of(context).primaryColorLight,),
+            const Spacer(),
+            ListenableBuilder(
+              listenable: Listenable.merge(<Listenable>[widget.frameBlendingOptions.enabled, timeline.isPlaying]),
+              builder: (final BuildContext context, final Widget? child) {
+                final bool isPlaying = timeline.isPlaying.value;
+                final bool isHighlighted = widget.frameBlendingOptions.enabled.value && !isPlaying;
+                return SizedBox(
+                  height: _cellHeight,
+                  child: IconButton.outlined(
+                    tooltip: "${l10n.frameBlending}\n${l10n.toggle}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineToggleFrameBlending, precededNewLine: false, context: context)}:",
+                    style: ButtonStyle(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      backgroundColor: isHighlighted ? WidgetStatePropertyAll<Color?>(Theme.of(context).primaryColorLight) : null,
+                      iconColor: isHighlighted ? WidgetStatePropertyAll<Color?>(Theme.of(context).primaryColor) : null,
+                    ),
+                    onPressed: isPlaying ? null : _showFrameBlendingOverlay,
+                    icon: const Icon(TablerIcons.blend_mode),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(final BuildContext context)
@@ -890,365 +1050,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
         padding: const EdgeInsets.only(top: _padding, left: _padding, right: _padding),
         child: Row(
           children: <Widget>[
-            Container(
-              width: _leftSideWidth,
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(_borderRadius),
-                ),
-                border: Border.all(
-                  color: Theme.of(context).primaryColorLight,
-                  width: _borderWidth,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(_padding),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    ValueListenableBuilder<int>(
-                      valueListenable: widget.timeline.loopEndIndex,
-                      builder: (final BuildContext context2, final int loopEnd, final Widget? child2) {
-                        return ValueListenableBuilder<int>(
-                          valueListenable: widget.timeline.loopStartIndex,
-                          builder: (final BuildContext context1, final int loopStart, final Widget? child1) {
-                            return ValueListenableBuilder<bool>(
-                              valueListenable: widget.timeline.isPlaying,
-                              builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                return SizedBox(
-                                  height: _cellHeight,
-                                  child: IconButton.outlined(
-                                    tooltip: "${isPlaying ? l10n.pause : l10n.play}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay, context: context)}",
-                                      onPressed: loopStart == loopEnd ? null : () {
-                                        widget.timeline.togglePlaying();
-                                      },
-                                      icon: Icon(isPlaying ? TablerIcons.player_pause_filled : TablerIcons.player_play_filled, size: _transportIconSize,),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        );
-                      },
-                    ),
-                    const Spacer(),
-                    Divider(height: 16, thickness: 2, color: Theme.of(context).primaryColorLight,),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: ValueListenableBuilder<int>(
-                            valueListenable: widget.timeline.selectedFrameIndexNotifier,
-                            builder: (final BuildContext context2, final int selectedFrameIndex, final Widget? child2) {
-                              return ValueListenableBuilder<List<Frame>>(
-                                valueListenable: widget.timeline.frames,
-                                builder: (final BuildContext context1, final List<Frame> frames, final Widget? child1) {
-                                  return ValueListenableBuilder<bool>(
-                                    valueListenable: widget.timeline.isPlaying,
-                                    builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                      return SizedBox(
-                                        height: _cellHeight,
-                                        child: IconButton.outlined(
-                                          tooltip: l10n.moveFrameLeft + _hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameLeft, context: context),
-                                          onPressed: (isPlaying || frames.length <= 1 || selectedFrameIndex <= 0) ? null : () {widget.timeline.moveFrameLeft();},
-                                          icon: const Icon(TablerIcons.chevron_left),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(
-                          width: _padding / 2,
-                        ),
-                        Tooltip(
-                          message: l10n.moveFrame,
-                          child: Icon(
-                            TablerIcons.arrows_left_right,
-                            //size: _layerIconSize,
-                            color: Theme.of(context).primaryColorLight,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: _padding / 2,
-                        ),
-                        Expanded(
-                          child: ValueListenableBuilder<int>(
-                            valueListenable: widget.timeline.selectedFrameIndexNotifier,
-                            builder: (final BuildContext context2, final int selectedFrameIndex, final Widget? child2) {
-                              return ValueListenableBuilder<List<Frame>>(
-                                valueListenable: widget.timeline.frames,
-                                builder: (final BuildContext context1, final List<Frame> frames, final Widget? child1) {
-                                  return ValueListenableBuilder<bool>(
-                                    valueListenable: widget.timeline.isPlaying,
-                                    builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                      return SizedBox(
-                                        height: _cellHeight,
-                                        child: IconButton.outlined(
-                                          tooltip: l10n.moveFrameRight + _hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameRight, context: context),
-                                            onPressed: (isPlaying || frames.length <= 1 || selectedFrameIndex >= frames.length - 1) ? null : () {widget.timeline.moveFrameRight();},
-                                            icon: const Icon(TablerIcons.chevron_right),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: _padding),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: ValueListenableBuilder<bool>(
-                            valueListenable: widget.timeline.isPlaying,
-                            builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                              return SizedBox(
-                                height: _cellHeight,
-                                child: IconButton.outlined(
-                                  tooltip: l10n.addFrameLeft,
-                                  onPressed: isPlaying ? null : () {
-                                    final LayerActionResult result = widget.timeline.addNewFrameLeft();
-                                    showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
-                                    },
-                                  icon: const Icon(TablerIcons.chevron_left),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(
-                          width: _padding / 2,
-                        ),
-                        Tooltip(
-                          message: l10n.addFrame,
-                          child: Icon(
-                            TablerIcons.file,
-                            //size: _layerIconSize,
-                            color: Theme.of(context).primaryColorLight,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: _padding / 2,
-                        ),
-                        Expanded(
-                          child: ValueListenableBuilder<bool>(
-                            valueListenable: widget.timeline.isPlaying,
-                            builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                              return SizedBox(
-                                height: _cellHeight,
-                                child: IconButton.outlined(
-                                  tooltip: l10n.addFrameRight,
-                                  onPressed: isPlaying ? null : () {
-                                    final LayerActionResult result = widget.timeline.addNewFrameRight();
-                                    showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
-                                    },
-                                  icon: const Icon(TablerIcons.chevron_right),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: _padding),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: ValueListenableBuilder<bool>(
-                            valueListenable: widget.timeline.isPlaying,
-                            builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                              return SizedBox(
-                                height: _cellHeight,
-                                child: IconButton.outlined(
-                                  tooltip: l10n.copyFrameLeft,
-                                    onPressed: isPlaying ? null : () {
-                                      final LayerActionResult result =  widget.timeline.copyFrameLeft();
-                                      showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
-                                      },
-                                    icon: const Icon(TablerIcons.chevron_left),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(
-                          width: _padding / 2,
-                        ),
-                        Tooltip(
-                          message: l10n.copyFrame,
-                          child: Icon(
-                            TablerIcons.copy,
-                            //size: _layerIconSize,
-                            color: Theme.of(context).primaryColorLight,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: _padding / 2,
-                        ),
-                        Expanded(
-                          child: ValueListenableBuilder<bool>(
-                            valueListenable: widget.timeline.isPlaying,
-                            builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                              return SizedBox(
-                                height: _cellHeight,
-                                child: IconButton.outlined(
-                                  tooltip: l10n.copyFrameRight,
-                                  onPressed: isPlaying ? null : () {
-                                    final LayerActionResult result = widget.timeline.copyFrameRight();
-                                    showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
-                                    },
-                                  icon: const Icon(TablerIcons.chevron_right),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: _padding),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: ValueListenableBuilder<bool>(
-                            valueListenable: widget.timeline.isPlaying,
-                            builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                              return SizedBox(
-                                height: _cellHeight,
-                                child: IconButton.outlined(
-                                  tooltip: l10n.createLinkedFrameLeft,
-                                  onPressed: isPlaying ? null : () {
-                                    final LayerActionResult result = widget.timeline.linkFrameLeft();
-                                    showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
-                                    },
-                                  icon: const Icon(TablerIcons.chevron_left),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(
-                          width: _padding / 2,
-                        ),
-                        Tooltip(
-                          message: l10n.createLinkedFrame,
-                          child: Icon(
-                            TablerIcons.link,
-                            //size: _layerIconSize,
-                            color: Theme.of(context).primaryColorLight,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: _padding / 2,
-                        ),
-                        Expanded(
-                          child: ValueListenableBuilder<bool>(
-                            valueListenable: widget.timeline.isPlaying,
-                            builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                              return SizedBox(
-                                height: _cellHeight,
-                                child: IconButton.outlined(
-                                  tooltip: l10n.createLinkedFrameRight,
-                                  onPressed: isPlaying ? null : () {
-                                    final LayerActionResult result = widget.timeline.linkFrameRight();
-                                    showMessageForResult(result: result, l10n: AppLocalizations.of(context)!);
-                                    },
-                                  icon: const Icon(TablerIcons.chevron_right),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: _padding),
-                    ValueListenableBuilder<List<Frame>>(
-                      valueListenable: widget.timeline.frames,
-                      builder: (final BuildContext context1, final List<Frame> frames, final Widget? child) {
-                        return ValueListenableBuilder<bool>(
-                          valueListenable: widget.timeline.isPlaying,
-                          builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                            return SizedBox(
-                              height: _cellHeight,
-                              child: IconButton.outlined(
-                                tooltip: l10n.deleteFrame,
-                                onPressed: isPlaying || frames.length <= 1 ? null : () { widget.timeline.deleteFrame(); },
-                                icon: const Icon(TablerIcons.trash),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                    Divider(height: 16, thickness: 2, color: Theme.of(context).primaryColorLight,),
-                    const Spacer(),
-                    ValueListenableBuilder<bool>(
-                      valueListenable: widget.frameBlendingOptions.enabled,
-                      builder: (final BuildContext context, final bool frameBlendingEnabled, final Widget? child) {
-                        return ValueListenableBuilder<bool>(
-                          valueListenable: widget.timeline.isPlaying,
-                          builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                            return SizedBox(
-                              height: _cellHeight,
-                              child: IconButton.outlined(
-                                tooltip: "${l10n.frameBlending}\n${l10n.toggle}${GetIt.I.get<HotkeyManager>().getShortcutString(action: HotkeyAction.timelineToggleFrameBlending, precededNewLine: false, context: context)}:",
-                                style: ButtonStyle(
-                                  tapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                                  backgroundColor: frameBlendingEnabled && !isPlaying
-                                      ? WidgetStatePropertyAll<Color?>(
-                                    Theme.of(context)
-                                        .primaryColorLight,)
-                                      : null,
-                                  iconColor: frameBlendingEnabled && !isPlaying
-                                      ? WidgetStatePropertyAll<Color?>(
-                                    Theme.of(context)
-                                        .primaryColor,)
-                                      : null,
-                                ),
-                                onPressed: isPlaying ? null : () {
-                                  _frameBlendingOverlay = KPixOverlay(
-                                    onEscape: _frameBlendingOverlayDismiss,
-                                    onEnter: _frameBlendingOverlayDismiss,
-                                    entry: OverlayEntry(
-                                      builder: (final BuildContext context) => Stack(
-                                        children: <Widget>[
-                                          ModalBarrier(
-                                            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
-                                          ),
-                                          Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: <Widget>[
-                                              Padding(
-                                                padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                                                child: FrameBlendingWidget(onDismiss: _frameBlendingOverlayDismiss, options: widget.frameBlendingOptions,),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                  _frameBlendingOverlay.show(context: context);
-                                },
-                                icon: const Icon(TablerIcons.blend_mode),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _createTransportPanel(l10n: l10n),
 
             const SizedBox(width: _padding),
 
@@ -1274,16 +1076,11 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          ValueListenableBuilder<int>(
-                            valueListenable: widget.timeline.loopStartIndex,
-                            builder: (final BuildContext context2, final int loopStartIndex, final Widget? child2) {
-                              return ValueListenableBuilder<int>(
-                                valueListenable: widget.timeline.loopEndIndex,
-                                builder: (final BuildContext context3, final int loopEndIndex, final Widget? child) {
-                                  return Row(
-                                    children: _createMarkerWidgets(frames: frames, loopStart: loopStartIndex, loopEnd: loopEndIndex, l10n: l10n),
-                                  );
-                                },
+                          ListenableBuilder(
+                            listenable: Listenable.merge(<Listenable>[widget.timeline.loopStartIndex, widget.timeline.loopEndIndex]),
+                            builder: (final BuildContext context, final Widget? child) {
+                              return Row(
+                                children: _createMarkerWidgets(frames: frames, loopStart: widget.timeline.loopStartIndex.value, loopEnd: widget.timeline.loopEndIndex.value, l10n: l10n),
                               );
                             },
                           ),

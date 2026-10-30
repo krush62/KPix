@@ -452,9 +452,7 @@ class ShadingLayerState extends RasterableLayerState
       final ColorReference? refCol = _colorAmong(pixels: below, x: x, y: y);
       if (refCol != null)
       {
-        final int targetColorIndex = (refCol.colorIndex + stepAt(value: valAt, x: x, y: y)).clamp(0, refCol.ramp.references.length - 1);
-        final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
-        allColorPixels.setColorAt(x: x, y: y, color: targetColor);
+        allColorPixels.setColorAt(x: x, y: y, color: refCol.shiftedBy(steps: stepAt(value: valAt, x: x, y: y)));
       }
     },);
 
@@ -587,8 +585,7 @@ class ShadingLayerState extends RasterableLayerState
           final ColorReference? refCol = _colorAmong(pixels: below, x: x, y: y);
           if (refCol != null)
           {
-            final int targetColorIndex = (refCol.colorIndex + stepAt(value: valAt, x: x, y: y)).clamp(0, refCol.ramp.references.length - 1);
-            shaded = refCol.ramp.references[targetColorIndex];
+            shaded = refCol.shiftedBy(steps: stepAt(value: valAt, x: x, y: y));
           }
         }
         //the region replaces what the frame showed here, a pixel that shows

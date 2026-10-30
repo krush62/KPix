@@ -103,14 +103,7 @@ Future<Uint8List?> getPixeloramaData({required final List<KPalRampData> colorRam
       {
         for (int x = 0; x < canvasSize.x; x++)
         {
-          final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-          ColorReference? colAtPos;
-          if (l == layerCollection.selectedLayerIndex)
-          {
-            colAtPos = selection.getColorReference(coord: curCoord);
-          }
-          colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
-
+          final ColorReference? colAtPos = _exportedColorAt(layerCollection: layerCollection, layerIndex: l, layer: layerState, selection: selection, coord: CoordinateSetI(x: x, y: y));
           if (colAtPos == null)
           {
             indexData.setUint8(byteOffsetIndex++, 0);
@@ -121,12 +114,6 @@ Future<Uint8List?> getPixeloramaData({required final List<KPalRampData> colorRam
           }
           else
           {
-            final int shade = _getShadeForCoord(layerCollection: layerCollection, currentLayerIndex: l, coord: curCoord);
-            if (shade != 0)
-            {
-              final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
-              colAtPos = colAtPos.ramp.references[targetIndex];
-            }
             indexData.setUint8(byteOffsetIndex++, colorMap[colAtPos]!);
             layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.r * 255.0).round());//r
             layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.g * 255.0).round());//g

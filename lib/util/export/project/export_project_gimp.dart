@@ -103,14 +103,7 @@ Future<Uint8List?> getGimpData({required final List<KPalRampData> colorRamps, re
         {
           for (int a = x; a < endX; a++)
           {
-            final CoordinateSetI curCoord = CoordinateSetI(x: a, y: b);
-            ColorReference? colAtPos;
-            if (l == layerCollection.selectedLayerIndex)
-            {
-              colAtPos = selection.getColorReference(coord: curCoord);
-            }
-            colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
-
+            final ColorReference? colAtPos = _exportedColorAt(layerCollection: layerCollection, layerIndex: l, layer: layerState, selection: selection, coord: CoordinateSetI(x: a, y: b));
             if (colAtPos == null)
             {
               imgBytes.add(0);
@@ -118,12 +111,6 @@ Future<Uint8List?> getGimpData({required final List<KPalRampData> colorRamps, re
             }
             else
             {
-              final int shade = _getShadeForCoord(layerCollection: layerCollection, currentLayerIndex: l, coord: curCoord);
-              if (shade != 0)
-              {
-                final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
-                colAtPos = colAtPos.ramp.references[targetIndex];
-              }
               imgBytes.add(colorMap[colAtPos]!);
               imgBytes.add(255);
             }

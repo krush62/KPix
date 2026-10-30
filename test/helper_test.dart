@@ -21,6 +21,7 @@ import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/managers/font_manager.dart';
+import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
@@ -43,6 +44,7 @@ void main() {
   testAngleUtilities();
   testExtractFileName();
   testGlyph();
+  testColorReferenceShift();
 }
 
 void testCoordinateSetI()
@@ -723,6 +725,27 @@ void testIntToBytes()
       expect(() => intToBytes(value: 0x1234, length: 3), throwsA(isA<ArgumentError>()));
       expect(() => intToBytes(value: 0x1234, length: 0), throwsA(isA<ArgumentError>()));
       expect(() => intToBytes(value: 0x1234, length: 5), throwsA(isA<ArgumentError>()));
+    });
+  });
+}
+
+void testColorReferenceShift()
+{
+  group('ColorReference.shiftedBy', () {
+    final KPalRampData ramp = KPalRampData(uuid: "shift", settings: KPalRampSettings()..colorCount = 5);
+
+    test('moves along the ramp', () {
+      expect(ramp.references[1].shiftedBy(steps: 2), same(ramp.references[3]));
+      expect(ramp.references[3].shiftedBy(steps: -3), same(ramp.references[0]));
+    });
+
+    test('is held at both ends', () {
+      expect(ramp.references[3].shiftedBy(steps: 4), same(ramp.references[4]));
+      expect(ramp.references[1].shiftedBy(steps: -6), same(ramp.references[0]));
+    });
+
+    test('zero steps is the same color', () {
+      expect(ramp.references[2].shiftedBy(steps: 0), same(ramp.references[2]));
     });
   });
 }

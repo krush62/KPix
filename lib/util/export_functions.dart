@@ -313,6 +313,25 @@ List<ui.Color> _getColorList({required final List<KPalRampData> ramps})
   return colorList;
 }
 
+/// What the drawing [layer] at [layerIndex] exports at [coord]: the floating
+/// selection's color on the selected layer, otherwise its own with its effects,
+/// shaded by the visible shading layers above it.
+ColorReference? _exportedColorAt({required final LayerCollection layerCollection, required final int layerIndex, required final DrawingLayerState layer, required final SelectionList selection, required final CoordinateSetI coord})
+{
+  ColorReference? color;
+  if (layerIndex == layerCollection.selectedLayerIndex)
+  {
+    color = selection.getColorReference(coord: coord);
+  }
+  color ??= layer.getDataEntry(coord: coord, withSettingsPixels: true);
+  if (color == null)
+  {
+    return null;
+  }
+  final int shade = _getShadeForCoord(layerCollection: layerCollection, currentLayerIndex: layerIndex, coord: coord);
+  return shade != 0 ? color.shiftedBy(steps: shade) : color;
+}
+
 int _getShadeForCoord({required final int currentLayerIndex, required final CoordinateSetI coord, required final LayerCollection layerCollection})
 {
   assert(currentLayerIndex < layerCollection.length);

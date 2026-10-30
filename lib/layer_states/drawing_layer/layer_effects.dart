@@ -102,11 +102,6 @@ class LayerEffects
     return _Direction(dx: alignment.x.round(), dy: alignment.y.round());
   }
 
-  static ColorReference _shifted({required final ColorReference color, required final int steps})
-  {
-    return color.ramp.references[(color.colorIndex + steps).clamp(0, color.ramp.references.length - 1)];
-  }
-
   bool _isInside({required final int x, required final int y})
   {
     return x >= 0 && y >= 0 && x < width && y < height;
@@ -203,7 +198,7 @@ class LayerEffects
         final ColorReference? color = colorBelow(x, y);
         if (color != null)
         {
-          emit(x, y, _shifted(color: color, steps: settings.dropShadowDarkenBrighten.value));
+          emit(x, y, color.shiftedBy(steps: settings.dropShadowDarkenBrighten.value));
         }
       }
     }
@@ -261,14 +256,14 @@ class LayerEffects
         }
         else if (style == OuterStrokeStyle.relative)
         {
-          emit(x, y, _shifted(color: _neighbourColor(x: x, y: y, byPreference: byPreference), steps: settings.outerDarkenBrighten.value));
+          emit(x, y, _neighbourColor(x: x, y: y, byPreference: byPreference).shiftedBy(steps: settings.outerDarkenBrighten.value));
         }
         else
         {
           final ColorReference? color = colorBelow(x, y);
           if (color != null)
           {
-            emit(x, y, _shifted(color: color, steps: settings.outerDarkenBrighten.value));
+            emit(x, y, color.shiftedBy(steps: settings.outerDarkenBrighten.value));
           }
         }
       }
@@ -322,7 +317,7 @@ class LayerEffects
           final int selfGlow = recursive ? min(amount - 1, lastSelfGlow) : 0;
           highestSelfGlow = max(highestSelfGlow, selfGlow);
           final int steps = depth > 0 ? depth - i + selfGlow : depth + i - selfGlow;
-          emit(x, y, _shifted(color: color, steps: steps));
+          emit(x, y, color.shiftedBy(steps: steps));
           ring.add(index);
         }
       }
@@ -386,7 +381,7 @@ class LayerEffects
           final ColorReference? color = innerColorAt(x, y);
           if (color != null)
           {
-            emit(x, y, _shifted(color: color, steps: settings.innerDarkenBrighten.value));
+            emit(x, y, color.shiftedBy(steps: settings.innerDarkenBrighten.value));
           }
         }
       }
@@ -424,7 +419,7 @@ class LayerEffects
           final int selfGlow = recursive ? min(entry.value - 1, lastSelfGlow) : 0;
           highestSelfGlow = max(highestSelfGlow, selfGlow);
           final int steps = depth > 0 ? depth - i + selfGlow : depth + i - selfGlow;
-          emit(x, y, _shifted(color: color, steps: steps));
+          emit(x, y, color.shiftedBy(steps: steps));
         }
         remaining[entry.key] = 0;
       }
@@ -469,7 +464,7 @@ class LayerEffects
           final ColorReference? color = layerColorAt(index % width, index ~/ width);
           if (color != null)
           {
-            emit(index % width, index ~/ width, _shifted(color: color, steps: -strength));
+            emit(index % width, index ~/ width, color.shiftedBy(steps: -strength));
           }
         }
         for (final int index in brightened.keys)
@@ -477,7 +472,7 @@ class LayerEffects
           final ColorReference? color = layerColorAt(index % width, index ~/ width);
           if (color != null)
           {
-            emit(index % width, index ~/ width, _shifted(color: color, steps: strength));
+            emit(index % width, index ~/ width, color.shiftedBy(steps: strength));
           }
         }
       }

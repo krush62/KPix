@@ -63,6 +63,12 @@ class ColorReference
     return ramp.shiftedColors[colorIndex.clamp(0, ramp.shiftedColors.length - 1)].value;
   }
 
+  /// The color [steps] further along the ramp, held at its ends.
+  ColorReference shiftedBy({required final int steps})
+  {
+    return ramp.references[(colorIndex + steps).clamp(0, ramp.references.length - 1)];
+  }
+
   @override
   bool operator == (final Object other) =>
       identical(this, other) ||

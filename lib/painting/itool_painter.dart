@@ -209,8 +209,7 @@ class PreviewColors
         final int? shadingVal = layer.outerShadingAt(frame: _frame, coord: coord);
         if (shadingVal != null)
         {
-          final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);
-          colRef = colRef.ramp.references[targetShading];
+          colRef = colRef.shiftedBy(steps: shadingVal);
         }
         else
         {
@@ -228,8 +227,7 @@ class PreviewColors
         {
           if (layer.runtimeType == ShadingLayerState)
           {
-            final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);
-            colRef = colRef.ramp.references[targetShading];
+            colRef = colRef.shiftedBy(steps: shadingVal);
           }
         }
       }
@@ -936,8 +934,7 @@ abstract class IToolPainter
           final int? displayVal = layer.getDisplayValueAt(coord: coord, shift: layer == shiftLayer ? layerShift : 0,);
           if (displayVal != null)
           {
-            final int newColorIndex = (currentColor.colorIndex + displayVal).clamp(0, currentColor.ramp.references.length - 1);
-            currentColor = currentColor.ramp.references[newColorIndex];
+            currentColor = currentColor.shiftedBy(steps: displayVal);
           }
         }
       }
@@ -1007,8 +1004,7 @@ abstract class IToolPainter
       {
         if (!shaderOptions.isEnabled.value)
         {
-          final int index = (selectedColor.colorIndex + stampEntry.value).clamp(0, selectedColor.ramp.references.length - 1);
-          final ColorReference drawColor = selectedColor.ramp.references[index];
+          final ColorReference drawColor = selectedColor.shiftedBy(steps: stampEntry.value);
           if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord) != drawColor) ||
               (!selection.selection.isEmpty && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != drawColor))
           {
@@ -1025,13 +1021,11 @@ abstract class IToolPainter
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)
             {
-              final int index = (layerRef.colorIndex + stampEntry.value + 1).clamp(0, layerRef.ramp.references.length - 1);
-              pixelMap[coord] = layerRef.ramp.references[index];
+              pixelMap[coord] = layerRef.shiftedBy(steps: stampEntry.value + 1);
             }
             else
             {
-              final int index = (layerRef.colorIndex - stampEntry.value - 1).clamp(0, layerRef.ramp.references.length - 1);
-              pixelMap[coord] = layerRef.ramp.references[index];
+              pixelMap[coord] = layerRef.shiftedBy(steps: -stampEntry.value - 1);
             }
           }
         }

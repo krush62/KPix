@@ -350,8 +350,7 @@ class DrawingLayerSettings extends LayerSettings {
     }
     if (currentColor != null && colorShift != 0)
     {
-      final int finalIndex = (currentColor.colorIndex + colorShift).clamp(0, currentColor.ramp.references.length - 1);
-      currentColor = currentColor.ramp.references[finalIndex];
+      currentColor = currentColor.shiftedBy(steps: colorShift);
     }
 
     return currentColor;

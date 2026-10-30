@@ -150,22 +150,9 @@ _Planes _buildComposite({required final CoordinateSetI size, required final Laye
         final LayerState l = layers.getLayer(index: li);
         if (l is DrawingLayerState && l.visibilityState.value == LayerVisibilityState.visible)
         {
-
-          ColorReference? colAtPos;
-          if (li == layers.selectedLayerIndex)
-          {
-            colAtPos = selection.getColorReference(coord: curCoord);
-          }
-          colAtPos ??= l.getDataEntry(coord: curCoord, withSettingsPixels: true);
-
+          final ColorReference? colAtPos = _exportedColorAt(layerCollection: layers, layerIndex: li, layer: l, selection: selection, coord: curCoord);
           if (colAtPos != null)
           {
-            final int shade = _getShadeForCoord(layerCollection: layers, currentLayerIndex: li, coord: curCoord);
-            if (shade != 0)
-            {
-              final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
-              colAtPos = colAtPos.ramp.references[targetIndex];
-            }
             final Color c = colAtPos.getIdColor().color;
             r[idx] = (c.r * 255.0).round() & 0xff;
             g[idx] = (c.g * 255.0).round() & 0xff;
@@ -344,30 +331,15 @@ _Planes _rasterizeLayer({required final CoordinateSetI size, required final Laye
   final Uint8List g = Uint8List(size.x * size.y);
   final Uint8List b = Uint8List(size.x * size.y);
   final Uint8List a = Uint8List(size.x * size.y); // 0 transparent, 255 opaque
+  final int layerIndex = layerCollection.getLayerPosition(state: layerState)!;
 
   for (int y = 0; y < size.y; y++)
   {
     for (int x = 0; x < size.x; x++)
     {
-      final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-      ColorReference? colAtPos;
-      if (layerCollection.getSelectedLayer() == layerState)
-      {
-        colAtPos = selection.getColorReference(coord: curCoord);
-      }
-
-
-
-      colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
-
+      final ColorReference? colAtPos = _exportedColorAt(layerCollection: layerCollection, layerIndex: layerIndex, layer: layerState, selection: selection, coord: CoordinateSetI(x: x, y: y));
       if (colAtPos != null)
       {
-        final int shade = _getShadeForCoord(layerCollection: layerCollection, currentLayerIndex: layerCollection.getLayerPosition(state: layerState)!, coord: curCoord);
-        if (shade != 0)
-        {
-          final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
-          colAtPos = colAtPos.ramp.references[targetIndex];
-        }
         final Color c = colAtPos.getIdColor().color;
         final int idx = y * size.x + x;
         r[idx] = (c.r * 255.0).round() & 0xff;

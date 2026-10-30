@@ -51,28 +51,8 @@ Future<Uint8List?> getAsepriteData({required final List<KPalRampData> colorRamps
       {
         for (int x = 0; x < canvasSize.x; x++)
         {
-          final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-          ColorReference? colAtPos;
-          if (l == layerCollection.selectedLayerIndex)
-          {
-            colAtPos = selection.getColorReference(coord: curCoord);
-          }
-          colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
-
-          if (colAtPos == null)
-          {
-            imgBytes.add(0);
-          }
-          else
-          {
-            final int shade = _getShadeForCoord(layerCollection: layerCollection, currentLayerIndex: l, coord: curCoord);
-            if (shade != 0)
-            {
-              final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
-              colAtPos = colAtPos.ramp.references[targetIndex];
-            }
-            imgBytes.add(colorMap[colAtPos]!);
-          }
+          final ColorReference? colAtPos = _exportedColorAt(layerCollection: layerCollection, layerIndex: l, layer: layerState, selection: selection, coord: CoordinateSetI(x: x, y: y));
+          imgBytes.add(colAtPos == null ? 0 : colorMap[colAtPos]!);
         }
       }
       final List<int> encData = const ZLibEncoder().encode(imgBytes);

@@ -666,9 +666,7 @@ class LayerCollection with ChangeNotifier {
           {
             if (shadingLayer.runtimeType == ShadingLayerState)
             {
-              final int targetIndex = (curCol.colorIndex + value).clamp(0, curCol.ramp.references.length - 1,);
-              shadeLayerMap[drawingLayer]![coord] =
-              curCol.ramp.references[targetIndex];
+              shadeLayerMap[drawingLayer]![coord] = curCol.shiftedBy(steps: value);
               break;
             }
             else
@@ -677,9 +675,7 @@ class LayerCollection with ChangeNotifier {
                   coord: coord,) ?? 0;
               if (ditherVal != 0)
               {
-                final int newColorIndex = (curCol.colorIndex + ditherVal).clamp(0, curCol.ramp.references.length - 1,);
-                shadeLayerMap[drawingLayer]![coord] =
-                curCol.ramp.references[newColorIndex];
+                shadeLayerMap[drawingLayer]![coord] = curCol.shiftedBy(steps: ditherVal);
                 break;
               }
             }
@@ -948,7 +944,7 @@ class LayerCollection with ChangeNotifier {
     }
     if (shading != 0 && colRef != null)
     {
-      colRef = colRef.ramp.references[ (colRef.colorIndex + shading).clamp(0, colRef.ramp.references.length - 1,)];
+      colRef = colRef.shiftedBy(steps: shading);
     }
 
     return colRef;

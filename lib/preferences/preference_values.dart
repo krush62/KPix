@@ -77,7 +77,7 @@ class StylusPreferenceContent
       stylusZoomStepDistanceMax: stylusZoomStepDistanceMax,
       stylusPickMaxDuration: ValueNotifier<int>(stylusPickMaxDuration.clamp(stylusPickMaxDurationMin, stylusPickMaxDurationMax)),
       stylusPickMaxDurationMin: stylusPickMaxDurationMin,
-      stylusPickMaxDurationMax: stylusLongPressDelayMax,
+      stylusPickMaxDurationMax: stylusPickMaxDurationMax,
     );
   }
 

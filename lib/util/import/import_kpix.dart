@@ -163,6 +163,22 @@ void _readDrawingPixels({required final FileByteReader reader, required final Pi
   }
 }
 
+/// The pixel list files before version 6 stored instead of a box.
+void _readDrawingPixelList({required final FileByteReader reader, required final PixelGrid data, required final List<HistoryRampData> rampList, required final int layerIndex})
+{
+  final int dataCount = reader.getUint32();
+  for (int j = 0; j < dataCount; j++)
+  {
+    final int x = reader.getUint16();
+    final int y = reader.getUint16();
+    final int colorRampIndex = reader.getUint8();
+    if (colorRampIndex >= rampList.length) throw _ImportRejected("Color Ramp index out of range for layer $layerIndex : $colorRampIndex");
+    final int colorIndex = reader.getUint8();
+    if (colorIndex >= rampList[colorRampIndex].settings.colorCount) throw _ImportRejected("Color index out of range for layer $layerIndex: $colorIndex");
+    data.set(x: x, y: y, value: PaletteCodec.codeOf(rampIndex: colorRampIndex, colorIndex: colorIndex));
+  }
+}
+
 void _readShadingPixels({required final FileByteReader reader, required final PixelGrid data})
 {
   final _PixelBounds bounds = _readBounds(reader: reader);
@@ -176,6 +192,592 @@ void _readShadingPixels({required final FileByteReader reader, required final Pi
         data.setSigned(x: x, y: y, value: stored - shadingValueOffset);
       }
     }
+  }
+}
+
+/// The pixel list files before version 6 stored instead of a box.
+void _readShadingPixelList({required final FileByteReader reader, required final PixelGrid data})
+{
+  final int dataCount = reader.getUint32();
+  for (int j = 0; j < dataCount; j++)
+  {
+    final int x = reader.getUint16();
+    final int y = reader.getUint16();
+    //-128, which one byte can hold, is beyond any shading limit and beyond what a signed pixel can store
+    final int shading = reader.getInt8().clamp(-SignedPixels.maxMagnitude, SignedPixels.maxMagnitude);
+    data.setSigned(x: x, y: y, value: shading);
+  }
+}
+
+/// Reads the sections of a kpix file body in file order.
+class _KPixParser
+{
+  _KPixParser({
+    required this.reader,
+    required this.guard,
+    required this.version,
+    required this.drawingConstraints,
+    required this.shadingConstraints,
+    required this.frameConstraints,
+  });
+
+  final FileByteReader reader;
+  final _ImportGuard guard;
+  final int version;
+  final DrawingLayerSettingsConstraints drawingConstraints;
+  final ShadingLayerSettingsConstraints shadingConstraints;
+  final FrameConstraints frameConstraints;
+
+  T _readMapped<T extends Object>({required final T? Function(int id) fromId, required final T? fallback, required final String label})
+  {
+    final int raw = reader.getUint8();
+    return guard.mapped(value: fromId(raw), raw: raw, fallback: fallback, label: label);
+  }
+
+  List<HistoryRampData> readRamps()
+  {
+    final int rampCount = reader.getUint8();
+    if (rampCount < 1) throw const _ImportRejected("No color ramp found");
+    return <HistoryRampData>[
+      for (int i = 0; i < rampCount; i++) _readRamp(index: i),
+    ];
+  }
+
+  HistoryRampData _readRamp({required final int index})
+  {
+    final KPalRampSettings kPalRampSettings = KPalRampSettings();
+
+    kPalRampSettings.colorCount = reader.getUint8();
+    if (kPalRampSettings.colorCount < KPalConstraints.colorCountMin || kPalRampSettings.colorCount > KPalConstraints.colorCountMax) throw _ImportRejected("Invalid color count in palette $index: ${kPalRampSettings.colorCount}");
+
+    kPalRampSettings.baseHue = guard.ranged(
+      value: reader.getInt16(),
+      min: KPalConstraints.baseHueMin,
+      max: KPalConstraints.baseHueMax,
+      fallback: KPalConstraints.baseHueMin,
+      label: "Invalid base hue in ramp $index",
+    );
+
+    kPalRampSettings.baseSat = guard.ranged(
+      value: reader.getUint8(),
+      min: KPalConstraints.baseSatMin,
+      max: KPalConstraints.baseSatMax,
+      fallback: KPalConstraints.baseSatMin,
+      label: "Invalid base sat in ramp $index",
+    );
+
+    kPalRampSettings.hueShift = guard.ranged(
+      value: reader.getInt8(),
+      min: KPalConstraints.hueShiftMin,
+      max: KPalConstraints.hueShiftMax,
+      fallback: KPalConstraints.hueShiftMin,
+      label: "Invalid hue shift value in ramp $index",
+    );
+
+    kPalRampSettings.hueShiftExp = guard.ranged(
+      value: reader.getUint8().toDouble() / 100.0,
+      min: KPalConstraints.hueShiftExpMin,
+      max: KPalConstraints.hueShiftExpMax,
+      fallback: KPalConstraints.hueShiftExpMin,
+      label: "Invalid hue shift exp in ramp $index",
+    );
+
+    kPalRampSettings.satShift = guard.ranged(
+      value: reader.getInt8(),
+      min: KPalConstraints.satShiftMin,
+      max: KPalConstraints.satShiftMax,
+      fallback: KPalConstraints.satShiftMin,
+      label: "Invalid sat shift in ramp $index",
+    );
+
+    kPalRampSettings.satShiftExp = guard.ranged(
+      value: reader.getUint8().toDouble() / 100.0,
+      min: KPalConstraints.satShiftExpMin,
+      max: KPalConstraints.satShiftExpMax,
+      fallback: KPalConstraints.satShiftExpMin,
+      label: "Invalid sat shift exp in ramp $index",
+    );
+
+    kPalRampSettings.satCurve = _readMapped(fromId: SatCurve.fromId, fallback: KPalConstraints.satCurveDefault, label: "Invalid sat curve for palette $index");
+
+    kPalRampSettings.valueRangeMin = guard.ranged(
+      value: reader.getUint8(),
+      min: KPalConstraints.valueRangeMin,
+      max: KPalConstraints.valueRangeMax,
+      fallback: KPalConstraints.valueRangeMin,
+      label: "Invalid min value range in ramp $index",
+    );
+
+    kPalRampSettings.valueRangeMax = guard.ranged(
+      value: reader.getUint8(),
+      min: kPalRampSettings.valueRangeMin,
+      max: KPalConstraints.valueRangeMax,
+      fallback: KPalConstraints.valueRangeMax,
+      label: "Invalid max value range in ramp $index",
+    );
+
+    final List<ShiftSet> shifts = <ShiftSet>[];
+    for (int j = 0; j < kPalRampSettings.colorCount; j++)
+    {
+      final int hueShift = guard.ranged(
+        value: reader.getInt8(),
+        min: KPalSliderConstraints.minHue,
+        max: KPalSliderConstraints.maxHue,
+        fallback: 0,
+        label: "Invalid Hue Shift in Ramp $index, color $j",
+      );
+
+      final int satShift = guard.ranged(
+        value: reader.getInt8(),
+        min: KPalSliderConstraints.minSat,
+        max: KPalSliderConstraints.maxSat,
+        fallback: 0,
+        label: "Invalid Sat Shift in Ramp $index, color $j",
+      );
+
+      final int valShift = guard.ranged(
+        value: reader.getInt8(),
+        min: KPalSliderConstraints.minVal,
+        max: KPalSliderConstraints.maxVal,
+        fallback: 0,
+        label: "Invalid Val Shift in Ramp $index, color $j",
+      );
+      shifts.add(ShiftSet(hueShiftNotifier: ValueNotifier<int>(hueShift), satShiftNotifier: ValueNotifier<int>(satShift), valShiftNotifier: ValueNotifier<int>(valShift)));
+    }
+    return HistoryRampData(otherSettings: kPalRampSettings, uuid: const Uuid().v1(), notifierShifts: shifts);
+  }
+
+  CoordinateSetI readCanvasSize()
+  {
+    final int width = reader.getUint16();
+    final int height = reader.getUint16();
+    return CoordinateSetI(x: width, y: height);
+  }
+
+  LinkedHashSet<HistoryLayer> readLayers({required final List<HistoryRampData> ramps, required final CoordinateSetI canvasSize})
+  {
+    final int layerCount = version >= 3 ? reader.getUint16() : reader.getUint8();
+    if (layerCount < 1) throw const _ImportRejected("No layer found");
+    final LinkedHashSet<HistoryLayer> layers = LinkedHashSet<HistoryLayer>();
+    for (int i = 0; i < layerCount; i++)
+    {
+      // An unknown layer type is never recoverable: layer records carry no
+      // length prefix, so skipping one desynchronises the byte stream, and
+      // frame layer indices are positional. Hence the null fallback.
+      final Type layerType = _readMapped(fromId: (final int id) => historyLayerIdToType[id], fallback: null, label: "Invalid layer type for layer $i");
+      final LayerVisibilityState visibilityState = _readMapped(fromId: LayerVisibilityState.fromId, fallback: LayerVisibilityState.visible, label: "Invalid visibility type for layer $i");
+
+      if (layerType == HistoryDrawingLayer)
+      {
+        layers.add(_readDrawingLayer(index: i, visibilityState: visibilityState, ramps: ramps, canvasSize: canvasSize));
+      }
+      else if (layerType == HistoryReferenceLayer)
+      {
+        layers.add(_readReferenceLayer(index: i, visibilityState: visibilityState));
+      }
+      else if (layerType == HistoryGridLayer)
+      {
+        layers.add(_readGridLayer(index: i, visibilityState: visibilityState));
+      }
+      else if (layerType == HistoryShadingLayer || layerType == HistoryDitherLayer)
+      {
+        layers.add(_readShadingLayer(index: i, visibilityState: visibilityState, isDither: layerType == HistoryDitherLayer, canvasSize: canvasSize));
+      }
+    }
+    return layers;
+  }
+
+  HistoryDrawingLayer _readDrawingLayer({required final int index, required final LayerVisibilityState visibilityState, required final List<HistoryRampData> ramps, required final CoordinateSetI canvasSize})
+  {
+    final LayerLockState lockState = _readMapped(fromId: LayerLockState.fromId, fallback: LayerLockState.unlocked, label: "Invalid lock type for layer $index");
+    final HistoryDrawingLayerSettings settings = version >= 2
+        ? _readDrawingLayerSettings(index: index, ramps: ramps)
+        : HistoryDrawingLayerSettings.defaultValues(constraints: drawingConstraints, colRef: const HistoryColorReference(colorIndex: 0, rampIndex: 0));
+
+    //a pixel outside the canvas is dropped by the grid
+    final PixelGrid data = PixelGrid(width: canvasSize.x, height: canvasSize.y);
+    if (version >= 6)
+    {
+      _readDrawingPixels(reader: reader, data: data, rampList: ramps, layerIndex: index);
+    }
+    else
+    {
+      _readDrawingPixelList(reader: reader, data: data, rampList: ramps, layerIndex: index);
+    }
+    return HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, pixels: data.snapshot(), settings: settings, layerIdentity: index);
+  }
+
+  /// A color reference as two indices; [owner] names the effect it belongs to.
+  HistoryColorReference _readColorReference({required final String owner, required final int index, required final List<HistoryRampData> ramps})
+  {
+    final int rampIndex = guard.ranged(
+      value: reader.getUint8(),
+      min: 0,
+      max: ramps.length - 1,
+      fallback: 0,
+      label:  "$owner Color Ramp index out of range for layer $index",
+    );
+    final int colorIndex = guard.ranged(
+      value: reader.getUint8(),
+      min: 0,
+      max: ramps[rampIndex].settings.colorCount - 1,
+      fallback: 0,
+      label: "$owner Color index out of range for layer $index",
+    );
+    return HistoryColorReference(colorIndex: colorIndex, rampIndex: rampIndex);
+  }
+
+  int _readDarkenBrighten({required final String owner, required final int index})
+  {
+    return guard.ranged(
+      value: reader.getInt8(),
+      min: drawingConstraints.darkenBrightenMin,
+      max: drawingConstraints.darkenBrightenMax,
+      fallback: drawingConstraints.darkenBrightenDefault,
+      label: "Darken/Brighten for $owner is out of range for layer $index",
+    );
+  }
+
+  int _readGlowDepth({required final String owner, required final int index})
+  {
+    return guard.ranged(
+      value: reader.getInt8(),
+      min: drawingConstraints.glowDepthMin,
+      max: drawingConstraints.glowDepthMax,
+      fallback: drawingConstraints.glowDepthDefault,
+      label: "Glow Depth for $owner is out of range for layer $index",
+    );
+  }
+
+  int _readDropShadowOffset({required final String axis, required final int index})
+  {
+    return guard.ranged(
+      value: reader.getInt8(),
+      min: drawingConstraints.dropShadowOffsetMin,
+      max: drawingConstraints.dropShadowOffsetMax,
+      fallback: drawingConstraints.dropShadowOffsetDefault,
+      label: "Drop Shadow offset $axis is out of range for layer $index",
+    );
+  }
+
+  HistoryDrawingLayerSettings _readDrawingLayerSettings({required final int index, required final List<HistoryRampData> ramps})
+  {
+    // OUTER STROKE
+    final OuterStrokeStyle outerStrokeStyle = _readMapped(fromId: OuterStrokeStyle.fromId, fallback: OuterStrokeStyle.off, label: "Invalid outer stroke style for layer $index");
+    final HashMap<Alignment, bool> outerStrokeDirections = _unPackAlignments(byte: reader.getUint8());
+    final HistoryColorReference outerColorReference = _readColorReference(owner: "Outer Stroke", index: index, ramps: ramps);
+    final int outerStrokeDarkenBrighten = _readDarkenBrighten(owner: "outer stroke", index: index);
+    final int outerStrokeGlowDepth = _readGlowDepth(owner: "outer stroke", index: index);
+    final bool outerStrokeGlowRecursive = guard.flag(
+      value: reader.getUint8(),
+      label: "Invalid outer stroke glow recursive value for layer $index",
+    );
+
+    // INNER STROKE
+    final InnerStrokeStyle innerStrokeStyle = _readMapped(fromId: InnerStrokeStyle.fromId, fallback: InnerStrokeStyle.off, label: "Invalid inner stroke style for layer $index");
+    final HashMap<Alignment, bool> innerStrokeDirections = _unPackAlignments(byte: reader.getUint8());
+    final HistoryColorReference innerColorReference = _readColorReference(owner: "Inner Stroke", index: index, ramps: ramps);
+    final int innerStrokeDarkenBrighten = _readDarkenBrighten(owner: "inner stroke", index: index);
+    final int innerStrokeGlowDepth = _readGlowDepth(owner: "inner stroke", index: index);
+    final bool innerStrokeGlowRecursive = guard.flag(
+      value: reader.getUint8(),
+      label: "Invalid inner stroke glow recursive value for layer $index",
+    );
+    final int innerStrokeBevelDistance = guard.ranged(
+      value: reader.getUint8(),
+      min: drawingConstraints.bevelDistanceMin,
+      max: drawingConstraints.bevelDistanceMax,
+      fallback: drawingConstraints.bevelDistanceDefault,
+      label: "Bevel Distance out of range for layer $index",
+    );
+    final int innerStrokeBevelStrength = guard.ranged(
+      value: reader.getUint8(),
+      min: drawingConstraints.bevelStrengthMin,
+      max: drawingConstraints.bevelStrengthMax,
+      fallback: drawingConstraints.bevelStrengthDefault,
+      label: "Bevel Strength out of range for layer $index",
+    );
+
+    // DROP SHADOW
+    final DropShadowStyle dropShadowStyle = _readMapped(fromId: DropShadowStyle.fromId, fallback: DropShadowStyle.off, label: "Invalid drop shadow style for layer $index");
+    final HistoryColorReference dropShadowColorReference = _readColorReference(owner: "Drop Shadow", index: index, ramps: ramps);
+    final int dropShadowOffsetX = _readDropShadowOffset(axis: "x", index: index);
+    final int dropShadowOffsetY = _readDropShadowOffset(axis: "y", index: index);
+    final int dropShadowDarkenBrighten = _readDarkenBrighten(owner: "drop shadow", index: index);
+
+    return HistoryDrawingLayerSettings(
+      constraints: drawingConstraints,
+      outerStrokeStyle: outerStrokeStyle,
+      outerSelectionMap: outerStrokeDirections,
+      outerColorReference: outerColorReference,
+      outerDarkenBrighten: outerStrokeDarkenBrighten,
+      outerGlowDepth: outerStrokeGlowDepth,
+      outerGlowRecursive: outerStrokeGlowRecursive,
+      innerStrokeStyle: innerStrokeStyle,
+      innerSelectionMap: innerStrokeDirections,
+      innerColorReference: innerColorReference,
+      innerDarkenBrighten: innerStrokeDarkenBrighten,
+      innerGlowDepth: innerStrokeGlowDepth,
+      innerGlowRecursive: innerStrokeGlowRecursive,
+      bevelDistance: innerStrokeBevelDistance,
+      bevelStrength: innerStrokeBevelStrength,
+      dropShadowStyle: dropShadowStyle,
+      dropShadowColorReference: dropShadowColorReference,
+      dropShadowOffset: CoordinateSetI(x: dropShadowOffsetX, y: dropShadowOffsetY),
+      dropShadowDarkenBrighten: dropShadowDarkenBrighten,);
+  }
+
+  HistoryReferenceLayer _readReferenceLayer({required final int index, required final LayerVisibilityState visibilityState})
+  {
+    //path (string)
+    final int pathLength = reader.getInt16();
+    final List<int> pathBytes = <int>[];
+    for (int i = 0; i < pathLength; i++)
+    {
+      pathBytes.add(reader.getUint8());
+    }
+    final String pathString = utf8.decode(pathBytes);
+    //opacity ``ubyte (1)`` // 0...100
+    final int opacity = guard.ranged(
+      value: reader.getUint8(),
+      min: ReferenceLayerConstraints.opacityMin,
+      max: ReferenceLayerConstraints.opacityMax,
+      fallback: ReferenceLayerConstraints.opacityDefault,
+      label: "Opacity for reference layer is out of range",
+    );
+
+    //offset_x ``float (1)``
+    final double offsetX = reader.getFloat32();
+    //offset_y ``float (1)``
+    final double offsetY = reader.getFloat32();
+
+    //zoom ``ushort (1)``
+    final int zoom = guard.ranged(
+      value: reader.getUint16(),
+      min: ReferenceLayerConstraints.zoomMin,
+      max: ReferenceLayerConstraints.zoomMax,
+      fallback: ReferenceLayerConstraints.zoomDefault,
+      label: "Zoom for reference layer is out of range",
+    );
+
+    //aspect_ratio ``float (1)``
+    final double aspectRatio = guard.approx(
+      value: reader.getFloat32(),
+      min: ReferenceLayerConstraints.aspectRatioMin,
+      max: ReferenceLayerConstraints.aspectRatioMax,
+      fallback: ReferenceLayerConstraints.aspectRatioDefault,
+      label: "Aspect ratio for reference layer is out of range",
+    );
+
+    double brightness = ReferenceLayerConstraints.brightnessDefault;
+    double contrast = ReferenceLayerConstraints.contrastDefault;
+    double saturation = ReferenceLayerConstraints.saturationDefault;
+    double warmth = ReferenceLayerConstraints.warmthDefault;
+
+    if (version >= 4)
+    {
+      //brightness ``float (1)`` // -1...1
+      brightness = guard.ranged(
+        value: reader.getFloat32(),
+        min: ReferenceLayerConstraints.brightnessMin,
+        max: ReferenceLayerConstraints.brightnessMax,
+        fallback: ReferenceLayerConstraints.brightnessDefault,
+        label: "Brightness for reference layer is out of range",
+      );
+
+      //contrast ``float (1)`` // 0...2
+      contrast = guard.ranged(
+        value: reader.getFloat32(),
+        min: ReferenceLayerConstraints.contrastMin,
+        max: ReferenceLayerConstraints.contrastMax,
+        fallback: ReferenceLayerConstraints.contrastDefault,
+        label: "Contrast for reference layer is out of range",
+      );
+
+      //saturation ``float (1)`` // 0...2
+      saturation = guard.ranged(
+        value: reader.getFloat32(),
+        min: ReferenceLayerConstraints.saturationMin,
+        max: ReferenceLayerConstraints.saturationMax,
+        fallback: ReferenceLayerConstraints.saturationDefault,
+        label: "Saturation for reference layer is out of range",
+      );
+
+      //warmth ``float (1)`` // -1...1
+      warmth = guard.ranged(
+        value: reader.getFloat32(),
+        min: ReferenceLayerConstraints.warmthMin,
+        max: ReferenceLayerConstraints.warmthMax,
+        fallback: ReferenceLayerConstraints.warmthDefault,
+        label: "Warmth for reference layer is out of range",
+      );
+    }
+    return HistoryReferenceLayer(
+      visibilityState: visibilityState,
+      zoom: zoom,
+      opacity: opacity,
+      offsetY: offsetY,
+      offsetX: offsetX,
+      path: pathString,
+      aspectRatio: aspectRatio,
+      brightness: brightness,
+      contrast: contrast,
+      saturation: saturation,
+      warmth: warmth,
+      layerIdentity: index,
+    );
+  }
+
+  HistoryGridLayer _readGridLayer({required final int index, required final LayerVisibilityState visibilityState})
+  {
+    //opacity ``ubyte (1)`` // 0...100
+    final int opacity = guard.ranged(
+      value: reader.getUint8(),
+      min: GridLayerConstraints.opacityMin,
+      max: GridLayerConstraints.opacityMax,
+      fallback: GridLayerConstraints.opacityDefault,
+      label: "Opacity for grid layer is out of range",
+    );
+
+    //brightness ``ubyte (1)`` // 0...100
+    final int brightness = guard.ranged(
+      value:  reader.getUint8(),
+      min: GridLayerConstraints.brightnessMin,
+      max: GridLayerConstraints.brightnessMax,
+      fallback: GridLayerConstraints.brightnessDefault,
+      label: "Brightness for grid layer is out of range",
+    );
+
+    final GridType gridType = _readMapped(fromId: GridType.fromId, fallback: GridType.rectangular, label: "Invalid grid type for layer $index");
+
+    //interval_x ``ubyte (1)`` // 2...64
+    final int intervalX = guard.ranged(
+      value: reader.getUint8(),
+      min: GridLayerConstraints.intervalXMin,
+      max: GridLayerConstraints.intervalXMax,
+      fallback: GridLayerConstraints.intervalXDefault,
+      label: "Interval X for grid layer is out of range",
+    );
+
+    //interval_y ``ubyte (1)`` // 2...64
+    final int intervalY = guard.ranged(
+      value: reader.getUint8(),
+      min: GridLayerConstraints.intervalYMin,
+      max: GridLayerConstraints.intervalYMax,
+      fallback: GridLayerConstraints.intervalYDefault,
+      label: "Interval Y for grid layer is out of range",
+    );
+
+    //horizon_position ``float (1)``// 0...1 (vertical horizon position)
+    final double horizon = guard.approx(
+      value: reader.getFloat32(),
+      min: GridLayerConstraints.vanishingPointMin,
+      max: GridLayerConstraints.vanishingPointMax,
+      fallback: GridLayerConstraints.horizonDefault,
+      label: "Horizon for grid layer is out of range",
+    );
+
+    //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
+    final double vanishingPoint1 = guard.approx(
+      value: reader.getFloat32(),
+      min: GridLayerConstraints.vanishingPointMin,
+      max: GridLayerConstraints.vanishingPointMax,
+      fallback: GridLayerConstraints.vanishingPoint1Default,
+      label: "Vanishing Point 1 for grid layer is out of range",
+    );
+
+    //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
+    final double vanishingPoint2 = guard.approx(
+      value: reader.getFloat32(),
+      min: GridLayerConstraints.vanishingPointMin,
+      max: GridLayerConstraints.vanishingPointMax,
+      fallback: GridLayerConstraints.vanishingPoint2Default,
+      label: "Vanishing Point 2 for grid layer is out of range",
+    );
+
+    //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
+    final double vanishingPoint3 = guard.approx(
+      value: reader.getFloat32(),
+      min: GridLayerConstraints.vanishingPointMin,
+      max: GridLayerConstraints.vanishingPointMax,
+      fallback: GridLayerConstraints.vanishingPoint3Default,
+      label: "Vanishing Point 3 for grid layer is out of range",
+    );
+
+    return HistoryGridLayer(visibilityState: visibilityState, opacity: opacity, gridType: gridType, brightness: brightness, intervalX: intervalX, intervalY: intervalY, horizonPosition: horizon, vanishingPoint1: vanishingPoint1, vanishingPoint2: vanishingPoint2, vanishingPoint3: vanishingPoint3, layerIdentity: index);
+  }
+
+  HistoryShadingLayer _readShadingLayer({required final int index, required final LayerVisibilityState visibilityState, required final bool isDither, required final CoordinateSetI canvasSize})
+  {
+    final LayerLockState lockState = _readMapped(fromId: LayerLockState.fromId, fallback: LayerLockState.unlocked, label: "Invalid lock type for layer $index");
+
+    HistoryShadingLayerSettings settings = HistoryShadingLayerSettings.defaultValue(constraints: shadingConstraints);
+    if (version >= 2)
+    {
+      final int topLimit = isDither ? shadingConstraints.ditherStepsMax : shadingConstraints.shadingStepsMax;
+      final int shadingStepLimitLow = guard.ranged(
+        value: reader.getUint8(),
+        min: shadingConstraints.shadingStepsMin,
+        max: topLimit,
+        fallback: shadingConstraints.shadingStepsDefaultDarken,
+        label: "Shading step limit low is out of range for layer $index",
+      );
+      final int shadingStepLimitHigh = guard.ranged(
+        value: reader.getUint8(),
+        min: shadingConstraints.shadingStepsMin,
+        max: topLimit,
+        fallback: shadingConstraints.shadingStepsDefaultBrighten,
+        label: "Shading step limit high is out of range for layer $index",
+      );
+      settings = HistoryShadingLayerSettings(constraints: shadingConstraints, shadingLow: shadingStepLimitLow, shadingHigh: shadingStepLimitHigh);
+    }
+
+    //a pixel outside the canvas is dropped by the grid
+    final PixelGrid data = PixelGrid(width: canvasSize.x, height: canvasSize.y);
+    if (version >= 6)
+    {
+      _readShadingPixels(reader: reader, data: data);
+    }
+    else
+    {
+      _readShadingPixelList(reader: reader, data: data);
+    }
+
+    return isDither
+        ? HistoryDitherLayer(visibilityState: visibilityState, lockState: lockState, pixels: data.snapshot(), settings: settings, layerIdentity: index)
+        : HistoryShadingLayer(visibilityState: visibilityState, lockState: lockState, pixels: data.snapshot(), settings: settings, layerIdentity: index);
+  }
+
+  HistoryTimeline readTimeline({required final LinkedHashSet<HistoryLayer> layers})
+  {
+    if (version < 3)
+    {
+      final HistoryFrame frame = HistoryFrame(fps: frameConstraints.defaultFps, layerIndices: LinkedHashSet<int>.of(<int>[for (int i = 0; i < layers.length; i++) i]), selectedLayerIndex: 0);
+      return HistoryTimeline(frames: <HistoryFrame>[frame], loopStart: 0, loopEnd: 0, selectedFrameIndex: 0, allLayers: layers);
+    }
+
+    //before version 5 the counts and indices were single bytes, which could
+    //not hold a full frame (256 layers), a full timeline or a layer past the 256th
+    final int Function() readTimelineValue = version >= 5 ? reader.getUint16 : reader.getUint8;
+    final int framesCount = readTimelineValue();
+    final int startFrame = readTimelineValue();
+    final int endFrame = readTimelineValue();
+
+    final List<HistoryFrame> frames = <HistoryFrame>[];
+    for (int i = 0; i < framesCount; i++)
+    {
+      final LinkedHashSet<int> indices = LinkedHashSet<int>();
+      final int fps = reader.getUint8();
+      final int layerCount = readTimelineValue();
+      for (int j = 0; j < layerCount; j++)
+      {
+        final int layerIndex = readTimelineValue();
+        if (layerIndex >= layers.length) throw _ImportRejected("Layer index out of range in frame $i: $layerIndex");
+        indices.add(layerIndex);
+      }
+      frames.add(HistoryFrame(fps: fps, layerIndices: indices, selectedLayerIndex: 0));
+    }
+    return HistoryTimeline(frames: frames, loopStart: startFrame, loopEnd: endFrame, selectedFrameIndex: 0, allLayers: layers);
   }
 }
 
@@ -230,708 +832,18 @@ LoadFileSet _parseKPixFile({required final Uint8List bytes, required final Strin
       reader = FileByteReader(const ZLibDecoder().decodeBytes(Uint8List.sublistView(bytes, reader.offset), verify: true));
     }
 
-    final int rampCount = reader.getUint8();
-    if (rampCount < 1) return LoadFileSet(status: "No color ramp found");
-    final List<HistoryRampData> rampList = <HistoryRampData>[];
-    for (int i = 0; i < rampCount; i++)
-    {
-      final KPalRampSettings kPalRampSettings = KPalRampSettings();
-
-      kPalRampSettings.colorCount = reader.getUint8();
-      if (kPalRampSettings.colorCount < KPalConstraints.colorCountMin || kPalRampSettings.colorCount > KPalConstraints.colorCountMax) return LoadFileSet(status: "Invalid color count in palette $i: ${kPalRampSettings.colorCount}");
-
-      // BASE HUE
-      kPalRampSettings.baseHue = guard.ranged(
-        value: reader.getInt16(),
-        min: KPalConstraints.baseHueMin,
-        max: KPalConstraints.baseHueMax,
-        fallback: KPalConstraints.baseHueMin,
-        label: "Invalid base hue in ramp $i",
-      );
-
-      // BASE SAT
-      kPalRampSettings.baseSat = guard.ranged(
-        value: reader.getUint8(),
-        min: KPalConstraints.baseSatMin,
-        max: KPalConstraints.baseSatMax,
-        fallback: KPalConstraints.baseSatMin,
-        label: "Invalid base sat in ramp $i",
-      );
-
-      // HUE SHIFT
-      kPalRampSettings.hueShift = guard.ranged(
-        value: reader.getInt8(),
-        min: KPalConstraints.hueShiftMin,
-        max: KPalConstraints.hueShiftMax,
-        fallback: KPalConstraints.hueShiftMin,
-        label: "Invalid hue shift value in ramp $i",
-      );
-
-      // HUE SHIFT EXP
-      kPalRampSettings.hueShiftExp = guard.ranged(
-        value: reader.getUint8().toDouble() / 100.0,
-        min: KPalConstraints.hueShiftExpMin,
-        max: KPalConstraints.hueShiftExpMax,
-        fallback: KPalConstraints.hueShiftExpMin,
-        label: "Invalid hue shift exp in ramp $i",
-      );
-
-      // SAT SHIFT
-      kPalRampSettings.satShift = guard.ranged(
-        value: reader.getInt8(),
-        min: KPalConstraints.satShiftMin,
-        max: KPalConstraints.satShiftMax,
-        fallback: KPalConstraints.satShiftMin,
-        label: "Invalid sat shift in ramp $i",
-      );
-
-      // SAT SHIFT EXP
-      kPalRampSettings.satShiftExp = guard.ranged(
-        value: reader.getUint8().toDouble() / 100.0,
-        min: KPalConstraints.satShiftExpMin,
-        max: KPalConstraints.satShiftExpMax,
-        fallback: KPalConstraints.satShiftExpMin,
-        label: "Invalid sat shift exp in ramp $i",
-      );
-
-      // CURVE
-      final int curveVal = reader.getUint8();
-      kPalRampSettings.satCurve = guard.mapped(
-        value: SatCurve.fromId(curveVal),
-        raw: curveVal,
-        fallback: KPalConstraints.satCurveDefault,
-        label: "Invalid sat curve for palette $i",
-      );
-
-      // VALUE RANGE MIN
-      kPalRampSettings.valueRangeMin = guard.ranged(
-        value: reader.getUint8(),
-        min: KPalConstraints.valueRangeMin,
-        max: KPalConstraints.valueRangeMax,
-        fallback: KPalConstraints.valueRangeMin,
-        label: "Invalid min value range in ramp $i",
-      );
-
-      kPalRampSettings.valueRangeMax = guard.ranged(
-        value: reader.getUint8(),
-        min: kPalRampSettings.valueRangeMin,
-        max: KPalConstraints.valueRangeMax,
-        fallback: KPalConstraints.valueRangeMax,
-        label: "Invalid max value range in ramp $i",
-      );
-
-
-      //COLOR SHIFTS
-      final List<ShiftSet> shifts = <ShiftSet>[];
-      for (int j = 0; j < kPalRampSettings.colorCount; j++)
-      {
-        //COLOR SHIFT HUE
-        final int hueShift = guard.ranged(
-          value: reader.getInt8(),
-          min: KPalSliderConstraints.minHue,
-          max: KPalSliderConstraints.maxHue,
-          fallback: 0,
-          label: "Invalid Hue Shift in Ramp $i, color $j",
-        );
-
-        //COLOR SHIFT SAT
-        final int satShift = guard.ranged(
-          value: reader.getInt8(),
-          min: KPalSliderConstraints.minSat,
-          max: KPalSliderConstraints.maxSat,
-          fallback: 0,
-          label: "Invalid Sat Shift in Ramp $i, color $j",
-        );
-
-        // COLOR SHIFT VAL
-        final int valShift = guard.ranged(
-          value: reader.getInt8(),
-          min: KPalSliderConstraints.minVal,
-          max: KPalSliderConstraints.maxVal,
-          fallback: 0,
-          label: "Invalid Val Shift in Ramp $i, color $j",
-        );
-        final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: ValueNotifier<int>(hueShift), satShiftNotifier: ValueNotifier<int>(satShift), valShiftNotifier: ValueNotifier<int>(valShift));
-        shifts.add(shiftSet);
-      }
-      rampList.add(HistoryRampData(otherSettings: kPalRampSettings, uuid: const Uuid().v1(), notifierShifts: shifts));
-    }
-
-    final int width = reader.getUint16();
-    final int height = reader.getUint16();
-    final CoordinateSetI canvasSize = CoordinateSetI(x: width, y: height);
-    int layerCount = 0;
-    if (fVersion >= 3)
-    {
-      layerCount = reader.getUint16();
-    }
-    else
-    {
-      layerCount = reader.getUint8();
-    }
-    if (layerCount < 1) return LoadFileSet(status: "No layer found");
-    final LinkedHashSet<HistoryLayer> layerList = LinkedHashSet<HistoryLayer>();
-    for (int i = 0; i < layerCount; i++)
-    {
-      // LAYER TYPE
-      // An unknown layer type is never recoverable: layer records carry no
-      // length prefix, so skipping one desynchronises the byte stream, and
-      // frame layer indices are positional. Hence the null fallback.
-      final int layerTypeVal = reader.getUint8();
-      final Type layerType = guard.mapped(
-        value: historyLayerIdToType[layerTypeVal],
-        raw: layerTypeVal,
-        fallback: null,
-        label: "Invalid layer type for layer $i",
-      );
-
-      // VISIBILITY STATE
-      final int visibilityStateVal = reader.getUint8();
-      final LayerVisibilityState visibilityState = guard.mapped(
-        value: LayerVisibilityState.fromId(visibilityStateVal),
-        raw: visibilityStateVal,
-        fallback: LayerVisibilityState.visible,
-        label: "Invalid visibility type for layer $i",
-      );
-
-
-      if (layerType == HistoryDrawingLayer) //DRAWING LAYER
-      {
-        HistoryDrawingLayerSettings drawingLayerSettings = HistoryDrawingLayerSettings.defaultValues(constraints: drawingLayerSettingsConstraints, colRef: const HistoryColorReference(colorIndex: 0, rampIndex: 0));
-
-        // LOCK STATE
-        final int lockStateVal = reader.getUint8();
-        final LayerLockState lockState = guard.mapped(
-          value: LayerLockState.fromId(lockStateVal),
-          raw: lockStateVal,
-          fallback: LayerLockState.unlocked,
-          label: "Invalid lock type for layer $i",
-        );
-
-        if (fVersion >= 2)
-        {
-          // OUTER STROKE STYLE
-          final int outerStrokeStyleVal = reader.getUint8();
-          final OuterStrokeStyle outerStrokeStyle = guard.mapped(
-            value: OuterStrokeStyle.fromId(outerStrokeStyleVal),
-            raw: outerStrokeStyleVal,
-            fallback: OuterStrokeStyle.off,
-            label: "Invalid outer stroke style for layer $i",
-          );
-
-
-          // OUTER STROKE ALIGNMENT
-          final int outerAlignmentMask = reader.getUint8();
-          final HashMap<Alignment, bool> outerStrokeDirections = _unPackAlignments(byte: outerAlignmentMask);
-
-          // OUTER STROKE COLOR RAMP INDEX
-          final int outerStrokeColorRampIndex = guard.ranged(
-            value: reader.getUint8(),
-            min: 0,
-            max: rampList.length - 1,
-            fallback: 0,
-            label:  "Outer Stroke Color Ramp index out of range for layer $i",
-          );
-
-          // OUTER STROKE COLOR INDEX
-          final int outerStrokeColorIndex = guard.ranged(
-            value: reader.getUint8(),
-            min: 0,
-            max: rampList[outerStrokeColorRampIndex].settings.colorCount - 1,
-            fallback: 0,
-            label: "Outer Stroke Color index out of range for layer $i",
-          );
-
-          final HistoryColorReference outerColorReference = HistoryColorReference(colorIndex: outerStrokeColorIndex, rampIndex: outerStrokeColorRampIndex);
-
-          // OUTER STROKE DARKEN/BRIGHTEN
-          final int outerStrokeDarkenBrighten = guard.ranged(
-            value: reader.getInt8(),
-            min: drawingLayerSettingsConstraints.darkenBrightenMin,
-            max: drawingLayerSettingsConstraints.darkenBrightenMax,
-            fallback: drawingLayerSettingsConstraints.darkenBrightenDefault,
-            label: "Darken/Brighten for outer stroke is out of range for layer $i",
-          );
-
-          // OUTER STROKE GLOW DEPTH
-          final int outerStrokeGlowDepth = guard.ranged(
-            value: reader.getInt8(),
-            min: drawingLayerSettingsConstraints.glowDepthMin,
-            max: drawingLayerSettingsConstraints.glowDepthMax,
-            fallback: drawingLayerSettingsConstraints.glowDepthDefault,
-            label: "Glow Depth for outer stroke is out of range for layer $i",
-          );
-
-          // OUTER STROKE GLOW RECURSIVE
-          final bool outerStrokeGlowRecursive = guard.flag(
-            value: reader.getUint8(),
-            label: "Invalid outer stroke glow recursive value for layer $i",
-          );
-
-          //INNER STROKE STYLE
-          final int innerStrokeStyleVal = reader.getUint8();
-          final InnerStrokeStyle innerStrokeStyle = guard.mapped(
-            value: InnerStrokeStyle.fromId(innerStrokeStyleVal),
-            raw: innerStrokeStyleVal,
-            fallback: InnerStrokeStyle.off,
-            label: "Invalid inner stroke style for layer $i",
-          );
-
-          // INNER STROKE ALIGNMENT
-          final int innerAlignmentMask = reader.getUint8();
-          final HashMap<Alignment, bool> innerStrokeDirections = _unPackAlignments(byte: innerAlignmentMask);
-
-          // INNER STROKE COLOR RAMP INDEX
-          final int innerStrokeColorRampIndex = guard.ranged(
-            value: reader.getUint8(),
-            min: 0,
-            max: rampList.length - 1,
-            fallback: 0,
-            label:  "Inner Stroke Color Ramp index out of range for layer $i",
-          );
-
-          // INNER STROKE COLOR INDEX
-          final int innerStrokeColorIndex = guard.ranged(
-            value: reader.getUint8(),
-            min: 0,
-            max: rampList[innerStrokeColorRampIndex].settings.colorCount - 1,
-            fallback: 0,
-            label: "Inner Stroke Color index out of range for layer $i",
-          );
-
-          final HistoryColorReference innerColorReference = HistoryColorReference(colorIndex: innerStrokeColorIndex, rampIndex: innerStrokeColorRampIndex);
-
-          // INNER STROKE DARKEN/BRIGHTEN
-          final int innerStrokeDarkenBrighten = guard.ranged(
-            value: reader.getInt8(),
-            min: drawingLayerSettingsConstraints.darkenBrightenMin,
-            max: drawingLayerSettingsConstraints.darkenBrightenMax,
-            fallback: drawingLayerSettingsConstraints.darkenBrightenDefault,
-            label: "Darken/Brighten for inner stroke is out of range for layer $i",
-          );
-
-          // INNER STROKE GLOW DEPTH
-          final int innerStrokeGlowDepth = guard.ranged(
-            value: reader.getInt8(),
-            min: drawingLayerSettingsConstraints.glowDepthMin,
-            max: drawingLayerSettingsConstraints.glowDepthMax,
-            fallback: drawingLayerSettingsConstraints.glowDepthDefault,
-            label: "Glow Depth for inner stroke is out of range for layer $i",
-          );
-
-          // INNER STROKE GLOW RECURSIVE
-          final bool innerStrokeGlowRecursive = guard.flag(
-            value: reader.getUint8(),
-            label: "Invalid inner stroke glow recursive value for layer $i",
-          );
-
-          // INNER STROKE BEVEL DISTANCE
-          final int innerStrokeBevelDistance = guard.ranged(
-            value: reader.getUint8(),
-            min: drawingLayerSettingsConstraints.bevelDistanceMin,
-            max: drawingLayerSettingsConstraints.bevelDistanceMax,
-            fallback: drawingLayerSettingsConstraints.bevelDistanceDefault,
-            label: "Bevel Distance out of range for layer $i",
-          );
-
-          // INNER STROKE BEVEL STRENGTH
-          final int innerStrokeBevelStrength = guard.ranged(
-            value: reader.getUint8(),
-            min: drawingLayerSettingsConstraints.bevelStrengthMin,
-            max: drawingLayerSettingsConstraints.bevelStrengthMax,
-            fallback: drawingLayerSettingsConstraints.bevelStrengthDefault,
-            label: "Bevel Strength out of range for layer $i",
-          );
-
-          // DROP SHADOW STYLE
-          final int dropShadowStyleVal = reader.getUint8();
-          final DropShadowStyle dropShadowStyle = guard.mapped(
-            value: DropShadowStyle.fromId(dropShadowStyleVal),
-            raw: dropShadowStyleVal,
-            fallback: DropShadowStyle.off,
-            label: "Invalid drop shadow style for layer $i",
-          );
-
-          // DROP SHADOW COLOR RAMP INDEX
-          final int dropShadowColorRampIndex = guard.ranged(
-            value: reader.getUint8(),
-            min: 0,
-            max: rampList.length - 1,
-            fallback: 0,
-            label: "Drop Shadow Color Ramp index out of range for layer $i",
-          );
-
-          // DROP SHADOW COLOR INDEX
-          final int dropShadowColorIndex = guard.ranged(
-            value: reader.getUint8(),
-            min: 0,
-            max: rampList[dropShadowColorRampIndex].settings.colorCount - 1,
-            fallback: 0,
-            label: "Drop Shadow Color index out of range for layer $i",
-          );
-
-          final HistoryColorReference dropShadowColorReference = HistoryColorReference(colorIndex: dropShadowColorIndex, rampIndex: dropShadowColorRampIndex);
-
-          // DROP SHADOW OFFSET X
-          final int dropShadowOffsetX = guard.ranged(
-            value: reader.getInt8(),
-            min: drawingLayerSettingsConstraints.dropShadowOffsetMin,
-            max: drawingLayerSettingsConstraints.dropShadowOffsetMax,
-            fallback: drawingLayerSettingsConstraints.dropShadowOffsetDefault,
-            label: "Drop Shadow offset x is out of range for layer $i",
-          );
-
-          // DROP SHADOW OFFSET Y
-          final int dropShadowOffsetY = guard.ranged(
-            value: reader.getInt8(),
-            min: drawingLayerSettingsConstraints.dropShadowOffsetMin,
-            max: drawingLayerSettingsConstraints.dropShadowOffsetMax,
-            fallback: drawingLayerSettingsConstraints.dropShadowOffsetDefault,
-            label: "Drop Shadow offset y is out of range for layer $i",
-          );
-
-          // DROP SHADOW DARKEN/BRIGHTEN
-          final int dropShadowDarkenBrighten = guard.ranged(
-            value: reader.getInt8(),
-            min: drawingLayerSettingsConstraints.darkenBrightenMin,
-            max: drawingLayerSettingsConstraints.darkenBrightenMax,
-            fallback: drawingLayerSettingsConstraints.darkenBrightenDefault,
-            label: "Darken/Brighten for drop shadow is out of range for layer $i",
-          );
-
-          drawingLayerSettings = HistoryDrawingLayerSettings(
-            constraints: drawingLayerSettingsConstraints,
-            outerStrokeStyle: outerStrokeStyle,
-            outerSelectionMap: outerStrokeDirections,
-            outerColorReference: outerColorReference,
-            outerDarkenBrighten: outerStrokeDarkenBrighten,
-            outerGlowDepth: outerStrokeGlowDepth,
-            outerGlowRecursive: outerStrokeGlowRecursive,
-            innerStrokeStyle: innerStrokeStyle,
-            innerSelectionMap: innerStrokeDirections,
-            innerColorReference: innerColorReference,
-            innerDarkenBrighten: innerStrokeDarkenBrighten,
-            innerGlowDepth: innerStrokeGlowDepth,
-            innerGlowRecursive: innerStrokeGlowRecursive,
-            bevelDistance: innerStrokeBevelDistance,
-            bevelStrength: innerStrokeBevelStrength,
-            dropShadowStyle: dropShadowStyle,
-            dropShadowColorReference: dropShadowColorReference,
-            dropShadowOffset: CoordinateSetI(x: dropShadowOffsetX, y: dropShadowOffsetY),
-            dropShadowDarkenBrighten: dropShadowDarkenBrighten,);
-        }
-        //a pixel outside the canvas is dropped by the grid
-        final PixelGrid data = PixelGrid(width: canvasSize.x, height: canvasSize.y);
-        if (fVersion >= 6)
-        {
-          _readDrawingPixels(reader: reader, data: data, rampList: rampList, layerIndex: i);
-        }
-        else
-        {
-          final int dataCount = reader.getUint32();
-          for (int j = 0; j < dataCount; j++)
-          {
-            final int x = reader.getUint16();
-            final int y = reader.getUint16();
-            final int colorRampIndex = reader.getUint8();
-            if (colorRampIndex >= rampList.length) return LoadFileSet(status: "Color Ramp index out of range for layer $i : $colorRampIndex");
-            final int colorIndex = reader.getUint8();
-            if (colorIndex >= rampList[colorRampIndex].settings.colorCount) return LoadFileSet(status: "Color index out of range for layer $i: $colorIndex");
-            data.set(x: x, y: y, value: PaletteCodec.codeOf(rampIndex: colorRampIndex, colorIndex: colorIndex));
-          }
-        }
-        layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, pixels: data.snapshot(), settings: drawingLayerSettings, layerIdentity: i));
-      }
-      else if (layerType == HistoryReferenceLayer) //REFERENCE LAYER
-          {
-        //path (string)
-        final int pathLength = reader.getInt16();
-        final List<int> pathBytes = <int>[];
-        for (int i = 0; i < pathLength; i++)
-        {
-          pathBytes.add(reader.getUint8());
-        }
-        final String pathString = utf8.decode(pathBytes);
-        //opacity ``ubyte (1)`` // 0...100
-        final int opacity = guard.ranged(
-          value: reader.getUint8(),
-          min: ReferenceLayerConstraints.opacityMin,
-          max: ReferenceLayerConstraints.opacityMax,
-          fallback: ReferenceLayerConstraints.opacityDefault,
-          label: "Opacity for reference layer is out of range",
-        );
-
-        //offset_x ``float (1)``
-        final double offsetX = reader.getFloat32();
-        //offset_y ``float (1)``
-        final double offsetY = reader.getFloat32();
-
-        //zoom ``ushort (1)``
-        final int zoom = guard.ranged(
-          value: reader.getUint16(),
-          min: ReferenceLayerConstraints.zoomMin,
-          max: ReferenceLayerConstraints.zoomMax,
-          fallback: ReferenceLayerConstraints.zoomDefault,
-          label: "Zoom for reference layer is out of range",
-        );
-
-        //aspect_ratio ``float (1)``
-        final double aspectRatio = guard.approx(
-          value: reader.getFloat32(),
-          min: ReferenceLayerConstraints.aspectRatioMin,
-          max: ReferenceLayerConstraints.aspectRatioMax,
-          fallback: ReferenceLayerConstraints.aspectRatioDefault,
-          label: "Aspect ratio for reference layer is out of range",
-        );
-
-        double brightness = ReferenceLayerConstraints.brightnessDefault;
-        double contrast = ReferenceLayerConstraints.contrastDefault;
-        double saturation = ReferenceLayerConstraints.saturationDefault;
-        double warmth = ReferenceLayerConstraints.warmthDefault;
-
-        if (fVersion >= 4)
-        {
-          //brightness ``float (1)`` // -1...1
-          brightness = guard.ranged(
-            value: reader.getFloat32(),
-            min: ReferenceLayerConstraints.brightnessMin,
-            max: ReferenceLayerConstraints.brightnessMax,
-            fallback: ReferenceLayerConstraints.brightnessDefault,
-            label: "Brightness for reference layer is out of range",
-          );
-
-          //contrast ``float (1)`` // 0...2
-          contrast = guard.ranged(
-            value: reader.getFloat32(),
-            min: ReferenceLayerConstraints.contrastMin,
-            max: ReferenceLayerConstraints.contrastMax,
-            fallback: ReferenceLayerConstraints.contrastDefault,
-            label: "Contrast for reference layer is out of range",
-          );
-
-          //saturation ``float (1)`` // 0...2
-          saturation = guard.ranged(
-            value: reader.getFloat32(),
-            min: ReferenceLayerConstraints.saturationMin,
-            max: ReferenceLayerConstraints.saturationMax,
-            fallback: ReferenceLayerConstraints.saturationDefault,
-            label: "Saturation for reference layer is out of range",
-          );
-
-          //warmth ``float (1)`` // -1...1
-          warmth = guard.ranged(
-            value: reader.getFloat32(),
-            min: ReferenceLayerConstraints.warmthMin,
-            max: ReferenceLayerConstraints.warmthMax,
-            fallback: ReferenceLayerConstraints.warmthDefault,
-            label: "Warmth for reference layer is out of range",
-          );
-        }
-        layerList.add(
-            HistoryReferenceLayer(
-                visibilityState: visibilityState,
-                zoom: zoom,
-                opacity: opacity,
-                offsetY: offsetY,
-                offsetX: offsetX,
-                path: pathString,
-                aspectRatio: aspectRatio,
-                brightness: brightness,
-                contrast: contrast,
-                saturation: saturation,
-                warmth: warmth,
-                layerIdentity: i,
-            ),
-        );
-      }
-      else if (layerType == HistoryGridLayer) //GRID LAYER
-          {
-        //opacity ``ubyte (1)`` // 0...100
-        final int opacity = guard.ranged(
-          value: reader.getUint8(),
-          min: GridLayerConstraints.opacityMin,
-          max: GridLayerConstraints.opacityMax,
-          fallback: GridLayerConstraints.opacityDefault,
-          label: "Opacity for grid layer is out of range",
-        );
-
-        //brightness ``ubyte (1)`` // 0...100
-        final int brightness = guard.ranged(
-          value:  reader.getUint8(),
-          min: GridLayerConstraints.brightnessMin,
-          max: GridLayerConstraints.brightnessMax,
-          fallback: GridLayerConstraints.brightnessDefault,
-          label: "Brightness for grid layer is out of range",
-        );
-
-        //grid_type
-        final int gridTypeValue = reader.getUint8();
-        final GridType gridType = guard.mapped(
-          value: GridType.fromId(gridTypeValue),
-          raw: gridTypeValue,
-          fallback: GridType.rectangular,
-          label: "Invalid grid type for layer $i",
-        );
-
-        //interval_x ``ubyte (1)`` // 2...64
-        final int intervalX = guard.ranged(
-          value: reader.getUint8(),
-          min: GridLayerConstraints.intervalXMin,
-          max: GridLayerConstraints.intervalXMax,
-          fallback: GridLayerConstraints.intervalXDefault,
-          label: "Interval X for grid layer is out of range",
-        );
-
-        //interval_y ``ubyte (1)`` // 2...64
-        final int intervalY = guard.ranged(
-          value: reader.getUint8(),
-          min: GridLayerConstraints.intervalYMin,
-          max: GridLayerConstraints.intervalYMax,
-          fallback: GridLayerConstraints.intervalYDefault,
-          label: "Interval Y for grid layer is out of range",
-        );
-
-        //horizon_position ``float (1)``// 0...1 (vertical horizon position)
-        final double horizon = guard.approx(
-          value: reader.getFloat32(),
-          min: GridLayerConstraints.vanishingPointMin,
-          max: GridLayerConstraints.vanishingPointMax,
-          fallback: GridLayerConstraints.horizonDefault,
-          label: "Horizon for grid layer is out of range",
-        );
-
-        //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
-        final double vanishingPoint1 = guard.approx(
-          value: reader.getFloat32(),
-          min: GridLayerConstraints.vanishingPointMin,
-          max: GridLayerConstraints.vanishingPointMax,
-          fallback: GridLayerConstraints.vanishingPoint1Default,
-          label: "Vanishing Point 1 for grid layer is out of range",
-        );
-
-        //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
-        final double vanishingPoint2 = guard.approx(
-          value: reader.getFloat32(),
-          min: GridLayerConstraints.vanishingPointMin,
-          max: GridLayerConstraints.vanishingPointMax,
-          fallback: GridLayerConstraints.vanishingPoint2Default,
-          label: "Vanishing Point 2 for grid layer is out of range",
-        );
-
-        //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
-        final double vanishingPoint3 = guard.approx(
-          value: reader.getFloat32(),
-          min: GridLayerConstraints.vanishingPointMin,
-          max: GridLayerConstraints.vanishingPointMax,
-          fallback: GridLayerConstraints.vanishingPoint3Default,
-          label: "Vanishing Point 3 for grid layer is out of range",
-        );
-
-        layerList.add(HistoryGridLayer(visibilityState: visibilityState, opacity: opacity, gridType: gridType, brightness: brightness, intervalX: intervalX, intervalY: intervalY, horizonPosition: horizon, vanishingPoint1: vanishingPoint1, vanishingPoint2: vanishingPoint2, vanishingPoint3: vanishingPoint3, layerIdentity: i));
-      }
-      else if (layerType == HistoryShadingLayer || layerType == HistoryDitherLayer) //SHADING/DITHER LAYER
-          {
-        // LOCK STATE
-        final int lockStateVal = reader.getUint8();
-        final LayerLockState lockState = guard.mapped(
-          value: LayerLockState.fromId(lockStateVal),
-          raw: lockStateVal,
-          fallback: LayerLockState.unlocked,
-          label: "Invalid lock type for layer $i",
-        );
-
-        HistoryShadingLayerSettings shadingLayerSettings = HistoryShadingLayerSettings.defaultValue(constraints: shadingLayerSettingsConstraints);
-        if (fVersion >= 2)
-        {
-          final int topLimit = layerType == HistoryDitherLayer ? shadingLayerSettingsConstraints.ditherStepsMax : shadingLayerSettingsConstraints.shadingStepsMax;
-
-          // SHADING LIMIT LOW
-          final int shadingStepLimitLow = guard.ranged(
-            value: reader.getUint8(),
-            min: shadingLayerSettingsConstraints.shadingStepsMin,
-            max: topLimit,
-            fallback: shadingLayerSettingsConstraints.shadingStepsDefaultDarken,
-            label: "Shading step limit low is out of range for layer $i",
-          );
-
-          // SHADING LIMIT HIGH
-          final int shadingStepLimitHigh = guard.ranged(
-            value: reader.getUint8(),
-            min: shadingLayerSettingsConstraints.shadingStepsMin,
-            max: topLimit,
-            fallback: shadingLayerSettingsConstraints.shadingStepsDefaultBrighten,
-            label: "Shading step limit high is out of range for layer $i",
-          );
-
-          shadingLayerSettings = HistoryShadingLayerSettings(constraints: shadingLayerSettingsConstraints, shadingLow: shadingStepLimitLow, shadingHigh: shadingStepLimitHigh);
-        }
-
-        //a pixel outside the canvas is dropped by the grid
-        final PixelGrid data = PixelGrid(width: canvasSize.x, height: canvasSize.y);
-        if (fVersion >= 6)
-        {
-          _readShadingPixels(reader: reader, data: data);
-        }
-        else
-        {
-          final int dataCount = reader.getUint32();
-          for (int j = 0; j < dataCount; j++)
-          {
-            final int x = reader.getUint16();
-            final int y = reader.getUint16();
-            //-128, which one byte can hold, is beyond any shading limit and beyond what a signed pixel can store
-            final int shading = reader.getInt8().clamp(-SignedPixels.maxMagnitude, SignedPixels.maxMagnitude);
-            data.setSigned(x: x, y: y, value: shading);
-          }
-        }
-
-        if (layerType == HistoryShadingLayer)
-        {
-          layerList.add(HistoryShadingLayer(visibilityState: visibilityState, lockState: lockState, pixels: data.snapshot(), settings: shadingLayerSettings, layerIdentity: i));
-        }
-        else if (layerType == HistoryDitherLayer)
-        {
-          layerList.add(HistoryDitherLayer(visibilityState: visibilityState, lockState: lockState, pixels: data.snapshot(), settings: shadingLayerSettings, layerIdentity: i));
-        }
-      }
-    }
-
-    HistoryTimeline hTimeline;
-    if (fVersion < 3)
-    {
-      final LinkedHashSet<int> indices = LinkedHashSet<int>();
-      for (int i = 0; i < layerList.length; i++)
-      {
-        indices.add(i);
-      }
-      final HistoryFrame hFrame = HistoryFrame(fps: frameConstraints.defaultFps, layerIndices: indices, selectedLayerIndex: 0);
-      hTimeline = HistoryTimeline(frames: <HistoryFrame>[hFrame], loopStart: 0, loopEnd: 0, selectedFrameIndex: 0, allLayers: layerList);
-    }
-    else
-    {
-      //before version 5 the counts and indices were single bytes, which could
-      //not hold a full frame (256 layers), a full timeline or a layer past the 256th
-      final int Function() readTimelineValue = fVersion >= 5 ? reader.getUint16 : reader.getUint8;
-      final int framesCount = readTimelineValue();
-      final int startFrame = readTimelineValue();
-      final int endFrame = readTimelineValue();
-
-      final List<HistoryFrame> hFrames = <HistoryFrame>[];
-      for (int i = 0; i < framesCount; i++)
-      {
-        final LinkedHashSet<int> indices = LinkedHashSet<int>();
-        final int fps = reader.getUint8();
-        final int layerCount = readTimelineValue();
-        for (int j = 0; j < layerCount; j++)
-        {
-          final int layerIndex = readTimelineValue();
-          if (layerIndex >= layerList.length) return LoadFileSet(status: "Layer index out of range in frame $i: $layerIndex");
-          indices.add(layerIndex);
-        }
-        hFrames.add(HistoryFrame(fps: fps, layerIndices: indices, selectedLayerIndex: 0));
-      }
-      hTimeline = HistoryTimeline(frames: hFrames, loopStart: startFrame, loopEnd: endFrame, selectedFrameIndex: 0, allLayers: layerList);
-    }
+    final _KPixParser parser = _KPixParser(
+      reader: reader,
+      guard: guard,
+      version: fVersion,
+      drawingConstraints: drawingLayerSettingsConstraints,
+      shadingConstraints: shadingLayerSettingsConstraints,
+      frameConstraints: frameConstraints,
+    );
+    final List<HistoryRampData> rampList = parser.readRamps();
+    final CoordinateSetI canvasSize = parser.readCanvasSize();
+    final LinkedHashSet<HistoryLayer> layerList = parser.readLayers(ramps: rampList, canvasSize: canvasSize);
+    final HistoryTimeline hTimeline = parser.readTimeline(layers: layerList);
 
     final HistorySelectionState selectionState = HistorySelectionState.empty();
     final HistoryState historyState = HistoryState(timeline: hTimeline, selectedColor: const HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, compressionBehavior: HistoryStateCompressionBehavior.leave));

@@ -32,7 +32,7 @@ import 'package:path/path.dart' as p;
 const List<List<String>> _layers = <List<String>>[
   <String>[ //0 util
     "lib/util/helpers/", "lib/util/typedefs.dart", "lib/util/color_names.dart",
-    "lib/util/file_byte_reader.dart", "lib/util/logging_extensions.dart",
+    "lib/util/file_byte_reader.dart", "lib/util/file_byte_writer.dart", "lib/util/logging_extensions.dart",
     "lib/util/layer_color_supplier.dart", "lib/util/messages.dart",
     "lib/kpix_constants.dart", "lib/kpix_theme.dart", "lib/kpix_icons.dart",
     "lib/kpix_logger.dart", "lib/oss_licenses.dart", "lib/third_party_licenses.dart", "lib/layer_widget_options.dart",

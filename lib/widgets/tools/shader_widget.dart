@@ -56,7 +56,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
 
     _hotkeyManager.addListener(func: () {_shaderOptions.isEnabled.value = !_shaderOptions.isEnabled.value;}, action: HotkeyAction.shadingToggle);
     _hotkeyManager.addListener(func: () {_shaderOptions.onlyCurrentRampEnabled.value = !_shaderOptions.onlyCurrentRampEnabled.value;}, action: HotkeyAction.shadingCurrentRampOnly);
-    _hotkeyManager.addListener(func: () {_shaderOptions.shaderDirection.value = (_shaderOptions.shaderDirection.value == ShaderDirection.left) ? ShaderDirection.right : ShaderDirection.left;}, action: HotkeyAction.shadingDirection);
+    _hotkeyManager.addListener(func: _shaderOptions.toggleDirection, action: HotkeyAction.shadingDirection);
   }
 
   @override

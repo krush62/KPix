@@ -34,4 +34,9 @@ class ShaderOptions
   ValueNotifier<ShaderDirection> shaderDirection = ValueNotifier<ShaderDirection>(ShaderConstraints.shaderDirectionDefault);
   ValueNotifier<bool> onlyCurrentRampEnabled = ValueNotifier<bool>(ShaderConstraints.onlyCurrentRampEnabledDefault);
   ValueNotifier<bool> isEnabled = ValueNotifier<bool>(ShaderConstraints.isEnabledDefault);
+
+  void toggleDirection()
+  {
+    shaderDirection.value = shaderDirection.value == ShaderDirection.left ? ShaderDirection.right : ShaderDirection.left;
+  }
 }

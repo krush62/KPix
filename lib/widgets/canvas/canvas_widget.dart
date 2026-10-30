@@ -14,93 +14,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * KPix
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/infra/stylus_bridge.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/layer_states/rasterable_layer_state.dart';
-import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
-import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/canvas_state.dart';
-import 'package:kpix/models/constraints/tool_select_constraints.dart';
 import 'package:kpix/models/document_state.dart';
-import 'package:kpix/models/history/history_manager.dart';
-import 'package:kpix/models/history_controller.dart';
-import 'package:kpix/models/layer_manager.dart';
-import 'package:kpix/models/palette_state.dart';
-import 'package:kpix/models/status_bar_state.dart';
-import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/tool_type.dart';
-import 'package:kpix/models/view_state.dart';
-import 'package:kpix/painting/color_pick_painter.dart';
-import 'package:kpix/painting/itool_painter.dart';
-import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/painting/selection_painter.dart';
-import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/preference_values.dart';
-import 'package:kpix/util/helpers/color_helper.dart';
-import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/widgets/canvas/canvas_controller.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 import 'package:kpix/widgets/canvas/touch_joystick_widget.dart';
 
 /// Layout options for [CanvasWidget].
 abstract final class _CanvasOptions
 {
-  static const int historyCheckPollRate = 250;
-  static const int referenceCommitDelay = 500;
-  static const double minVisibilityFactor = 0.1;
-  static const int idleTimerRate = 15;
   static const int opacityDuration = 150;
-  static const int optimalZoomSettleTime = 1500;
   static const int selectionPulseDuration = 1500;
   static const double selectionPulseMinFactor = 0.5;
-  static const int cursorTimeout = 100;
-  static const int hoverExitDelay = 50;
-  static const int reportedHoverTimeout = 1000;
   static const double joystickPadding = 16.0;
-  static const double joystickPanSpeed = 1500.0;
-  static const double joystickZoomRateMin = 2.0;
-  static const double joystickZoomRateMax = 12.0;
 }
-
-/// Status of the touch pointer.
-class TouchPointerStatus
-{
-  final Offset startPos;
-  Offset currentPos;
-  TouchPointerStatus({required this.startPos, required this.currentPos});
-}
-
 
 /// Main Canvas widget for all drawing/displaying purposes.
 ///
-/// This widget holds a [CustomPaint] with [KPixPainter] as painter and
-/// handles all input operation.
+/// It shows the [CanvasController]'s painter and forwards all input to it.
 class CanvasWidget extends StatefulWidget {
   const CanvasWidget(
       {
@@ -113,214 +53,30 @@ class CanvasWidget extends StatefulWidget {
 
 class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMixin
 {
-  final StylusPreferenceContent _stylusPrefs = GetIt.I.get<PreferenceManager>().stylusPreferenceContent;
   final TouchPreferenceContent _touchPrefs = GetIt.I.get<PreferenceManager>().touchPreferenceContent;
-  final DesktopPreferenceContent _desktopPrefs = GetIt.I.get<PreferenceManager>().desktopPreferenceContent;
-  final ShaderOptions _shaderOptions = GetIt.I.get<ShaderOptions>();
   final GuiPreferenceContent _guiPrefs = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
   final DocumentState _documentState = GetIt.I.get<DocumentState>();
-  final CanvasState _canvasState = GetIt.I.get<CanvasState>();
-  final ViewState _viewState = GetIt.I.get<ViewState>();
-  final ToolState _toolState = GetIt.I.get<ToolState>();
-  final PaletteState _paletteState = GetIt.I.get<PaletteState>();
-  final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier<CoordinateSetD?>(null);
-  final ValueNotifier<bool> _isDragging = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> _stylusLongMoveStarted = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> _stylusLongMoveVertical = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> _stylusLongMoveHorizontal = ValueNotifier<bool>(false);
-  bool _timerRunning = false;
-  late Duration _timeoutLongPress;
-  late Timer _timerLongPress;
-  final  ValueNotifier<Offset> _pressStartLoc = ValueNotifier<Offset>(Offset.zero);
-  late Offset _secondaryStartLoc;
-  final ValueNotifier<bool> _primaryIsDown = ValueNotifier<bool> (false);
-  final ValueNotifier<bool> _secondaryIsDown = ValueNotifier<bool> (false);
-  int _stylusZoomStartLevel = 100;
-  int _stylusToolStartSize = 1;
-
-  late Timer _timerStylusBtnLongPress;
-  bool _timerStylusRunning = false;
-  final ValueNotifier<bool> _stylusButtonDown = ValueNotifier<bool>(false);
-  DateTime _stylusDownTimeStamp = DateTime.now();
-  final StylusBridge _stylusBridge = GetIt.I.get<StylusBridge>();
-  //a stylus button pressed during a stroke only counts after it was released
-  bool _stylusButtonSuppressed = false;
-
-  //stylus and touch pointers on the screen keep the cursor visible
-  final Set<int> _contactPointers = <int>{};
-  //without reported hover exits a stylus cursor has to time out quickly
-  Timer? _cursorTimeoutTimer;
-  bool _hoverExitReported = false;
-  //channel messages overtake pointer events, so hover events from before the exit can still arrive
-  Duration _hoverExitTime = Duration.zero;
-  int? _primaryPointer;
-
-  late Offset _dragStartLoc;
-
-  final ValueNotifier<Offset> _canvasOffset = ValueNotifier<Offset>(Offset.zero);
-
-  /// Size of the drawing area, taken from layout.
-  ///
-  /// [KPixPainter.latestSize] is only written while painting, so it is not
-  /// available before the first paint and it is stale whenever the viewport has
-  /// just changed. Everything that positions the canvas uses this value instead.
-  Size _viewportSize = Size.zero;
-
-  /// Time of the currently pending optimal zoom request, `null` if there is none.
-  DateTime? _optimalZoomRequestTime;
-
-  /// Whether the pending optimal zoom request has been applied at least once.
-  bool _optimalZoomApplied = false;
-
-  late MouseCursor _defaultMouseCursor = _desktopPrefs.cursorType.value.systemCursor;
-  late final ValueNotifier<MouseCursor> _mouseCursor = ValueNotifier<MouseCursor>(_defaultMouseCursor);
-  final Map<int, TouchPointerStatus> _touchPointers = <int, TouchPointerStatus>{};
-  double _initialTouchZoomDistance = 0.0;
-  int _touchZoomStartLevel = 1;
-  double _joystickZoomProgress = 0.0;
-  int _joystickZoomDirection = 0;
-
-  /// Every periodic timer this state started, so [dispose] can stop all of them.
-  ///
-  /// The canvas is mounted only while a project is open, so it really is disposed
-  /// and rebuilt; a timer that outlives it keeps acting on the global app state.
-  final List<Timer> _timers = <Timer>[];
   final ValueNotifier<double> _selectionPulse = ValueNotifier<double>(1.0);
-
-  //wheel zoom of a reference layer is committed once the wheel rests
-  ReferenceLayerState? _pendingReferenceLayer;
-  Timer? _referenceCommitTimer;
-
-  late KPixPainter kPixPainter = KPixPainter(
-    offset: _canvasOffset,
-    coords: _cursorPos,
-    isDragging: _isDragging,
-    stylusLongMoveStarted: _stylusLongMoveStarted,
-    stylusLongMoveVertical: _stylusLongMoveVertical,
-    stylusLongMoveHorizontal: _stylusLongMoveHorizontal,
-    primaryDown: _primaryIsDown,
-    secondaryDown: _secondaryIsDown,
-    primaryPressStart: _pressStartLoc,
-    stylusButton1Down: _stylusButtonDown,
-    selectionPulse: _selectionPulse,
-  );
-
-  late ToolType _previousTool;
-
-  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
+  late final CanvasController _controller;
 
   late AnimationController _selectionBarAnimationController;
   late Animation<double> _selectionBarAnimation;
   late AnimationController _selectionPulseController;
 
-  void _setDefaultCursor()
-  {
-    _defaultMouseCursor = _desktopPrefs.cursorType.value.systemCursor;
-    final bool isForbidden = _documentState.timeline.isPlaying.value;
-    if (isForbidden && _mouseCursor.value == SystemMouseCursors.none)
-    {
-      _mouseCursor.value = SystemMouseCursors.forbidden;
-    }
-    else
-    {
-      _mouseCursor.value = _defaultMouseCursor;
-    }
-
-  }
-
-  void _stylusLongPressDelayChanged()
-  {
-    _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
-  }
-
-  @override
-  void dispose()
-  {
-    for (final Timer timer in _timers)
-    {
-      timer.cancel();
-    }
-    _timers.clear();
-    _referenceCommitTimer?.cancel();
-    _cursorTimeoutTimer?.cancel();
-
-    _desktopPrefs.cursorType.removeListener(_setDefaultCursor);
-    _stylusPrefs.stylusLongPressDelay.removeListener(_stylusLongPressDelayChanged);
-    _hotkeyManager.removeListener(func: _setOptimalZoom, action: HotkeyAction.panZoomOptimalZoom);
-    _shaderOptions.isEnabled.removeListener(_updateFromChange);
-    _shaderOptions.onlyCurrentRampEnabled.removeListener(_updateFromChange);
-    _shaderOptions.shaderDirection.removeListener(_updateFromChange);
-    _paletteState.selectedColorNotifier.removeListener(_updateFromChange);
-    _documentState.timeline.isPlaying.removeListener(_setDefaultCursor);
-
-    _viewState.zoomFactorNotifier.removeListener(_updateFromChange);
-    _canvasOffset.removeListener(_updateFromChange);
-    _toolState.selectedToolNotifier.removeListener(_updateFromChange);
-    _documentState.timeline.isPlaying.removeListener(_updateFromChange);
-    _documentState.timeline.frames.removeListener(_updateFromChange);
-    _documentState.timeline.selectedFrameIndexNotifier.removeListener(_updateFromChange);
-    GetIt.I.get<SymmetryState>().horizontalActivated.removeListener(_updateFromChange);
-    GetIt.I.get<SymmetryState>().horizontalValue.removeListener(_updateFromChange);
-    GetIt.I.get<SymmetryState>().verticalActivated.removeListener(_updateFromChange);
-    GetIt.I.get<SymmetryState>().verticalValue.removeListener(_updateFromChange);
-
-    //the global app state holds this callback, so it has to let go of it too
-    if (GetIt.I.get<HistoryController>().flushHistoryData == _flushPendingHistory)
-    {
-      GetIt.I.get<HistoryController>().flushHistoryData = null;
-    }
-    if (_stylusBridge.onHoverExit == _stylusHoverExit)
-    {
-      _stylusBridge.onHoverExit = null;
-    }
-
-    _guiPrefs.selectionPulsatingOutline.removeListener(_updateSelectionPulse);
-    _guiPrefs.selectionOpacity.removeListener(_updateSelectionPulse);
-    _documentState.selectionState.selection.isEmptyNotifer.removeListener(_updateSelectionPulse);
-    _documentState.timeline.isPlaying.removeListener(_updateSelectionPulse);
-    _documentState.timeline.layerChangeNotifier.removeListener(_updateSelectionPulse);
-    _documentState.timeline.selectedFrameIndexNotifier.removeListener(_updateSelectionPulse);
-
-    _selectionBarAnimationController.dispose();
-    _selectionPulseController.dispose();
-    kPixPainter.dispose();
-    _selectionPulse.dispose();
-    super.dispose();
-  }
+  late final List<Listenable> _pulseTriggers = <Listenable>[
+    _guiPrefs.selectionPulsatingOutline,
+    _guiPrefs.selectionOpacity,
+    _documentState.selectionState.selection.isEmptyNotifer,
+    _documentState.timeline.isPlaying,
+    _documentState.timeline.layerChangeNotifier,
+    _documentState.timeline.selectedFrameIndexNotifier,
+  ];
 
   @override
   void initState()
   {
     super.initState();
-    _desktopPrefs.cursorType.addListener(_setDefaultCursor);
-    _timers.add(Timer.periodic(const Duration(milliseconds: _CanvasOptions.historyCheckPollRate), (final Timer t) {_checkHistoryData(t: t);}));
-    _timers.add(Timer.periodic(const Duration(milliseconds: _CanvasOptions.idleTimerRate), (final Timer t) {_idleTimeout(t: t);}));
-    GetIt.I.get<HistoryController>().flushHistoryData = _flushPendingHistory;
-    _stylusBridge.onHoverExit = _stylusHoverExit;
-    _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
-    WidgetsBinding.instance.addPostFrameCallback((final _)
-    {
-      _setOptimalZoom();
-    });
-
-    _stylusPrefs.stylusLongPressDelay.addListener(_stylusLongPressDelayChanged);
-
-    _hotkeyManager.addListener(func: _setOptimalZoom, action: HotkeyAction.panZoomOptimalZoom);
-    _shaderOptions.isEnabled.addListener(_updateFromChange);
-    _shaderOptions.onlyCurrentRampEnabled.addListener(_updateFromChange);
-    _shaderOptions.shaderDirection.addListener(_updateFromChange);
-    _paletteState.selectedColorNotifier.addListener(_updateFromChange);
-    _documentState.timeline.isPlaying.addListener(_setDefaultCursor);
-    _viewState.zoomFactorNotifier.addListener(_updateFromChange);
-    _canvasOffset.addListener(_updateFromChange);
-    _toolState.selectedToolNotifier.addListener(_updateFromChange);
-    _documentState.timeline.isPlaying.addListener(_updateFromChange);
-    _documentState.timeline.frames.addListener(_updateFromChange);
-    _documentState.timeline.selectedFrameIndexNotifier.addListener(_updateFromChange);
-    GetIt.I.get<SymmetryState>().horizontalActivated.addListener(_updateFromChange);
-    GetIt.I.get<SymmetryState>().horizontalValue.addListener(_updateFromChange);
-    GetIt.I.get<SymmetryState>().verticalActivated.addListener(_updateFromChange);
-    GetIt.I.get<SymmetryState>().verticalValue.addListener(_updateFromChange);
+    _controller = CanvasController(selectionPulse: _selectionPulse);
 
     _selectionBarAnimationController = AnimationController(
       vsync: this,
@@ -335,20 +91,32 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: _CanvasOptions.selectionPulseDuration),
     )..addListener(_selectionPulseTick);
-    _guiPrefs.selectionPulsatingOutline.addListener(_updateSelectionPulse);
-    _guiPrefs.selectionOpacity.addListener(_updateSelectionPulse);
-    _documentState.selectionState.selection.isEmptyNotifer.addListener(_updateSelectionPulse);
-    _documentState.timeline.isPlaying.addListener(_updateSelectionPulse);
-    _documentState.timeline.layerChangeNotifier.addListener(_updateSelectionPulse);
-    _documentState.timeline.selectedFrameIndexNotifier.addListener(_updateSelectionPulse);
+    for (final Listenable trigger in _pulseTriggers)
+    {
+      trigger.addListener(_updateSelectionPulse);
+    }
     _updateSelectionPulse();
+  }
+
+  @override
+  void dispose()
+  {
+    _controller.dispose();
+    for (final Listenable trigger in _pulseTriggers)
+    {
+      trigger.removeListener(_updateSelectionPulse);
+    }
+    _selectionBarAnimationController.dispose();
+    _selectionPulseController.dispose();
+    _selectionPulse.dispose();
+    super.dispose();
   }
 
   @override
   void didChangeDependencies()
   {
     super.didChangeDependencies();
-    kPixPainter.setCursorInfoTheme(theme: Theme.of(context));
+    _controller.painter.setCursorInfoTheme(theme: Theme.of(context));
   }
 
   void _selectionPulseTick()
@@ -386,874 +154,29 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
     }
   }
 
-  void _updateFromChange()
-  {
-    _viewState.repaintNotifier.repaint();
-  }
-
-  /// Requests the canvas to be fitted into the viewport.
-  ///
-  /// The calculation needs a valid viewport size, which does not exist before the
-  /// first layout and which can still change right after a project was opened
-  /// (the window is maximized on desktop startup, the system bars are hidden on
-  /// mobile, ...). The request is therefore remembered and re-evaluated on every
-  /// viewport change until it settles, see [_CanvasOptions.optimalZoomSettleTime].
-  void _setOptimalZoom()
-  {
-    _optimalZoomRequestTime = DateTime.now();
-    _optimalZoomApplied = false;
-    _applyOptimalZoom();
-  }
-
-  /// Performs the calculation for a pending request from [_setOptimalZoom].
-  void _applyOptimalZoom()
-  {
-    if (!mounted || _optimalZoomRequestTime == null)
-    {
-      return;
-    }
-
-    //no usable layout yet, the request stays pending
-    if (_viewportSize.isEmpty || !_viewportSize.isFinite)
-    {
-      return;
-    }
-
-    if (_optimalZoomApplied && DateTime.now().difference(_optimalZoomRequestTime!).inMilliseconds > _CanvasOptions.optimalZoomSettleTime)
-    {
-      _optimalZoomRequestTime = null;
-      return;
-    }
-
-    int bestZoomLevel = ViewState.zoomLevelMin;
-    for (int i = ViewState.zoomLevelMin; i <= ViewState.zoomLevelMax; i++)
-    {
-      if (_canvasState.canvasSize.x * i / _viewState.devicePixelRatio < _viewportSize.width && _canvasState.canvasSize.y * i / _viewState.devicePixelRatio < _viewportSize.height)
-      {
-        bestZoomLevel = i;
-      }
-      else
-      {
-        break;
-      }
-    }
-    _viewState.setZoomLevel(val: bestZoomLevel);
-    _setOffset(newOffset: Offset((_viewportSize.width - (_canvasState.canvasSize.x * _viewState.zoomFactor / _viewState.devicePixelRatio)) / 2, (_viewportSize.height - (_canvasState.canvasSize.y * _viewState.zoomFactor / _viewState.devicePixelRatio)) / 2));
-    _optimalZoomApplied = true;
-    _viewState.repaintNotifier.repaint();
-  }
-
-  /// Stores the size of the drawing area and re-evaluates a pending optimal zoom.
-  ///
-  /// This is called from layout, so the app state must not be touched before the
-  /// current frame has been completed.
-  void _viewportSizeChanged({required final Size size})
-  {
-    if (size == _viewportSize)
-    {
-      return;
-    }
-    _viewportSize = size;
-    if (_optimalZoomRequestTime != null)
-    {
-      WidgetsBinding.instance.addPostFrameCallback((final _) {_applyOptimalZoom();});
-    }
-  }
-
-  /// Drops a pending optimal zoom request when the user adjusts the view manually.
-  void _cancelOptimalZoom()
-  {
-    _optimalZoomRequestTime = null;
-  }
-
-
-  void _checkHistoryData({required final Timer t})
-  {
-    _flushHistoryData();
-  }
-
-  void _scheduleReferenceLayerCommit({required final ReferenceLayerState layer})
-  {
-    if (_pendingReferenceLayer != null && _pendingReferenceLayer != layer)
-    {
-      _commitPendingReferenceLayer();
-    }
-    _pendingReferenceLayer = layer;
-    _referenceCommitTimer?.cancel();
-    _referenceCommitTimer = Timer(const Duration(milliseconds: _CanvasOptions.referenceCommitDelay), _commitPendingReferenceLayer);
-  }
-
-  void _commitPendingReferenceLayer()
-  {
-    _referenceCommitTimer?.cancel();
-    _referenceCommitTimer = null;
-    final ReferenceLayerState? layer = _pendingReferenceLayer;
-    _pendingReferenceLayer = null;
-    if (layer != null)
-    {
-      GetIt.I.get<LayerManager>().commitReferenceLayerChange(layer: layer);
-    }
-  }
-
-  //runs before undo/redo, so pending changes become their own step first
-  void _flushPendingHistory()
-  {
-    _commitPendingReferenceLayer();
-    _flushHistoryData();
-  }
-
-  void _flushHistoryData()
-  {
-    final IToolPainter? toolPainter = kPixPainter.toolPainter;
-    if (toolPainter != null && toolPainter.hasHistoryData)
-    {
-      final LayerState? originLayer = toolPainter.historyLayer ?? _documentState.timeline.getCurrentLayer();
-      GetIt.I.get<HistoryManager>().addState(identifier: toolPainter.historyIdentifier, originLayer: originLayer);
-      toolPainter.hasHistoryData = false;
-    }
-  }
-
-  void handleTimeoutLongPress()
-  {
-    _timerRunning = false;
-    //print("LONG PRESS PRIMARY");
-  }
-
-  void _buttonDown({required final PointerDownEvent details})
-  {
-    _cancelOptimalZoom();
-    if (details.kind != PointerDeviceKind.mouse)
-    {
-      _contactPointers.add(details.pointer);
-      _cursorTimeoutTimer?.cancel();
-    }
-    if (details.kind == PointerDeviceKind.touch)
-    {
-      _touchPointers[details.pointer] = TouchPointerStatus(startPos: details.localPosition, currentPos: details.localPosition);
-      if (_touchPointers.length == 1)
-      {
-        Timer(Duration(milliseconds: _touchPrefs.singleTouchDelay.value), checkTouchDraw);
-      }
-      else if (_touchPointers.length == 2)
-      {
-        _dragStartLoc = Offset((_touchPointers.values.elementAt(0).currentPos.dx + _touchPointers.values.elementAt(1).currentPos.dx) / 2, (_touchPointers.values.elementAt(0).currentPos.dy + _touchPointers.values.elementAt(1).currentPos.dy) / 2);
-        _isDragging.value = true;
-        _initialTouchZoomDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
-        _touchZoomStartLevel = _viewState.zoomFactor;
-        _mouseCursor.value = SystemMouseCursors.move;
-      }
-    }
-
-    if (details.buttons == kPrimaryButton && _touchPointers.isEmpty)
-    {
-      _startDown(details.localPosition, details.pointer);
-    }
-    else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
-    {
-      _secondaryIsDown.value = true;
-      if (!_shaderOptions.isEnabled.value && !(_documentState.timeline.getCurrentLayer() != null && _documentState.timeline.getCurrentLayer() is ShadingLayerState))
-      {
-        _previousTool = _toolState.selectedTool;
-        _toolState.setToolSelection(tool: ToolType.pick);
-      }
-    }
-
-    else if (details.buttons == kTertiaryButton && details.kind == PointerDeviceKind.mouse)
-    {
-      _dragStartLoc = details.localPosition;
-      _isDragging.value = true;
-      _mouseCursor.value = SystemMouseCursors.move;
-    }
-
-    _updateLocation(details: details);
-  }
-
-  void _idleTimeout({required final Timer t})
-  {
-    if (kPixPainter.toolPainter != null && kPixPainter.toolPainter!.hasAsyncUpdate)
-    {
-      _viewState.repaintNotifier.repaint();
-      kPixPainter.toolPainter!.hasAsyncUpdate = false;
-      //the tool data can change without the cursor moving (e.g. a modifier key)
-      WidgetsBinding.instance.addPostFrameCallback((final _)
-      {
-        if (mounted && kPixPainter.toolPainter != null)
-        {
-          GetIt.I.get<StatusBarState>().updateFromPaint(statusBarData: kPixPainter.toolPainter!.statusBarData);
-        }
-      });
-    }
-
-  }
-
-  void _startDown(final Offset position, final int pointer)
-  {
-    _pressStartLoc.value = position;
-    _primaryPointer = pointer;
-    _primaryIsDown.value = true;
-    if (!_timerRunning) {
-      _timerRunning = true;
-      _timerLongPress = Timer(_timeoutLongPress, handleTimeoutLongPress);
-    }
-  }
-
-  void checkTouchDraw()
-  {
-    //a touch while the stylus draws (e.g. a palm) must not take over the stroke
-    if (_touchPointers.length == 1 && !_primaryIsDown.value)
-    {
-      final MapEntry<int, TouchPointerStatus> touch = _touchPointers.entries.first;
-      _startDown(touch.value.startPos, touch.key);
-    }
-  }
-
-  void _buttonUp({required final PointerEvent details})
-  {
-    if (details.kind == PointerDeviceKind.touch)
-    {
-      _touchPointers.clear();
-      _isDragging.value = false;
-    }
-
-    if (_primaryIsDown.value)
-    {
-      //print("PRIMARY UP");
-      _timerLongPress.cancel();
-      _primaryPointer = null;
-      _primaryIsDown.value = false;
-      final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
-      if (currentLayer is ReferenceLayerState)
-      {
-        GetIt.I.get<LayerManager>().commitReferenceLayerChange(layer: currentLayer);
-      }
-    }
-    else if (_secondaryIsDown.value && details.kind == PointerDeviceKind.mouse)
-    {
-      _secondaryIsDown.value = false;
-      if (_shaderOptions.isEnabled.value || (_documentState.timeline.getCurrentLayer() != null && _documentState.timeline.getCurrentLayer() is ShadingLayerState))
-      {
-        final ShaderDirection currentDirection = _shaderOptions.shaderDirection.value;
-        if (currentDirection == ShaderDirection.left)
-        {
-          _shaderOptions.shaderDirection.value = ShaderDirection.right;
-        }
-        else
-        {
-          _shaderOptions.shaderDirection.value = ShaderDirection.left;
-        }
-      }
-      else
-      {
-        final ColorReference? colRef = _getColorAtCursor();
-        if (colRef != null)
-        {
-          _paletteState.colorSelected(color: colRef);
-        }
-        _toolState.setToolSelection(tool: _previousTool);
-      }
-    }
-    else if (_isDragging.value && details.kind == PointerDeviceKind.mouse)
-    {
-      _isDragging.value = false;
-      _setDefaultCursor();
-    }
-    _timerRunning = false;
-
-    if (_toolState.selectedTool == ToolType.select)
-    {
-      if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.select])
-      {
-        final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select]! as SelectionPainter;
-        if (selectionPainter.hasNewSelection)
-        {
-          selectionPainter.hasNewSelection = false;
-          if (selectionPainter.options.shape.value == SelectShape.ellipse || selectionPainter.options.shape.value == SelectShape.rectangle) {
-            _documentState.selectionState.newSelectionFromShape(
-                start: selectionPainter.selectionStart,
-                end: selectionPainter.selectionEnd,
-                selectShape: selectionPainter.options.shape.value,);
-          }
-          else if (selectionPainter.options.shape.value == SelectShape.wand)
-          {
-            _documentState.selectionState.newSelectionFromWand(
-                coord: selectionPainter.selectionEnd,
-                mode: selectionPainter.options.mode.value,
-                selectFromWholeRamp: selectionPainter.options.wandWholeRamp.value,
-                continuous: selectionPainter.options.wandContinuous.value,);
-          }
-          else //if polygon selection
-          {
-            selectionPainter.polygonPoints.clear();
-          }
-        }
-      }
-    }
-    _updateLocation(details: details);
-    _releaseContact(details: details);
-  }
-
-  void _buttonCancel({required final PointerCancelEvent details})
-  {
-    //a cancelled touch (e.g. a rejected palm) must not end the stroke of another pointer
-    if (details.kind != PointerDeviceKind.mouse && details.pointer != _primaryPointer)
-    {
-      if (_touchPointers.remove(details.pointer) != null && _touchPointers.length == 1)
-      {
-        _isDragging.value = false;
-      }
-      if (details.kind == PointerDeviceKind.stylus)
-      {
-        _setStylusButton(pressed: false);
-      }
-      _releaseContact(details: details);
-      _viewState.repaintNotifier.repaint();
-    }
-    else
-    {
-      _buttonUp(details: details);
-    }
-  }
-
-  void _releaseContact({required final PointerEvent details})
-  {
-    if (_contactPointers.remove(details.pointer) && _contactPointers.isEmpty)
-    {
-      _restartCursorTimeout();
-    }
-  }
-
-  //the delay after lifting also leaves the tools time to process the release
-  void _restartCursorTimeout({final int milliseconds = _CanvasOptions.cursorTimeout})
-  {
-    _cursorTimeoutTimer?.cancel();
-    _cursorTimeoutTimer = Timer(Duration(milliseconds: milliseconds), _cursorTimeout);
-  }
-
-  void _cursorTimeout()
-  {
-    _cursorTimeoutTimer = null;
-    if (_contactPointers.isEmpty)
-    {
-      if (_cursorPos.value != null)
-      {
-        _cursorPos.value = null;
-        _viewState.repaintNotifier.repaint();
-      }
-      //the stylus is gone, its button cannot be released anymore (no pick without a cursor)
-      _setStylusButton(pressed: false);
-    }
-  }
-
-  void _stylusHoverExit({required final Duration timeStamp})
-  {
-    _hoverExitReported = true;
-    _hoverExitTime = timeStamp;
-    //the delay lets a following touch down of the stylus keep the cursor
-    _restartCursorTimeout(milliseconds: _CanvasOptions.hoverExitDelay);
-  }
-
-  //every stylus event carries the button state; Android drops the button events while hovering
-  void _sampleStylusButton({required final PointerEvent details})
-  {
-    final bool pressed = (details.buttons & kSecondaryButton) != 0;
-    if (!pressed)
-    {
-      _stylusButtonSuppressed = false;
-    }
-    else if (_primaryIsDown.value && !_stylusButtonDown.value)
-    {
-      _stylusButtonSuppressed = true;
-    }
-    if (!_stylusButtonSuppressed)
-    {
-      _setStylusButton(pressed: pressed);
-    }
-  }
-
-
-  void _updateLocation({required final PointerEvent details})
-  {
-    if (details.kind == PointerDeviceKind.touch)
-    {
-      _touchPointers[details.pointer]?.currentPos = details.localPosition;
-    }
-
-    if (details.kind == PointerDeviceKind.touch && _touchPointers.length == 2)
-    {
-      _cursorPos.value = CoordinateSetD(x: (_touchPointers.values.elementAt(0).currentPos.dx + _touchPointers.values.elementAt(1).currentPos.dx) / 2, y: (_touchPointers.values.elementAt(0).currentPos.dy + _touchPointers.values.elementAt(1).currentPos.dy) / 2);
-    }
-    else
-    {
-      _cursorPos.value = CoordinateSetD(x: details.localPosition.dx, y: details.localPosition.dy);
-    }
-    if (kPixPainter.toolPainter != null)
-    {
-      GetIt.I.get<StatusBarState>().updateFromPaint(statusBarData: kPixPainter.toolPainter!.statusBarData);
-
-    }
-
-    //the mouse cursor is hidden when the mouse leaves the canvas instead
-    if (details.kind == PointerDeviceKind.mouse)
-    {
-      _cursorTimeoutTimer?.cancel();
-    }
-    else if (details.kind == PointerDeviceKind.stylus)
-    {
-      _sampleStylusButton(details: details);
-    }
-
-    final Offset cursorOffset = Offset(_cursorPos.value!.x, _cursorPos.value!.y);
-
-    if (_stylusLongMoveStarted.value)
-    {
-      final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / _viewState.zoomFactor.toDouble();
-      final double yOffset = _secondaryStartLoc.dy - _cursorPos.value!.y;
-      final double xOffset = _secondaryStartLoc.dx - _cursorPos.value!.x;
-      final int zoomSteps = (yOffset / _stylusPrefs.stylusZoomStepDistance.value).round();
-      final int toolSizeSteps = (xOffset / _stylusPrefs.stylusSizeStepDistance.value).round();
-      if (!_stylusLongMoveVertical.value && !_stylusLongMoveHorizontal.value)
-      {
-        if (zoomSteps != 0)
-        {
-          _stylusLongMoveVertical.value = true;
-        }
-        else if (toolSizeSteps != 0)
-        {
-          _stylusLongMoveHorizontal.value = true;
-        }
-      }
-
-      if (_stylusLongMoveHorizontal.value && _documentState.timeline.getCurrentLayer() != null)
-      {
-        if (_documentState.timeline.getCurrentLayer() is RasterableLayerState)
-        {
-          _toolState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
-        }
-        else if (_documentState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
-        {
-           final ReferenceLayerState refLayer = _documentState.timeline.getCurrentLayer()! as ReferenceLayerState;
-           refLayer.setZoomSliderValue(newVal: -toolSizeSteps + _stylusToolStartSize);
-        }
-
-      }
-
-      if (_stylusLongMoveVertical.value && _viewState.setZoomLevelByDistance(startZoomLevel: _stylusZoomStartLevel, steps: zoomSteps))
-      {
-        _setOffset(newOffset: cursorOffset - (cursorPositionBeforeZoom * _viewState.zoomFactor.toDouble()));
-      }
-    }
-
-    if (_timerRunning && (_pressStartLoc.value - cursorOffset).distance > _stylusPrefs.stylusLongPressCancelDistance.value)
-    {
-      _timerLongPress.cancel();
-      _timerRunning = false;
-    }
-    if (_timerStylusRunning && (_secondaryStartLoc - cursorOffset).distance > _stylusPrefs.stylusLongPressCancelDistance.value)
-    {
-      _timerStylusBtnLongPress.cancel();
-      _timerStylusRunning = false;
-      _isDragging.value = true;
-      _mouseCursor.value = SystemMouseCursors.move;
-      _dragStartLoc = cursorOffset;
-    }
-
-    if (_isDragging.value)
-    {
-      _setOffset(newOffset: _canvasOffset.value - (_dragStartLoc - cursorOffset));
-      _dragStartLoc = cursorOffset;
-
-      if (details.kind == PointerDeviceKind.touch && _touchPointers.length == 2)
-      {
-        final double currentDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
-        final int zoomSteps = ((currentDistance - _initialTouchZoomDistance) / _touchPrefs.zoomStepDistance.value).round();
-        final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / _viewState.zoomFactor.toDouble();
-        if (_viewState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps))
-        {
-          _setOffset(newOffset: cursorOffset - (cursorPositionBeforeZoom * _viewState.zoomFactor.toDouble()));
-        }
-      }
-    }
-
-    _checkSelectedToolData();
-    _viewState.repaintNotifier.repaint();
-  }
-
-  void _checkSelectedToolData()
-  {
-    if (_toolState.selectedTool == ToolType.select)
-    {
-      if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
-      {
-        final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select]! as SelectionPainter;
-        if (selectionPainter.hasNewSelection && selectionPainter.options.shape.value == SelectShape.polygon)
-        {
-          selectionPainter.hasNewSelection = false;
-          final CoordinateSetI min = CoordinateSetI.getMin(coordList: selectionPainter.polygonPoints);
-          final CoordinateSetI max = CoordinateSetI.getMax(coordList: selectionPainter.polygonPoints);
-          final Set<CoordinateSetI> selection = <CoordinateSetI>{};
-          for (int x = min.x; x <= max.x; x++)
-          {
-            for (int y = min.y; y <= max.y; y++)
-            {
-              final CoordinateSetI checkPoint = CoordinateSetI(x: x, y: y);
-              if (isPointInPolygon(point: checkPoint, polygon: selectionPainter.polygonPoints))
-              {
-                selection.add(checkPoint);
-              }
-            }
-          }
-          _documentState.selectionState.newSelectionFromPolygon(points: selection);
-          selectionPainter.polygonPoints.clear();
-          selectionPainter.polygonDown = false;
-        }
-      }
-    }
-    else if (_toolState.selectedTool == ToolType.pick && !_secondaryIsDown.value)
-    {
-      if (kPixPainter.toolPainterMap[ToolType.pick] != null && kPixPainter.toolPainterMap[ToolType.pick].runtimeType == ColorPickPainter)
-      {
-        final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick]! as ColorPickPainter;
-        final ColorReference? pickedColor = colorPickPainter.selectedColor;
-        colorPickPainter.selectedColor = null;
-        if (pickedColor != null)
-        {
-          _paletteState.colorSelected(color: pickedColor);
-        }
-      }
-    }
-  }
-
-  void _hover({required final PointerHoverEvent details})
-  {
-    if (details.kind != PointerDeviceKind.mouse)
-    {
-      if (details.timeStamp <= _hoverExitTime)
-      {
-        return;
-      }
-      _restartCursorTimeout(milliseconds: _hoverExitReported ? _CanvasOptions.reportedHoverTimeout : _CanvasOptions.cursorTimeout);
-    }
-    _updateLocation(details: details);
-  }
-
-  void _scroll({required final PointerSignalEvent ev})
-  {
-    _cancelOptimalZoom();
-    if (ev is PointerScrollEvent)
-    {
-      //ZOOM
-      if (!_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && !_hotkeyManager.controlIsPressed)
-      {
-        final Offset cursorPositionBeforeZoom = (ev.localPosition - _canvasOffset.value) / _viewState.zoomFactor.toDouble();
-
-        if (ev.scrollDelta.dy < 0.0 && _viewState.increaseZoomLevel())
-        {
-          _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _viewState.zoomFactor.toDouble()));
-        }
-        else if (ev.scrollDelta.dy > 0.0 && _viewState.decreaseZoomLevel())
-        {
-          _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _viewState.zoomFactor.toDouble()));
-        }
-      }
-      //CHANGE TOOL SIZE
-      else if (!_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && _hotkeyManager.controlIsPressed)
-      {
-        if (ev.scrollDelta.dy < 0.0)
-        {
-          if (_documentState.timeline.getCurrentLayer() != null)
-          {
-            if (_documentState.timeline.getCurrentLayer() is RasterableLayerState)
-            {
-              _toolState.setToolSize(1, _toolState.getCurrentToolSize());
-            }
-            else if (_documentState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
-            {
-              final ReferenceLayerState refLayer = _documentState.timeline.getCurrentLayer()! as ReferenceLayerState;
-              refLayer.increaseZoom();
-              _scheduleReferenceLayerCommit(layer: refLayer);
-            }
-          }
-        }
-        else
-        {
-          if (_documentState.timeline.getCurrentLayer() != null)
-          {
-            if (_documentState.timeline.getCurrentLayer() is RasterableLayerState)
-            {
-              _toolState.setToolSize(-1, _toolState.getCurrentToolSize());
-            }
-            else if (_documentState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
-            {
-              final ReferenceLayerState refLayer = _documentState.timeline.getCurrentLayer()! as ReferenceLayerState;
-              refLayer.decreaseZoom();
-              _scheduleReferenceLayerCommit(layer: refLayer);
-            }
-          }
-        }
-        _viewState.repaintNotifier.repaint();
-      }
-      //CHANGE CURRENT LAYER
-      else if (_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && !_hotkeyManager.controlIsPressed)
-      {
-        final LayerManager layerManager = GetIt.I.get<LayerManager>();
-        if (ev.scrollDelta.dy < 0.0)
-        {
-          layerManager.selectLayerAbove();
-        }
-        else
-        {
-          layerManager.selectLayerBelow();
-        }
-      }
-      //MOVE LAYER
-      else if (_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && _hotkeyManager.controlIsPressed)
-      {
-        final LayerManager layerManager = GetIt.I.get<LayerManager>();
-        if (ev.scrollDelta.dy < 0.0)
-        {
-          layerManager.moveUpLayer(layerState: _documentState.timeline.getCurrentLayer());
-        }
-        else
-        {
-          layerManager.moveDownLayer(layerState: _documentState.timeline.getCurrentLayer());
-        }
-      }
-      //CHANGE COLOR SELECTION
-      else if (!_hotkeyManager.shiftIsPressed && _hotkeyManager.altIsPressed && !_hotkeyManager.controlIsPressed)
-      {
-        if (ev.scrollDelta.dy < 0.0)
-        {
-          _paletteState.decrementColorSelection();
-        }
-        else
-        {
-          _paletteState.incrementColorSelection();
-        }
-      }
-    }
-  }
-
-  void _onMouseExit({required final PointerExitEvent pee})
-  {
-    _cursorPos.value = null;
-    _viewState.repaintNotifier.repaint();
-  }
-
-  int _getClosestPixel({required final double value, required final double pixelSize})
-  {
-    final double remainder = value % pixelSize;
-    final double lowerMultiple = value - remainder;
-    return (lowerMultiple / pixelSize).round();
-  }
-
-  ColorReference? _getColorAtCursor()
-  {
-    if (_cursorPos.value == null)
-    {
-      return null;
-    }
-    final double effPixelSize = _viewState.zoomFactor.toDouble() / _viewState.devicePixelRatio;
-    final CoordinateSetI normPos = CoordinateSetI(
-      x: _getClosestPixel(value: _cursorPos.value!.x - _canvasOffset.value.dx, pixelSize: effPixelSize),
-      y: _getClosestPixel(value: _cursorPos.value!.y - _canvasOffset.value.dy, pixelSize: effPixelSize),);
-    return _documentState.getColorFromImageAtPosition(normPos: normPos);
-  }
-
-
-  void _setStylusButton({required final bool pressed})
-  {
-    //only a press over the canvas starts picking, panning or zooming
-    if (pressed && !_stylusButtonDown.value && _cursorPos.value != null)
-    {
-      _secondaryStartLoc = Offset(_cursorPos.value!.x, _cursorPos.value!.y);
-      _stylusButtonDown.value = true;
-      _stylusDownTimeStamp = DateTime.now();
-      //stylusBtnDown();
-      _timerStylusBtnLongPress = Timer(_timeoutLongPress, handleTimeoutStylusBtnLongPress);
-      _timerStylusRunning = true;
-    }
-    else if (!pressed && _stylusButtonDown.value)
-    {
-      final int diffMs = DateTime.now().difference(_stylusDownTimeStamp).inMilliseconds;
-      //if (!_stylusLongMoveStarted.value && !_isDragging.value && _cursorPos.value != null)
-      if (diffMs <= _stylusPrefs.stylusPickMaxDuration.value && _cursorPos.value != null)
-      {
-        if (_shaderOptions.isEnabled.value || (_documentState.timeline.getCurrentLayer() != null && _documentState.timeline.getCurrentLayer() is ShadingLayerState))
-        {
-          final ShaderDirection currentDirection = _shaderOptions.shaderDirection.value;
-          if (currentDirection == ShaderDirection.left)
-          {
-            _shaderOptions.shaderDirection.value = ShaderDirection.right;
-          }
-          else
-          {
-            _shaderOptions.shaderDirection.value = ShaderDirection.left;
-          }
-        }
-        else
-        {
-          final ColorReference? colRef = _getColorAtCursor();
-          if (colRef != null)
-          {
-            _paletteState.colorSelected(color: colRef);
-          }
-        }
-      }
-
-      //stylusBtnUp();
-      _stylusButtonDown.value = false;
-      _timerStylusBtnLongPress.cancel();
-      _timerStylusRunning = false;
-      final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
-      if (_stylusLongMoveHorizontal.value && currentLayer is ReferenceLayerState)
-      {
-        GetIt.I.get<LayerManager>().commitReferenceLayerChange(layer: currentLayer);
-      }
-      _stylusLongMoveStarted.value = false;
-      _stylusLongMoveVertical.value = false;
-      _stylusLongMoveHorizontal.value = false;
-      _isDragging.value = false;
-      _setDefaultCursor();
-    }
-  }
-
- /*
-  void stylusBtnDown()
-  {
-    //print("SECONDARY DOWN");
-  }
-
-
-  void stylusBtnUp()
-  {
-    //print("SECONDARY UP");
-  }
-*/
-
-  void handleTimeoutStylusBtnLongPress()
-  {
-    //print("STYLUS BTN LONG PRESS");
-    _timerStylusRunning = false;
-    _stylusLongMoveStarted.value = true;
-    _stylusZoomStartLevel = _viewState.zoomFactor;
-    if (_documentState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
-    {
-      _stylusToolStartSize = _toolState.getCurrentToolSize();
-    }
-    else if (_documentState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
-    {
-      _stylusToolStartSize = (_documentState.timeline.getCurrentLayer()! as ReferenceLayerState).zoomSliderValue;
-    }
-
-  }
-
-
-
-  void _setOffset({required final Offset newOffset})
-  {
-    final CoordinateSetD coords = CoordinateSetD(x: newOffset.dx, y: newOffset.dy);
-    final CoordinateSetD scaledCanvas = CoordinateSetD(x: _canvasState.canvasSize.x.toDouble() * _viewState.zoomFactor / _viewState.devicePixelRatio, y: _canvasState.canvasSize.y.toDouble() * _viewState.zoomFactor / _viewState.devicePixelRatio);
-    final CoordinateSetD minVisibility = CoordinateSetD(x: _viewportSize.width * _CanvasOptions.minVisibilityFactor, y: _viewportSize.height * _CanvasOptions.minVisibilityFactor);
-
-    coords.x = coords.x.clamp(-scaledCanvas.x + minVisibility.x, _viewportSize.width - minVisibility.x);
-    coords.y = coords.y.clamp(-scaledCanvas.y + minVisibility.y, _viewportSize.height - minVisibility.y);
-
-    _canvasOffset.value = Offset(coords.x, coords.y);
-  }
-
-  void _panZoomEnd({required final PointerPanZoomEndEvent event})
-  {
-    _isDragging.value = false;
-
-  }
-
-  void _panZoomUpdate({required final PointerPanZoomUpdateEvent event})
-  {
-    _cancelOptimalZoom();
-    if (!_isDragging.value)
-    {
-      _isDragging.value = true;
-      _touchZoomStartLevel = _viewState.zoomFactor;
-      _dragStartLoc = event.position;
-      _initialTouchZoomDistance = 0.0;
-    }
-    else
-    {
-      const double factor = 25.0;
-      final double currentDistance = event.scale >= 1.0 ? event.scale * factor - 1 : -(1.0 / event.scale) * factor;
-      final double zoomSteps = (currentDistance - _initialTouchZoomDistance) / _touchPrefs.zoomStepDistance.value;
-      _viewState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps.toInt());
-      if (zoomSteps > -1.0 && zoomSteps < 1.0)
-      {
-        _setOffset(newOffset: _canvasOffset.value + event.panDelta);
-      }
-      _viewState.repaintNotifier.repaint();
-    }
-  }
-
-  void _joystickPan({required final Offset deflection, required final double seconds})
-  {
-    _cancelOptimalZoom();
-    //squared for finer control near the center
-    final double speed = deflection.distanceSquared * _CanvasOptions.joystickPanSpeed;
-    _setOffset(newOffset: _canvasOffset.value - (deflection / deflection.distance) * speed * seconds);
-  }
-
-  void _joystickZoom({required final Offset deflection, required final double seconds})
-  {
-    _cancelOptimalZoom();
-    final int direction = deflection.dy < 0.0 ? 1 : (deflection.dy > 0.0 ? -1 : 0);
-    if (direction != _joystickZoomDirection)
-    {
-      //a fresh deflection zooms one step at once
-      _joystickZoomDirection = direction;
-      _joystickZoomProgress = direction.toDouble();
-    }
-    final double rate = _CanvasOptions.joystickZoomRateMin + (_CanvasOptions.joystickZoomRateMax - _CanvasOptions.joystickZoomRateMin) * deflection.dy.abs();
-    _joystickZoomProgress += direction * rate * seconds;
-    final int steps = _joystickZoomProgress.truncate();
-    if (steps != 0)
-    {
-      _joystickZoomProgress -= steps;
-      final Offset center = _viewportSize.center(Offset.zero);
-      final Offset centerBeforeZoom = (center - _canvasOffset.value) / _viewState.zoomFactor.toDouble();
-      if (_viewState.setZoomLevelByDistance(startZoomLevel: _viewState.zoomFactor, steps: steps))
-      {
-        _setOffset(newOffset: center - (centerBeforeZoom * _viewState.zoomFactor.toDouble()));
-      }
-    }
-  }
-
-  void _joystickZoomRelease()
-  {
-    _joystickZoomDirection = 0;
-    _joystickZoomProgress = 0.0;
-  }
-
-
   @override
   Widget build(final BuildContext context) {
     return Stack(
       children: <Widget>[
         ValueListenableBuilder<MouseCursor>(
-          valueListenable: _mouseCursor,
+          valueListenable: _controller.mouseCursor,
           builder: (final BuildContext context, final MouseCursor cursor, final Widget? child)
           {
             return MouseRegion(
-              onExit: (final PointerExitEvent pee) {_onMouseExit(pee: pee);},
+              onExit: (final PointerExitEvent _) {_controller.mouseExit();},
               cursor: cursor,
               child: child,
             );
           },
           child: Listener(
-            onPointerDown: (final PointerDownEvent pde) {_buttonDown(details: pde);},
-            onPointerMove: (final PointerEvent pe) {_updateLocation(details: pe);},
-            onPointerUp: (final PointerEvent pe) {_buttonUp(details: pe);},
-            onPointerCancel: (final PointerCancelEvent pce) {_buttonCancel(details: pce);},
-            onPointerHover: (final PointerHoverEvent phe) {_hover(details: phe);},
-            onPointerSignal: (final PointerSignalEvent pse) {_scroll(ev: pse);},
-            onPointerPanZoomEnd: (final PointerPanZoomEndEvent event) {_panZoomEnd(event: event);},
-            onPointerPanZoomUpdate: (final PointerPanZoomUpdateEvent event) {_panZoomUpdate(event: event);},
+            onPointerDown: (final PointerDownEvent pde) {_controller.pointerDown(details: pde);},
+            onPointerMove: (final PointerEvent pe) {_controller.pointerMove(details: pe);},
+            onPointerUp: (final PointerEvent pe) {_controller.pointerUp(details: pe);},
+            onPointerCancel: (final PointerCancelEvent pce) {_controller.pointerCancel(details: pce);},
+            onPointerHover: (final PointerHoverEvent phe) {_controller.pointerHover(details: phe);},
+            onPointerSignal: (final PointerSignalEvent pse) {_controller.pointerSignal(ev: pse);},
+            onPointerPanZoomEnd: (final PointerPanZoomEndEvent _) {_controller.panZoomEnd();},
+            onPointerPanZoomUpdate: (final PointerPanZoomUpdateEvent event) {_controller.panZoomUpdate(event: event);},
             child: Container(
               width: double.infinity,
               height: double.infinity,
@@ -1261,11 +184,11 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
               child: LayoutBuilder(
                 builder: (final BuildContext context, final BoxConstraints constraints)
                 {
-                  _viewportSizeChanged(size: constraints.biggest);
+                  _controller.viewportSizeChanged(size: constraints.biggest);
                   return RepaintBoundary(
                     child: CustomPaint(
                       willChange: true,
-                      painter: kPixPainter,
+                      painter: _controller.painter,
                     ),
                   );
                 },
@@ -1293,8 +216,8 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
                         bottom: _CanvasOptions.joystickPadding,
                         child: TouchJoystickWidget(
                           axis: JoystickAxis.vertical,
-                          onTick: _joystickZoom,
-                          onRelease: _joystickZoomRelease,
+                          onTick: _controller.viewport.joystickZoom,
+                          onRelease: _controller.viewport.joystickZoomRelease,
                         ),
                       ),
                       Positioned(
@@ -1302,7 +225,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
                         bottom: _CanvasOptions.joystickPadding,
                         child: TouchJoystickWidget(
                           axis: JoystickAxis.free,
-                          onTick: _joystickPan,
+                          onTick: _controller.viewport.joystickPan,
                         ),
                       ),
                     ],

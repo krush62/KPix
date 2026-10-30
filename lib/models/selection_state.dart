@@ -82,6 +82,13 @@ enum SelectionActionResult
   lockedLayerTransform,
 }
 
+enum _Placement
+{
+  start,
+  center,
+  end,
+}
+
 
 class SelectionState with ChangeNotifier
 {
@@ -492,75 +499,70 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  SelectionActionResult delete({final bool notify = true, final bool keepSelection = true, final bool addToHistoryStack = true})
+  /// Runs [change] if the current layer is a drawing layer that is neither
+  /// hidden nor locked; otherwise reports [hidden] or [locked]. A change that
+  /// succeeds repaints and re-rasters the layer when [notify] is set.
+  SelectionActionResult _changeDrawingLayer({
+    required final SelectionActionResult hidden,
+    required final SelectionActionResult locked,
+    required final bool notify,
+    required final SelectionActionResult Function() change,
+  })
   {
-    SelectionActionResult result = SelectionActionResult.notApplicable;
     final LayerState? layer = _documentState.timeline.getCurrentLayer();
-    if (layer != null && layer is DrawingLayerState)
+    if (layer is! DrawingLayerState)
     {
-      if (layer.visibilityState.value == LayerVisibilityState.hidden)
-      {
-        result = SelectionActionResult.hiddenLayerDelete;
-      }
-      else if (layer.lockState.value == LayerLockState.locked)
-      {
-        result = SelectionActionResult.lockedLayerDelete;
-      }
-      else
-      {
-        result = SelectionActionResult.success;
-        selection.delete(keepSelection: keepSelection);
-        if (addToHistoryStack)
-        {
-          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionDelete, originLayer: _documentState.timeline.getCurrentLayer());
-        }
-        if (!keepSelection)
-        {
-          createSelectionLines();
-        }
-      }
-      if (notify)
-      {
-        notifyRepaint();
-        layer.doManualRaster = true;
-      }
+      return SelectionActionResult.notApplicable;
+    }
+    if (layer.visibilityState.value == LayerVisibilityState.hidden)
+    {
+      return hidden;
+    }
+    if (layer.lockState.value == LayerLockState.locked)
+    {
+      return locked;
+    }
+    final SelectionActionResult result = change();
+    if (notify && result == SelectionActionResult.success)
+    {
+      notifyRepaint();
+      layer.doManualRaster = true;
     }
     return result;
   }
 
+  SelectionActionResult delete({final bool notify = true, final bool keepSelection = true, final bool addToHistoryStack = true})
+  {
+    return _changeDrawingLayer(hidden: SelectionActionResult.hiddenLayerDelete, locked: SelectionActionResult.lockedLayerDelete, notify: notify, change: ()
+    {
+      selection.delete(keepSelection: keepSelection);
+      if (addToHistoryStack)
+      {
+        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionDelete, originLayer: _documentState.timeline.getCurrentLayer());
+      }
+      if (!keepSelection)
+      {
+        createSelectionLines();
+      }
+      return SelectionActionResult.success;
+    },);
+  }
+
   SelectionActionResult cut({final bool notify = true, final bool keepSelection = false, final bool addToHistoryStack = true})
   {
-    SelectionActionResult result = SelectionActionResult.notApplicable;
-    final LayerState? layer = _documentState.timeline.getCurrentLayer();
-    if (layer != null && layer is DrawingLayerState)
+    return _changeDrawingLayer(hidden: SelectionActionResult.hiddenLayerCut, locked: SelectionActionResult.lockedLayerCut, notify: notify, change: ()
     {
-      if (layer.visibilityState.value == LayerVisibilityState.hidden)
+      final SelectionActionResult copied = copy(notify: false, keepSelection: true);
+      if (copied == SelectionActionResult.success)
       {
-        result = SelectionActionResult.hiddenLayerCut;
-      }
-      else if (layer.lockState.value == LayerLockState.locked)
-      {
-        result = SelectionActionResult.lockedLayerCut;
-      }
-      else
-      {
-        result = copy(notify: false, keepSelection: true);
-        if (result == SelectionActionResult.success)
+        delete(notify: false, addToHistoryStack: false);
+        if (addToHistoryStack)
         {
-          delete(notify: false);
-          if (addToHistoryStack)
-          {
-            GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionCut, originLayer: _documentState.timeline.getCurrentLayer());
-          }
-          if (notify)
-          {
-            notifyRepaint();
-            layer.doManualRaster = true;
-          }
+          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionCut, originLayer: _documentState.timeline.getCurrentLayer());
         }
       }
-    }
-    return result;
+      return copied;
+    },);
   }
 
   SelectionActionResult copy({final bool notify = true, final bool keepSelection = false})
@@ -732,106 +734,33 @@ class SelectionState with ChangeNotifier
     return (SelectionActionResult.success, layerResult.$1);
   }
 
+  SelectionActionResult _transform({required final void Function() transform, required final HistoryStateTypeIdentifier identifier, required final bool notify, required final bool addToHistoryStack})
+  {
+    return _changeDrawingLayer(hidden: SelectionActionResult.hiddenLayerTransform, locked: SelectionActionResult.lockedLayerTransform, notify: notify, change: ()
+    {
+      transform();
+      createSelectionLines();
+      if (addToHistoryStack)
+      {
+        GetIt.I.get<HistoryManager>().addState(identifier: identifier, originLayer: _documentState.timeline.getCurrentLayer());
+      }
+      return SelectionActionResult.success;
+    },);
+  }
+
   SelectionActionResult flipH({final bool notify = true, final bool addToHistoryStack = true})
   {
-    SelectionActionResult result = SelectionActionResult.notApplicable;
-    final LayerState? layer = _documentState.timeline.getCurrentLayer();
-    if (layer != null && layer is DrawingLayerState)
-    {
-      if (layer.visibilityState.value == LayerVisibilityState.hidden)
-      {
-        result = SelectionActionResult.hiddenLayerTransform;
-      }
-      else if (layer.lockState.value == LayerLockState.locked)
-      {
-        result = SelectionActionResult.lockedLayerTransform;
-      }
-      else
-      {
-        result = SelectionActionResult.success;
-        selection.flipH();
-        createSelectionLines();
-        if (addToHistoryStack)
-        {
-          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionFlipH, originLayer: _documentState.timeline.getCurrentLayer());
-        }
-
-        if (notify)
-        {
-          notifyRepaint();
-          layer.doManualRaster = true;
-        }
-      }
-    }
-    return result;
+    return _transform(transform: selection.flipH, identifier: HistoryStateTypeIdentifier.selectionFlipH, notify: notify, addToHistoryStack: addToHistoryStack);
   }
 
   SelectionActionResult flipV({final bool notify = true, final bool addToHistoryStack = true})
   {
-    SelectionActionResult result = SelectionActionResult.notApplicable;
-    final LayerState? layer = _documentState.timeline.getCurrentLayer();
-    if (layer != null && layer is DrawingLayerState)
-    {
-      if (layer.visibilityState.value == LayerVisibilityState.hidden)
-      {
-        result = SelectionActionResult.hiddenLayerTransform;
-      }
-      else if (layer.lockState.value == LayerLockState.locked)
-      {
-        result = SelectionActionResult.lockedLayerTransform;
-      }
-      else
-      {
-        result = SelectionActionResult.success;
-        selection.flipV();
-        createSelectionLines();
-        if (addToHistoryStack)
-        {
-          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionFlipV, originLayer: _documentState.timeline.getCurrentLayer());
-        }
-
-        if (notify)
-        {
-          notifyRepaint();
-          layer.doManualRaster = true;
-        }
-      }
-    }
-    return result;
+    return _transform(transform: selection.flipV, identifier: HistoryStateTypeIdentifier.selectionFlipV, notify: notify, addToHistoryStack: addToHistoryStack);
   }
 
   SelectionActionResult rotate({final bool notify = true, final bool addToHistoryStack = true})
   {
-    SelectionActionResult result = SelectionActionResult.notApplicable;
-    final LayerState? layer = _documentState.timeline.getCurrentLayer();
-    if (layer != null && layer is DrawingLayerState)
-    {
-      if (layer.visibilityState.value == LayerVisibilityState.hidden)
-      {
-        result = SelectionActionResult.hiddenLayerTransform;
-      }
-      else if (layer.lockState.value == LayerLockState.locked)
-      {
-        result = SelectionActionResult.lockedLayerTransform;
-      }
-      else
-      {
-        result = SelectionActionResult.success;
-        selection.rotate90cw();
-        createSelectionLines();
-        if (addToHistoryStack)
-        {
-          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.selectionRotate, originLayer: _documentState.timeline.getCurrentLayer());
-        }
-
-        if (notify)
-        {
-          notifyRepaint();
-          layer.doManualRaster = true;
-        }
-      }
-    }
-    return result;
+    return _transform(transform: selection.rotate90cw, identifier: HistoryStateTypeIdentifier.selectionRotate, notify: notify, addToHistoryStack: addToHistoryStack);
   }
 
   void _moveSelection({required final CoordinateSetI offset, required final bool withContent})
@@ -862,82 +791,60 @@ class SelectionState with ChangeNotifier
 
   void centerSelectionH()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox();
-    if (topLeft != null && bottomRight != null)
-    {
-      final int width = bottomRight.x - topLeft.x;
-      final int newX = (_canvasState.canvasSize.x / 2 - width / 2).floor();
-      if (newX != topLeft.x)
-      {
-        final CoordinateSetI offset = CoordinateSetI(x: newX - topLeft.x, y: 0);
-        _moveSelection(offset: offset, withContent: true);
-      }
-    }
+    _alignSelection(horizontal: _Placement.center);
   }
 
   void centerSelectionV()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox();
-    if (topLeft != null && bottomRight != null)
-    {
-      final int height = bottomRight.y - topLeft.y;
-      final int newY = (_canvasState.canvasSize.y / 2 - height / 2).floor();
-      if (newY != topLeft.y)
-      {
-        final CoordinateSetI offset = CoordinateSetI(x: 0, y: newY - topLeft.y);
-        _moveSelection(offset: offset, withContent: true);
-      }
-    }
+    _alignSelection(vertical: _Placement.center);
   }
 
   void alignSelectionLeft()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox();
-    if (topLeft != null && topLeft.x != 0)
-    {
-      final CoordinateSetI offset = CoordinateSetI(x: -topLeft.x, y: 0);
-      _moveSelection(offset: offset, withContent: true);
-    }
+    _alignSelection(horizontal: _Placement.start);
   }
 
   void alignSelectionRight()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox();
-    if (topLeft != null && bottomRight != null)
-    {
-      final int width = bottomRight.x - topLeft.x;
-      final int newX = _canvasState.canvasSize.x - width - 1;
-      if (newX != topLeft.x)
-      {
-        final CoordinateSetI offset = CoordinateSetI(x: newX - topLeft.x, y: 0);
-        _moveSelection(offset: offset, withContent: true);
-      }
-    }
+    _alignSelection(horizontal: _Placement.end);
   }
 
   void alignSelectionTop()
   {
-    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox();
-    if (topLeft != null && topLeft.y != 0)
-    {
-      final CoordinateSetI offset = CoordinateSetI(x: 0, y: -topLeft.y);
-      _moveSelection(offset: offset, withContent: true);
-    }
+    _alignSelection(vertical: _Placement.start);
   }
 
   void alignSelectionBottom()
   {
+    _alignSelection(vertical: _Placement.end);
+  }
+
+  /// Moves the selection with its content to [horizontal] and [vertical] on the
+  /// canvas; an axis without a placement keeps its position.
+  void _alignSelection({final _Placement? horizontal, final _Placement? vertical})
+  {
     final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox();
-    if (topLeft != null && bottomRight != null)
+    if (topLeft == null || bottomRight == null)
     {
-      final int height = bottomRight.y - topLeft.y;
-      final int newY = _canvasState.canvasSize.y - height - 1;
-      if (newY != topLeft.y)
-      {
-        final CoordinateSetI offset = CoordinateSetI(x: 0, y: newY - topLeft.y);
-        _moveSelection(offset: offset, withContent: true);
-      }
+      return;
     }
+    final int x = horizontal == null ? topLeft.x : _placed(placement: horizontal, extent: bottomRight.x - topLeft.x, canvas: _canvasState.canvasSize.x);
+    final int y = vertical == null ? topLeft.y : _placed(placement: vertical, extent: bottomRight.y - topLeft.y, canvas: _canvasState.canvasSize.y);
+    if (x != topLeft.x || y != topLeft.y)
+    {
+      _moveSelection(offset: CoordinateSetI(x: x - topLeft.x, y: y - topLeft.y), withContent: true);
+    }
+  }
+
+  /// Where a box spanning [extent] pixels past its first starts when placed on a canvas [canvas] pixels long.
+  static int _placed({required final _Placement placement, required final int extent, required final int canvas})
+  {
+    return switch (placement)
+    {
+      _Placement.start => 0,
+      _Placement.center => (canvas / 2 - extent / 2).floor(),
+      _Placement.end => canvas - extent - 1,
+    };
   }
 
 }

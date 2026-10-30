@@ -41,14 +41,7 @@ import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/file/save_as_widget.dart';
 import 'package:kpix/widgets/file/shader_export_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/widgets/overlays/overlay_add_new_layer_menu.dart';
-import 'package:kpix/widgets/overlays/overlay_drawing_layer_menu.dart';
-import 'package:kpix/widgets/overlays/overlay_drawing_layer_menu_linked.dart';
-import 'package:kpix/widgets/overlays/overlay_load_menu.dart';
-import 'package:kpix/widgets/overlays/overlay_raster_layer_menu.dart';
-import 'package:kpix/widgets/overlays/overlay_reduced_layer_menu.dart';
-import 'package:kpix/widgets/overlays/overlay_save_menu.dart';
-import 'package:kpix/widgets/overlays/overlay_selection_align_menu.dart';
+import 'package:kpix/widgets/overlays/overlay_button_menu.dart';
 import 'package:kpix/widgets/palette/palette_adjustment_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/save_palette_widget.dart';
@@ -323,7 +316,14 @@ KPixOverlay _messageDialog({
   );
 }
 
-/// An overlay holding the [OverlayLoadMenu] anchored at [anchorKey].
+/// [label] followed by the shortcut of [action], where the platform shows shortcuts.
+String _withShortcut({required final String label, required final HotkeyAction action, required final BuildContext context})
+{
+  return label + GetIt.I.get<HotkeyManager>().getShortcutString(action: action, context: context);
+}
+
+/// An overlay holding the menu for starting, opening and importing a project,
+/// anchored at [anchorKey].
 ///
 /// [onDismiss] is called when the barrier behind the menu is tapped.
 KPixOverlay getLoadMenu({
@@ -338,11 +338,16 @@ KPixOverlay getLoadMenu({
     onDismiss: onDismiss,
     onEscape: onDismiss,
     smokeOpacity: OverlayEntrySubMenuOptions.smokeOpacity,
-    content: (final BuildContext context) => OverlayLoadMenu(anchorKey: anchorKey, onNewFile: onNewFile, onImportFile: onImportFile, onLoadFile: onLoadFile),
+    content: (final BuildContext context) => OverlayButtonMenu.below(anchorKey: anchorKey, entries: <OverlayMenuEntry>[
+      OverlayMenuEntry(tooltip: _withShortcut(label: AppLocalizations.of(context)!.newProject, action: HotkeyAction.generalNew, context: context), icon: TablerIcons.file, onPressed: onNewFile),
+      OverlayMenuEntry(tooltip: _withShortcut(label: AppLocalizations.of(context)!.openProject, action: HotkeyAction.generalOpen, context: context), icon: TablerIcons.folder_open, onPressed: onLoadFile),
+      OverlayMenuEntry(tooltip: AppLocalizations.of(context)!.importImage, icon: TablerIcons.file_import, onPressed: onImportFile),
+    ],),
   );
 }
 
-/// An overlay holding the [OverlaySaveMenu] anchored at [anchorKey].
+/// An overlay holding the menu for saving and exporting the current project,
+/// anchored at [anchorKey].
 ///
 /// [onDismiss] is called when the barrier behind the menu is tapped.
 KPixOverlay getSaveMenu({
@@ -358,11 +363,25 @@ KPixOverlay getSaveMenu({
     onDismiss: onDismiss,
     onEscape: onDismiss,
     smokeOpacity: OverlayEntrySubMenuOptions.smokeOpacity,
-    content: (final BuildContext context) => OverlaySaveMenu(anchorKey: anchorKey, onSaveFile: onSaveFile, onSaveAsFile: onSaveAsFile, onExportFile: onExportFile, onShaderExport: onShaderExport,),
+    content: (final BuildContext context) => OverlayButtonMenu.below(anchorKey: anchorKey, entries: <OverlayMenuEntry>[
+      OverlayMenuEntry(tooltip: _withShortcut(label: AppLocalizations.of(context)!.saveProject, action: HotkeyAction.generalSave, context: context), icon: Icons.save, onPressed: onSaveFile),
+      OverlayMenuEntry(tooltip: _withShortcut(label: AppLocalizations.of(context)!.saveProjectAs, action: HotkeyAction.generalSaveAs, context: context), icon: Icons.save_as, onPressed: onSaveAsFile),
+      OverlayMenuEntry(tooltip: _withShortcut(label: AppLocalizations.of(context)!.exportProjectPalette, action: HotkeyAction.generalExport, context: context), icon: TablerIcons.file_export, onPressed: onExportFile),
+      OverlayMenuEntry(tooltip: AppLocalizations.of(context)!.exportShaderImage, icon: TablerIcons.photo_share, onPressed: onShaderExport),
+    ],),
   );
 }
 
-/// An overlay holding the [OverlayDrawingLayerMenu] anchored at [anchorKey].
+/// The delete and duplicate entries every layer menu starts with.
+List<OverlayMenuEntry> _layerMenuEntries({required final BuildContext context, required final Function() onDelete, required final Function() onDuplicate})
+{
+  return <OverlayMenuEntry>[
+    OverlayMenuEntry(tooltip: _withShortcut(label: AppLocalizations.of(context)!.deleteLayer, action: HotkeyAction.layersDelete, context: context), icon: TablerIcons.trash, onPressed: onDelete),
+    OverlayMenuEntry(tooltip: _withShortcut(label: AppLocalizations.of(context)!.duplicateLayer, action: HotkeyAction.layersDuplicate, context: context), icon: TablerIcons.squares, onPressed: onDuplicate),
+  ];
+}
+
+/// An overlay holding the menu of an unlinked drawing layer, anchored at [anchorKey].
 ///
 /// [onDismiss] is called when the barrier behind the menu is tapped.
 KPixOverlay getDrawingLayerMenu({
@@ -377,11 +396,14 @@ KPixOverlay getDrawingLayerMenu({
     onDismiss: onDismiss,
     onEscape: onDismiss,
     smokeOpacity: OverlayEntrySubMenuOptions.smokeOpacity,
-    content: (final BuildContext context) => OverlayDrawingLayerMenu(onDelete: onDelete, onMergeDown: onMergeDown, onDuplicate: onDuplicate, anchorKey: anchorKey),
+    content: (final BuildContext context) => OverlayButtonMenu.leftOfLayer(anchorKey: anchorKey, entries: <OverlayMenuEntry>[
+      ..._layerMenuEntries(context: context, onDelete: onDelete, onDuplicate: onDuplicate),
+      OverlayMenuEntry(tooltip: _withShortcut(label: AppLocalizations.of(context)!.mergeDownLayer, action: HotkeyAction.layersMerge, context: context), icon: TablerIcons.arrow_merge_left, onPressed: onMergeDown, rotateIcon: true),
+    ],),
   );
 }
 
-/// An overlay holding the [OverlayDrawingLayerMenuLinked] anchored at [anchorKey].
+/// An overlay holding the menu of a linked drawing layer, anchored at [anchorKey].
 ///
 /// [onDismiss] is called when the barrier behind the menu is tapped.
 KPixOverlay getDrawingLayerMenuLinked({
@@ -396,11 +418,15 @@ KPixOverlay getDrawingLayerMenuLinked({
     onDismiss: onDismiss,
     onEscape: onDismiss,
     smokeOpacity: OverlayEntrySubMenuOptions.smokeOpacity,
-    content: (final BuildContext context) => OverlayDrawingLayerMenuLinked(onDelete: onDelete, onUnlink: onUnlink, onDuplicate: onDuplicate, anchorKey: anchorKey),
+    content: (final BuildContext context) => OverlayButtonMenu.leftOfLayer(anchorKey: anchorKey, entries: <OverlayMenuEntry>[
+      ..._layerMenuEntries(context: context, onDelete: onDelete, onDuplicate: onDuplicate),
+      OverlayMenuEntry(tooltip: AppLocalizations.of(context)!.unlinkLayer, icon: TablerIcons.link_off, onPressed: onUnlink),
+    ],),
   );
 }
 
-/// An overlay holding the [OverlayReducedLayerMenu] anchored at [anchorKey].
+/// An overlay holding the menu of a layer that offers only deleting and
+/// duplicating, anchored at [anchorKey].
 ///
 /// [onDismiss] is called when the barrier behind the menu is tapped.
 KPixOverlay getReducedLayerMenu({
@@ -414,11 +440,12 @@ KPixOverlay getReducedLayerMenu({
     onDismiss: onDismiss,
     onEscape: onDismiss,
     smokeOpacity: OverlayEntrySubMenuOptions.smokeOpacity,
-    content: (final BuildContext context) => OverlayReducedLayerMenu(onDelete: onDelete, onDuplicate: onDuplicate, anchorKey: anchorKey),
+    content: (final BuildContext context) => OverlayButtonMenu.leftOfLayer(anchorKey: anchorKey, entries: _layerMenuEntries(context: context, onDelete: onDelete, onDuplicate: onDuplicate)),
   );
 }
 
-/// An overlay holding the [OverlayRasterLayerMenu] anchored at [anchorKey].
+/// An overlay holding the menu of a layer whose content is generated and can be
+/// turned into a drawing layer, anchored at [anchorKey].
 ///
 /// [onDismiss] is called when the barrier behind the menu is tapped.
 KPixOverlay getRasterLayerMenu({
@@ -433,11 +460,15 @@ KPixOverlay getRasterLayerMenu({
     onDismiss: onDismiss,
     onEscape: onDismiss,
     smokeOpacity: OverlayEntrySubMenuOptions.smokeOpacity,
-    content: (final BuildContext context) => OverlayRasterLayerMenu(anchorKey: anchorKey, onDuplicate: onDuplicate, onDelete: onDelete, onRaster: onRaster),
+    content: (final BuildContext context) => OverlayButtonMenu.leftOfLayer(anchorKey: anchorKey, entries: <OverlayMenuEntry>[
+      ..._layerMenuEntries(context: context, onDelete: onDelete, onDuplicate: onDuplicate),
+      OverlayMenuEntry(tooltip: AppLocalizations.of(context)!.rasterLayer, icon: TablerIcons.brush, onPressed: onRaster),
+    ],),
   );
 }
 
-/// An overlay holding the [OverlayAddNewLayerMenu] anchored at [anchorKey].
+/// An overlay holding the menu with one button per layer type that can be
+/// created, anchored at [anchorKey].
 ///
 /// [onDismiss] is called when the barrier behind the menu is tapped.
 KPixOverlay getAddNewLayerMenu({
@@ -454,18 +485,18 @@ KPixOverlay getAddNewLayerMenu({
     onDismiss: onDismiss,
     onEscape: onDismiss,
     smokeOpacity: OverlayEntrySubMenuOptions.smokeOpacity,
-    content: (final BuildContext context) => OverlayAddNewLayerMenu(
-      anchorKey: anchorKey,
-      onNewDrawingLayer: onNewDrawingLayer,
-      onNewReferenceLayer: onNewReferenceLayer,
-      onNewGridLayer: onNewGridLayer,
-      onNewShadingLayer: onNewShadingLayer,
-      onNewDitherLayer: onNewDitherLayer,
-    ),
+    content: (final BuildContext context) => OverlayButtonMenu.below(anchorKey: anchorKey, entries: <OverlayMenuEntry>[
+      OverlayMenuEntry(tooltip: _withShortcut(label: AppLocalizations.of(context)!.addNewDrawingLayer, action: HotkeyAction.layersNewDrawing, context: context), icon: TablerIcons.brush, onPressed: onNewDrawingLayer),
+      OverlayMenuEntry(tooltip: _withShortcut(label: AppLocalizations.of(context)!.addNewShadingLayer, action: HotkeyAction.layersNewShading, context: context), icon: TablerIcons.exposure, onPressed: onNewShadingLayer),
+      OverlayMenuEntry(tooltip: AppLocalizations.of(context)!.addNewDitherLayer, icon: Icons.gradient, onPressed: onNewDitherLayer),
+      OverlayMenuEntry(tooltip: _withShortcut(label: AppLocalizations.of(context)!.addNewReferenceLayer, action: HotkeyAction.layersNewReference, context: context), icon: Icons.photo, onPressed: onNewReferenceLayer),
+      OverlayMenuEntry(tooltip: _withShortcut(label: AppLocalizations.of(context)!.addNewGridLayer, action: HotkeyAction.layersNewGrid, context: context), icon: Icons.grid_4x4, onPressed: onNewGridLayer),
+    ],),
   );
 }
 
-/// An overlay holding the [OverlaySelectionAlignMenu] anchored at [anchorKey].
+/// An overlay holding the menu for aligning the current selection, anchored
+/// above [anchorKey] because it opens from the selection bar.
 ///
 /// [onDismiss] is called when the barrier behind the menu is tapped. The menu
 /// stays open after an alignment, so several can be applied in a row.
@@ -484,16 +515,14 @@ KPixOverlay getSelectionAlignMenu({
     onDismiss: onDismiss,
     onEscape: onDismiss,
     smokeOpacity: OverlayEntrySubMenuOptions.smokeOpacity,
-    content: (final BuildContext context) => OverlaySelectionAlignMenu(
-      anchorKey: anchorKey,
-      onDismiss: onDismiss,
-      onAlignLeft: onAlignLeft,
-      onAlignRight: onAlignRight,
-      onAlignTop: onAlignTop,
-      onAlignBottom: onAlignBottom,
-      onAlignCenterH: onAlignCenterH,
-      onAlignCenterV: onAlignCenterV,
-    ),
+    content: (final BuildContext context) => OverlayButtonMenu.above(anchorKey: anchorKey, width: OverlayEntrySubMenuOptions.width / 3, entries: <OverlayMenuEntry>[
+      OverlayMenuEntry(tooltip: AppLocalizations.of(context)!.centerHorizontally, icon: TablerIcons.layout_align_middle, onPressed: onAlignCenterH),
+      OverlayMenuEntry(tooltip: AppLocalizations.of(context)!.centerVertically, icon: TablerIcons.layout_align_center, onPressed: onAlignCenterV),
+      OverlayMenuEntry(tooltip: AppLocalizations.of(context)!.left, icon: TablerIcons.layout_align_left, onPressed: onAlignLeft),
+      OverlayMenuEntry(tooltip: AppLocalizations.of(context)!.right, icon: TablerIcons.layout_align_right, onPressed: onAlignRight),
+      OverlayMenuEntry(tooltip: AppLocalizations.of(context)!.top, icon: TablerIcons.layout_align_top, onPressed: onAlignTop),
+      OverlayMenuEntry(tooltip: AppLocalizations.of(context)!.bottom, icon: TablerIcons.layout_align_bottom, onPressed: onAlignBottom),
+    ],),
   );
 }
 

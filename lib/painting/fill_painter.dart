@@ -23,6 +23,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
@@ -94,13 +95,7 @@ class FillPainter extends IToolPainter
       drawParams.paint.color = Colors.black;
       drawParams.canvas.drawPath(fillPath, drawParams.paint);
 
-      drawParams.paint.style = PaintingStyle.stroke;
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = Colors.black;
-      drawParams.canvas.drawPath(outlinePath, drawParams.paint);
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = Colors.white;
-      drawParams.canvas.drawPath(outlinePath, drawParams.paint);
+      strokeOutline(drawParams: drawParams, path: outlinePath, opaque: true);
     }
 
   }
@@ -461,6 +456,9 @@ class FillPainter extends IToolPainter
     super.setStatusBarData(drawParams: drawParams);
     statusBarData.cursorPos = drawParams.cursorPosNorm;
   }
+
+  @override
+  HistoryStateTypeIdentifier get historyIdentifier => HistoryStateTypeIdentifier.toolFill;
 
   @override
   void reset()

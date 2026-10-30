@@ -21,6 +21,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/font_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
@@ -180,20 +181,10 @@ class FontPainter extends IToolPainter
 
     void _dumpDrawing({required final DrawingParameters drawParams, required final CoordinateColorMap drawingPixels})
     {
-      if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer is DrawingLayerState)
+      final RasterableLayerState? layer = drawParams.currentRasterLayer;
+      if (layer is DrawingLayerState)
       {
-        if (!documentState.selectionState.selection.isEmpty)
-        {
-          documentState.selectionState.selection.addDirectlyAll(list: drawingPixels);
-        }
-        /*else if (!_shaderOptions.isEnabled.value)
-      {
-        documentState.selectionState.add(data: drawingPixels, notify: false);
-      }*/
-        else
-        {
-          (drawParams.currentRasterLayer! as DrawingLayerState).setDataAll(list: drawingPixels);
-        }
+        commitPixels(layer: layer, pixels: drawingPixels);
         hasHistoryData = true;
       }
     }
@@ -242,6 +233,9 @@ class FontPainter extends IToolPainter
     super.setStatusBarData(drawParams: drawParams);
     statusBarData.cursorPos = drawParams.cursorPosNorm;
   }
+
+  @override
+  HistoryStateTypeIdentifier get historyIdentifier => HistoryStateTypeIdentifier.toolText;
 
   @override
   void reset()

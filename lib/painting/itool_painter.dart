@@ -34,6 +34,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/kpix_painter_options.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
@@ -315,6 +316,7 @@ abstract class IToolPainter
   void drawCursorOutline({required final DrawingParameters drawParams});
   CursorInfo? getCursorInfo({required final DrawingParameters drawParams}) => null;
   void reset() {}
+  HistoryStateTypeIdentifier get historyIdentifier => HistoryStateTypeIdentifier.generic;
   void setStatusBarData({required final DrawingParameters drawParams})
   {
     statusBarData.cursorPos = null;
@@ -330,6 +332,56 @@ abstract class IToolPainter
     final int height = (endPos.y - startPos.y).abs() + 1;
     statusBarData.aspectRatio = statusBarData.diagonal = statusBarData.dimension = CoordinateSetI(x: width, y: height);
     statusBarData.angle = startPos;
+  }
+
+  /// Writes [pixels] into the floating selection if there is one, into [layer] otherwise.
+  void commitPixels({required final DrawingLayerState layer, required final CoordinateColorMap pixels})
+  {
+    if (!documentState.selectionState.selection.isEmpty)
+    {
+      documentState.selectionState.selection.addDirectlyAll(list: pixels);
+    }
+    else
+    {
+      layer.setDataAll(list: pixels);
+    }
+  }
+
+  /// The outline of the pixels [coords] on screen.
+  Path pixelOutlinePath({required final DrawingParameters drawParams, required final Set<CoordinateSetI> coords})
+  {
+    final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
+    final List<CoordinateSetI> pathPoints = getBoundaryPath(coords: coords);
+    final Path path = Path();
+    for (int i = 0; i < pathPoints.length; i++)
+    {
+      if (i == 0)
+      {
+        path.moveTo((pathPoints[i].x * effPxlSize) + drawParams.offset.dx, (pathPoints[i].y * effPxlSize) + drawParams.offset.dy);
+      }
+
+      if (i < pathPoints.length - 1)
+      {
+        path.lineTo((pathPoints[i + 1].x * effPxlSize) + drawParams.offset.dx, (pathPoints[i + 1].y * effPxlSize) + drawParams.offset.dy);
+      }
+      else
+      {
+        path.lineTo((pathPoints[0].x * effPxlSize) + drawParams.offset.dx, (pathPoints[0].y * effPxlSize) + drawParams.offset.dy);
+      }
+    }
+    return path;
+  }
+
+  /// Strokes [path] wide in dark and then narrow in light, as the tools outline their cursors.
+  void strokeOutline({required final DrawingParameters drawParams, required final Path path, final bool opaque = false})
+  {
+    drawParams.paint.style = PaintingStyle.stroke;
+    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+    drawParams.paint.color = opaque ? Colors.black : blackToolAlphaColor;
+    drawParams.canvas.drawPath(path, drawParams.paint);
+    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+    drawParams.paint.color = opaque ? Colors.white : whiteToolAlphaColor;
+    drawParams.canvas.drawPath(path, drawParams.paint);
   }
 
   Set<CoordinateSetI> getRoundSquareContentPoints({required final PencilShape shape, required final int size, required final CoordinateSetI position})

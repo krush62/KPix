@@ -23,6 +23,7 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/constraints/tool_line_constraints.dart';
 import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/status_bar_data.dart';
 import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
@@ -191,14 +192,7 @@ class LinePainter extends IToolPainter
           if (rasterLayer is DrawingLayerState)
           {
             final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
-            if (!documentState.selectionState.selection.isEmpty)
-            {
-              documentState.selectionState.selection.addDirectlyAll(list: drawingPixels);
-            }
-            else
-            {
-              rasterLayer.setDataAll(list: drawingPixels);
-            }
+            commitPixels(layer: rasterLayer, pixels: drawingPixels);
           }
           else if (rasterLayer is ShadingLayerState)
           {
@@ -392,14 +386,7 @@ class LinePainter extends IToolPainter
       }
       path.close();
     }
-
-    drawParams.paint.style = PaintingStyle.stroke;
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-    drawParams.paint.color = blackToolAlphaColor;
-    drawParams.canvas.drawPath(path, drawParams.paint);
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-    drawParams.paint.color = whiteToolAlphaColor;
-    drawParams.canvas.drawPath(path, drawParams.paint);
+    strokeOutline(drawParams: drawParams, path: path);
   }
 
   Set<CoordinateSetI> _calculateQuadraticBezierCurve(
@@ -476,6 +463,9 @@ class LinePainter extends IToolPainter
       _lineStartPos;
     return CursorInfo.line(startPos: startPos, endPos: endPos);
   }
+
+  @override
+  HistoryStateTypeIdentifier get historyIdentifier => HistoryStateTypeIdentifier.toolLine;
 
   @override
   void reset()

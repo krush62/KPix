@@ -17,13 +17,13 @@
 import 'dart:collection';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
@@ -286,14 +286,7 @@ class PencilPainter extends IToolPainter
   {
     if (_drawingPixels.isNotEmpty)
     {
-      if (!documentState.selectionState.selection.isEmpty)
-      {
-        documentState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
-      }
-      else
-      {
-        currentLayer.setDataAll(list: _drawingPixels);
-      }
+      commitPixels(layer: currentLayer, pixels: _drawingPixels);
     }
     hasHistoryData = true;
     _cursorContentDirty = true;
@@ -306,34 +299,7 @@ class PencilPainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
-    final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
-    //Surrounding
-    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: _contentPoints);
-    final Path path = Path();
-    for (int i = 0; i < pathPoints.length; i++)
-    {
-      if (i == 0)
-      {
-        path.moveTo((pathPoints[i].x * effPxlSize) + drawParams.offset.dx, (pathPoints[i].y * effPxlSize) + drawParams.offset.dy);
-      }
-
-      if (i < pathPoints.length - 1)
-      {
-        path.lineTo((pathPoints[i + 1].x * effPxlSize) + drawParams.offset.dx, (pathPoints[i + 1].y * effPxlSize) + drawParams.offset.dy);
-      }
-      else
-      {
-        path.lineTo((pathPoints[0].x * effPxlSize) + drawParams.offset.dx, (pathPoints[0].y * effPxlSize) + drawParams.offset.dy);
-      }
-    }
-
-    drawParams.paint.style = PaintingStyle.stroke;
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-    drawParams.paint.color = blackToolAlphaColor;
-    drawParams.canvas.drawPath(path, drawParams.paint);
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-    drawParams.paint.color = whiteToolAlphaColor;
-    drawParams.canvas.drawPath(path, drawParams.paint);
+    strokeOutline(drawParams: drawParams, path: pixelOutlinePath(drawParams: drawParams, coords: _contentPoints));
   }
 
   @override
@@ -346,6 +312,9 @@ class PencilPainter extends IToolPainter
         setLineStatusBarData(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!);
       }
   }
+
+  @override
+  HistoryStateTypeIdentifier get historyIdentifier => HistoryStateTypeIdentifier.toolPen;
 
   @override
   void reset()

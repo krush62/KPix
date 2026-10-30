@@ -77,13 +77,7 @@ class ColorPickPainter extends IToolPainter
     drawParams.paint.color = Colors.black;
     drawParams.canvas.drawPath(fillPath, drawParams.paint);
 
-    drawParams.paint.style = PaintingStyle.stroke;
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-    drawParams.paint.color = Colors.black;
-    drawParams.canvas.drawPath(outlinePath, drawParams.paint);
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-    drawParams.paint.color = Colors.white;
-    drawParams.canvas.drawPath(outlinePath, drawParams.paint);
+    strokeOutline(drawParams: drawParams, path: outlinePath, opaque: true);
   }
 
   @override

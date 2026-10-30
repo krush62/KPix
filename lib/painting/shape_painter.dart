@@ -26,6 +26,7 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/constraints/tool_shape_constraints.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/status_bar_data.dart';
 import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
@@ -216,17 +217,13 @@ class ShapePainter extends IToolPainter
   {
     if (_drawingPixels.isNotEmpty)
     {
-      if (!documentState.selectionState.selection.isEmpty)
-      {
-        documentState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
-      }
-      else if (!shaderOptions.isEnabled.value && _behaviorPreferenceContent.selectShapeAfterInsert.value)
+      if (documentState.selectionState.selection.isEmpty && !shaderOptions.isEnabled.value && _behaviorPreferenceContent.selectShapeAfterInsert.value)
       {
         documentState.selectionState.addNewSelectionWithContent(colorMap: _drawingPixels);
       }
       else
       {
-        layer.setDataAll(list: _drawingPixels);
+        commitPixels(layer: layer, pixels: _drawingPixels);
       }
       hasHistoryData = true;
     }
@@ -573,6 +570,9 @@ class ShapePainter extends IToolPainter
   {
     return _isStarted ? CursorInfo.box(startPos: _selectionStart, endPos: _selectionEnd) : null;
   }
+
+  @override
+  HistoryStateTypeIdentifier get historyIdentifier => HistoryStateTypeIdentifier.toolShape;
 
   @override
   void reset()

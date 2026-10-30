@@ -261,14 +261,7 @@ class SelectionPainter extends IToolPainter
         rhombusPath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y);
         rhombusPath.lineTo(cursorPos.x, cursorPos.y + (1 * painterOptions.cursorSize));
         rhombusPath.lineTo(cursorPos.x - (1 * painterOptions.cursorSize), cursorPos.y);
-
-        drawParams.paint.style = PaintingStyle.stroke;
-        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-        drawParams.paint.color = blackToolAlphaColor;
-        drawParams.canvas.drawPath(rhombusPath, drawParams.paint);
-        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-        drawParams.paint.color = whiteToolAlphaColor;
-        drawParams.canvas.drawPath(rhombusPath, drawParams.paint);
+        strokeOutline(drawParams: drawParams, path: rhombusPath);
       }
       else if (options.shape.value == SelectShape.wand)
       {
@@ -294,13 +287,7 @@ class SelectionPainter extends IToolPainter
         drawParams.paint.color = blackToolAlphaColor;
         drawParams.canvas.drawPath(fillPath, drawParams.paint);
 
-        drawParams.paint.style = PaintingStyle.stroke;
-        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-        drawParams.paint.color = blackToolAlphaColor;
-        drawParams.canvas.drawPath(outlinePath, drawParams.paint);
-        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-        drawParams.paint.color = whiteToolAlphaColor;
-        drawParams.canvas.drawPath(outlinePath, drawParams.paint);
+        strokeOutline(drawParams: drawParams, path: outlinePath);
       }
     }
 

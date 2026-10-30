@@ -25,6 +25,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
@@ -260,15 +261,8 @@ class EraserPainter extends IToolPainter
     drawParams.canvas.drawPath(_linePreviewFill!.transform(toScreen), drawParams.paint);
 
     //the outline is loose edges, square caps close the corners
-    final Path outline = _linePreviewOutline!.transform(toScreen);
-    drawParams.paint.style = PaintingStyle.stroke;
     drawParams.paint.strokeCap = StrokeCap.square;
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-    drawParams.paint.color = blackToolAlphaColor;
-    drawParams.canvas.drawPath(outline, drawParams.paint);
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-    drawParams.paint.color = whiteToolAlphaColor;
-    drawParams.canvas.drawPath(outline, drawParams.paint);
+    strokeOutline(drawParams: drawParams, path: _linePreviewOutline!.transform(toScreen));
     drawParams.paint.strokeCap = StrokeCap.butt;
   }
 
@@ -279,33 +273,7 @@ class EraserPainter extends IToolPainter
     _drawLinePreview(drawParams: drawParams, effPixelSize: effPixelSize);
 
     final Set<CoordinateSetI> contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: drawParams.cursorPosNorm!);
-    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: contentPoints);
-
-    final Path path = Path();
-    for (int i = 0; i < pathPoints.length; i++)
-    {
-      if (i == 0)
-      {
-        path.moveTo((pathPoints[i].x * effPixelSize) + drawParams.offset.dx, (pathPoints[i].y * effPixelSize) + drawParams.offset.dy);
-      }
-
-      if (i < pathPoints.length - 1)
-      {
-        path.lineTo((pathPoints[i + 1].x * effPixelSize) + drawParams.offset.dx, (pathPoints[i + 1].y * effPixelSize) + drawParams.offset.dy);
-      }
-      else
-      {
-        path.lineTo((pathPoints[0].x * effPixelSize) + drawParams.offset.dx, (pathPoints[0].y * effPixelSize) + drawParams.offset.dy);
-      }
-    }
-
-    drawParams.paint.style = PaintingStyle.stroke;
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-    drawParams.paint.color = blackToolAlphaColor;
-    drawParams.canvas.drawPath(path, drawParams.paint);
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-    drawParams.paint.color = whiteToolAlphaColor;
-    drawParams.canvas.drawPath(path, drawParams.paint);
+    strokeOutline(drawParams: drawParams, path: pixelOutlinePath(drawParams: drawParams, coords: contentPoints));
   }
 
   @override
@@ -318,6 +286,9 @@ class EraserPainter extends IToolPainter
       setLineStatusBarData(startPos: _lastErasePosition!, endPos: drawParams.cursorPosNorm!);
     }
   }
+
+  @override
+  HistoryStateTypeIdentifier get historyIdentifier => HistoryStateTypeIdentifier.toolEraser;
 
   @override
   void reset()

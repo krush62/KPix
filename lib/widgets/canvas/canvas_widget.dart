@@ -49,7 +49,6 @@ import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/constraints/tool_select_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_manager.dart';
-import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
@@ -59,6 +58,7 @@ import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/tool_type.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
+import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
@@ -504,44 +504,12 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
 
   void _flushHistoryData()
   {
-    if (kPixPainter.toolPainter != null && kPixPainter.toolPainter!.hasHistoryData)
+    final IToolPainter? toolPainter = kPixPainter.toolPainter;
+    if (toolPainter != null && toolPainter.hasHistoryData)
     {
-      HistoryStateTypeIdentifier identifier = HistoryStateTypeIdentifier.generic;
-      if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.pencil])
-      {
-        identifier = HistoryStateTypeIdentifier.toolPen;
-      }
-      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.shape])
-      {
-        identifier = HistoryStateTypeIdentifier.toolShape;
-      }
-      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.stamp])
-      {
-        identifier = HistoryStateTypeIdentifier.toolStamp;
-      }
-      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.line])
-      {
-        identifier = HistoryStateTypeIdentifier.toolLine;
-      }
-      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.spraycan])
-      {
-        identifier = HistoryStateTypeIdentifier.toolSprayCan;
-      }
-      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.font])
-      {
-        identifier = HistoryStateTypeIdentifier.toolText;
-      }
-      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.erase])
-      {
-        identifier = HistoryStateTypeIdentifier.toolEraser;
-      }
-      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.fill])
-      {
-        identifier = HistoryStateTypeIdentifier.toolFill;
-      }
-      final LayerState? originLayer = kPixPainter.toolPainter!.historyLayer ?? _documentState.timeline.getCurrentLayer();
-      GetIt.I.get<HistoryManager>().addState(identifier: identifier, originLayer: originLayer);
-      kPixPainter.toolPainter!.hasHistoryData = false;
+      final LayerState? originLayer = toolPainter.historyLayer ?? _documentState.timeline.getCurrentLayer();
+      GetIt.I.get<HistoryManager>().addState(identifier: toolPainter.historyIdentifier, originLayer: originLayer);
+      toolPainter.hasHistoryData = false;
     }
   }
 

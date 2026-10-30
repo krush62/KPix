@@ -23,6 +23,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/stamp_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/stamp_manager_data.dart';
 import 'package:kpix/painting/content_raster_set.dart';
 import 'package:kpix/painting/itool_painter.dart';
@@ -202,18 +203,7 @@ class StampPainter extends IToolPainter
   void _dump({required final CoordinateSetI canvasSize, required final DrawingLayerState drawingLayer, required final HashMap<CoordinateSetI, int> stampData})
   {
     final CoordinateColorMap drawingPixels = getStampPixelsToDraw(canvasSize: canvasSize, currentLayer: drawingLayer, stampData: stampData, selection: documentState.selectionState, shaderOptions: shaderOptions, selectedColor: paletteState.selectedColor!);
-    if (!documentState.selectionState.selection.isEmpty)
-    {
-      documentState.selectionState.selection.addDirectlyAll(list: drawingPixels);
-    }
-    /*else if (!_shaderOptions.isEnabled.value)
-    {
-      documentState.selectionState.add(data: drawingPixels, notify: false);
-    }*/
-    else
-    {
-      drawingLayer.setDataAll(list: drawingPixels);
-    }
+    commitPixels(layer: drawingLayer, pixels: drawingPixels);
     hasHistoryData = true;
   }
 
@@ -221,15 +211,7 @@ class StampPainter extends IToolPainter
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
     final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
-    final Path path = getPathFromList(pointList: _symbolPath, offsetPos: _cursorStartPos, scaling: painterOptions.cursorSize);
-
-    drawParams.paint.style = PaintingStyle.stroke;
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-    drawParams.paint.color = Colors.black;
-    drawParams.canvas.drawPath(path, drawParams.paint);
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-    drawParams.paint.color = Colors.white;
-    drawParams.canvas.drawPath(path, drawParams.paint);
+    strokeOutline(drawParams: drawParams, path: getPathFromList(pointList: _symbolPath, offsetPos: _cursorStartPos, scaling: painterOptions.cursorSize), opaque: true);
 
     if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer is DrawingLayerState && _manager.selectedStamp.value != null)
     {
@@ -253,6 +235,9 @@ class StampPainter extends IToolPainter
     super.setStatusBarData(drawParams: drawParams);
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
   }
+
+  @override
+  HistoryStateTypeIdentifier get historyIdentifier => HistoryStateTypeIdentifier.toolStamp;
 
   @override
   void reset()

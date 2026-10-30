@@ -99,6 +99,36 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
     }
   }
 
+  /// The pencil that marks a shifted color while the sliders are hidden.
+  Widget _createEditIndicator()
+  {
+    final ShiftSet shifts = widget.shiftSet;
+    return ListenableBuilder(
+      listenable: Listenable.merge(<Listenable>[_shouldShowSliders, shifts.hueShiftNotifier, shifts.satShiftNotifier, shifts.valShiftNotifier]),
+      builder: (final BuildContext context, final Widget? child) {
+        final bool editIsVisible = !_shouldShowSliders.value && (shifts.hueShiftNotifier.value != KPalSliderConstraints.defaultHue || shifts.satShiftNotifier.value != KPalSliderConstraints.defaultSat || shifts.valShiftNotifier.value != KPalSliderConstraints.defaultVal);
+        return AnimatedOpacity(
+          duration: const Duration(milliseconds: _KPalColorCardWidgetOptions.editAnimationDuration),
+          curve: Curves.easeInOut,
+          opacity: editIsVisible ? 1 : 0,
+          child: Padding(
+            padding: const EdgeInsets.all(_KPalColorCardWidgetOptions.outsidePadding),
+            child: Icon(
+              TablerIcons.pencil,
+              shadows: <Shadow>[
+                Shadow(
+                  offset: const Offset(0.0, 1.0),
+                  blurRadius: 2.0,
+                  color: Theme.of(context).primaryColorDark,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(final BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -205,45 +235,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                                );
                              },
                            ),
-                           ValueListenableBuilder<bool>(
-                             valueListenable: _shouldShowSliders,
-                             builder: (final BuildContext context1, final bool shouldShow, final Widget? child1) {
-                               return ValueListenableBuilder<int>(
-                                 valueListenable: widget.shiftSet.hueShiftNotifier,
-                                 builder: (final BuildContext context2, final int hueShift, final Widget? child2) {
-                                   return ValueListenableBuilder<int>(
-                                     valueListenable: widget.shiftSet.satShiftNotifier,
-                                     builder: (final BuildContext context3, final int satShift, final Widget? child3) {
-                                       return ValueListenableBuilder<int>(
-                                         valueListenable: widget.shiftSet.valShiftNotifier,
-                                         builder: (final BuildContext context4, final int valShift, final Widget? child4) {
-                                           final bool editIsVisible = !shouldShow && (hueShift != KPalSliderConstraints.defaultHue || satShift != KPalSliderConstraints.defaultSat || valShift != KPalSliderConstraints.defaultVal);
-                                           return AnimatedOpacity(
-                                             duration: const Duration(milliseconds: _KPalColorCardWidgetOptions.editAnimationDuration),
-                                             curve: Curves.easeInOut,
-                                             opacity: editIsVisible ? 1 : 0,
-                                             child: Padding(
-                                               padding:  const EdgeInsets.all(_KPalColorCardWidgetOptions.outsidePadding),
-                                               child: Icon(
-                                                 TablerIcons.pencil,
-                                                 shadows: <Shadow>[
-                                                   Shadow(
-                                                     offset: const Offset(0.0, 1.0),
-                                                     blurRadius: 2.0,
-                                                     color: Theme.of(context).primaryColorDark,
-                                                   ),
-                                                 ],
-                                               ),
-                                             ),
-                                           );
-                                         },
-                                       );
-                                     },
-                                   );
-                                 },
-                               );
-                             },
-                           ),
+                           _createEditIndicator(),
                          ],
                        ),
                      ),

@@ -25,6 +25,7 @@ import 'package:kpix/models/project_session.dart';
 import 'package:kpix/util/file_name_check.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
+import 'package:kpix/widgets/controls/kpix_text_field.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// A simple widget for entering a project name for saving.
@@ -100,21 +101,11 @@ class SaveAsWidgetState extends State<SaveAsWidget>
                 ),
                 Expanded(
                   flex: 3,
-                  child: ValueListenableBuilder<String?>(
-                    valueListenable: _fileName,
-                    builder: (final BuildContext context, final String? filePath, final Widget? child) {
-                      final TextEditingController controller = TextEditingController(text: filePath);
-                      controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                      return TextField(
-                        textAlign: TextAlign.end,
-                        focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.saveAsFileNameTextFocus),
-                        controller: controller,
-                        onChanged: (final String value) {
-                          _fileName.value = value;
-                          _updateFileNameStatus();
-                        },
-                      );
-                    },
+                  child: KPixTextField(
+                    text: _fileName,
+                    textAlign: TextAlign.end,
+                    focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.saveAsFileNameTextFocus),
+                    onChanged: (final String value) {_updateFileNameStatus();},
                   ),
                 ),
                 const Expanded(

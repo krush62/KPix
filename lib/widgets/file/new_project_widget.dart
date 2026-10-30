@@ -27,6 +27,7 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/controls/kpix_text_field.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 
@@ -67,6 +68,8 @@ class NewProjectWidgetState extends State<NewProjectWidget>
     super.dispose();
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectWidthTextFocus).removeListener(_widthFocusChanged);
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectHeightTextFocus).removeListener(_heightFocusChanged);
+    _textWidthController.dispose();
+    _textHeightController.dispose();
   }
 
   void _widthFocusChanged()
@@ -186,8 +189,7 @@ class NewProjectWidgetState extends State<NewProjectWidget>
           child: ValueListenableBuilder<int>(
             valueListenable: notifier,
             builder: (final BuildContext context, final int val, final Widget? child) {
-              controller.text = val.toString();
-              controller.selection = TextSelection.collapsed(offset: controller.text.length);
+              showTextInController(controller: controller, text: val.toString());
               return TextField(
                 focusNode: focusNode,
                 textAlign: TextAlign.end,

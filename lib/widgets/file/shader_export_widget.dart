@@ -37,6 +37,7 @@ import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/controls/kpix_text_field.dart';
 import 'package:kpix/widgets/file/shader_preview_widget.dart';
 
 abstract final class ShaderExportWidgetOptions
@@ -409,21 +410,11 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
                             ),
                             Expanded(
                               flex: 3,
-                              child: ValueListenableBuilder<String?>(
-                                valueListenable: _fileName,
-                                builder: (final BuildContext context, final String? filePath, final Widget? child) {
-                                  final TextEditingController controller = TextEditingController(text: filePath);
-                                  controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                  return TextField(
-                                    textAlign: TextAlign.end,
-                                    focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.shaderExportFileNameTextFocus),
-                                    controller: controller,
-                                    onChanged: (final String value) {
-                                      _fileName.value = value;
-                                      _updateFileNameStatus();
-                                    },
-                                  );
-                                },
+                              child: KPixTextField(
+                                text: _fileName,
+                                textAlign: TextAlign.end,
+                                focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.shaderExportFileNameTextFocus),
+                                onChanged: (final String value) {_updateFileNameStatus();},
                               ),
                             ),
                             Expanded(

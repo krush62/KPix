@@ -25,6 +25,7 @@ import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/util/file_name_check.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
+import 'package:kpix/widgets/controls/kpix_text_field.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:path/path.dart' as p;
 
@@ -89,22 +90,12 @@ class SavePaletteWidgetState extends State<SavePaletteWidget>
                 ),
                 Expanded(
                     flex: 3,
-                    child: ValueListenableBuilder<String?>(
-                      valueListenable: _fileName,
-                      builder: (final BuildContext context, final String? filePath, final Widget? child) {
-                        final TextEditingController controller = TextEditingController(text: filePath);
-                        controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                        return TextField(
-                          textAlign: TextAlign.end,
-                          maxLength: 16,
-                          focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.savePaletteNameTextFocus),
-                          controller: controller,
-                          onChanged: (final String value) {
-                            _fileName.value = value;
-                            _updateFileNameStatus();
-                          },
-                        );
-                      },
+                    child: KPixTextField(
+                      text: _fileName,
+                      textAlign: TextAlign.end,
+                      maxLength: 16,
+                      focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.savePaletteNameTextFocus),
+                      onChanged: (final String value) {_updateFileNameStatus();},
                     ),
                 ),
                 const Expanded(

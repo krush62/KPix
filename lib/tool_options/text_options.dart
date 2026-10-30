@@ -26,6 +26,7 @@ import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/platform_helper.dart';
 import 'package:kpix/widgets/controls/kpix_dropdown.dart';
+import 'package:kpix/widgets/controls/kpix_text_field.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class TextOptions extends IToolOptions
@@ -132,19 +133,10 @@ class TextOptions extends IToolOptions
             if (isDesktop(includingWeb: true))
               Expanded(
                 flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                child: ValueListenableBuilder<String>(
-                  valueListenable: textOptions.text,
-                  builder: (final BuildContext context, final String text, final Widget? child)
-                  {
-                    final TextEditingController controller = TextEditingController(text: textOptions.text.value);
-                    controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                    return TextField(
-                      controller: controller,
-                      focusNode: hotkeyManager.getFocusNode(id: FocusNodeEntry.textOptionsTextFocus),
-                      onChanged: (final String newText) {textOptions.text.value = newText;},
-                      maxLength: TextConstraints.maxLength,
-                    );
-                  },
+                child: KPixTextField(
+                  text: textOptions.text,
+                  focusNode: hotkeyManager.getFocusNode(id: FocusNodeEntry.textOptionsTextFocus),
+                  maxLength: TextConstraints.maxLength,
                 ),
               )
             else

@@ -21,6 +21,7 @@ import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
+import 'package:kpix/widgets/controls/kpix_text_field.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// A widget for entering text for the font tool on mobile devices.
@@ -88,21 +89,11 @@ class ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
                 ),
                 Expanded(
                   flex: 3,
-                  child: ValueListenableBuilder<String?>(
-                    valueListenable: _text,
-                    builder: (final BuildContext context, final String? text, final Widget? child) {
-                      final TextEditingController controller = TextEditingController(text: text);
-                      controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                      return TextField(
-                        style: Theme.of(context).textTheme.titleLarge,
-                        focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.changeTextToolFocus),
-                        controller: controller,
-                        maxLength: widget.maxStringLength,
-                        onChanged: (final String value) {
-                          _text.value = value;
-                        },
-                      );
-                    },
+                  child: KPixTextField(
+                    text: _text,
+                    style: Theme.of(context).textTheme.titleLarge,
+                    focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.changeTextToolFocus),
+                    maxLength: widget.maxStringLength,
                   ),
                 ),
               ],

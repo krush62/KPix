@@ -31,6 +31,7 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/controls/kpix_text_field.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 
@@ -87,6 +88,10 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeHeightTextFocus).removeListener(_heightFocusChanged);
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeOffsetXTextFocus).removeListener(_offsetXFocusChanged);
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeOffsetYTextFocus).removeListener(_offsetYFocusChanged);
+    _textControllerWidth.dispose();
+    _textControllerHeight.dispose();
+    _textControllerOffsetX.dispose();
+    _textControllerOffsetY.dispose();
   }
 
   void _widthFocusChanged()
@@ -273,8 +278,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
           child: ValueListenableBuilder<int>(
             valueListenable: notifier,
             builder: (final BuildContext context, final int value, final Widget? child) {
-              textController.text = value.toString();
-              textController.selection = TextSelection.collapsed(offset: textController.text.length);
+              showTextInController(controller: textController, text: value.toString());
               return TextField(
                 focusNode: focusNode,
                 textAlign: TextAlign.end,
@@ -302,8 +306,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     return ValueListenableBuilder<int>(
       valueListenable: notifier,
       builder: (final BuildContext context0, final int offsetVal, final Widget? child0) {
-        textController.text = offsetVal.toString();
-        textController.selection = TextSelection.collapsed(offset: textController.text.length);
+        showTextInController(controller: textController, text: offsetVal.toString());
         return ValueListenableBuilder<int>(
           valueListenable: minOffsetNotifier,
           builder: (final BuildContext context1, final int minOffset, final Widget? child1) {

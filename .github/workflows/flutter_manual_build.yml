@@ -75,9 +75,30 @@ jobs:
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
 
+  test:
+    name: Run Unit Tests
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Flutter • Dependencies
+        run: flutter pub get
+
+      # Several tests wait on real timers and fail when test processes compete for CPU.
+      - name: Flutter • Tests
+        run: flutter test --concurrency=1
+
   android:
     if: ${{ inputs.build_android_apk || inputs.build_android_aab }}
-    needs: setup
+    needs: [ setup, test ]
     runs-on: ubuntu-latest
     outputs:
       has_artifact: ${{ steps.upload_success.outputs.has_artifact }}
@@ -196,7 +217,7 @@ jobs:
 
   desktop:
     if: ${{ inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage || inputs.build_linux_flatpak }}
-    needs: setup
+    needs: [ setup, test ]
     outputs:
       has_artifact: ${{ steps.upload_success.outputs.has_artifact }}
     strategy:
@@ -529,7 +550,7 @@ jobs:
 
   web:
     if: ${{ inputs.build_web }}
-    needs: setup
+    needs: [ setup, test ]
     outputs:
       has_artifact: ${{ steps.upload_success.outputs.has_artifact }}
     runs-on: ubuntu-latest
@@ -565,7 +586,7 @@ jobs:
 
   macos:
     if: ${{ inputs.build_macos_dmg }}
-    needs: setup
+    needs: [ setup, test ]
     outputs:
       has_artifact: ${{ steps.upload_success.outputs.has_artifact }}
     runs-on: macos-15
@@ -645,7 +666,10 @@ jobs:
     name: Create Draft GitHub Release
     needs: [ setup, android, desktop, macos, web ]
     runs-on: ubuntu-latest
+    # Disabled platforms skip their jobs, which would skip this one without an explicit status check.
     if: |
+      !cancelled() &&
+      !contains(needs.*.result, 'failure') &&
       inputs.create_draft_release &&
       (
         needs.android.outputs.has_artifact == 'true' ||

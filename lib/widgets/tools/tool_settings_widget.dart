@@ -64,6 +64,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
 
   void _newStampLoaded({required final StampManagerEntryData data})
   {
+    toolOptions.stampOptions.clampGridOffsets(stamp: data);
     GetIt.I.get<StampManager>().selectedStamp.value = data;
     _hideStampManagerDialog();
   }

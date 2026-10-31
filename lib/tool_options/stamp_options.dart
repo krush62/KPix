@@ -38,6 +38,13 @@ class StampOptions extends IToolOptions
   final ValueNotifier<int> gridOffsetX = ValueNotifier<int>(StampConstraints.gridOffsetDefault);
   final ValueNotifier<int> gridOffsetY = ValueNotifier<int>(StampConstraints.gridOffsetDefault);
 
+  /// The offsets have to stay within the stamp, so a smaller one can lower them.
+  void clampGridOffsets({required final StampManagerEntryData stamp})
+  {
+    gridOffsetX.value = gridOffsetX.value.clamp(0, stamp.width - 1);
+    gridOffsetY.value = gridOffsetY.value.clamp(0, stamp.height - 1);
+  }
+
   static Column getWidget({
     required final BuildContext context,
     required final StampOptions stampOptions,
@@ -62,44 +69,7 @@ class StampOptions extends IToolOptions
                   onPressed: () {
                     showStampManager();
                   },
-                  child: ValueListenableBuilder<StampManagerEntryData?>(
-                    valueListenable: GetIt.I.get<StampManager>().selectedStamp,
-                    builder: (final BuildContext context, final StampManagerEntryData? stampData, final Widget? child)
-                    {
-                      if (stampData != null)
-                      {
-                        if (stampData.thumbnail != null)
-                        {
-                          return Padding(
-                            padding: const EdgeInsets.all(ToolSettingsWidgetOptions.padding),
-                            child: ValueListenableBuilder<bool>(
-                              valueListenable: stampOptions.flipH,
-                              builder: (final BuildContext contextH, final bool flipH, final Widget? childH) {
-                                return ValueListenableBuilder<bool>(
-                                  valueListenable: stampOptions.flipV,
-                                  builder: (final BuildContext contextV, final bool flipV, final Widget? childV) {
-                                    return Transform.flip(
-                                      flipX: flipH,
-                                      flipY: flipV,
-                                      child: RawImage(image: stampData.thumbnail, fit: BoxFit.contain, filterQuality: FilterQuality.none, scale: 0.1,),
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          );
-                        }
-                        else
-                        {
-                          return Text(stampData.name);
-                        }
-                      }
-                      else
-                      {
-                        return Text("<${AppLocalizations.of(context)!.noStamp.toUpperCase()}>");
-                      }
-                    },
-                  ),
+                  child: _getStampPreview(stampOptions: stampOptions),
                 ),
               ),
             ),
@@ -107,54 +77,8 @@ class StampOptions extends IToolOptions
             Expanded(
               child: Column(
                 children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Icon(
-                            color: Theme.of(context).primaryColorLight,
-                            TablerIcons.flip_vertical,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: ToolSettingsWidgetOptions.padding),
-                      ValueListenableBuilder<bool>(
-                        valueListenable: stampOptions.flipH,
-                        builder: (final BuildContext context, final bool flipH, final Widget? child){
-                          return Switch(
-                            onChanged: (final bool newVal) {stampOptions.flipH.value = newVal;},
-                            value: flipH,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: <Widget>[
-                      Expanded
-                        (
-                        child: Align
-                          (
-                          alignment: Alignment.centerRight,
-                          child: Icon(
-                            color: Theme.of(context).primaryColorLight,
-                            TablerIcons.flip_horizontal,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: ToolSettingsWidgetOptions.padding),
-                      ValueListenableBuilder<bool>(
-                        valueListenable: stampOptions.flipV,
-                        builder: (final BuildContext context, final bool flipV, final Widget? child){
-                          return Switch(
-                            onChanged: (final bool newVal) {stampOptions.flipV.value = newVal;},
-                            value: flipV,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                  _getFlipRow(context: context, icon: TablerIcons.flip_vertical, notifier: stampOptions.flipH),
+                  _getFlipRow(context: context, icon: TablerIcons.flip_horizontal, notifier: stampOptions.flipV),
                 ],
               ),
             ),
@@ -179,122 +103,145 @@ class StampOptions extends IToolOptions
             defaultState: StampConstraints.gridAlignDefault,
           modifierNotifier: hotkeyManager.controlNotifier,
         ),
-        ValueListenableBuilder<bool>(
-          valueListenable: stampOptions.gridAlign,
-          builder: (final BuildContext context, final bool gridAlign, final Widget? child) {
-            if (gridAlign)
-            {
-              return Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        AppLocalizations.of(context)!.offsetX,
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: ValueListenableBuilder<StampManagerEntryData?>(
-                        valueListenable: GetIt.I.get<StampManager>().selectedStamp,
-                        builder: (final BuildContext context, final StampManagerEntryData? stampData, final Widget? child)
-                        {
-                          if (stampData != null)
-                          {
-                            return ValueListenableBuilder<int>(
-                              valueListenable: stampOptions.gridOffsetX,
-                              builder: (final BuildContext context, final int offsetX, final Widget? child)
-                              {
-                                return KPixSlider(
-                                  value: offsetX.toDouble(),
-                                  max: stampData.width - 1,
-                                  //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
-                                  onChanged: (final double newVal) {stampOptions.gridOffsetX.value = newVal.round();},
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                );
-                              },
-                            );
-                          }
-                          else
-                          {
-                            return const SizedBox();
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            }
-            else
-            {
-              return const SizedBox();
-            }
-          },
+        _getOffsetRow(
+          label: AppLocalizations.of(context)!.offsetX,
+          notifier: stampOptions.gridOffsetX,
+          gridAlign: stampOptions.gridAlign,
+          stampSize: (final StampManagerEntryData stamp) => stamp.width,
         ),
+        _getOffsetRow(
+          label: AppLocalizations.of(context)!.offsetY,
+          notifier: stampOptions.gridOffsetY,
+          gridAlign: stampOptions.gridAlign,
+          stampSize: (final StampManagerEntryData stamp) => stamp.height,
+        ),
+      ],
+    );
+  }
+
+  static Widget _getStampPreview({required final StampOptions stampOptions})
+  {
+    return ValueListenableBuilder<StampManagerEntryData?>(
+      valueListenable: GetIt.I.get<StampManager>().selectedStamp,
+      builder: (final BuildContext context, final StampManagerEntryData? stampData, final Widget? child)
+      {
+        if (stampData != null)
+        {
+          if (stampData.thumbnail != null)
+          {
+            return Padding(
+              padding: const EdgeInsets.all(ToolSettingsWidgetOptions.padding),
+              child: ListenableBuilder(
+                listenable: Listenable.merge(<Listenable>[stampOptions.flipH, stampOptions.flipV]),
+                builder: (final BuildContext context, final Widget? child) {
+                  return Transform.flip(
+                    flipX: stampOptions.flipH.value,
+                    flipY: stampOptions.flipV.value,
+                    child: RawImage(image: stampData.thumbnail, fit: BoxFit.contain, filterQuality: FilterQuality.none, scale: 0.1,),
+                  );
+                },
+              ),
+            );
+          }
+          else
+          {
+            return Text(stampData.name);
+          }
+        }
+        else
+        {
+          return Text("<${AppLocalizations.of(context)!.noStamp.toUpperCase()}>");
+        }
+      },
+    );
+  }
+
+  static Widget _getFlipRow({required final BuildContext context, required final IconData icon, required final ValueNotifier<bool> notifier})
+  {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Icon(
+              color: Theme.of(context).primaryColorLight,
+              icon,
+            ),
+          ),
+        ),
+        const SizedBox(width: ToolSettingsWidgetOptions.padding),
         ValueListenableBuilder<bool>(
-          valueListenable: stampOptions.gridAlign,
-          builder: (final BuildContext context, final bool gridAlign, final Widget? child) {
-            if (gridAlign)
-            {
-              return Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        AppLocalizations.of(context)!.offsetY,
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: ValueListenableBuilder<StampManagerEntryData?>(
-                        valueListenable: GetIt.I.get<StampManager>().selectedStamp,
-                        builder: (final BuildContext context, final StampManagerEntryData? stampData, final Widget? child)
-                        {
-                          if (stampData != null)
-                          {
-                            return ValueListenableBuilder<int>(
-                              valueListenable: stampOptions.gridOffsetY,
-                              builder: (final BuildContext context, final int offsetY, final Widget? child) {
-
-
-                                return KPixSlider(
-                                  value: offsetY.toDouble(),
-                                  max: stampData.height - 1,
-                                  //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
-                                  onChanged: (final double newVal) {stampOptions.gridOffsetY.value = newVal.round();},
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                );
-                              },
-                            );
-                          }
-                          else
-                          {
-                            return const SizedBox();
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            }
-            else
-            {
-              return const SizedBox();
-            }
+          valueListenable: notifier,
+          builder: (final BuildContext context, final bool value, final Widget? child){
+            return Switch(
+              onChanged: (final bool newVal) {notifier.value = newVal;},
+              value: value,
+            );
           },
         ),
       ],
+    );
+  }
+
+  static Widget _getOffsetRow({
+    required final String label,
+    required final ValueNotifier<int> notifier,
+    required final ValueNotifier<bool> gridAlign,
+    required final int Function(StampManagerEntryData stamp) stampSize,
+  })
+  {
+    final ValueNotifier<StampManagerEntryData?> selectedStamp = GetIt.I.get<StampManager>().selectedStamp;
+    return ValueListenableBuilder<bool>(
+      valueListenable: gridAlign,
+      builder: (final BuildContext context, final bool align, final Widget? child) {
+        if (align)
+        {
+          return Row(
+            children: <Widget>[
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    label,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: ToolSettingsWidgetOptions.columnWidthRatio,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: ListenableBuilder(
+                    listenable: Listenable.merge(<Listenable>[selectedStamp, notifier]),
+                    builder: (final BuildContext context, final Widget? child)
+                    {
+                      final StampManagerEntryData? stampData = selectedStamp.value;
+                      if (stampData != null)
+                      {
+                        return KPixSlider(
+                          value: notifier.value.toDouble(),
+                          max: stampSize(stampData) - 1,
+                          //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
+                          onChanged: (final double newVal) {notifier.value = newVal.round();},
+                          textStyle: Theme.of(context).textTheme.bodyLarge!,
+                        );
+                      }
+                      else
+                      {
+                        return const SizedBox();
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+        else
+        {
+          return const SizedBox();
+        }
+      },
     );
   }
 

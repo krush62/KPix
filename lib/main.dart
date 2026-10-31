@@ -799,21 +799,16 @@ class MainWidget extends StatelessWidget
                             WindowTitleBarBox(child: MoveWindow()),
                             Padding(
                               padding: const EdgeInsets.all(_MainLayoutOptions.titleBarPadding),
-                              child: ValueListenableBuilder<bool>(
-                                valueListenable: GetIt.I.get<ProjectSession>().hasChanges,
-                                  builder: (final BuildContext context, final bool __, final Widget? ___) {
-                                    return ValueListenableBuilder<String?>(
-                                      valueListenable: GetIt.I.get<ProjectSession>().projectName,
-                                      builder: (final BuildContext _, final String? ____, final Widget? _____) {
-                                        return Text(
-                                          GetIt.I.get<ProjectSession>().getTitle(),
-                                          style: Theme.of(context).textTheme.bodyLarge,
-                                          textAlign: TextAlign.center,
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
+                              child: ListenableBuilder(
+                                listenable: Listenable.merge(<Listenable>[GetIt.I.get<ProjectSession>().hasChanges, GetIt.I.get<ProjectSession>().projectName]),
+                                builder: (final BuildContext context, final Widget? child) {
+                                  return Text(
+                                    GetIt.I.get<ProjectSession>().getTitle(),
+                                    style: Theme.of(context).textTheme.bodyLarge,
+                                    textAlign: TextAlign.center,
+                                  );
+                                },
+                              ),
                               ),
                             ],
                           ),

@@ -348,27 +348,24 @@ class NewProjectWidgetState extends State<NewProjectWidget>
                 child: Center(
                   child: Stack(
                     children: <Widget>[
-                      ValueListenableBuilder<int>(
-                        valueListenable: _width,
-                        builder: (final BuildContext context, final int width, final Widget? child) {
-                          return ValueListenableBuilder<int>(
-                            valueListenable: _height,
-                            builder: (final BuildContext context, final int height, final Widget? child) {
-                              final double scaledWidth = _maxPreviewWidth / width;
-                              final double scaledHeight = _maxPreviewHeight / height;
-                              final double scale = min(scaledWidth, scaledHeight);
-                              return Container(
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).primaryColorLight,
-                                  border: Border.all(
-                                    color: Theme.of(context).primaryColorDark,
-                                    width: OverlayEntryAlertDialogOptions.borderWidth,
-                                  ),
-                                ),
-                                width: width * scale,
-                                height: height * scale,
-                              );
-                            },
+                      ListenableBuilder(
+                        listenable: Listenable.merge(<Listenable>[_width, _height]),
+                        builder: (final BuildContext context, final Widget? child) {
+                          final int width = _width.value;
+                          final int height = _height.value;
+                          final double scaledWidth = _maxPreviewWidth / width;
+                          final double scaledHeight = _maxPreviewHeight / height;
+                          final double scale = min(scaledWidth, scaledHeight);
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColorLight,
+                              border: Border.all(
+                                color: Theme.of(context).primaryColorDark,
+                                width: OverlayEntryAlertDialogOptions.borderWidth,
+                              ),
+                            ),
+                            width: width * scale,
+                            height: height * scale,
                           );
                         },
                       ),

@@ -74,71 +74,65 @@ class _KPixSplitterState extends State<KPixSplitter> {
   @override
   Widget build(final BuildContext context)
   {
-    return ValueListenableBuilder<double>(
-      valueListenable: _ratioLeft,
-      builder: (final BuildContext context, final double ratioLeft, final Widget? child)
+    return ListenableBuilder(
+      listenable: Listenable.merge(<Listenable>[_ratioLeft, _ratioRight]),
+      builder: (final BuildContext context, final Widget? child)
       {
-        return ValueListenableBuilder<double>(
-          valueListenable: _ratioRight,
-          builder: (final BuildContext context, final double ratioRight, final Widget? child)
-          {
-            return LayoutBuilder(builder: (final BuildContext context, final BoxConstraints constraints)
-            {
-              final double maxWidth = constraints.maxWidth - widget.dividerWidth;
-              return SizedBox(
-                width: constraints.maxWidth,
-                child: Row(
-                  children: <Widget>[
-                    SizedBox(
-                      width: ratioLeft * maxWidth,
-                      child: widget.left,
-                    ),
-                    MouseRegion(
-                      cursor: SystemMouseCursors.resizeColumn,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        child: Container(
-                          color: Theme.of(context).primaryColor,
-                          width: widget.dividerWidth,
-                          height: constraints.maxHeight,
-                          child: Center(
-                            child: Text(".\n.\n.", style: Theme.of(context).textTheme.bodyLarge,),
-                          ),
-                        ),
-
-                        onPanUpdate: (final DragUpdateDetails details) {
-                          _panUpdateLeft(details: details, maxWidth: maxWidth);
-                        },
-                      ),
-                    ),
-                    Expanded(child: ClipRect(child: widget.center)),
-                    MouseRegion(
-                      cursor: SystemMouseCursors.resizeColumn,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        child: Container(
-                          color: Theme.of(context).primaryColor,
-                          width: widget.dividerWidth,
-                          height: constraints.maxHeight,
-                          child: Center(
-                            child: Text(".\n.\n.", style: Theme.of(context).textTheme.bodyLarge,),
-                          ),
-                        ),
-                        onPanUpdate: (final DragUpdateDetails details) {
-                          _panUpdateRight(details: details, maxWidth: maxWidth);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      width: ratioRight * maxWidth,
-                      child: widget.right,
-                    ),
-                  ],
+        return LayoutBuilder(builder: (final BuildContext context, final BoxConstraints constraints)
+        {
+          final double maxWidth = constraints.maxWidth - widget.dividerWidth;
+          return SizedBox(
+            width: constraints.maxWidth,
+            child: Row(
+              children: <Widget>[
+                SizedBox(
+                  width: _ratioLeft.value * maxWidth,
+                  child: widget.left,
                 ),
-              );
-            },);
-          },
-        );
+                MouseRegion(
+                  cursor: SystemMouseCursors.resizeColumn,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      color: Theme.of(context).primaryColor,
+                      width: widget.dividerWidth,
+                      height: constraints.maxHeight,
+                      child: Center(
+                        child: Text(".\n.\n.", style: Theme.of(context).textTheme.bodyLarge,),
+                      ),
+                    ),
+
+                    onPanUpdate: (final DragUpdateDetails details) {
+                      _panUpdateLeft(details: details, maxWidth: maxWidth);
+                    },
+                  ),
+                ),
+                Expanded(child: ClipRect(child: widget.center)),
+                MouseRegion(
+                  cursor: SystemMouseCursors.resizeColumn,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      color: Theme.of(context).primaryColor,
+                      width: widget.dividerWidth,
+                      height: constraints.maxHeight,
+                      child: Center(
+                        child: Text(".\n.\n.", style: Theme.of(context).textTheme.bodyLarge,),
+                      ),
+                    ),
+                    onPanUpdate: (final DragUpdateDetails details) {
+                      _panUpdateRight(details: details, maxWidth: maxWidth);
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: _ratioRight.value * maxWidth,
+                  child: widget.right,
+                ),
+              ],
+            ),
+          );
+        },);
       },
     );
   }

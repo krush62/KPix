@@ -90,6 +90,73 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
     }
   }
 
+  Widget _createRulerControls({
+    required final ValueNotifier<bool> activated,
+    required final ValueNotifier<double> ruler,
+    required final int Function() canvasExtent,
+    required final IconData icon,
+    required final String centerTooltip,
+    required final IconData centerIcon,
+  })
+  {
+    return ValueListenableBuilder<bool>(
+      valueListenable: activated,
+      builder: (final BuildContext context, final bool isActivated, final Widget? child) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Switch(
+                  value: isActivated,
+                  onChanged: (final bool value)
+                  {activated.value = value;},
+                ),
+                const SizedBox(
+                  width: _SymmetryWidgetOptions.padding,
+                ),
+                const Spacer(),
+                Icon(icon, size: _SymmetryWidgetOptions.buttonHeight, color: Theme.of(context).primaryColorDark),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
+                  child: SizedBox(
+                    width: _SymmetryWidgetOptions.buttonWidth,
+                    height: _SymmetryWidgetOptions.buttonHeight,
+                    child: IconButton.outlined(
+                      tooltip: centerTooltip,
+                      onPressed: isActivated ? () {
+                        ruler.value = canvasExtent().toDouble() / 2.0;
+                      } : null,
+                      icon: Icon(centerIcon, size: _SymmetryWidgetOptions.buttonHeight,),
+                    ),
+                  ),
+                ),
+              ],
+            ) ,
+            Padding(
+              padding: const EdgeInsets.only(left: _SymmetryWidgetOptions.padding * 4, right: _SymmetryWidgetOptions.padding * 4),
+              child: ValueListenableBuilder<double>(
+                valueListenable: ruler,
+                builder: (final BuildContext context, final double rulerValue, final Widget? child) {
+                  return KPixSlider(
+                    min: 1.0,
+                    value: rulerValue,
+                    max: max(canvasExtent() - 1, 1.0),
+                    label: rulerValue.toStringAsFixed(1),
+                    onChanged: isActivated ? (final double value) {
+                      ruler.value = (value * 2).roundToDouble() / 2.0;
+                    } : null,
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(final BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -150,62 +217,13 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Expanded(
-                          child: ValueListenableBuilder<bool>(
-                            valueListenable: widget.state.horizontalActivated,
-                            builder: (final BuildContext context, final bool horActivated, final Widget? child) {
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Row(
-                                    children: <Widget>[
-                                      Switch(
-                                        value: horActivated,
-                                        onChanged: (final bool value)
-                                        {widget.state.horizontalActivated.value = value;},
-                                      ),
-                                      const SizedBox(
-                                        width: _SymmetryWidgetOptions.padding,
-                                      ),
-                                      const Spacer(),
-                                      Icon(TablerIcons.flip_vertical, size: _SymmetryWidgetOptions.buttonHeight, color: Theme.of(context).primaryColorDark),
-                                      const Spacer(),
-                                      Padding(
-                                        padding:  const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
-                                        child: SizedBox(
-                                          width: _SymmetryWidgetOptions.buttonWidth,
-                                          height: _SymmetryWidgetOptions.buttonHeight,
-                                          child: IconButton.outlined(
-                                            tooltip: l10n.centerHorizontalRuler,
-                                            onPressed: horActivated ? () {
-                                              widget.state.horizontalValue.value = GetIt.I.get<CanvasState>().canvasSize.x.toDouble() / 2.0;
-                                            } : null,
-                                            icon: const Icon(TablerIcons.layout_align_middle, size: _SymmetryWidgetOptions.buttonHeight,),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ) ,
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: _SymmetryWidgetOptions.padding * 4, right: _SymmetryWidgetOptions.padding * 4),
-                                    child: ValueListenableBuilder<double>(
-                                      valueListenable: widget.state.horizontalValue,
-                                      builder: (final BuildContext context, final double horVal, final Widget? child) {
-                                        return KPixSlider(
-                                          min: 1.0,
-                                          value: horVal,
-                                          max: max(GetIt.I.get<CanvasState>().canvasSize.x - 1, 1.0),
-                                          //divisions: max((GetIt.I.get<CanvasState>().canvasSize.x - 2) * 2, 1),
-                                          label: horVal.toStringAsFixed(1),
-                                          onChanged: horActivated ? (final double value) {
-                                            widget.state.horizontalValue.value = (value * 2).roundToDouble() / 2.0;
-                                          } : null,
-                                          textStyle: Theme.of(context).textTheme.bodyLarge!,);
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
+                          child: _createRulerControls(
+                            activated: widget.state.horizontalActivated,
+                            ruler: widget.state.horizontalValue,
+                            canvasExtent: () => GetIt.I.get<CanvasState>().canvasSize.x,
+                            icon: TablerIcons.flip_vertical,
+                            centerTooltip: l10n.centerHorizontalRuler,
+                            centerIcon: TablerIcons.layout_align_middle,
                           ),
                         ),
                         Padding(
@@ -220,66 +238,13 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                           ),
                         ),
                         Expanded(
-                          child: ValueListenableBuilder<bool>(
-                            valueListenable: widget.state.verticalActivated,
-                            builder: (final BuildContext context, final bool vertActivated, final Widget? child) {
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Row(
-                                    children: <Widget>[
-                                      Switch(
-                                        value: vertActivated,
-                                        onChanged: (final bool value)
-                                        {widget.state.verticalActivated.value = value;},
-                                      ),
-                                      const SizedBox(
-                                        width: _SymmetryWidgetOptions.padding,
-                                      ),
-                                      const Spacer(),
-                                      Column(
-                                        children: <Widget>[
-                                          Icon(TablerIcons.flip_horizontal, size: _SymmetryWidgetOptions.buttonHeight, color: Theme.of(context).primaryColorDark),
-                                        ],
-                                      ),
-                                      const Spacer(),
-                                      Padding(
-                                        padding: const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
-                                        child: SizedBox(
-                                          width: _SymmetryWidgetOptions.buttonWidth,
-                                          height: _SymmetryWidgetOptions.buttonHeight,
-                                          child: IconButton.outlined(
-                                            tooltip: l10n.centerVerticalRuler,
-                                            onPressed: vertActivated ? () {
-                                              widget.state.verticalValue.value = GetIt.I.get<CanvasState>().canvasSize.y.toDouble() / 2.0;
-                                            } : null,
-                                            icon: const Icon(TablerIcons.layout_align_center, size: _SymmetryWidgetOptions.buttonHeight,),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ) ,
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: _SymmetryWidgetOptions.padding * 4, right: _SymmetryWidgetOptions.padding * 4),
-                                    child: ValueListenableBuilder<double>(
-                                      valueListenable: widget.state.verticalValue,
-                                      builder: (final BuildContext context, final double horVal, final Widget? child) {
-                                        return KPixSlider(
-                                          min: 1.0,
-                                          value: horVal,
-                                          max: max(GetIt.I.get<CanvasState>().canvasSize.y - 1, 1.0),
-                                          //divisions: max((GetIt.I.get<CanvasState>().canvasSize.y - 2) * 2, 1),
-                                          label: horVal.toStringAsFixed(1),
-                                          onChanged: vertActivated ? (final double value) {
-                                            widget.state.verticalValue.value = (value * 2).roundToDouble() / 2.0;
-                                          } : null,
-                                          textStyle: Theme.of(context).textTheme.bodyLarge!,);
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
+                          child: _createRulerControls(
+                            activated: widget.state.verticalActivated,
+                            ruler: widget.state.verticalValue,
+                            canvasExtent: () => GetIt.I.get<CanvasState>().canvasSize.y,
+                            icon: TablerIcons.flip_horizontal,
+                            centerTooltip: l10n.centerVerticalRuler,
+                            centerIcon: TablerIcons.layout_align_center,
                           ),
                         ),
                       ],

@@ -492,35 +492,17 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        ValueListenableBuilder<int>(
-                          valueListenable: _settings.bevelDistance,
-                          builder: (final BuildContext context, final int distance, final Widget? child) {
-                            return KPixSlider(
-                              value: distance.toDouble(),
-                              min: _settings.constraints.bevelDistanceMin.toDouble(),
-                              max: _settings.constraints.bevelDistanceMax.toDouble(),
-                              textStyle: Theme.of(context).textTheme.bodyMedium!,
-                              label: "$distance ${l10n.pixelsAbbrev}",
-                              onChanged: (final double value) {
-                                _settings.bevelDistance.value = value.round();
-                              },
-                            );
-                          },
+                        _bevelSlider(
+                          notifier: _settings.bevelDistance,
+                          min: _settings.constraints.bevelDistanceMin,
+                          max: _settings.constraints.bevelDistanceMax,
+                          label: (final int distance) => "$distance ${l10n.pixelsAbbrev}",
                         ),
-                        ValueListenableBuilder<int>(
-                          valueListenable: _settings.bevelStrength,
-                          builder: (final BuildContext context, final int strength, final Widget? child) {
-                            return KPixSlider(
-                              value: strength.toDouble(),
-                              min: _settings.constraints.bevelStrengthMin.toDouble(),
-                              max: _settings.constraints.bevelStrengthMax.toDouble(),
-                              textStyle: Theme.of(context).textTheme.bodyMedium!,
-                              label: l10n.stepCount(strength.abs(), "$strength"),
-                              onChanged: (final double value) {
-                                _settings.bevelStrength.value = value.round();
-                              },
-                            );
-                          },
+                        _bevelSlider(
+                          notifier: _settings.bevelStrength,
+                          min: _settings.constraints.bevelStrengthMin,
+                          max: _settings.constraints.bevelStrengthMax,
+                          label: (final int strength) => l10n.stepCount(strength.abs(), "$strength"),
                         ),
                       ],
                     ),
@@ -539,6 +521,25 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
         raster: (final Frame frame) => widget.layer.rasterInline(layers: frame.layerList.getAllLayers(), frameIsSelected: true),
       ),
     ];
+  }
+
+  Widget _bevelSlider({required final ValueNotifier<int> notifier, required final int min, required final int max, required final String Function(int value) label})
+  {
+    return ValueListenableBuilder<int>(
+      valueListenable: notifier,
+      builder: (final BuildContext context, final int value, final Widget? child) {
+        return KPixSlider(
+          value: value.toDouble(),
+          min: min.toDouble(),
+          max: max.toDouble(),
+          textStyle: Theme.of(context).textTheme.bodyMedium!,
+          label: label(value),
+          onChanged: (final double newVal) {
+            notifier.value = newVal.round();
+          },
+        );
+      },
+    );
   }
 
   List<Widget> _dropShadowSection({required final BuildContext context, required final AppLocalizations l10n})

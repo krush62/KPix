@@ -163,6 +163,71 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
 
   Row _createSliderRow({required final ReferenceImage? refImg, required final ValueNotifier<double> notifier, required final double min, required final double max, required final double defaultValue, required final String name, required final AppLocalizations l10n})
   {
+    return _createLabeledRow(
+      name: name,
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: ValueListenableBuilder<double>(
+              valueListenable:
+              notifier,
+              builder: (final BuildContext context,
+                  final double value,
+                  final Widget? child,) {
+                return KPixSlider(
+                  value: value,
+                  min: min,
+                  max: max,
+                  onChanged: refImg == null ? null : (final double newVal) {
+                    notifier.value = newVal;
+                  },
+                  onChangedEnd: (final double value) {_commitChange();},
+                  decimals: 2,
+                  textStyle: Theme.of(context).textTheme.bodyLarge!,
+                );
+              },
+            ),
+          ),
+          const SizedBox(width: ToolSettingsWidgetOptions.padding,),
+          SizedBox(
+            height: _resetButtonHeight,
+            child: IconButton.outlined(
+              tooltip: l10n.resetSetting(name),
+              onPressed: refImg == null ? null: (){notifier.value = defaultValue; _commitChange();},
+              iconSize: _resetIconSize,
+              icon: const Icon(TablerIcons.restore,),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Row _createIntSliderRow({required final ReferenceImage? refImg, required final ValueNotifier<int> notifier, required final int min, required final int max, required final String name, required final String Function(int value) valueLabel})
+  {
+    return _createLabeledRow(
+      name: name,
+      child: ValueListenableBuilder<int>(
+        valueListenable: notifier,
+        builder: (final BuildContext context, final int value, final Widget? child) {
+          return KPixSlider(
+            value: value.toDouble(),
+            min: min.toDouble(),
+            max: max.toDouble(),
+            label: valueLabel(value),
+            onChanged: refImg == null ? null : (final double newVal) {
+              notifier.value = newVal.round();
+            },
+            onChangedEnd: (final double value) {_commitChange();},
+            textStyle: Theme.of(context).textTheme.bodyLarge!,
+          );
+        },
+      ),
+    );
+  }
+
+  Row _createLabeledRow({required final String name, required final Widget child})
+  {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
@@ -177,41 +242,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
         ),
         Expanded(
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: ValueListenableBuilder<double>(
-                  valueListenable:
-                  notifier,
-                  builder: (final BuildContext context,
-                      final double value,
-                      final Widget? child,) {
-                    return KPixSlider(
-                      value: value,
-                      min: min,
-                      max: max,
-                      onChanged: refImg == null ? null : (final double newVal) {
-                        notifier.value = newVal;
-                      },
-                      onChangedEnd: (final double value) {_commitChange();},
-                      decimals: 2,
-                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: ToolSettingsWidgetOptions.padding,),
-              SizedBox(
-                height: _resetButtonHeight,
-                child: IconButton.outlined(
-                  tooltip: l10n.resetSetting(name),
-                  onPressed: refImg == null ? null: (){notifier.value = defaultValue; _commitChange();},
-                  iconSize: _resetIconSize,
-                  icon: const Icon(TablerIcons.restore,),
-                ),
-              ),
-            ],
-          ),
+          child: child,
         ),
       ],
     );
@@ -238,82 +269,40 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            l10n.file,
-                            style: Theme.of(context).textTheme.labelLarge,
+                  _createLabeledRow(
+                    name: l10n.file,
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Expanded(
+                            flex: 3,
+                            child: Align(
+                              child: Text(
+                                refImg == null ? "<${l10n.noFileLoaded.toUpperCase()}>" : extractFilenameFromPath(path: refImg.path),
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Expanded(
-                              flex: 3,
-                              child: Align(
-                                child: Text(
-                                  refImg == null ? "<${l10n.noFileLoaded.toUpperCase()}>" : extractFilenameFromPath(path: refImg.path),
-                                  style: Theme.of(context).textTheme.labelSmall,
-                                ),
-                              ),
+                          const SizedBox(
+                            width: ToolSettingsWidgetOptions.padding,
+                          ),
+                          Expanded(
+                            child: IconButton.outlined(
+                              tooltip: l10n.openReferenceImage,
+                              onPressed: () {_onLoadPressed(l10n: l10n);},
+                              icon: const Icon(TablerIcons.folder_open),
                             ),
-                            const SizedBox(
-                              width: ToolSettingsWidgetOptions.padding,
-                            ),
-                            Expanded(
-                              child: IconButton.outlined(
-                                tooltip: l10n.openReferenceImage,
-                                onPressed: () {_onLoadPressed(l10n: l10n);},
-                                icon: const Icon(TablerIcons.folder_open),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                          ),
+                        ],
+                    ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            l10n.opacity,
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                        child: ValueListenableBuilder<int>(
-                          valueListenable:
-                              widget.referenceState.opacityNotifier,
-                          builder: (final BuildContext context,
-                              final int opacity, final Widget? child,) {
-                            return KPixSlider(
-                              value: opacity.toDouble(),
-                              min: ReferenceLayerConstraints.opacityMin.toDouble(),
-                              max: ReferenceLayerConstraints.opacityMax.toDouble(),
-                              label: "$opacity%",
-                              //divisions: _refSettings.opacityMax - _refSettings.opacityMin,
-                              onChanged: refImg == null ? null : (final double newVal) {
-                                widget.referenceState.opacityNotifier.value = newVal.round();
-                              },
-                              onChangedEnd: (final double value) {_commitChange();},
-                              textStyle: Theme.of(context).textTheme.bodyLarge!,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                  _createIntSliderRow(
+                    refImg: refImg,
+                    notifier: widget.referenceState.opacityNotifier,
+                    min: ReferenceLayerConstraints.opacityMin,
+                    max: ReferenceLayerConstraints.opacityMax,
+                    name: l10n.opacity,
+                    valueLabel: (final int opacity) => "$opacity%",
                   ),
                   _createSliderRow(
                     refImg: refImg,
@@ -324,40 +313,13 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     name: l10n.aspectRatio,
                     l10n: l10n,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            l10n.zoom,
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: widget.referenceState.zoomNotifier,
-                          builder: (final BuildContext context,
-                              final int zoom, final Widget? child,) {
-                            return KPixSlider(
-                              value: zoom.toDouble(),
-                              min: ReferenceLayerConstraints.zoomMin.toDouble(),
-                              max: ReferenceLayerConstraints.zoomMax.toDouble(),
-                              //divisions: _refSettings.zoomMax - _refSettings.zoomMin,
-                              onChanged: refImg == null ? null : (final double newVal) {
-                                widget.referenceState.zoomNotifier.value = newVal.round();
-                              },
-                              onChangedEnd: (final double value) {_commitChange();},
-                              label: "${(zoom / 10.0).toStringAsFixed(1)}%",
-                              textStyle: Theme.of(context).textTheme.bodyLarge!,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                  _createIntSliderRow(
+                    refImg: refImg,
+                    notifier: widget.referenceState.zoomNotifier,
+                    min: ReferenceLayerConstraints.zoomMin,
+                    max: ReferenceLayerConstraints.zoomMax,
+                    name: l10n.zoom,
+                    valueLabel: (final int zoom) => "${(zoom / 10.0).toStringAsFixed(1)}%",
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

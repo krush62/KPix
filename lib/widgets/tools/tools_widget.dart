@@ -134,32 +134,28 @@ class _ToolsWidgetState extends State<ToolsWidget>
     return Padding(
       padding: const EdgeInsets.all(_ToolsWidgetOptions.padding),
       child: ListenableBuilder(
-        listenable: _documentState.timeline.layerChangeNotifier,
+        listenable: Listenable.merge(<Listenable>[_documentState.timeline.layerChangeNotifier, _toolState.selectedToolNotifier]),
         builder: (final BuildContext context, final Widget? child)
         {
           final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
           final bool isShadingLayer = currentLayer is ShadingLayerState;
-          return ValueListenableBuilder<ToolType>(
-            valueListenable: _toolState.selectedToolNotifier,
-            builder: (final BuildContext context, final ToolType tool, final Widget? child) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
+          final ToolType tool = _toolState.selectedToolNotifier.value;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
 
-                  _createSegmentedRow(
-                      buttonDataList: toolDataRow1,
-                      isShadingLayer: isShadingLayer,
-                      currentTool: tool,
-                  ),
-                  _createSegmentedRow(
-                    buttonDataList: toolDataRow2,
-                    isShadingLayer: isShadingLayer,
-                    currentTool: tool,
-                  ),
-                ],
-              );
-            },
+              _createSegmentedRow(
+                  buttonDataList: toolDataRow1,
+                  isShadingLayer: isShadingLayer,
+                  currentTool: tool,
+              ),
+              _createSegmentedRow(
+                buttonDataList: toolDataRow2,
+                isShadingLayer: isShadingLayer,
+                currentTool: tool,
+              ),
+            ],
           );
         },
       ),

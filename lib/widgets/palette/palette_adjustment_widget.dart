@@ -447,54 +447,50 @@ class PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
           onTapDown: (final TapDownDetails details) {_showOriginal.value = true;},
           onTapUp: (final TapUpDetails details) {_showOriginal.value = false;},
           onTapCancel: () {_showOriginal.value = false;},
-          child: ValueListenableBuilder<bool>(
-            valueListenable: _showOriginal,
-            builder: (final BuildContext context, final bool showOriginal, final Widget? child) {
-              return ValueListenableBuilder<ui.Image?>(
-                valueListenable: _previewImage,
-                builder: (final BuildContext context, final ui.Image? img, final Widget? child) {
-                  final ui.Image? shownImage = showOriginal ? (_originalImage ?? img) : img;
-                  //giving the box the shape of the image leaves no bars beside
-                  //it, so the corner of the box is the corner of the image
-                  return Center(
-                    child: AspectRatio(
-                      aspectRatio: shownImage != null
-                          ? shownImage.width / shownImage.height
-                          : _canvasState.canvasSize.x / _canvasState.canvasSize.y,
-                      child: Stack(
-                        children: <Widget>[
-                          Positioned.fill(
-                            child: ClipRRect(
-                              borderRadius: const BorderRadius.all(Radius.circular(PaletteAdjustmentWidgetOptions.borderRadius)),
-                              child: RawImage(
-                                fit: BoxFit.contain,
-                                filterQuality: ui.FilterQuality.none,
-                                color: Theme.of(context).primaryColorDark,
-                                colorBlendMode: ui.BlendMode.dstATop,
-                                image: shownImage,
-                              ),
-                            ),
+          child: ListenableBuilder(
+            listenable: Listenable.merge(<Listenable>[_showOriginal, _previewImage]),
+            builder: (final BuildContext context, final Widget? child) {
+              final ui.Image? img = _previewImage.value;
+              final ui.Image? shownImage = _showOriginal.value ? (_originalImage ?? img) : img;
+              //giving the box the shape of the image leaves no bars beside
+              //it, so the corner of the box is the corner of the image
+              return Center(
+                child: AspectRatio(
+                  aspectRatio: shownImage != null
+                      ? shownImage.width / shownImage.height
+                      : _canvasState.canvasSize.x / _canvasState.canvasSize.y,
+                  child: Stack(
+                    children: <Widget>[
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.all(Radius.circular(PaletteAdjustmentWidgetOptions.borderRadius)),
+                          child: RawImage(
+                            fit: BoxFit.contain,
+                            filterQuality: ui.FilterQuality.none,
+                            color: Theme.of(context).primaryColorDark,
+                            colorBlendMode: ui.BlendMode.dstATop,
+                            image: shownImage,
                           ),
-                          Positioned(
-                            top: PaletteAdjustmentWidgetOptions.padding / 2.0,
-                            right: PaletteAdjustmentWidgetOptions.padding / 2.0,
-                            //shows that there is something to press here; the
-                            //image below it can be any color, so the icon
-                            //carries its own outline
-                            child: Icon(
-                              TablerIcons.click,
-                              size: PaletteAdjustmentWidgetOptions.previewHintSize,
-                              color: Theme.of(context).primaryColorLight,
-                              shadows: <Shadow>[
-                                Shadow(color: Theme.of(context).primaryColorDark, blurRadius: PaletteAdjustmentWidgetOptions.previewHintBlur),
-                              ],
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                      Positioned(
+                        top: PaletteAdjustmentWidgetOptions.padding / 2.0,
+                        right: PaletteAdjustmentWidgetOptions.padding / 2.0,
+                        //shows that there is something to press here; the
+                        //image below it can be any color, so the icon
+                        //carries its own outline
+                        child: Icon(
+                          TablerIcons.click,
+                          size: PaletteAdjustmentWidgetOptions.previewHintSize,
+                          color: Theme.of(context).primaryColorLight,
+                          shadows: <Shadow>[
+                            Shadow(color: Theme.of(context).primaryColorDark, blurRadius: PaletteAdjustmentWidgetOptions.previewHintBlur),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               );
             },
           ),

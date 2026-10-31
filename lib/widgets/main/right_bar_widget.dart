@@ -300,19 +300,13 @@ class _RightBarWidgetState extends State<RightBarWidget>
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: <Widget>[
-                                  ValueListenableBuilder<int>(
-                                    valueListenable: _documentState.timeline.selectedFrameIndexNotifier,
-                                    builder: (final BuildContext context1, final int frameIndex, final Widget? child1) {
+                                  ListenableBuilder(
+                                    listenable: Listenable.merge(<Listenable>[_documentState.timeline.selectedFrameIndexNotifier, _documentState.timeline.layerChangeNotifier]),
+                                    builder: (final BuildContext context, final Widget? child) {
                                       final Frame? currentFrame = _documentState.timeline.selectedFrame;
                                       if (currentFrame != null)
                                       {
-                                        return ListenableBuilder(
-                                          listenable: _documentState.timeline.layerChangeNotifier,
-                                          builder: (final BuildContext context, final Widget? child)
-                                          {
-                                            return Column(children: _createWidgetList(layers: _documentState.timeline.frames.value[frameIndex].layerList),);
-                                          },
-                                        );
+                                        return Column(children: _createWidgetList(layers: currentFrame.layerList),);
                                       }
                                       else
                                       {
@@ -337,88 +331,79 @@ class _RightBarWidgetState extends State<RightBarWidget>
               const CanvasOperationsWidget(),
             ],
           ),
-          ValueListenableBuilder<bool>(
-            valueListenable: _projectSession.hasProjectNotifier,
-            builder: (final BuildContext context, final bool hasProject, final Widget? child) {
-              if (hasProject) {
-                return ValueListenableBuilder<int>(
-                  valueListenable: _documentState.timeline.selectedFrameIndexNotifier,
-                  builder: (final BuildContext context1, final int frameIndex, final Widget? child1) {
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: GetIt.I.get<ViewState>().layerSettingsVisibleNotifier,
-                      builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
-                        Widget settingsWidget = const SizedBox.shrink();
-                        final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
-                        if (currentLayer != null && currentLayer is RasterableLayerState)
-                        {
-                          currentLayer.layerSettings.editStarted = true;
-                          currentLayer.layerSettings.hasChanges = false;
-                          settingsWidget = currentLayer.getSettingsWidget();
-                        }
+          ListenableBuilder(
+            listenable: Listenable.merge(<Listenable>[_projectSession.hasProjectNotifier, _documentState.timeline.selectedFrameIndexNotifier, GetIt.I.get<ViewState>().layerSettingsVisibleNotifier]),
+            builder: (final BuildContext context, final Widget? child) {
+              if (_projectSession.hasProjectNotifier.value) {
+                final bool showLayerOptions = GetIt.I.get<ViewState>().layerSettingsVisibleNotifier.value;
+                Widget settingsWidget = const SizedBox.shrink();
+                final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
+                if (currentLayer != null && currentLayer is RasterableLayerState)
+                {
+                  currentLayer.layerSettings.editStarted = true;
+                  currentLayer.layerSettings.hasChanges = false;
+                  settingsWidget = currentLayer.getSettingsWidget();
+                }
 
-                        return IgnorePointer(
-                          ignoring: !showLayerOptions,
-                          child: AnimatedSlide(
-                            duration: const Duration(milliseconds: 100),
-                            curve: Curves.easeInOut,
-                            offset: !showLayerOptions ? const Offset(1.0, 0.0) : Offset.zero,
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).primaryColor,
-                                  border: Border(
-                                    left: BorderSide(color: Theme.of(context).primaryColorLight, width: LayerWidgetOptions.borderWidth,),
-                                    bottom: BorderSide(color: Theme.of(context).primaryColorLight, width: LayerWidgetOptions.borderWidth,),
-                                    top: BorderSide(color: Theme.of(context).primaryColorLight, width: LayerWidgetOptions.borderWidth,),
+                return IgnorePointer(
+                  ignoring: !showLayerOptions,
+                  child: AnimatedSlide(
+                    duration: const Duration(milliseconds: 100),
+                    curve: Curves.easeInOut,
+                    offset: !showLayerOptions ? const Offset(1.0, 0.0) : Offset.zero,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor,
+                          border: Border(
+                            left: BorderSide(color: Theme.of(context).primaryColorLight, width: LayerWidgetOptions.borderWidth,),
+                            bottom: BorderSide(color: Theme.of(context).primaryColorLight, width: LayerWidgetOptions.borderWidth,),
+                            top: BorderSide(color: Theme.of(context).primaryColorLight, width: LayerWidgetOptions.borderWidth,),
 
-                                  ),
-                                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(LayerWidgetOptions.borderRadius), bottomLeft: Radius.circular(LayerWidgetOptions.borderRadius)),
-                                ),
+                          ),
+                          borderRadius: const BorderRadius.only(topLeft: Radius.circular(LayerWidgetOptions.borderRadius), bottomLeft: Radius.circular(LayerWidgetOptions.borderRadius)),
+                        ),
 
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(l10n.layerSettings.toUpperCase(), style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
-                                    ),
-                                    const SizedBox(height: 8.0),
-                                    Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
-                                    Expanded(
-                                      child: SingleChildScrollView(
-                                        child: settingsWidget,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: IconButton.outlined(
-                                        tooltip: l10n.close,
-                                        onPressed: () {
-                                          GetIt.I.get<ViewState>().layerSettingsVisible = false;
-                                          if (currentLayer != null && currentLayer is RasterableLayerState)
-                                          {
-                                            currentLayer.layerSettings.editStarted = false;
-                                            if (currentLayer.layerSettings.hasChanges)
-                                            {
-                                              final Frame? frame = _documentState.timeline.selectedFrame;
-                                              GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: frame?.layerList.getSelectedLayer());
-                                              currentLayer.layerSettings.hasChanges = false;
-                                            }
-                                          }
-                                        },
-                                        icon: const Icon(TablerIcons.arrow_narrow_right,),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(l10n.layerSettings.toUpperCase(), style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
+                            ),
+                            const SizedBox(height: 8.0),
+                            Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
+                            Expanded(
+                              child: SingleChildScrollView(
+                                child: settingsWidget,
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    );
-                  },
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: IconButton.outlined(
+                                tooltip: l10n.close,
+                                onPressed: () {
+                                  GetIt.I.get<ViewState>().layerSettingsVisible = false;
+                                  if (currentLayer != null && currentLayer is RasterableLayerState)
+                                  {
+                                    currentLayer.layerSettings.editStarted = false;
+                                    if (currentLayer.layerSettings.hasChanges)
+                                    {
+                                      final Frame? frame = _documentState.timeline.selectedFrame;
+                                      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: frame?.layerList.getSelectedLayer());
+                                      currentLayer.layerSettings.hasChanges = false;
+                                    }
+                                  }
+                                },
+                                icon: const Icon(TablerIcons.arrow_narrow_right,),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 );
               } else {
                 return const SizedBox.shrink();

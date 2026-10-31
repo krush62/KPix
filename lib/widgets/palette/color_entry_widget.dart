@@ -89,48 +89,43 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
 
   @override
   Widget build(final BuildContext context) {
-    return ValueListenableBuilder<IdColor>(
-      valueListenable: widget.colorData,
-      builder: (final BuildContext context, final IdColor value, final Widget? child) {
-
-        return ValueListenableBuilder<ColorReference?>(
-          valueListenable: GetIt.I.get<PaletteState>().selectedColorNotifier,
-          builder: (final BuildContext context2, final ColorReference? selectedColor, final Widget? child2)
-          {
-            return Expanded(
-              child: Listener(
-                onPointerDown: _colorPressed,
-                child: Tooltip(
-                  message: colorTooltipText(idColor: value),
-                  textAlign: TextAlign.center,
-                  child: Container(
-                    constraints: const BoxConstraints(
-                      minHeight: ColorEntryWidgetOptions.minSize,
-                      minWidth: ColorEntryWidgetOptions.minSize,
-                      maxHeight: ColorEntryWidgetOptions.maxSize,
-                      maxWidth: ColorEntryWidgetOptions.maxSize,
-                    ),
-                    margin: EdgeInsets.all(widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
-                        ? ColorEntryWidgetOptions.selectedMargin
-                        : ColorEntryWidgetOptions.unselectedMargin,),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
-                          ? Theme.of(context).primaryColorLight
-                          : Colors.transparent,
-                        width: ColorEntryWidgetOptions.unselectedMargin -ColorEntryWidgetOptions.selectedMargin,),
-                      color: value.color,
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(
-                          ColorEntryWidgetOptions.roundRadius,
-                        ),
-                      ),
+    return ListenableBuilder(
+      listenable: Listenable.merge(<Listenable>[widget.colorData, GetIt.I.get<PaletteState>().selectedColorNotifier]),
+      builder: (final BuildContext context, final Widget? child) {
+        final IdColor value = widget.colorData.value;
+        final ColorReference? selectedColor = GetIt.I.get<PaletteState>().selectedColorNotifier.value;
+        return Expanded(
+          child: Listener(
+            onPointerDown: _colorPressed,
+            child: Tooltip(
+              message: colorTooltipText(idColor: value),
+              textAlign: TextAlign.center,
+              child: Container(
+                constraints: const BoxConstraints(
+                  minHeight: ColorEntryWidgetOptions.minSize,
+                  minWidth: ColorEntryWidgetOptions.minSize,
+                  maxHeight: ColorEntryWidgetOptions.maxSize,
+                  maxWidth: ColorEntryWidgetOptions.maxSize,
+                ),
+                margin: EdgeInsets.all(widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
+                    ? ColorEntryWidgetOptions.selectedMargin
+                    : ColorEntryWidgetOptions.unselectedMargin,),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
+                      ? Theme.of(context).primaryColorLight
+                      : Colors.transparent,
+                    width: ColorEntryWidgetOptions.unselectedMargin -ColorEntryWidgetOptions.selectedMargin,),
+                  color: value.color,
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(
+                      ColorEntryWidgetOptions.roundRadius,
                     ),
                   ),
                 ),
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );

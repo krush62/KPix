@@ -214,6 +214,38 @@ class ImportWidgetState extends State<ImportWidget>
     }
   }
 
+  Widget _createPaletteLimitRow({required final String label, required final ValueNotifier<int> notifier, required final int min, required final int max})
+  {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        Expanded(
+          flex: 3,
+          child: Text(label),
+        ),
+        Expanded(
+          flex: 4,
+          child: ListenableBuilder(
+            listenable: Listenable.merge(<Listenable>[_createNewPaletteNotifier, notifier]),
+            builder: (final BuildContext context, final Widget? child)
+            {
+              return KPixSlider(
+                value: notifier.value.toDouble(),
+                min: min.toDouble(),
+                max: max.toDouble(),
+                onChanged: _createNewPaletteNotifier.value ? (final double newValue) {
+                  notifier.value = newValue.round();
+                } : null,
+                textStyle: Theme.of(context).textTheme.bodyLarge!,
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(final BuildContext context)
   {
@@ -285,31 +317,27 @@ class ImportWidgetState extends State<ImportWidget>
                           ),
                           Expanded(
                             flex: 4,
-                            child: ValueListenableBuilder<ui.Image?>(
-                              valueListenable: _imageNotifier,
-                              builder: (final BuildContext context, final ui.Image? img, final Widget? child)
+                            child: ListenableBuilder(
+                              listenable: Listenable.merge(<Listenable>[_imageNotifier, _scaleDownNotifier]),
+                              builder: (final BuildContext context, final Widget? child)
                               {
-                                return  ValueListenableBuilder<int>(
-                                  valueListenable: _scaleDownNotifier,
-                                  builder: (final BuildContext context, final int scaleVal, final Widget? child) {
-                                    final String originalDims = img != null ? formatDimension(width: img.width, height: img.height) : "";
-                                    final String scaledDims = img != null ? formatDimension(width: img.width ~/ scaleVal, height: img.height ~/ scaleVal) : "";
+                                final ui.Image? img = _imageNotifier.value;
+                                final int scaleVal = _scaleDownNotifier.value;
+                                final String originalDims = img != null ? formatDimension(width: img.width, height: img.height) : "";
+                                final String scaledDims = img != null ? formatDimension(width: img.width ~/ scaleVal, height: img.height ~/ scaleVal) : "";
 
-                                    return KPixSlider(
-                                      value: scaleVal.toDouble(),
-                                      label: img != null ? "$originalDims -> $scaledDims" : "",
-                                      min: _currentMinScale.toDouble(),
-                                      max: _currentMaxScale.toDouble(),
-                                      //divisions: max(_currentMaxScale - _currentMinScale, 1),
-                                      onChanged: (img != null) ? (final double newValue) {
-                                        _scaleDownNotifier.value = newValue.round();
-                                      } : null,
-                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                    );
-                                  },
+                                return KPixSlider(
+                                  value: scaleVal.toDouble(),
+                                  label: img != null ? "$originalDims -> $scaledDims" : "",
+                                  min: _currentMinScale.toDouble(),
+                                  max: _currentMaxScale.toDouble(),
+                                  //divisions: max(_currentMaxScale - _currentMinScale, 1),
+                                  onChanged: (img != null) ? (final double newValue) {
+                                    _scaleDownNotifier.value = newValue.round();
+                                  } : null,
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 );
                               },
-
                             ),
                           ),
                         ],
@@ -341,75 +369,17 @@ class ImportWidgetState extends State<ImportWidget>
                           ),
                         ],
                       ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Expanded(
-                            flex: 3,
-                            child: Text(l10n.maxColorRamps),
-                          ),
-                          Expanded(
-                            flex: 4,
-                            child: ValueListenableBuilder<bool>(
-                              valueListenable: _createNewPaletteNotifier,
-                              builder: (final BuildContext context, final bool createNew, final Widget? child)
-                              {
-                                return  ValueListenableBuilder<int>(
-                                  valueListenable: _maxRampsNotifier,
-                                  builder: (final BuildContext context, final int maxRampValue, final Widget? child) {
-                                    return KPixSlider(
-                                      value: maxRampValue.toDouble(),
-                                      min: KPalConstraints.rampCountMin.toDouble(),
-                                      max: KPalConstraints.maxClusters.toDouble(),
-                                      //divisions: _constraints.maxClusters - _constraints.rampCountMin,
-                                      onChanged: createNew ? (final double newValue) {
-                                        _maxRampsNotifier.value = newValue.round();
-                                      } : null,
-                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                    );
-                                  },
-                                );
-                              },
-
-                            ),
-                          ),
-                        ],
+                      _createPaletteLimitRow(
+                        label: l10n.maxColorRamps,
+                        notifier: _maxRampsNotifier,
+                        min: KPalConstraints.rampCountMin,
+                        max: KPalConstraints.maxClusters,
                       ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Expanded(
-                            flex: 3,
-                            child: Text(l10n.maxColorsPerRamp),
-                          ),
-                          Expanded(
-                            flex: 4,
-                            child: ValueListenableBuilder<bool>(
-                                valueListenable: _createNewPaletteNotifier,
-                                builder: (final BuildContext context, final bool createNew, final Widget? child)
-                                {
-                                  return ValueListenableBuilder<int>(
-                                    valueListenable: _maxColorsPerRampNotifier,
-                                    builder: (final BuildContext context, final int maxColorsValue, final Widget? child) {
-                                      return KPixSlider(
-                                        value: maxColorsValue.toDouble(),
-                                        min: KPalConstraints.colorCountMin.toDouble(),
-                                        max: KPalConstraints.colorCountMax.toDouble(),
-                                        //divisions: _constraints.colorCountMax - _constraints.colorCountMin,
-                                        onChanged: createNew ? (final double newValue) {
-                                          _maxColorsPerRampNotifier.value = newValue.round();
-                                        } : null,
-                                        textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                      );
-                                    },
-                                  );
-                                },
-                            ),
-                          ),
-
-                        ],
+                      _createPaletteLimitRow(
+                        label: l10n.maxColorsPerRamp,
+                        notifier: _maxColorsPerRampNotifier,
+                        min: KPalConstraints.colorCountMin,
+                        max: KPalConstraints.colorCountMax,
                       ),
                       Padding(
                         padding: const EdgeInsets.all(4.0),

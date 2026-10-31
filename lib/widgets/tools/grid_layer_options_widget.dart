@@ -62,6 +62,79 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
     }
   }
 
+  void _commitChange()
+  {
+    GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+  }
+
+  Widget _createLabeledRow({required final String label, required final Widget child})
+  {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
+          child: child,
+        ),
+      ],
+    );
+  }
+
+  Widget _createIntRow({required final String label, required final ValueNotifier<int> notifier, required final int min, required final int max, final String Function(int value)? valueLabel})
+  {
+    return _createLabeledRow(
+      label: label,
+      child: ValueListenableBuilder<int>(
+        valueListenable: notifier,
+        builder: (final BuildContext context, final int value, final Widget? child) {
+          return KPixSlider(
+            value: value.toDouble(),
+            label: valueLabel?.call(value),
+            min: min.toDouble(),
+            max: max.toDouble(),
+            onChanged: (final double newVal) {
+              notifier.value = newVal.round();
+            },
+            onChangedEnd: (final double value) {_commitChange();},
+            textStyle: Theme.of(context).textTheme.bodyLarge!,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _createPositionRow({required final String label, required final ValueNotifier<double> notifier})
+  {
+    return _createLabeledRow(
+      label: label,
+      child: ValueListenableBuilder<double>(
+        valueListenable: notifier,
+        builder: (final BuildContext context, final double value, final Widget? child) {
+          return KPixSlider(
+            value: value,
+            min: GridLayerConstraints.vanishingPointMin,
+            max: GridLayerConstraints.vanishingPointMax,
+            decimals: 2,
+            onChanged: (final double newVal) {
+              notifier.value = newVal;
+            },
+            onChangedEnd: (final double value) {_commitChange();},
+            textStyle: Theme.of(context).textTheme.bodyLarge!,
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(final BuildContext context)
   {
@@ -97,7 +170,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                       {
                         widget.gridState.gridTypeNotifier.value = lastPerspectiveGridType;
                       }
-                      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                      _commitChange();
                     },
                     segments: <ButtonSegment<bool>>[
                       ButtonSegment<bool>(
@@ -135,303 +208,64 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         lastPerspectiveGridType = types.first;
                       }
                       widget.gridState.gridTypeNotifier.value = types.first;
-                      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                      _commitChange();
                     },
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            l10n.opacity,
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: widget.gridState.opacityNotifier,
-                          builder: (final BuildContext context, final int opacity, final Widget? child) {
-                            return KPixSlider(
-                              value: opacity.toDouble(),
-                              label: "$opacity%",
-                              min: GridLayerConstraints.opacityMin.toDouble(),
-                              max: GridLayerConstraints.opacityMax.toDouble(),
-                              //divisions: GridLayerConstraints.opacityMax - GridLayerConstraints.opacityMin,
-                              onChanged: (final double newVal) {
-                                widget.gridState.opacityNotifier.value = newVal.round();
-                              },
-                              onChangedEnd: (final double value) {
-                                GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
-                              },
-                              textStyle: Theme.of(context).textTheme.bodyLarge!,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                  _createIntRow(
+                    label: l10n.opacity,
+                    notifier: widget.gridState.opacityNotifier,
+                    min: GridLayerConstraints.opacityMin,
+                    max: GridLayerConstraints.opacityMax,
+                    valueLabel: (final int value) => "$value%",
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            l10n.brightness,
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: widget.gridState.brightnessNotifier,
-                          builder: (final BuildContext context, final int brightness, final Widget? child) {
-                            return KPixSlider(
-                              value: brightness.toDouble(),
-                              min: GridLayerConstraints.brightnessMin.toDouble(),
-                              max: GridLayerConstraints.brightnessMax.toDouble(),
-                              //divisions: GridLayerConstraints.brightnessMax - GridLayerConstraints.brightnessMin,
-                              onChanged: (final double newVal) {
-                                widget.gridState.brightnessNotifier.value = newVal.round();
-                              },
-                              onChangedEnd: (final double value) {
-                                GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
-                              },
-                              textStyle: Theme.of(context).textTheme.bodyLarge!,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                  _createIntRow(
+                    label: l10n.brightness,
+                    notifier: widget.gridState.brightnessNotifier,
+                    min: GridLayerConstraints.brightnessMin,
+                    max: GridLayerConstraints.brightnessMax,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            !isPerspective ? l10n.intervalX : l10n.interval,
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: widget.gridState.intervalXNotifier,
-                          builder: (final BuildContext context, final int intervalX, final Widget? child) {
-                            return KPixSlider(
-                              value: intervalX.toDouble(),
-                              min: GridLayerConstraints.intervalXMin.toDouble(),
-                              max: GridLayerConstraints.intervalXMax.toDouble(),
-                              //divisions: GridLayerConstraints.intervalXMax - GridLayerConstraints.intervalXMin,
-                              onChanged: (final double newVal) {
-                                widget.gridState.intervalXNotifier.value = newVal.round();
-                              },
-                              onChangedEnd: (final double value) {
-                                GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
-                              },
-                              textStyle: Theme.of(context).textTheme.bodyLarge!,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                  _createIntRow(
+                    label: !isPerspective ? l10n.intervalX : l10n.interval,
+                    notifier: widget.gridState.intervalXNotifier,
+                    min: GridLayerConstraints.intervalXMin,
+                    max: GridLayerConstraints.intervalXMax,
                   ),
                   if (!isPerspective)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            l10n.intervalY,
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: widget.gridState.intervalYNotifier,
-                          builder: (final BuildContext context, final int intervalY, final Widget? child) {
-                            return KPixSlider(
-                              value: intervalY.toDouble(),
-                              min: GridLayerConstraints.intervalYMin.toDouble(),
-                              max: GridLayerConstraints.intervalYMax.toDouble(),
-                              //divisions: GridLayerConstraints.intervalYMax - GridLayerConstraints.intervalYMin,
-                              onChanged: (final double newVal) {
-                                widget.gridState.intervalYNotifier.value = newVal.round();
-                              },
-                              onChangedEnd: (final double value) {
-                                GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
-                              },
-                              textStyle: Theme.of(context).textTheme.bodyLarge!,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                    _createIntRow(
+                      label: l10n.intervalY,
+                      notifier: widget.gridState.intervalYNotifier,
+                      min: GridLayerConstraints.intervalYMin,
+                      max: GridLayerConstraints.intervalYMax,
+                    ),
                   if (isPerspective)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              l10n.horizon,
-                              style: Theme.of(context).textTheme.labelLarge,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                          child: ValueListenableBuilder<double>(
-                            valueListenable: widget.gridState.horizonPositionNotifier,
-                            builder: (final BuildContext context, final double horizon, final Widget? child) {
-                              return KPixSlider(
-                                value: horizon,
-                                min: GridLayerConstraints.vanishingPointMin,
-                                max: GridLayerConstraints.vanishingPointMax,
-                                decimals: 2,
-                                onChanged: (final double newVal) {
-                                  widget.gridState.horizonPositionNotifier.value = newVal;
-                                },
-                                onChangedEnd: (final double value) {
-                                  GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
-                                },
-                                textStyle: Theme.of(context).textTheme.bodyLarge!,
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                    _createPositionRow(label: l10n.horizon, notifier: widget.gridState.horizonPositionNotifier),
                   if (gridType == GridType.onePointPerspective)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              l10n.vanishingPoint,
-                              style: Theme.of(context).textTheme.labelLarge,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                          child: ValueListenableBuilder<double>(
-                            valueListenable: widget.gridState.vanishingPoint1Notifier,
-                            builder: (final BuildContext context, final double horizon, final Widget? child) {
-                              return KPixSlider(
-                                value: horizon,
-                                min: GridLayerConstraints.vanishingPointMin,
-                                max: GridLayerConstraints.vanishingPointMax,
-                                decimals: 2,
-                                onChanged: (final double newVal) {
-                                  widget.gridState.vanishingPoint1Notifier.value = newVal;
-                                },
-                                onChangedEnd: (final double value) {
-                                  GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
-                                },
-                                textStyle: Theme.of(context).textTheme.bodyLarge!,
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                    _createPositionRow(label: l10n.vanishingPoint, notifier: widget.gridState.vanishingPoint1Notifier),
                   if (gridType == GridType.twoPointPerspective || gridType == GridType.threePointPerspective)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              l10n.horPoints,
-                              style: Theme.of(context).textTheme.labelLarge,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                          child: ValueListenableBuilder<double>(
-                            valueListenable: widget.gridState.vanishingPoint1Notifier,
-                            builder: (final BuildContext context1, final double van1, final Widget? child1) {
-                              return ValueListenableBuilder<double>(
-                                valueListenable: widget.gridState.vanishingPoint2Notifier,
-                                builder: (final BuildContext context2, final double van2, final Widget? child2)
-                                {
-                                   return KPixRangeSlider(
-                                     values: RangeValues(van1, van2),
-                                     min: GridLayerConstraints.vanishingPointMin,
-                                     max: GridLayerConstraints.vanishingPointMax,
-                                     textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                     decimals: 2,
-                                     onChanged: (final RangeValues newVals)
-                                     {
-                                       widget.gridState.vanishingPoint1Notifier.value = newVals.start;
-                                       widget.gridState.vanishingPoint2Notifier.value = newVals.end;
-                                     },
-                                     onChangedEnd: (final RangeValues values) {
-                                       GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
-                                     },
-                                   );
-                                },
-                              );
+                    _createLabeledRow(
+                      label: l10n.horPoints,
+                      child: ListenableBuilder(
+                        listenable: Listenable.merge(<Listenable>[widget.gridState.vanishingPoint1Notifier, widget.gridState.vanishingPoint2Notifier]),
+                        builder: (final BuildContext context, final Widget? child)
+                        {
+                          return KPixRangeSlider(
+                            values: RangeValues(widget.gridState.vanishingPoint1Notifier.value, widget.gridState.vanishingPoint2Notifier.value),
+                            min: GridLayerConstraints.vanishingPointMin,
+                            max: GridLayerConstraints.vanishingPointMax,
+                            textStyle: Theme.of(context).textTheme.bodyLarge!,
+                            decimals: 2,
+                            onChanged: (final RangeValues newVals)
+                            {
+                              widget.gridState.vanishingPoint1Notifier.value = newVals.start;
+                              widget.gridState.vanishingPoint2Notifier.value = newVals.end;
                             },
-                          ),
-                        ),
-                      ],
+                            onChangedEnd: (final RangeValues values) {_commitChange();},
+                          );
+                        },
+                      ),
                     ),
                   if (gridType == GridType.threePointPerspective)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              l10n.verPoint,
-                              style: Theme.of(context).textTheme.labelLarge,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                          child: ValueListenableBuilder<double>(
-                            valueListenable: widget.gridState.vanishingPoint3Notifier,
-                            builder: (final BuildContext context, final double van3, final Widget? child) {
-                              return KPixSlider(
-                                value: van3,
-                                min: GridLayerConstraints.vanishingPointMin,
-                                max: GridLayerConstraints.vanishingPointMax,
-                                decimals: 2,
-                                onChanged: (final double newVal) {
-                                  widget.gridState.vanishingPoint3Notifier.value = newVal;
-                                },
-                                onChangedEnd: (final double value) {
-                                  GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
-                                },
-                                textStyle: Theme.of(context).textTheme.bodyLarge!,
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                    _createPositionRow(label: l10n.verPoint, notifier: widget.gridState.vanishingPoint3Notifier),
                 ],
               );
             },

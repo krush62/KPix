@@ -450,23 +450,13 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
                         Expanded(
-                          child: ValueListenableBuilder<ExportShaderType>(
-                            valueListenable: _shaderType,
-                            builder: (final BuildContext context, final ExportShaderType shaderType, final Widget? child) {
-                              return ValueListenableBuilder<int>(
-                                valueListenable: _scalingIndex,
-                                builder: (final BuildContext context, final int scalingIndex, final Widget? child) {
-                                  return ValueListenableBuilder<ui.Image?>(
-                                    valueListenable: _source,
-                                    builder: (final BuildContext context, final ui.Image? source, final Widget? child) {
-                                      return ShaderPreviewWidget(
-                                        source: source,
-                                        values: _valuesFor(type: shaderType),
-                                        scaling: exportShadingScalingValues[scalingIndex],
-                                      );
-                                    },
-                                  );
-                                },
+                          child: ListenableBuilder(
+                            listenable: Listenable.merge(<Listenable>[_shaderType, _scalingIndex, _source]),
+                            builder: (final BuildContext context, final Widget? child) {
+                              return ShaderPreviewWidget(
+                                source: _source.value,
+                                values: _valuesFor(type: _shaderType.value),
+                                scaling: exportShadingScalingValues[_scalingIndex.value],
                               );
                             },
                           ),

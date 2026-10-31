@@ -487,48 +487,43 @@ class _LayerWidgetState extends State<LayerWidget> {
                                             lockStateNotifier = layer.lockState;
                                             changeListenable = layer.layerSettings;
                                           }
-                                          return ValueListenableBuilder<LayerLockState>(
-                                            valueListenable: lockStateNotifier,
-                                            builder: (final BuildContext context, final LayerLockState lockState, final Widget? child) {
-                                              return ListenableBuilder(
-                                                listenable: changeListenable,
-                                                builder: (final BuildContext context, final Widget? child) {
-                                                  final LayerState layer = widget.layerState;
-                                                  final bool hasChanges = layer is RasterableLayerState && layer.layerSettings.hasActiveSettings();
-                                                  return IconButton.outlined(
-                                                    padding: EdgeInsets.zero,
-                                                    constraints: const BoxConstraints(
-                                                      maxHeight: LayerWidgetOptions.buttonSizeMax,
-                                                      maxWidth: LayerWidgetOptions.buttonSizeMax,
-                                                      minWidth: LayerWidgetOptions.buttonSizeMin,
-                                                      minHeight: LayerWidgetOptions.buttonSizeMin,
-                                                    ),
-                                                    style: ButtonStyle(
-                                                      shape: const WidgetStatePropertyAll<OutlinedBorder?>(
-                                                        RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.all(
-                                                            Radius.circular(LayerWidgetOptions.borderRadius / 2),
-                                                          ),
-                                                        ),
+                                          return ListenableBuilder(
+                                            listenable: Listenable.merge(<Listenable>[lockStateNotifier, changeListenable]),
+                                            builder: (final BuildContext context, final Widget? child) {
+                                              final LayerState layer = widget.layerState;
+                                              final bool hasChanges = layer is RasterableLayerState && layer.layerSettings.hasActiveSettings();
+                                              return IconButton.outlined(
+                                                padding: EdgeInsets.zero,
+                                                constraints: const BoxConstraints(
+                                                  maxHeight: LayerWidgetOptions.buttonSizeMax,
+                                                  maxWidth: LayerWidgetOptions.buttonSizeMax,
+                                                  minWidth: LayerWidgetOptions.buttonSizeMin,
+                                                  minHeight: LayerWidgetOptions.buttonSizeMin,
+                                                ),
+                                                style: ButtonStyle(
+                                                  shape: const WidgetStatePropertyAll<OutlinedBorder?>(
+                                                    RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.all(
+                                                        Radius.circular(LayerWidgetOptions.borderRadius / 2),
                                                       ),
-                                                      tapTargetSize:
-                                                      MaterialTapTargetSize.shrinkWrap,
-                                                      backgroundColor: !hasChanges ? null : WidgetStatePropertyAll<Color?>(
-                                                        Theme.of(context)
-                                                            .primaryColorLight,),
-                                                      iconColor: !hasChanges
-                                                          ? null
-                                                          : WidgetStatePropertyAll<Color?>(
-                                                        Theme.of(context)
-                                                            .primaryColor,),
                                                     ),
-                                                    onPressed: lockState != LayerLockState.locked ? _settingsButtonPressed : null,
-                                                    icon: const Icon(
-                                                      TablerIcons.settings,
-                                                      size: LayerWidgetOptions.iconSize,
-                                                    ),
-                                                  );
-                                                },
+                                                  ),
+                                                  tapTargetSize:
+                                                  MaterialTapTargetSize.shrinkWrap,
+                                                  backgroundColor: !hasChanges ? null : WidgetStatePropertyAll<Color?>(
+                                                    Theme.of(context)
+                                                        .primaryColorLight,),
+                                                  iconColor: !hasChanges
+                                                      ? null
+                                                      : WidgetStatePropertyAll<Color?>(
+                                                    Theme.of(context)
+                                                        .primaryColor,),
+                                                ),
+                                                onPressed: lockStateNotifier.value != LayerLockState.locked ? _settingsButtonPressed : null,
+                                                icon: const Icon(
+                                                  TablerIcons.settings,
+                                                  size: LayerWidgetOptions.iconSize,
+                                                ),
                                               );
                                             },
                                           );

@@ -66,122 +66,116 @@ class _ShaderWidgetState extends State<ShaderWidget>
     return Padding (
       padding: const EdgeInsets.only(left: _ShaderWidgetOptions.outsidePadding, right: _ShaderWidgetOptions.outsidePadding, bottom: _ShaderWidgetOptions.outsidePadding),
       child: ListenableBuilder(
-        listenable: GetIt.I.get<DocumentState>().timeline.layerChangeNotifier,
-        builder: (final BuildContext context0, final Widget? child0) {
-          return ValueListenableBuilder<bool>(
-            valueListenable: _shaderOptions.isEnabled,
-            builder: (final BuildContext context, final bool isEnabledVal, final Widget? child){
-
-              final LayerState? currentLayer = GetIt.I.get<DocumentState>().timeline.getCurrentLayer();
-              final bool isShadingLayer = currentLayer != null && currentLayer is ShadingLayerState;
-              final bool isForbiddenLayerType = currentLayer != null && (currentLayer is ReferenceLayerState || currentLayer is GridLayerState);
-              final bool shouldBeEnabled;
-              if (isShadingLayer)
-              {
-                shouldBeEnabled = true;
-              }
-              else if (isForbiddenLayerType)
-              {
-                shouldBeEnabled = false;
-              }
-              else
-              {
-                shouldBeEnabled = isEnabledVal;
-              }
-              return Column(
+        listenable: Listenable.merge(<Listenable>[GetIt.I.get<DocumentState>().timeline.layerChangeNotifier, _shaderOptions.isEnabled]),
+        builder: (final BuildContext context, final Widget? child) {
+          final LayerState? currentLayer = GetIt.I.get<DocumentState>().timeline.getCurrentLayer();
+          final bool isShadingLayer = currentLayer != null && currentLayer is ShadingLayerState;
+          final bool isForbiddenLayerType = currentLayer != null && (currentLayer is ReferenceLayerState || currentLayer is GridLayerState);
+          final bool shouldBeEnabled;
+          if (isShadingLayer)
+          {
+            shouldBeEnabled = true;
+          }
+          else if (isForbiddenLayerType)
+          {
+            shouldBeEnabled = false;
+          }
+          else
+          {
+            shouldBeEnabled = _shaderOptions.isEnabled.value;
+          }
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      Expanded(
-                        flex: 3,
-                        child: GestureDetector(
-                          onTap: (!isShadingLayer && !isForbiddenLayerType) ? () {_shaderOptions.isEnabled.value = !shouldBeEnabled;} : null,
-                          child: Text(l10n.shading,
-                            textAlign: TextAlign.start, style: shouldBeEnabled ? widget.titleStyle?.apply(color: Theme.of(context).primaryColorLight) : widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark),),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: _ShaderWidgetOptions.outsidePadding),
-                          child: Text(l10n.enabled,
-                            textAlign: TextAlign.end, style: widget.labelStyle,),
-                        ),
-                      ),
-                      Expanded(
-                        child: Tooltip(
-                          message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingToggle, context: context, precededNewLine: false),
-                          child: Switch(
-                            onChanged: (!isShadingLayer && !isForbiddenLayerType) ? (final bool newState) {
-                              _shaderOptions.isEnabled.value = newState;
-                            } : null,
-                            value: shouldBeEnabled,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Expanded(
+                    flex: 3,
+                    child: GestureDetector(
+                      onTap: (!isShadingLayer && !isForbiddenLayerType) ? () {_shaderOptions.isEnabled.value = !shouldBeEnabled;} : null,
+                      child: Text(l10n.shading,
+                        textAlign: TextAlign.start, style: shouldBeEnabled ? widget.titleStyle?.apply(color: Theme.of(context).primaryColorLight) : widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark),),
+                    ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      Expanded(
-                        flex: 2,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: _ShaderWidgetOptions.outsidePadding),
-                          child: Text(l10n.currentRampOnly,
-                            textAlign: TextAlign.start, style: widget.labelStyle,),
-                        ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: _ShaderWidgetOptions.outsidePadding),
+                      child: Text(l10n.enabled,
+                        textAlign: TextAlign.end, style: widget.labelStyle,),
+                    ),
+                  ),
+                  Expanded(
+                    child: Tooltip(
+                      message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingToggle, context: context, precededNewLine: false),
+                      child: Switch(
+                        onChanged: (!isShadingLayer && !isForbiddenLayerType) ? (final bool newState) {
+                          _shaderOptions.isEnabled.value = newState;
+                        } : null,
+                        value: shouldBeEnabled,
                       ),
-                      Expanded(
-                        child: ValueListenableBuilder<bool>(
-                          valueListenable: _shaderOptions.onlyCurrentRampEnabled,
-                          builder: (final BuildContext context, final bool onlyCurrentRampEnabled, final Widget? child)
-                          {
-                            return Tooltip(
-                              message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingCurrentRampOnly, context: context, precededNewLine: false),
-                              child: Switch(
-                                onChanged: shouldBeEnabled && !isShadingLayer
-                                    ? (final bool newState) { _shaderOptions.onlyCurrentRampEnabled.value = newState;}
-                                    : null,
-                                value: !isShadingLayer && onlyCurrentRampEnabled,
-                              ),
-                            );
-                          },
-
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: _ShaderWidgetOptions.outsidePadding),
-                          child: Text(l10n.direction,
-                            textAlign: TextAlign.end, style: widget.labelStyle,),
-                        ),
-                      ),
-                      Expanded(
-                        child: ValueListenableBuilder<ShaderDirection>(
-                          valueListenable: _shaderOptions.shaderDirection,
-                          builder: (final BuildContext context, final ShaderDirection direction, final Widget? child)
-                          {
-                            return Tooltip(
-                              message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingDirection, context: context, precededNewLine: false),
-                              child: Switch(
-                                onChanged: shouldBeEnabled
-                                    ? (final bool newState) {_shaderOptions.shaderDirection.value = newState ? ShaderDirection.right : ShaderDirection.left;}
-                                    : null,
-                                value: direction == ShaderDirection.right,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
-              );
-            },
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: _ShaderWidgetOptions.outsidePadding),
+                      child: Text(l10n.currentRampOnly,
+                        textAlign: TextAlign.start, style: widget.labelStyle,),
+                    ),
+                  ),
+                  Expanded(
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: _shaderOptions.onlyCurrentRampEnabled,
+                      builder: (final BuildContext context, final bool onlyCurrentRampEnabled, final Widget? child)
+                      {
+                        return Tooltip(
+                          message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingCurrentRampOnly, context: context, precededNewLine: false),
+                          child: Switch(
+                            onChanged: shouldBeEnabled && !isShadingLayer
+                                ? (final bool newState) { _shaderOptions.onlyCurrentRampEnabled.value = newState;}
+                                : null,
+                            value: !isShadingLayer && onlyCurrentRampEnabled,
+                          ),
+                        );
+                      },
+
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: _ShaderWidgetOptions.outsidePadding),
+                      child: Text(l10n.direction,
+                        textAlign: TextAlign.end, style: widget.labelStyle,),
+                    ),
+                  ),
+                  Expanded(
+                    child: ValueListenableBuilder<ShaderDirection>(
+                      valueListenable: _shaderOptions.shaderDirection,
+                      builder: (final BuildContext context, final ShaderDirection direction, final Widget? child)
+                      {
+                        return Tooltip(
+                          message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingDirection, context: context, precededNewLine: false),
+                          child: Switch(
+                            onChanged: shouldBeEnabled
+                                ? (final bool newState) {_shaderOptions.shaderDirection.value = newState ? ShaderDirection.right : ShaderDirection.left;}
+                                : null,
+                            value: direction == ShaderDirection.right,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
           );
         },
       ),

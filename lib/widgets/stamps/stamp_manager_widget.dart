@@ -167,40 +167,37 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
         children: <Widget>[
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Center(child: Text(l10n.stampManager.toUpperCase(), style: Theme.of(context).textTheme.titleLarge)),
-          ValueListenableBuilder<StampMap>(
-            valueListenable: _stampManager.stampMap,
-            builder: (final BuildContext context1, final StampMap stampMap, final Widget? child1) {
-              return ValueListenableBuilder<String?>(
-                valueListenable: _stampManager.selectedFolder,
-                builder: (final BuildContext context2, final String? section, final Widget? child2) {
-                  if (section != null)
-                  {
-                    final List<ButtonSegment<String>> segments = <ButtonSegment<String>>[];
-                    for (final String stampSection in stampMap.keys)
-                    {
-                      segments.add(
-                        ButtonSegment<String>(
-                          value: stampSection,
-                          label: Text(stampSection),
-                        ),
-                      );
+          ListenableBuilder(
+            listenable: Listenable.merge(<Listenable>[_stampManager.stampMap, _stampManager.selectedFolder]),
+            builder: (final BuildContext context, final Widget? child) {
+              final String? section = _stampManager.selectedFolder.value;
+              if (section != null)
+              {
+                final List<ButtonSegment<String>> segments = <ButtonSegment<String>>[];
+                for (final String stampSection in _stampManager.stampMap.value.keys)
+                {
+                  segments.add(
+                    ButtonSegment<String>(
+                      value: stampSection,
+                      label: Text(stampSection),
+                    ),
+                  );
 
-                    }
-                    return SegmentedButton<String>(
-                      segments: segments,
-                      selected: <String>{section},
-                      showSelectedIcon: false,
-                      onSelectionChanged: (final Set<String> newSelection) {
-                        _stampManager.selectedFolder.value = newSelection.first;
-                        _createWidgetList();
-                      },
-                    );
-                  }
-                  else
-                  {
-                    return const SizedBox();
-                  }
-              },);
+                }
+                return SegmentedButton<String>(
+                  segments: segments,
+                  selected: <String>{section},
+                  showSelectedIcon: false,
+                  onSelectionChanged: (final Set<String> newSelection) {
+                    _stampManager.selectedFolder.value = newSelection.first;
+                    _createWidgetList();
+                  },
+                );
+              }
+              else
+              {
+                return const SizedBox();
+              }
             },
           ),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),

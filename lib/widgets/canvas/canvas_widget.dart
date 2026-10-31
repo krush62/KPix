@@ -233,32 +233,27 @@ class _CanvasWidgetState extends State<CanvasWidget> with TickerProviderStateMix
                 },
               ),
             ),
-            ValueListenableBuilder<ToolType>(
-              valueListenable: GetIt.I.get<ToolState>().selectedToolNotifier,
-              builder: (final BuildContext contextS, final ToolType toolType, final Widget? childS) {
-                return ValueListenableBuilder<bool>(
-                  valueListenable: GetIt.I.get<DocumentState>().selectionState.selection.isEmptyNotifer,
-                  builder: (final BuildContext contextT, final bool hasNoSelection, final Widget? childT) {
-                    final bool shouldShow = toolType == ToolType.select || !hasNoSelection;
-                    if (shouldShow)
-                    {
-                      _selectionBarAnimationController.forward();
-                    }
-                    else
-                    {
-                      _selectionBarAnimationController.reverse();
-                    }
-                    return IgnorePointer(
-                      ignoring: !shouldShow,
-                      child: childT,
-                    );
-                  },
-                  child: SizeTransition(
-                    sizeFactor: _selectionBarAnimation,
-                    child: const SelectionBarWidget(),
-                  ),
+            ListenableBuilder(
+              listenable: Listenable.merge(<Listenable>[GetIt.I.get<ToolState>().selectedToolNotifier, _documentState.selectionState.selection.isEmptyNotifer]),
+              builder: (final BuildContext context, final Widget? child) {
+                final bool shouldShow = GetIt.I.get<ToolState>().selectedToolNotifier.value == ToolType.select || !_documentState.selectionState.selection.isEmptyNotifer.value;
+                if (shouldShow)
+                {
+                  _selectionBarAnimationController.forward();
+                }
+                else
+                {
+                  _selectionBarAnimationController.reverse();
+                }
+                return IgnorePointer(
+                  ignoring: !shouldShow,
+                  child: child,
                 );
               },
+              child: SizeTransition(
+                sizeFactor: _selectionBarAnimation,
+                child: const SelectionBarWidget(),
+              ),
             ),
           ],
         ),

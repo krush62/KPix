@@ -152,8 +152,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
                   stampOptions: toolOptions.stampOptions,),
             );
             //break;
-
-          //default: toolWidget = const SizedBox(width: double.infinity, child: Text("Not Implemented"));
         }
         return Material
         (

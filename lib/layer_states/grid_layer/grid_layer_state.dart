@@ -40,6 +40,9 @@ import 'package:logger/logger.dart';
 
 class GridLayerState extends LayerState
 {
+  @override
+  LayerKind get kind => LayerKind.grid;
+
   final ValueNotifier<int> opacityNotifier;
   final ValueNotifier<GridType> gridTypeNotifier;
   final ValueNotifier<int> brightnessNotifier;

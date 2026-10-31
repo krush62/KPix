@@ -22,6 +22,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
@@ -115,7 +116,7 @@ void main()
     await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
     {
       final PaletteState palette = GetIt.I.get<PaletteState>();
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
       await settle();
       final DrawingLayerState top = layerAt(projectSession: projectSession, index: 0);
       final DrawingLayerState below = layerAt(projectSession: projectSession, index: 1);

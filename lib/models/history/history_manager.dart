@@ -31,7 +31,7 @@ class HistoryManager
 {
   final ValueNotifier<bool> hasUndo = ValueNotifier<bool>(false);
   final ValueNotifier<bool> hasRedo = ValueNotifier<bool>(false);
-  final int _minEntries = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoStepsMin;
+  final int _minEntries = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.min;
   int _maxEntries;
   int _curPos = -1;
 

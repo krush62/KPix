@@ -55,7 +55,6 @@ class ShapeOptions extends IToolOptions
           hideLabel: true,
         ),
         ToolModifierSwitchRow(
-          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: shapeOptions.keepRatio,
           unmodifiedNotifier: shapeOptions.unmodifiedKeepRatio,
           label: AppLocalizations.of(context)!.keep1to1,
@@ -99,7 +98,6 @@ class ShapeOptions extends IToolOptions
                               value: width.toDouble(),
                               min: ToolShapeConstraints.strokeWidthMin.toDouble(),
                               max: ToolShapeConstraints.strokeWidthMax.toDouble(),
-                              //divisions: shapeOptions.strokeWidthMax - shapeOptions.strokeWidthMin,
                               onChanged: strokeOnly ? (final double newVal) {shapeOptions.strokeWidth.value = newVal.round();} : null,
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
@@ -124,7 +122,6 @@ class ShapeOptions extends IToolOptions
                   child: ToolSliderRow<int>(
                     label: AppLocalizations.of(context)!.cornerRadius,
                     notifier: shapeOptions.cornerRadius,
-                    flex: ToolSettingsWidgetOptions.columnWidthRatio,
                     minVal: ToolShapeConstraints.cornerRadiusMin.toDouble(),
                     maxVal: ToolShapeConstraints.cornerRadiusMax.toDouble(),
                   ),
@@ -136,10 +133,8 @@ class ShapeOptions extends IToolOptions
                   child: ToolSliderRow<int>(
                     notifier: shapeOptions.ellipseAngle,
                     label: AppLocalizations.of(context)!.angle,
-                    flex: ToolSettingsWidgetOptions.columnWidthRatio,
                     minVal: ToolShapeConstraints.ellipseAngleMin.toDouble(),
                     maxVal: ToolShapeConstraints.ellipseAngleMax.toDouble(),
-                    //divisions: (shapeOptions.ellipseAngleMax - shapeOptions.ellipseAngleMin) ~/ shapeOptions.ellipseAngleSteps,
                   ),
                 ),
                 Visibility(
@@ -147,10 +142,8 @@ class ShapeOptions extends IToolOptions
                   child: ToolSliderRow<int>(
                     notifier: shapeOptions.cornerCount,
                     label: AppLocalizations.of(context)!.cornerCount,
-                    flex: ToolSettingsWidgetOptions.columnWidthRatio,
                     minVal: ToolShapeConstraints.cornerCountMin.toDouble(),
                     maxVal: ToolShapeConstraints.cornerCountMax.toDouble(),
-                    //divisions: shapeOptions.cornerCountMax - shapeOptions.cornerCountMin,
                   ),
                 ),
               ],

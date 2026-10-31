@@ -29,6 +29,7 @@ import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/layer_manager.dart';
+import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/util/file_pickers.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -203,26 +204,16 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
     );
   }
 
-  Row _createIntSliderRow({required final ReferenceImage? refImg, required final ValueNotifier<int> notifier, required final int min, required final int max, required final String name, required final String Function(int value) valueLabel})
+  Widget _createIntSliderRow({required final ReferenceImage? refImg, required final ValueNotifier<int> notifier, required final int min, required final int max, required final String name, required final String Function(int value) valueLabel})
   {
-    return _createLabeledRow(
-      name: name,
-      child: ValueListenableBuilder<int>(
-        valueListenable: notifier,
-        builder: (final BuildContext context, final int value, final Widget? child) {
-          return KPixSlider(
-            value: value.toDouble(),
-            min: min.toDouble(),
-            max: max.toDouble(),
-            label: valueLabel(value),
-            onChanged: refImg == null ? null : (final double newVal) {
-              notifier.value = newVal.round();
-            },
-            onChangedEnd: (final double value) {_commitChange();},
-            textStyle: Theme.of(context).textTheme.bodyLarge!,
-          );
-        },
-      ),
+    return ToolSliderRow<int>(
+      label: name,
+      notifier: notifier,
+      minVal: min.toDouble(),
+      maxVal: max.toDouble(),
+      labelBuilder: valueLabel,
+      enabled: refImg != null,
+      onChangedEnd: (final double value) {_commitChange();},
     );
   }
 

@@ -17,6 +17,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/constraints/kpal_constraints.dart';
 import 'package:kpix/models/history/history_color_reference.dart';
@@ -125,7 +126,7 @@ void main()
       await settle();
 
       //adding a layer is a full-group step, so undoing it rebuilds every layer from history
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
       await settle();
       GetIt.I.get<HistoryController>().undoPressed();
       await settle();

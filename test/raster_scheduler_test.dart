@@ -27,6 +27,9 @@ import 'package:kpix/models/history/history_ramp_data.dart';
 /// exercised without the service locator the real layer types need.
 class _PollLayer extends LayerState
 {
+  @override
+  LayerKind get kind => LayerKind.drawing;
+
   bool pending = false;
   int polls = 0;
 

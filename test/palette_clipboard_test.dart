@@ -377,7 +377,7 @@ void main()
         sel.copy();
         await settle();
 
-        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
         await settle();
         GetIt.I.get<HistoryController>().undoPressed();
         await settle();

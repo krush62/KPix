@@ -79,17 +79,10 @@ class _ControlsWidgetState extends State<ControlsWidget>
           ),
           Row(
             children: <Widget>[
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                  child: IconButton.outlined(
-                    tooltip: l10n.close,
-                    icon: const Icon(
-                      TablerIcons.x,
-                    ),
-                    onPressed: widget.onDismiss,
-                  ),
-                ),
+              DialogActionButton(
+                tooltip: l10n.close,
+                icon: TablerIcons.x,
+                onPressed: widget.onDismiss,
               ),
             ],
           ),

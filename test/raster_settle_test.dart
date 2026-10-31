@@ -25,6 +25,9 @@ import 'package:kpix/models/history/history_ramp_data.dart';
 /// the service locator that the real layer types need.
 class _FakeLayer extends LayerState
 {
+  @override
+  LayerKind get kind => LayerKind.drawing;
+
   bool pending = false;
 
   @override

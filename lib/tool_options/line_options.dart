@@ -75,15 +75,12 @@ class LineOptions extends IToolOptions
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         ToolSliderRow<int>(
-          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           label: AppLocalizations.of(context)!.width,
           notifier: lineOptions.width,
           minVal: LineConstraints.widthMin.toDouble(),
           maxVal: LineConstraints.widthMax.toDouble(),
-          //divisions: lineOptions.widthMax - lineOptions.widthMin,
         ),
         ToolModifierSwitchRow(
-          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: lineOptions.integerAspectRatio,
           unmodifiedNotifier: lineOptions.unmodifiedIntegerAspectRatio,
           label: AppLocalizations.of(context)!.integerAspectRatio,

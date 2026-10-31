@@ -124,7 +124,7 @@ class EraserPainter extends IToolPainter
     {
       if (canvasSize.contains(coord: coord))
       {
-        if (rasterLayer.runtimeType == DrawingLayerState)
+        if (rasterLayer.kind == LayerKind.drawing)
         {
           final DrawingLayerState drawingLayer = rasterLayer as DrawingLayerState;
           if (selection.selection.isEmpty)

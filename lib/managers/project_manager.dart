@@ -19,7 +19,6 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/project_scanner.dart';
 import 'package:kpix/models/app_paths.dart';
@@ -78,7 +77,7 @@ class ProjectManager
 
   final Map<String, ProjectManagerEntryData> _cache = <String, ProjectManagerEntryData>{};
   final Set<String> _pendingPaths = <String>{};
-  final List<ui.Image> _imagesToRetire = <ui.Image>[];
+  final ImageRetirer _imageRetirer = ImageRetirer();
 
   /// Bumped whenever the cache is invalidated wholesale, so work that is still
   /// in flight for the previous directory can drop what it produced.
@@ -187,11 +186,7 @@ class ProjectManager
       entry.thumbnail?.dispose();
     }
     _cache.clear();
-    for (final ui.Image image in _imagesToRetire)
-    {
-      image.dispose();
-    }
-    _imagesToRetire.clear();
+    _imageRetirer.disposeNow();
   }
 
   //--------------------------------------------------------------------------
@@ -337,7 +332,7 @@ class ProjectManager
     _cache[key] = entry;
     if (previous?.thumbnail != null && !identical(previous!.thumbnail, entry.thumbnail))
     {
-      _retireImage(image: previous.thumbnail!);
+      _imageRetirer.retire(image: previous.thumbnail!);
     }
   }
 
@@ -350,7 +345,7 @@ class ProjectManager
     }
     if (removed.thumbnail != null)
     {
-      _retireImage(image: removed.thumbnail!);
+      _imageRetirer.retire(image: removed.thumbnail!);
     }
     final String? selected = selectedPath.value;
     if (selected != null && _keyFor(path: selected) == key)
@@ -364,27 +359,6 @@ class ProjectManager
   ///
   /// A [RawImage] that is still in the widget tree holds the handle until the
   /// frame which removes it has been drawn, and disposing before that trips an
-  /// assertion in the engine.
-  void _retireImage({required final ui.Image image})
-  {
-    _imagesToRetire.add(image);
-    if (_imagesToRetire.length > 1)
-    {
-      //a flush has already been scheduled and will pick this one up as well
-      return;
-    }
-    SchedulerBinding.instance.addPostFrameCallback((final Duration _) {
-      final List<ui.Image> images = List<ui.Image>.of(_imagesToRetire);
-      _imagesToRetire.clear();
-      for (final ui.Image image in images)
-      {
-        image.dispose();
-      }
-    });
-    //nothing else may be dirty, in which case no frame would ever be produced
-    SchedulerBinding.instance.scheduleFrame();
-  }
-
   void _publish()
   {
     projects.value = List<ProjectManagerEntryData>.unmodifiable(_cache.values);

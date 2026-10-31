@@ -19,30 +19,41 @@ import 'package:kpix/preferences/preference_values.dart';
 
 void main()
 {
-  test("each stylus preference keeps its own limits", ()
+  group("a ranged preference", ()
   {
-    final StylusPreferenceContent prefs = StylusPreferenceContent(
-      stylusLongPressDelay: 500,
-      stylusLongPressDelayMin: 50,
-      stylusLongPressDelayMax: 1000,
-      stylusLongPressCancelDistance: 10.0,
-      stylusLongPressCancelDistanceMin: 1.0,
-      stylusLongPressCancelDistanceMax: 20.0,
-      stylusZoomStepDistance: 10.0,
-      stylusZoomStepDistanceMin: 1.0,
-      stylusZoomStepDistanceMax: 30.0,
-      stylusSizeStepDistance: 10.0,
-      stylusSizeStepDistanceMin: 1.0,
-      stylusSizeStepDistanceMax: 40.0,
-      stylusPickMaxDuration: 400,
-      stylusPickMaxDurationMin: 100,
-      stylusPickMaxDurationMax: 700,
-    );
+    test("keeps a value within its limits", ()
+    {
+      final RangedPref<int> pref = RangedPref<int>(value: 5, min: 1, max: 9);
+      expect(pref.value, 5);
+      expect(pref.min, 1);
+      expect(pref.max, 9);
+    });
 
-    expect(prefs.stylusLongPressDelayMax, 1000);
-    expect(prefs.stylusLongPressCancelDistanceMax, 20.0);
-    expect(prefs.stylusZoomStepDistanceMax, 30.0);
-    expect(prefs.stylusSizeStepDistanceMax, 40.0);
-    expect(prefs.stylusPickMaxDurationMax, 700);
+    test("pulls a value below its limits up", ()
+    {
+      expect(RangedPref<int>(value: 0, min: 1, max: 9).value, 1);
+      expect(RangedPref<double>(value: 0.5, min: 1.0, max: 9.0).value, 1.0);
+    });
+
+    test("pulls a value above its limits down", ()
+    {
+      expect(RangedPref<int>(value: 10, min: 1, max: 9).value, 9);
+      expect(RangedPref<double>(value: 9.5, min: 1.0, max: 9.0).value, 9.0);
+    });
+
+    test("keeps its type", ()
+    {
+      expect(RangedPref<int>(value: 10, min: 1, max: 9).value, isA<int>());
+      expect(RangedPref<double>(value: 0.5, min: 1.0, max: 9.0).value, isA<double>());
+    });
+
+    test("notifies like any other notifier", ()
+    {
+      final RangedPref<int> pref = RangedPref<int>(value: 5, min: 1, max: 9);
+      int calls = 0;
+      pref.addListener(() {calls++;});
+      pref.value = 6;
+      expect(calls, 1);
+    });
   });
 }

@@ -48,7 +48,7 @@ const List<List<String>> _layers = <List<String>>[
   <String>["lib/util/"],                                    //4 io
   <String>["lib/painting/", "lib/tool_options/"],           //5 painting
   <String>["lib/widgets/"],                                 //6 widgets
-  <String>["lib/main.dart"],                                //7 entry
+  <String>["lib/main.dart", "lib/app_services.dart"],       //7 entry
 ];
 
 /// Violations that already existed when the guard was added.

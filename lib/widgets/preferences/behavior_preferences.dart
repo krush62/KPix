@@ -90,8 +90,8 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
       children: <Widget>[
         PrefSliderRow<int>(
             text: l10n.undoSteps,
-            minVal: widget.prefs.undoStepsMin.toDouble(),
-            maxVal: widget.prefs.undoStepsMax.toDouble(),
+            minVal: widget.prefs.undoSteps.min.toDouble(),
+            maxVal: widget.prefs.undoSteps.max.toDouble(),
             notifier: widget.prefs.undoSteps,
         ),
         /*Row(

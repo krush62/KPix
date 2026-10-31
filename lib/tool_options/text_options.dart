@@ -112,10 +112,8 @@ class TextOptions extends IToolOptions
           child: ToolSliderRow<int>(
             label: AppLocalizations.of(context)!.scale,
             notifier: textOptions.size,
-            flex: ToolSettingsWidgetOptions.columnWidthRatio,
             minVal: TextConstraints.sizeMin.toDouble(),
             maxVal: TextConstraints.sizeMax.toDouble(),
-            //divisions: textOptions.sizeMax - textOptions.sizeMin,
           ),
         ),
         Row(

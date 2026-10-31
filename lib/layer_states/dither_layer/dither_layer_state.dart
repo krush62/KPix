@@ -19,6 +19,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
@@ -30,6 +31,9 @@ import 'package:kpix/widgets/layer_settings/shading_layer_settings_widget.dart';
 
 class DitherLayerState extends ShadingLayerState
 {
+  @override
+  LayerKind get kind => LayerKind.dither;
+
   final HashMap<int, List<List<int>>> _ditherMap = HashMap<int, List<List<int>>>();
 
   @override IconData get icon => Icons.gradient;

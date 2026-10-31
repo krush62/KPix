@@ -331,7 +331,6 @@ class ImportWidgetState extends State<ImportWidget>
                                   label: img != null ? "$originalDims -> $scaledDims" : "",
                                   min: _currentMinScale.toDouble(),
                                   max: _currentMaxScale.toDouble(),
-                                  //divisions: max(_currentMaxScale - _currentMinScale, 1),
                                   onChanged: (img != null) ? (final double newValue) {
                                     _scaleDownNotifier.value = newValue.round();
                                   } : null,

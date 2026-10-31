@@ -22,6 +22,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
@@ -85,7 +86,7 @@ void main()
       final SelectionState sel = GetIt.I.get<DocumentState>().selectionState;
       final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: palette.colorRamps[0].references[1], right: palette.colorRamps[0].references[1]}));
-      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, addToHistoryStack: false).$2! as ShadingLayerState;
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.shading, addToHistoryStack: false).$2! as ShadingLayerState;
       shading.addCoords(coords: HashMap<CoordinateSetI, int>.of(<CoordinateSetI, int>{pixel: 1}));
       await _settleShading(shading: shading);
 

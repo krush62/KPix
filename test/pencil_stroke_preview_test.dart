@@ -218,7 +218,7 @@ void main()
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references[2];
       GetIt.I.get<PaletteState>().colorSelected(color: color);
       final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
-      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, addToHistoryStack: false).$2! as ShadingLayerState;
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.shading, addToHistoryStack: false).$2! as ShadingLayerState;
       final HashMap<CoordinateSetI, int> shades = HashMap<CoordinateSetI, int>();
       for (int x = 100; x < 200; x++)
       {

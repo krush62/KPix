@@ -88,7 +88,7 @@ Future<Uint8List?> getGimpData({required final List<KPalRampData> colorRamps, re
   for (int l = 0; l < layerCollection.length; l++)
   {
     final LayerState layer = layerCollection.getLayer(index: l);
-    if (layer.runtimeType == DrawingLayerState)
+    if (layer.kind == LayerKind.drawing)
     {
       final DrawingLayerState layerState = layer as DrawingLayerState;
       int x = 0;

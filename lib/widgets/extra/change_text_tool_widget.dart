@@ -103,33 +103,23 @@ class ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: IconButton.outlined(
-                      tooltip: l10n.cancel,
-                      icon: const Icon(TablerIcons.x),
-                      onPressed: () {
-                        widget.dismiss();
-                      },
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: ValueListenableBuilder<String>(
-                      valueListenable: _text,
-                      builder: (final BuildContext context, final String text, final Widget? child) {
-                        return IconButton.outlined(
-                          tooltip: l10n.apply,
-                          icon: const Icon(TablerIcons.check),
-                          onPressed: text.trim() != "" ? accept : null,
-                        );
-                      },
-                    ),
-                  ),
-                ),
+              DialogActionButton(
+                tooltip: l10n.cancel,
+                icon: TablerIcons.x,
+                onPressed: () {
+                  widget.dismiss();
+                },
+              ),
+                ValueListenableBuilder<String>(
+           valueListenable: _text,
+           builder: (final BuildContext context, final String text, final Widget? child) {
+             return DialogActionButton(
+               tooltip: l10n.apply,
+               icon: TablerIcons.check,
+               onPressed: text.trim() != "" ? accept : null,
+             );
+           },
+         ),
               ],
             ),
           ],

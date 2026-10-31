@@ -39,6 +39,7 @@ import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/controls/kpix_text_field.dart';
 import 'package:kpix/widgets/file/shader_preview_widget.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 abstract final class ShaderExportWidgetOptions
 {
@@ -514,31 +515,21 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(ShaderExportWidgetOptions.padding),
-                    child: IconButton.outlined(
-                      tooltip: l10n.cancel,
-                      icon: const Icon(TablerIcons.x),
-                      onPressed: cancel,
-                    ),
-                  ),
+                DialogActionButton(
+                  tooltip: l10n.cancel,
+                  icon: TablerIcons.x,
+                  onPressed: cancel,
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(ShaderExportWidgetOptions.padding),
-                    child: ValueListenableBuilder<FileNameStatus>(
-                      valueListenable: _fileNameStatus,
-                      builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
-                        return IconButton.outlined(
-                          tooltip: l10n.apply,
-                          icon: const Icon(TablerIcons.check),
-                          onPressed: status == FileNameStatus.available || status == FileNameStatus.overwrite ? accept : null,
-                        );
-                      },
-                    ),
-                  ),
-                ),
+                ValueListenableBuilder<FileNameStatus>(
+           valueListenable: _fileNameStatus,
+           builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
+             return DialogActionButton(
+               tooltip: l10n.apply,
+               icon: TablerIcons.check,
+               onPressed: status == FileNameStatus.available || status == FileNameStatus.overwrite ? accept : null,
+             );
+           },
+         ),
               ],
             ),
           ],

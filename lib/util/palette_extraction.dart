@@ -600,7 +600,6 @@ KPalRampSettings _fitRampForClusterBins({
     expCandidates: hueExpCandidates,
     // Use the passed amplitude limits; maxAmp bounds the solver, final clamp enforces integer limit.
     maxAmp: max(hueShiftMax.abs(), hueShiftMin.abs()).toDouble(),
-    //curve: SatCurve.linear,
   );
 
   // --- Fit sat model across SatCurve choices ---

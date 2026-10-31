@@ -26,6 +26,7 @@ import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_image.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
@@ -141,7 +142,7 @@ void main()
         shaded: colors[1],
         CoordinateSetI(x: 3, y: 1): colors[1],
       }),);
-      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, select: true).$2! as ShadingLayerState;
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.shading, select: true).$2! as ShadingLayerState;
       shading.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{shaded: 1}));
       await settle();
       //settle only watches drawing layers
@@ -176,16 +177,16 @@ void main()
       outlined.settings.outerStrokeStyle.value = OuterStrokeStyle.solid;
 
       //a shaded drop shadow that falls onto that outline
-      final DrawingLayerState shadowed = layerManager.addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+      final DrawingLayerState shadowed = layerManager.addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
       shadowed.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{CoordinateSetI(x: 1, y: 0): colors[3]}));
       shadowed.settings.dropShadowOffset.value = CoordinateSetI(x: 1, y: 1);
       shadowed.settings.dropShadowDarkenBrighten.value = 1;
       shadowed.settings.dropShadowStyle.value = DropShadowStyle.shade;
 
-      final DitherLayerState dither = layerManager.addNewLayer(layerType: DitherLayerState, select: true).$2! as DitherLayerState;
+      final DitherLayerState dither = layerManager.addNewLayer(layerType: LayerKind.dither, select: true).$2! as DitherLayerState;
       dither.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{CoordinateSetI(x: 1, y: 1): 1, CoordinateSetI(x: 2, y: 1): -1}));
 
-      final DrawingLayerState hidden = layerManager.addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+      final DrawingLayerState hidden = layerManager.addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
       hidden.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{CoordinateSetI(x: 4, y: 2): colors.last}));
       layerManager.changeLayerVisibility(layerState: hidden);
 

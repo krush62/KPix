@@ -537,33 +537,23 @@ class ExportWidgetState extends State<ExportWidget>
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: IconButton.outlined(
-                      tooltip: l10n.close,
-                      icon: const Icon(TablerIcons.x),
-                      onPressed: () {
-                        widget.dismiss();
-                      },
-                    ),
-                  ),
+                DialogActionButton(
+                  tooltip: l10n.close,
+                  icon: TablerIcons.x,
+                  onPressed: () {
+                    widget.dismiss();
+                  },
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: ValueListenableBuilder<FileNameStatus>(
-                      valueListenable: _fileNameStatus,
-                      builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
-                        return IconButton.outlined(
-                          tooltip: l10n.exportFile,
-                          icon: const Icon(TablerIcons.check),
-                          onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ? accept : null,
-                        );
-                      },
-                    ),
-                  ),
-                ),
+                ValueListenableBuilder<FileNameStatus>(
+           valueListenable: _fileNameStatus,
+           builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
+             return DialogActionButton(
+               tooltip: l10n.exportFile,
+               icon: TablerIcons.check,
+               onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ? accept : null,
+             );
+           },
+         ),
               ],
             ),
           ],

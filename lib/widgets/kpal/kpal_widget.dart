@@ -55,6 +55,7 @@ import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/image_helper.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
@@ -175,37 +176,22 @@ class KPalState extends State<KPal>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(KPalWidgetOptions.insidePadding),
-                    child: IconButton.outlined(
-                      tooltip: l10n.cancel,
-                      icon: const Icon(TablerIcons.x),
-                      onPressed: discardChange,
-                    ),
-                  ),
+                DialogActionButton(
+                  tooltip: l10n.cancel,
+                  icon: TablerIcons.x,
+                  onPressed: discardChange,
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(KPalWidgetOptions.insidePadding),
-                    child: IconButton.outlined(
-                      tooltip: l10n.delete,
-                      icon: const Icon(TablerIcons.trash),
-                      onPressed: () {
-                        _showDeleteDialog();
-                      },
-                    ),
-                  ),
+                DialogActionButton(
+                  tooltip: l10n.delete,
+                  icon: TablerIcons.trash,
+                  onPressed: () {
+                    _showDeleteDialog();
+                  },
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(KPalWidgetOptions.insidePadding),
-                    child: IconButton.outlined(
-                      tooltip: l10n.apply,
-                      icon: const Icon(TablerIcons.check),
-                      onPressed: acceptChange,
-                    ),
-                  ),
+                DialogActionButton(
+                  tooltip: l10n.apply,
+                  icon: TablerIcons.check,
+                  onPressed: acceptChange,
                 ),
               ],
             ),

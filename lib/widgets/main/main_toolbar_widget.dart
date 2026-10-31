@@ -90,11 +90,11 @@ class MainToolbarWidget extends StatelessWidget
               if (currentLayer != null)
               {
                 Widget contentWidget;
-                if (currentLayer.runtimeType == ReferenceLayerState)
+                if (currentLayer.kind == LayerKind.reference)
                 {
                   contentWidget = ExcludeFocus(child: ReferenceLayerOptionsWidget(referenceState: currentLayer as ReferenceLayerState));
                 }
-                else if (currentLayer.runtimeType == GridLayerState)
+                else if (currentLayer.kind == LayerKind.grid)
                 {
                   contentWidget = ExcludeFocus(child: GridLayerOptionsWidget(gridState: currentLayer as GridLayerState));
                 }

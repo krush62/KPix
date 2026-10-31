@@ -19,6 +19,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/document_state.dart';
@@ -133,7 +134,7 @@ void main()
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
       final DrawingLayerState drawingLayer = layerAt(projectSession: projectSession, index: 0);
       drawingLayer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.shading);
       await settle();
 
       final int sizeWithoutSelection = (await _save(projectSession: projectSession)).lengthInBytes;
@@ -164,7 +165,7 @@ void main()
       final ColorReference second = GetIt.I.get<PaletteState>().colorRamps.first.references.last;
       final DrawingLayerState lower = layerAt(projectSession: projectSession, index: 0);
       lower.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: first}));
-      final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+      final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
       upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{CoordinateSetI(x: 2, y: 3): second}));
       await settle();
 

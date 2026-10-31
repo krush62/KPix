@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'  as flutter_localizations;
 import 'package:get_it/get_it.dart';
+import 'package:kpix/app_services.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/infra/stylus_bridge.dart';
@@ -35,24 +36,15 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/models/app_paths.dart';
-import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/file_callbacks.dart';
 import 'package:kpix/models/file_constants.dart';
-import 'package:kpix/models/frame_blending_options.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state.dart';
-import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/io_types.dart';
-import 'package:kpix/models/layer_manager.dart';
-import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
-import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/symmetry_state.dart';
-import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/update_state.dart';
-import 'package:kpix/models/view_state.dart';
-import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/app_directories.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -298,15 +290,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       final SharedPreferences sPrefs = await SharedPreferences.getInstance();
       logger.i("Initializing fonts");
       final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
-      logger.i("Creating Tool Options");
-      GetIt.I.registerSingleton<ToolOptions>(ToolOptions(fontManager: FontManager(kFontMap: fontMap)));
-      logger.i("Creating Preferences");
-      GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs));
+      logger.i("Creating Tool Services");
+      registerToolServices(fontManager: FontManager(kFontMap: fontMap), sharedPreferences: sPrefs);
       languageSettings.languageCode = GetIt.I.get<PreferenceManager>().guiPreferenceContent.language.value;
-      logger.i("Creating Blending Options");
-      GetIt.I.registerSingleton<FrameBlendingOptions>(FrameBlendingOptions());
-      logger.i("Creating Shader Options");
-      GetIt.I.registerSingleton<ShaderOptions>(ShaderOptions());
       logger.i("Getting Directories");
       final String exportDirString = await findExportDir();
       logger.i("Export Dir: $exportDirString");
@@ -325,27 +311,8 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
       final double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
       logger.i("Pixel Ratio: $devicePixelRatio");
-      logger.i("Creating App Paths");
-      GetIt.I.registerSingleton<AppPaths>(AppPaths(exportDir: exportDirString, internalDir: internalDirString, projectsDir: projectDirResult.resolvedDir));
-      logger.i("Creating Update State");
-      GetIt.I.registerSingleton<UpdateState>(UpdateState());
-      logger.i("Creating Status Bar State");
-      GetIt.I.registerSingleton<StatusBarState>(StatusBarState());
-      GetIt.I.registerSingleton<SymmetryState>(SymmetryState());
-      logger.i("Creating View State");
-      GetIt.I.registerSingleton<ViewState>(ViewState(devicePixelRatio: devicePixelRatio));
-      logger.i("Creating Palette State");
-      GetIt.I.registerSingleton<PaletteState>(PaletteState());
-      GetIt.I.registerSingleton<CanvasState>(CanvasState());
-      GetIt.I.registerSingleton<DocumentState>(DocumentState());
-      logger.i("Creating App State");
-      final ProjectSession projectSession = ProjectSession();
-
-      GetIt.I.registerSingleton<ProjectSession>(projectSession);
-      logger.i("Creating Tool State");
-      GetIt.I.registerSingleton<ToolState>(ToolState());
-      GetIt.I.registerSingleton<LayerManager>(LayerManager());
-      GetIt.I.registerSingleton<HistoryController>(HistoryController());
+      logger.i("Creating Document Services");
+      registerDocumentServices(appPaths: AppPaths(exportDir: exportDirString, internalDir: internalDirString, projectsDir: projectDirResult.resolvedDir), devicePixelRatio: devicePixelRatio);
       GetIt.I.get<ToolOptions>().textOptions.applyLocalizedDefault(l10n: languageSettings.resolve(fallback: AppLocalizations.of(context)!));
       final Size logicalSize = MediaQuery.of(context).size;
       logger.i("Logical Size: $logicalSize");
@@ -394,7 +361,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         logger.i("Changing Theme Mode");
         themeSettings.themeMode = currentTheme;
       }
-      projectSession.hasProjectNotifier.addListener(_hasProjectChanged);
+      GetIt.I.get<ProjectSession>().hasProjectNotifier.addListener(_hasProjectChanged);
 
       if (!kIsWeb)
       {

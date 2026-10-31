@@ -26,77 +26,30 @@ import 'package:kpix/models/constraints/frame_constraints.dart';
 import 'package:kpix/models/constraints/shading_layer_settings_constraints.dart';
 import 'package:kpix/util/color_names.dart';
 
+/// A preference with limits of its own: a notifier that starts out within them.
+class RangedPref<T extends num> extends ValueNotifier<T>
+{
+  final T min;
+  final T max;
+
+  RangedPref({required final T value, required this.min, required this.max}) : super(value.clamp(min, max) as T);
+}
+
 class StylusPreferenceContent
 {
-  final ValueNotifier<int> stylusLongPressDelay;
-  final ValueNotifier<double> stylusLongPressCancelDistance;
-  final ValueNotifier<double> stylusZoomStepDistance;
-  final ValueNotifier<double> stylusSizeStepDistance;
-  final ValueNotifier<int> stylusPickMaxDuration;
-  final int stylusLongPressDelayMin;
-  final int stylusLongPressDelayMax;
-  final double stylusLongPressCancelDistanceMin;
-  final double stylusLongPressCancelDistanceMax;
-  final double stylusZoomStepDistanceMin;
-  final double stylusZoomStepDistanceMax;
-  final double stylusSizeStepDistanceMin;
-  final double stylusSizeStepDistanceMax;
-  final int stylusPickMaxDurationMin;
-  final int stylusPickMaxDurationMax;
+  final RangedPref<int> stylusLongPressDelay;
+  final RangedPref<double> stylusLongPressCancelDistance;
+  final RangedPref<double> stylusZoomStepDistance;
+  final RangedPref<double> stylusSizeStepDistance;
+  final RangedPref<int> stylusPickMaxDuration;
 
-  factory StylusPreferenceContent({
-    required final int stylusLongPressDelay,
-    required final int stylusLongPressDelayMin,
-    required final int stylusLongPressDelayMax,
-    required final double stylusLongPressCancelDistance,
-    required final double stylusLongPressCancelDistanceMin,
-    required final double stylusLongPressCancelDistanceMax,
-    required final double stylusZoomStepDistance,
-    required final double stylusZoomStepDistanceMin,
-    required final double stylusZoomStepDistanceMax,
-    required final double stylusSizeStepDistance,
-    required final double stylusSizeStepDistanceMin,
-    required final double stylusSizeStepDistanceMax,
-    required final int stylusPickMaxDuration,
-    required final int stylusPickMaxDurationMin,
-    required final int stylusPickMaxDurationMax,
-  })
-  {
-    return StylusPreferenceContent._(
-      stylusLongPressCancelDistance: ValueNotifier<double>(stylusLongPressCancelDistance.clamp(stylusLongPressCancelDistanceMin, stylusLongPressCancelDistanceMax)),
-      stylusLongPressCancelDistanceMin: stylusLongPressCancelDistanceMin,
-      stylusLongPressCancelDistanceMax: stylusLongPressCancelDistanceMax,
-      stylusLongPressDelay: ValueNotifier<int>(stylusLongPressDelay.clamp(stylusLongPressDelayMin, stylusLongPressDelayMax)),
-      stylusLongPressDelayMin: stylusLongPressDelayMin,
-      stylusLongPressDelayMax: stylusLongPressDelayMax,
-      stylusSizeStepDistance: ValueNotifier<double>(stylusSizeStepDistance.clamp(stylusSizeStepDistanceMin, stylusSizeStepDistanceMax)),
-      stylusSizeStepDistanceMin: stylusSizeStepDistanceMin,
-      stylusSizeStepDistanceMax: stylusSizeStepDistanceMax,
-      stylusZoomStepDistance: ValueNotifier<double>(stylusZoomStepDistance.clamp(stylusZoomStepDistanceMin, stylusZoomStepDistanceMax)),
-      stylusZoomStepDistanceMin: stylusZoomStepDistanceMin,
-      stylusZoomStepDistanceMax: stylusZoomStepDistanceMax,
-      stylusPickMaxDuration: ValueNotifier<int>(stylusPickMaxDuration.clamp(stylusPickMaxDurationMin, stylusPickMaxDurationMax)),
-      stylusPickMaxDurationMin: stylusPickMaxDurationMin,
-      stylusPickMaxDurationMax: stylusPickMaxDurationMax,
-    );
-  }
-
-  StylusPreferenceContent._({
+  StylusPreferenceContent({
     required this.stylusLongPressDelay,
     required this.stylusLongPressCancelDistance,
     required this.stylusZoomStepDistance,
     required this.stylusSizeStepDistance,
     required this.stylusPickMaxDuration,
-    required this.stylusLongPressDelayMin,
-    required this.stylusLongPressDelayMax,
-    required this.stylusLongPressCancelDistanceMin,
-    required this.stylusLongPressCancelDistanceMax,
-    required this.stylusZoomStepDistanceMin,
-    required this.stylusZoomStepDistanceMax,
-    required this.stylusSizeStepDistanceMin,
-    required this.stylusSizeStepDistanceMax,
-    required this.stylusPickMaxDurationMin,
-    required this.stylusPickMaxDurationMax,});
+  });
 
   void copyValuesFrom({required final StylusPreferenceContent other})
   {
@@ -110,43 +63,26 @@ class StylusPreferenceContent
 
 class TouchPreferenceContent
 {
-  final ValueNotifier<double> zoomStepDistance;
-  final ValueNotifier<int> singleTouchDelay;
+  final RangedPref<double> zoomStepDistance;
+  final RangedPref<int> singleTouchDelay;
   final ValueNotifier<bool> showJoysticks;
 
-  final double zoomStepDistanceMin;
-  final double zoomStepDistanceMax;
-  final int singleTouchDelayMin;
-  final int singleTouchDelayMax;
-
   factory TouchPreferenceContent({
-    required final int singleTouchDelay,
-    required final int singleTouchDelayMin,
-    required final int singleTouchDelayMax,
-    required final double zoomStepDistance,
-    required final double zoomStepDistanceMin,
-    required final double zoomStepDistanceMax,
+    required final RangedPref<int> singleTouchDelay,
+    required final RangedPref<double> zoomStepDistance,
     required final bool showJoysticks,
   })
   {
     return TouchPreferenceContent._(
-      singleTouchDelay: ValueNotifier<int>(singleTouchDelay.clamp(singleTouchDelayMin, singleTouchDelayMax)),
-      singleTouchDelayMin: singleTouchDelayMin,
-      singleTouchDelayMax: singleTouchDelayMax,
-      zoomStepDistance: ValueNotifier<double>(zoomStepDistance.clamp(zoomStepDistanceMin, zoomStepDistanceMax)),
-      zoomStepDistanceMin: zoomStepDistanceMin,
-      zoomStepDistanceMax: zoomStepDistanceMax,
+      singleTouchDelay: singleTouchDelay,
+      zoomStepDistance: zoomStepDistance,
       showJoysticks: ValueNotifier<bool>(showJoysticks),
     );
   }
 
   TouchPreferenceContent._({
     required this.singleTouchDelay,
-    required this.singleTouchDelayMin,
-    required this.singleTouchDelayMax,
     required this.zoomStepDistance,
-    required this.zoomStepDistanceMin,
-    required this.zoomStepDistanceMax,
     required this.showJoysticks,
   });
 
@@ -305,31 +241,25 @@ class DesktopPreferenceContent
   }
 }
 
-//UNDO STEPS
-const int undoStepsMin = 10;
-const int undoStepsMax = 256;
-
 class BehaviorPreferenceContent
 {
-  final ValueNotifier<int> undoSteps;
+  final RangedPref<int> undoSteps;
   final ValueNotifier<bool> selectShapeAfterInsert;
   final ValueNotifier<bool> selectLayerAfterInsert;
   final ValueNotifier<bool> selectToolAfterPaste;
   final ValueNotifier<bool> showReferenceOutsideCanvas;
   final ValueNotifier<int> shadingStepsMinus;
   final ValueNotifier<int> shadingStepsPlus;
-  final int undoStepsMax;
-  final int undoStepsMin;
   final ShadingLayerSettingsConstraints shadingConstraints;
   final FrameConstraints frameConstraints;
   final ValueNotifier<int> fps;
   final ValueNotifier<bool> useCustomProjectDirectory;
   final ValueNotifier<String> customProjectDirectory;
 
-  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final bool selectToolAfterPaste, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints, required final bool showReferenceOutsideCanvas, required final bool useCustomProjectDirectory, required final String customProjectDirectory})
+  factory BehaviorPreferenceContent({required final RangedPref<int> undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final bool selectToolAfterPaste, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints, required final bool showReferenceOutsideCanvas, required final bool useCustomProjectDirectory, required final String customProjectDirectory})
   {
     return BehaviorPreferenceContent._(
-      undoSteps: ValueNotifier<int>(undoSteps.clamp(undoStepsMin, undoStepsMax)),
+      undoSteps: undoSteps,
       selectShapeAfterInsert: ValueNotifier<bool>(selectAfterInsert),
       selectLayerAfterInsert: ValueNotifier<bool>(selectLayerAfterInsert),
       selectToolAfterPaste: ValueNotifier<bool>(selectToolAfterPaste),
@@ -338,15 +268,13 @@ class BehaviorPreferenceContent
       shadingStepsMinus: ValueNotifier<int>(shadingConstraints.shadingStepsDefaultDarken),
       shadingStepsPlus: ValueNotifier<int>(shadingConstraints.shadingStepsDefaultBrighten),
       shadingConstraints: shadingConstraints,
-      undoStepsMax: undoStepsMax,
-      undoStepsMin: undoStepsMin,
       showReferenceOutsideCanvas: ValueNotifier<bool>(showReferenceOutsideCanvas),
       useCustomProjectDirectory: ValueNotifier<bool>(useCustomProjectDirectory),
       customProjectDirectory: ValueNotifier<String>(customProjectDirectory),
     );
   }
 
-  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.selectToolAfterPaste, required this.undoStepsMax, required this.undoStepsMin, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints, required this.fps, required this.frameConstraints, required this.showReferenceOutsideCanvas, required this.useCustomProjectDirectory, required this.customProjectDirectory});
+  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.selectToolAfterPaste, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints, required this.fps, required this.frameConstraints, required this.showReferenceOutsideCanvas, required this.useCustomProjectDirectory, required this.customProjectDirectory});
 
   void copyValuesFrom({required final BehaviorPreferenceContent other})
   {

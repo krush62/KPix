@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/widgets/controls/kpix_dropdown.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
@@ -24,7 +25,7 @@ class ToolSwitchRow extends StatelessWidget
     super.key,
     required this.notifier,
     required this.label,
-    this.flex = 1,
+    this.flex = ToolSettingsWidgetOptions.columnWidthRatio,
   });
 
   final int flex;
@@ -74,7 +75,7 @@ class ToolModifierSwitchRow extends StatefulWidget
     required this.label,
     required this.defaultState,
     required this.modifierNotifier,
-    this.flex = 1,
+    this.flex = ToolSettingsWidgetOptions.columnWidthRatio,
   });
 
   final int flex;
@@ -190,15 +191,19 @@ class ToolSliderRow<E extends num> extends StatelessWidget
     this.textStyle,
     this.minVal = 0.0,
     this.maxVal = 1.0,
-    this.divisions,
-    this.flex = 1,
+    this.decimals = 0,
+    this.enabled = true,
+    this.onChangedEnd,
+    this.flex = ToolSettingsWidgetOptions.columnWidthRatio,
   });
   final String label;
   final String Function(E value)? labelBuilder;
   final TextStyle? textStyle;
   final double minVal;
   final double maxVal;
-  final int? divisions;
+  final int decimals;
+  final bool enabled;
+  final ValueChanged<double>? onChangedEnd;
   final ValueNotifier<E> notifier;
   final int flex;
 
@@ -230,9 +235,10 @@ class ToolSliderRow<E extends num> extends StatelessWidget
                 min: minVal,
                 max: maxVal,
                 textStyle: Theme.of(context).textTheme.bodyLarge!,
-                label: (labelBuilder ?? (final E v) => v.toString())(val),
-                divisions: divisions,
-                onChanged: (final double newVal) => notifier.value = (E == int ? newVal.round() : newVal) as E,
+                label: labelBuilder?.call(val),
+                decimals: decimals,
+                onChanged: enabled ? (final double newVal) => notifier.value = (E == int ? newVal.round() : newVal) as E : null,
+                onChangedEnd: onChangedEnd,
               );
             },
           ),
@@ -249,7 +255,7 @@ class ToolDropdownRow<E> extends StatelessWidget
     required this.label,
     required this.notifier,
     required this.valueMap,
-    this.flex = 1,
+    this.flex = ToolSettingsWidgetOptions.columnWidthRatio,
   });
 
   final String label;
@@ -296,7 +302,7 @@ class ToolSegmentedIconButtonRow<E> extends StatelessWidget {
     required this.label,
     required this.notifier,
     required this.iconData,
-    this.flex = 2,
+    this.flex = ToolSettingsWidgetOptions.columnWidthRatio,
     this.iconSize = 8,
     this.hideLabel = false,
   });

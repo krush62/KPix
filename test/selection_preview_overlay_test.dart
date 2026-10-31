@@ -22,8 +22,8 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_image.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
-import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
@@ -119,7 +119,7 @@ void main()
 
       //a reference layer is not a raster layer, so it counts in the collection's
       //indices but not in the visible raster layers the preview stack mirrors
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: ReferenceLayerState);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.reference);
       GetIt.I.get<LayerManager>().selectLayer(newLayer: artwork);
       await settle();
 
@@ -137,7 +137,7 @@ void main()
       final DrawingLayerState artwork = layerAt(projectSession: projectSession, index: 0);
       artwork.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color}));
 
-      final DrawingLayerState hidden = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState).$2! as DrawingLayerState;
+      final DrawingLayerState hidden = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing).$2! as DrawingLayerState;
       GetIt.I.get<LayerManager>().changeLayerVisibility(layerState: hidden);
       GetIt.I.get<LayerManager>().selectLayer(newLayer: artwork);
       await settle();

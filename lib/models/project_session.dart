@@ -88,9 +88,7 @@ class ProjectSession
     GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false, notify: false);
     //copied colors belong to the previous palette
     GetIt.I.get<DocumentState>().selectionState.clearClipboard();
-    //_layerCollection.clear();
     GetIt.I.get<PaletteState>().setDefaultPalette();
-    //addNewDrawingLayer(select: true, addToHistoryStack: false);
     GetIt.I.get<DocumentState>().timeline.init();
     GetIt.I.get<HistoryManager>().clear();
     GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);

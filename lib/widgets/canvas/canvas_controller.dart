@@ -22,7 +22,6 @@ import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/infra/stylus_bridge.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
@@ -873,7 +872,7 @@ class CanvasController
     _stylusLongMoveStarted.value = true;
     _stylusZoomStartLevel = _viewState.zoomFactor;
     final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
-    if (currentLayer.runtimeType == DrawingLayerState)
+    if (currentLayer?.kind == LayerKind.drawing)
     {
       _stylusToolStartSize = _toolState.getCurrentToolSize();
     }

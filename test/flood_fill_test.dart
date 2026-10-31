@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/constraints/tool_select_constraints.dart';
@@ -138,7 +139,7 @@ void main()
   {
     await withProject(tester: tester, canvasSize: _canvasSize, body: (final ProjectSession projectSession) async
     {
-      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, select: true).$2! as ShadingLayerState;
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.shading, select: true).$2! as ShadingLayerState;
       await settle();
       final HashMap<CoordinateSetI, int> wallValues = HashMap<CoordinateSetI, int>();
       for (int x = 0; x < _canvasSize.x; x++)

@@ -19,6 +19,8 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
@@ -39,6 +41,26 @@ import 'support/selection_harness.dart';
 ///  * `layerSelect` - selecting a different layer, restored by re-selecting.
 ///  * `colorSelect` - picking a different color, restored on its own without
 ///    touching layers.
+class _SpyLayerManager extends LayerManager
+{
+  int rasterAllCalls = 0;
+
+  @override
+  void rasterLayersAll()
+  {
+    rasterAllCalls++;
+    super.rasterLayersAll();
+  }
+}
+
+_SpyLayerManager _spyOnLayers()
+{
+  final _SpyLayerManager spy = _SpyLayerManager();
+  GetIt.I.unregister<LayerManager>();
+  GetIt.I.registerSingleton<LayerManager>(spy);
+  return spy;
+}
+
 void main()
 {
   final CoordinateSetI canvasSize = CoordinateSetI(x: 4, y: 4);
@@ -51,7 +73,7 @@ void main()
       {
         final LayerManager layers = GetIt.I.get<LayerManager>();
         final DrawingLayerState lower = GetIt.I.get<DocumentState>().timeline.getCurrentLayer()! as DrawingLayerState;
-        final DrawingLayerState upper = layers.addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+        final DrawingLayerState upper = layers.addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
         await settle();
 
         layers.selectLayer(newLayer: lower);
@@ -76,7 +98,7 @@ void main()
       {
         final LayerManager layers = GetIt.I.get<LayerManager>();
         final DrawingLayerState lower = GetIt.I.get<DocumentState>().timeline.getCurrentLayer()! as DrawingLayerState;
-        final DrawingLayerState upper = layers.addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+        final DrawingLayerState upper = layers.addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
         await settle();
 
         layers.selectLayer(newLayer: lower);
@@ -137,6 +159,38 @@ void main()
 
         expect(GetIt.I.get<DocumentState>().timeline.getCurrentLayer(), same(layer),
             reason: "a colorSelect restore should not rebuild layers",);
+      },);
+    });
+  });
+
+  group("rastering after a restore", ()
+  {
+    testWidgets("a full restore rasters everything and reports the change", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async
+      {
+        final _SpyLayerManager spy = _spyOnLayers();
+        int reports = 0;
+        void report() {reports++;}
+        GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.addListener(report);
+        final HistoryRestoreResult result = await GetIt.I.get<HistoryController>().restoreState(historyState: GetIt.I.get<HistoryManager>().getCurrentState(), typeGroup: HistoryStateTypeGroup.full);
+        GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.removeListener(report);
+        expect(result, HistoryRestoreResult.success);
+        expect(spy.rasterAllCalls, 1);
+        expect(reports, greaterThan(0));
+        await settle();
+      },);
+    });
+
+    testWidgets("restoring single layers leaves the others alone", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async
+      {
+        final _SpyLayerManager spy = _spyOnLayers();
+        final HistoryRestoreResult result = await GetIt.I.get<HistoryController>().restoreState(historyState: GetIt.I.get<HistoryManager>().getCurrentState(), typeGroup: HistoryStateTypeGroup.layerFull, restoreLayerIndices: <int>{0});
+        expect(result, HistoryRestoreResult.success);
+        expect(spy.rasterAllCalls, 0);
+        await settle();
       },);
     });
   });

@@ -54,9 +54,28 @@ class _ShaderWidgetState extends State<ShaderWidget>
   {
     super.initState();
 
-    _hotkeyManager.addListener(func: () {_shaderOptions.isEnabled.value = !_shaderOptions.isEnabled.value;}, action: HotkeyAction.shadingToggle);
-    _hotkeyManager.addListener(func: () {_shaderOptions.onlyCurrentRampEnabled.value = !_shaderOptions.onlyCurrentRampEnabled.value;}, action: HotkeyAction.shadingCurrentRampOnly);
+    _hotkeyManager.addListener(func: _toggleEnabled, action: HotkeyAction.shadingToggle);
+    _hotkeyManager.addListener(func: _toggleCurrentRamp, action: HotkeyAction.shadingCurrentRampOnly);
     _hotkeyManager.addListener(func: _shaderOptions.toggleDirection, action: HotkeyAction.shadingDirection);
+  }
+
+  @override
+  void dispose()
+  {
+    _hotkeyManager.removeListener(func: _toggleEnabled, action: HotkeyAction.shadingToggle);
+    _hotkeyManager.removeListener(func: _toggleCurrentRamp, action: HotkeyAction.shadingCurrentRampOnly);
+    _hotkeyManager.removeListener(func: _shaderOptions.toggleDirection, action: HotkeyAction.shadingDirection);
+    super.dispose();
+  }
+
+  void _toggleEnabled()
+  {
+    _shaderOptions.isEnabled.value = !_shaderOptions.isEnabled.value;
+  }
+
+  void _toggleCurrentRamp()
+  {
+    _shaderOptions.onlyCurrentRampEnabled.value = !_shaderOptions.onlyCurrentRampEnabled.value;
   }
 
   @override

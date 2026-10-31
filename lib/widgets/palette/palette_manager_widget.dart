@@ -264,18 +264,13 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     }
   }
 
-  Expanded _createExpandedButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc, final bool isEnabled = true})
+  Widget _createExpandedButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc, final bool isEnabled = true})
   {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-          child: IconButton.outlined(
-            tooltip: tooltip,
-            icon: Icon(icon),
-          onPressed: isEnabled ? onPressedFunc : null,
-        ),
-      ),
-    );
+    return DialogActionButton(
+             tooltip: tooltip,
+             icon: icon,
+             onPressed: isEnabled ? onPressedFunc : null,
+           );
   }
 
   @override

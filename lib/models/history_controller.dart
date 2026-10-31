@@ -107,33 +107,9 @@ class HistoryController
     {
       try
       {
-        //COLLECT ORIGINAL LAYERS
-        final LinkedHashSet<LayerState> collectedLayers = LinkedHashSet<LayerState>();
-        for (final Frame f in GetIt.I.get<DocumentState>().timeline.frames.value)
-        {
-          final LayerCollection layers = f.layerList;
-          for (int i = 0; i < layers.length; i++)
-          {
-            collectedLayers.add(layers.getLayer(index: i));
-          }
-        }
-
-        //CANVAS
+        final LinkedHashSet<LayerState> collectedLayers = _collectLiveLayers();
         final CoordinateSetI canvSize = CoordinateSetI.from(other: historyState.canvasSize);
-
-        //COLORS
-        {
-          final List<KPalRampData> ramps = <KPalRampData>[];
-          for (final HistoryRampData hRampData in historyState.rampList)
-          {
-            final KPalRampSettings settings = KPalRampSettings.from(other: hRampData.settings);
-            ramps.add(KPalRampData(uuid: hRampData.uuid, settings: settings, historyShifts: hRampData.shiftSets));
-          }
-          if (typeGroup == HistoryStateTypeGroup.full)
-          {
-            GetIt.I.get<PaletteState>().colorRamps = ramps;
-          }
-        }
+        _restoreRamps(historyState: historyState, typeGroup: typeGroup);
 
         final RampResolver rampResolver = RampResolver(
           liveRamps: GetIt.I.get<PaletteState>().colorRamps,
@@ -143,117 +119,19 @@ class HistoryController
 
         if (typeGroup == HistoryStateTypeGroup.full || typeGroup == HistoryStateTypeGroup.layerFull)
         {
-          //RESTORE LAYERS
-          final LinkedHashSet<HistoryLayer> allHistoryLayers = historyState.timeline.allLayers;
-          final List<LayerState> allLayers = <LayerState>[];
-          int layerCounter = 0;
-          for (final HistoryLayer hLayer in allHistoryLayers)
-          {
-            if (restoreIndices.isNotEmpty && typeGroup == HistoryStateTypeGroup.layerFull && !restoreIndices.contains(layerCounter) && collectedLayers.length == allHistoryLayers.length)
-            {
-              final LayerState liveLayer = collectedLayers.elementAt(layerCounter);
-              liveLayer.visibilityState.value = hLayer.visibilityState;
-              if (hLayer is HistoryDrawingLayer && liveLayer is DrawingLayerState)
-              {
-                liveLayer.lockState.value = hLayer.lockState;
-              }
-              else if (hLayer is HistoryShadingLayer && liveLayer is ShadingLayerState) // also matches HistoryDitherLayer
-              {
-                liveLayer.lockState.value = hLayer.lockState;
-              }
-              allLayers.add(liveLayer);
-            }
-            else
-            {
-              final LayerState layerState = await hLayer.toLayerState(
-                canvasSize: canvSize,
-                ramps: rampResolver,
-              );
-              layerState.visibilityState.value = hLayer.visibilityState;
-              allLayers.add(layerState);
-            }
-
-            layerCounter++;
-          }
-
-          final List<Frame> liveFrames = GetIt.I.get<DocumentState>().timeline.frames.value;
-          final bool reuseFrames = liveFrames.length == historyState.timeline.frames.length;
-          final List<Frame> frames = <Frame>[];
-          for (int frameIndex = 0; frameIndex < historyState.timeline.frames.length; frameIndex++)
-          {
-            final HistoryFrame hFrame = historyState.timeline.frames[frameIndex];
-            final List<LayerState> layerList = <LayerState>[];
-            for (final int hLayerIndex in hFrame.layerIndices)
-            {
-              layerList.add(allLayers[hLayerIndex]);
-            }
-            if (reuseFrames)
-            {
-              final Frame frame = liveFrames[frameIndex];
-              frame.layerList.replaceLayers(layers: layerList, selLayerIdx: hFrame.selectedLayerIndex);
-              frame.fps.value = hFrame.fps;
-              frames.add(frame);
-            }
-            else
-            {
-              final LayerCollection layerCollection = LayerCollection(layers: layerList, selLayerIdx: hFrame.selectedLayerIndex);
-              frames.add(Frame(layerList: layerCollection, fps: hFrame.fps));
-            }
-          }
-
-          GetIt.I.get<DocumentState>().timeline.setData(selectedFrameIndex: historyState.timeline.selectedFrameIndex, frames: frames, loopStartIndex: historyState.timeline.loopStart, loopEndIndex: historyState.timeline.loopEnd);
+          final List<LayerState> allLayers = await _restoreLayers(historyState: historyState, typeGroup: typeGroup, restoreIndices: restoreIndices, collectedLayers: collectedLayers, canvSize: canvSize, rampResolver: rampResolver);
+          _restoreFrames(historyState: historyState, allLayers: allLayers);
 
           //restoring rebuilds most layers, so the replaced ones have to be dropped
           GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: collectedLayers);
 
-
-          //SELECTION
-          //the codes follow the state's ramp list, which is the live one on
-          //every restore short of a damaged state
-          GetIt.I.get<DocumentState>().selectionState.selection.replaceContent(
-            pixels: historyState.selectionState.pixels,
-            codec: rampResolver.liveCodec,
-            lut: rampResolver.pixelsLineUp ? null : rampResolver.pixelLut(),
-          );
-          GetIt.I.get<DocumentState>().selectionState.createSelectionLines();
-          GetIt.I.get<DocumentState>().selectionState.notifyRepaint();
+          _restoreSelection(historyState: historyState, rampResolver: rampResolver);
 
           if (canvSize.x != GetIt.I.get<CanvasState>().canvasSize.x || canvSize.y != GetIt.I.get<CanvasState>().canvasSize.y)
           {
             GetIt.I.get<CanvasState>().setCanvasDimensions(width: canvSize.x, height: canvSize.y, addToHistoryStack: false);
           }
-
-          //the timeout is a backstop only: a layer that never settles would
-          //otherwise leave the restore hanging with no way out
-          await Future.wait<void>(allLayers.map((final LayerState layer) => layer.rasterizationComplete))
-              .timeout(rasterSettleTimeout, onTimeout: ()
-          {
-            GetIt.I.get<Logger>().w("Timed out waiting for layers to finish rasterizing while restoring history.");
-            return <void>[];
-          },);
-
-          GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
-          final List<int> rasterIndices = restoreIndices.where((final int index) => index >= 0 && index < allLayers.length).toList();
-          final bool canRasterSelectively = typeGroup == HistoryStateTypeGroup.layerFull &&
-              rasterIndices.isNotEmpty &&
-              rasterIndices.length == restoreIndices.length;
-          if (canRasterSelectively)
-          {
-            for (final int index in rasterIndices)
-            {
-              //reference and grid layers are not part of any other layer's raster
-              final LayerState layer = allLayers[index];
-              if (layer is RasterableLayerState)
-              {
-                layer.doManualRaster = true;
-              }
-            }
-            GetIt.I.get<ViewState>().repaintNotifier.repaint();
-          }
-          else
-          {
-            GetIt.I.get<LayerManager>().rasterLayersAll();
-          }
+          await _settleAndRaster(allLayers: allLayers, typeGroup: typeGroup, restoreIndices: restoreIndices);
         }
         else if (typeGroup == HistoryStateTypeGroup.layerSelect)
         {
@@ -273,5 +151,154 @@ class HistoryController
       return HistoryRestoreResult.failed;
     }
     return HistoryRestoreResult.success;
+  }
+
+  LinkedHashSet<LayerState> _collectLiveLayers()
+  {
+    final LinkedHashSet<LayerState> collectedLayers = LinkedHashSet<LayerState>();
+    for (final Frame f in GetIt.I.get<DocumentState>().timeline.frames.value)
+    {
+      final LayerCollection layers = f.layerList;
+      for (int i = 0; i < layers.length; i++)
+      {
+        collectedLayers.add(layers.getLayer(index: i));
+      }
+    }
+    return collectedLayers;
+  }
+
+  void _restoreRamps({required final HistoryState historyState, required final HistoryStateTypeGroup typeGroup})
+  {
+    final List<KPalRampData> ramps = <KPalRampData>[];
+    for (final HistoryRampData hRampData in historyState.rampList)
+    {
+      final KPalRampSettings settings = KPalRampSettings.from(other: hRampData.settings);
+      ramps.add(KPalRampData(uuid: hRampData.uuid, settings: settings, historyShifts: hRampData.shiftSets));
+    }
+    if (typeGroup == HistoryStateTypeGroup.full)
+    {
+      GetIt.I.get<PaletteState>().colorRamps = ramps;
+    }
+  }
+
+  Future<List<LayerState>> _restoreLayers({
+    required final HistoryState historyState,
+    required final HistoryStateTypeGroup typeGroup,
+    required final Set<int> restoreIndices,
+    required final LinkedHashSet<LayerState> collectedLayers,
+    required final CoordinateSetI canvSize,
+    required final RampResolver rampResolver,
+  }) async
+  {
+    final LinkedHashSet<HistoryLayer> allHistoryLayers = historyState.timeline.allLayers;
+    final List<LayerState> allLayers = <LayerState>[];
+    int layerCounter = 0;
+    for (final HistoryLayer hLayer in allHistoryLayers)
+    {
+      if (restoreIndices.isNotEmpty && typeGroup == HistoryStateTypeGroup.layerFull && !restoreIndices.contains(layerCounter) && collectedLayers.length == allHistoryLayers.length)
+      {
+        final LayerState liveLayer = collectedLayers.elementAt(layerCounter);
+        liveLayer.visibilityState.value = hLayer.visibilityState;
+        if (hLayer is HistoryDrawingLayer && liveLayer is DrawingLayerState)
+        {
+          liveLayer.lockState.value = hLayer.lockState;
+        }
+        else if (hLayer is HistoryShadingLayer && liveLayer is ShadingLayerState) // also matches HistoryDitherLayer
+        {
+          liveLayer.lockState.value = hLayer.lockState;
+        }
+        allLayers.add(liveLayer);
+      }
+      else
+      {
+        final LayerState layerState = await hLayer.toLayerState(
+          canvasSize: canvSize,
+          ramps: rampResolver,
+        );
+        layerState.visibilityState.value = hLayer.visibilityState;
+        allLayers.add(layerState);
+      }
+
+      layerCounter++;
+    }
+    return allLayers;
+  }
+
+  void _restoreFrames({required final HistoryState historyState, required final List<LayerState> allLayers})
+  {
+    final List<Frame> liveFrames = GetIt.I.get<DocumentState>().timeline.frames.value;
+    final bool reuseFrames = liveFrames.length == historyState.timeline.frames.length;
+    final List<Frame> frames = <Frame>[];
+    for (int frameIndex = 0; frameIndex < historyState.timeline.frames.length; frameIndex++)
+    {
+      final HistoryFrame hFrame = historyState.timeline.frames[frameIndex];
+      final List<LayerState> layerList = <LayerState>[];
+      for (final int hLayerIndex in hFrame.layerIndices)
+      {
+        layerList.add(allLayers[hLayerIndex]);
+      }
+      if (reuseFrames)
+      {
+        final Frame frame = liveFrames[frameIndex];
+        frame.layerList.replaceLayers(layers: layerList, selLayerIdx: hFrame.selectedLayerIndex);
+        frame.fps.value = hFrame.fps;
+        frames.add(frame);
+      }
+      else
+      {
+        final LayerCollection layerCollection = LayerCollection(layers: layerList, selLayerIdx: hFrame.selectedLayerIndex);
+        frames.add(Frame(layerList: layerCollection, fps: hFrame.fps));
+      }
+    }
+
+    GetIt.I.get<DocumentState>().timeline.setData(selectedFrameIndex: historyState.timeline.selectedFrameIndex, frames: frames, loopStartIndex: historyState.timeline.loopStart, loopEndIndex: historyState.timeline.loopEnd);
+  }
+
+  void _restoreSelection({required final HistoryState historyState, required final RampResolver rampResolver})
+  {
+    //the codes follow the state's ramp list, which is the live one on
+    //every restore short of a damaged state
+    GetIt.I.get<DocumentState>().selectionState.selection.replaceContent(
+      pixels: historyState.selectionState.pixels,
+      codec: rampResolver.liveCodec,
+      lut: rampResolver.pixelsLineUp ? null : rampResolver.pixelLut(),
+    );
+    GetIt.I.get<DocumentState>().selectionState.createSelectionLines();
+    GetIt.I.get<DocumentState>().selectionState.notifyRepaint();
+  }
+
+  Future<void> _settleAndRaster({required final List<LayerState> allLayers, required final HistoryStateTypeGroup typeGroup, required final Set<int> restoreIndices}) async
+  {
+    //the timeout is a backstop only: a layer that never settles would
+    //otherwise leave the restore hanging with no way out
+    await Future.wait<void>(allLayers.map((final LayerState layer) => layer.rasterizationComplete))
+        .timeout(rasterSettleTimeout, onTimeout: ()
+    {
+      GetIt.I.get<Logger>().w("Timed out waiting for layers to finish rasterizing while restoring history.");
+      return <void>[];
+    },);
+
+    GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
+    final List<int> rasterIndices = restoreIndices.where((final int index) => index >= 0 && index < allLayers.length).toList();
+    final bool canRasterSelectively = typeGroup == HistoryStateTypeGroup.layerFull &&
+        rasterIndices.isNotEmpty &&
+        rasterIndices.length == restoreIndices.length;
+    if (canRasterSelectively)
+    {
+      for (final int index in rasterIndices)
+      {
+        //reference and grid layers are not part of any other layer's raster
+        final LayerState layer = allLayers[index];
+        if (layer is RasterableLayerState)
+        {
+          layer.doManualRaster = true;
+        }
+      }
+      GetIt.I.get<ViewState>().repaintNotifier.repaint();
+    }
+    else
+    {
+      GetIt.I.get<LayerManager>().rasterLayersAll();
+    }
   }
 }

@@ -271,6 +271,16 @@ class PreferenceManager
     return _doubleMap[prefName]?.value ?? 0.0;
   }
 
+  RangedPref<int> _rangedI({required final PreferenceInt value, required final PreferenceInt min, required final PreferenceInt max})
+  {
+    return RangedPref<int>(value: _getValueI(value), min: _getValueI(min), max: _getValueI(max));
+  }
+
+  RangedPref<double> _rangedD({required final PreferenceDouble value, required final PreferenceDouble min, required final PreferenceDouble max})
+  {
+    return RangedPref<double>(value: _getValueD(value), min: _getValueD(min), max: _getValueD(max));
+  }
+
   int _getValueI(final PreferenceInt prefName)
   {
     return _intMap[prefName]?.value ?? 0;
@@ -400,12 +410,10 @@ class PreferenceManager
     );
 
     final BehaviorPreferenceContent behaviorContent = BehaviorPreferenceContent(
-      undoSteps: _getValueI(PreferenceInt.HistoryOptions_Steps),
+      undoSteps: _rangedI(value: PreferenceInt.HistoryOptions_Steps, min: PreferenceInt.HistoryOptions_StepsMin, max: PreferenceInt.HistoryOptions_StepsMax),
       selectAfterInsert: _getValueB(PreferenceBool.SelectShapeAfterInsert),
       selectLayerAfterInsert: _getValueB(PreferenceBool.SelectLayerAfterInsert),
       selectToolAfterPaste: _getValueB(PreferenceBool.SelectToolAfterPaste),
-      undoStepsMax: _getValueI(PreferenceInt.HistoryOptions_StepsMax),
-      undoStepsMin: _getValueI(PreferenceInt.HistoryOptions_StepsMin),
       frameConstraints: frameConstraints,
       shadingConstraints: shadingLayerSettingsConstraints,
       showReferenceOutsideCanvas: _getValueB(PreferenceBool.ShowReferenceOutsideCanvas),
@@ -414,30 +422,16 @@ class PreferenceManager
     );
 
     final StylusPreferenceContent stylusContent = StylusPreferenceContent(
-      stylusLongPressCancelDistance: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistance),
-      stylusLongPressCancelDistanceMin: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistanceMin),
-      stylusLongPressCancelDistanceMax: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistanceMax),
-      stylusLongPressDelay: _getValueI(PreferenceInt.StylusOptions_LongPressDelay),
-      stylusLongPressDelayMin: _getValueI(PreferenceInt.StylusOptions_LongPressDelayMin),
-      stylusLongPressDelayMax: _getValueI(PreferenceInt.StylusOptions_LongPressDelayMax),
-      stylusSizeStepDistance: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistance),
-      stylusSizeStepDistanceMin: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistanceMin),
-      stylusSizeStepDistanceMax: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistanceMax),
-      stylusZoomStepDistance: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistance),
-      stylusZoomStepDistanceMin: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistanceMin),
-      stylusZoomStepDistanceMax: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistanceMax),
-      stylusPickMaxDuration: _getValueI(PreferenceInt.StylusOptions_PickMaxDuration),
-      stylusPickMaxDurationMin: _getValueI(PreferenceInt.StylusOptions_PickMaxDurationMin),
-      stylusPickMaxDurationMax: _getValueI(PreferenceInt.StylusOptions_PickMaxDurationMax),
+      stylusLongPressCancelDistance: _rangedD(value: PreferenceDouble.StylusOptions_LongPressCancelDistance, min: PreferenceDouble.StylusOptions_LongPressCancelDistanceMin, max: PreferenceDouble.StylusOptions_LongPressCancelDistanceMax),
+      stylusLongPressDelay: _rangedI(value: PreferenceInt.StylusOptions_LongPressDelay, min: PreferenceInt.StylusOptions_LongPressDelayMin, max: PreferenceInt.StylusOptions_LongPressDelayMax),
+      stylusSizeStepDistance: _rangedD(value: PreferenceDouble.StylusOptions_SizeStepDistance, min: PreferenceDouble.StylusOptions_SizeStepDistanceMin, max: PreferenceDouble.StylusOptions_SizeStepDistanceMax),
+      stylusZoomStepDistance: _rangedD(value: PreferenceDouble.StylusOptions_ZoomStepDistance, min: PreferenceDouble.StylusOptions_ZoomStepDistanceMin, max: PreferenceDouble.StylusOptions_ZoomStepDistanceMax),
+      stylusPickMaxDuration: _rangedI(value: PreferenceInt.StylusOptions_PickMaxDuration, min: PreferenceInt.StylusOptions_PickMaxDurationMin, max: PreferenceInt.StylusOptions_PickMaxDurationMax),
     );
 
     final TouchPreferenceContent touchContent = TouchPreferenceContent(
-      singleTouchDelay: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelay),
-      singleTouchDelayMin: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelayMin),
-      singleTouchDelayMax: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelayMax),
-      zoomStepDistance: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistance),
-      zoomStepDistanceMin: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMin),
-      zoomStepDistanceMax: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMax),
+      singleTouchDelay: _rangedI(value: PreferenceInt.TouchOptions_SingleTouchDelay, min: PreferenceInt.TouchOptions_SingleTouchDelayMin, max: PreferenceInt.TouchOptions_SingleTouchDelayMax),
+      zoomStepDistance: _rangedD(value: PreferenceDouble.TouchOptions_ZoomStepDistance, min: PreferenceDouble.TouchOptions_ZoomStepDistanceMin, max: PreferenceDouble.TouchOptions_ZoomStepDistanceMax),
       showJoysticks: _getValueB(PreferenceBool.TouchOptions_ShowJoysticks),
     );
 

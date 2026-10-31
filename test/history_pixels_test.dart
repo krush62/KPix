@@ -101,7 +101,7 @@ void main()
       final PixelGridSnapshot before = _recordOf(layer: layer).pixels;
 
       //adding a layer takes a new record of every layer
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
       await settle();
 
       expect(_recordOf(layer: layer).pixels, same(before), reason: "an unchanged layer must not cost a copy of its pixels");
@@ -198,7 +198,7 @@ void main()
           reason: "the record stores the ramp's position in the reordered palette",);
 
       final PixelGridSnapshot afterReorder = _recordOf(layer: layer).pixels;
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
       await settle();
       expect(_recordOf(layer: layer).pixels, same(afterReorder), reason: "once lined up, later steps share the pixels again");
       expect(layer.getDataEntry(coord: a), same(color), reason: "lining the codes up changes nothing visible");

@@ -20,7 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/l10n/app_localizations.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/frame_blending_options.dart';
 import 'package:kpix/models/layer_manager.dart';
@@ -222,7 +222,7 @@ void main()
     testWidgets("each one adds its kind of frame on its side", (final WidgetTester tester) async {
       await _pumpTimeline(tester, frameCount: 1);
       await tester.runAsync(() async {
-        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
         await settle();
       });
       await tester.pump();

@@ -25,6 +25,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/export_shader.dart';
 import 'package:kpix/util/export_shader_renderer.dart';
+import 'package:kpix/util/helpers/image_helper.dart';
 import 'package:logger/logger.dart';
 import 'package:toastification/toastification.dart' show warningColor;
 
@@ -82,7 +83,7 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
   final ValueNotifier<bool> _showOriginal = ValueNotifier<bool>(false);
   late final ui.Image _checkerboard;
   late final Timer _renderTimer;
-  final List<ui.Image> _imagesToRetire = <ui.Image>[];
+  final ImageRetirer _imageRetirer = ImageRetirer();
   Size _viewportSize = Size.zero;
   double _pixelRatio = 1.0;
   bool _isFitted = false;
@@ -159,25 +160,6 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
     _hasViewChanges = true;
   }
 
-  /// Like the palette adjustment preview: an image may only be released once the frame that dropped it was drawn.
-  void _retireImage({required final ui.Image image})
-  {
-    _imagesToRetire.add(image);
-    if (_imagesToRetire.length > 1)
-    {
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((final Duration _) {
-      final List<ui.Image> images = List<ui.Image>.of(_imagesToRetire);
-      _imagesToRetire.clear();
-      for (final ui.Image image in images)
-      {
-        image.dispose();
-      }
-    });
-    WidgetsBinding.instance.scheduleFrame();
-  }
-
   @override
   void deactivate()
   {
@@ -198,9 +180,9 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
     _showOriginal.dispose();
     if (last != null)
     {
-      _retireImage(image: last.image);
+      _imageRetirer.retire(image: last.image);
     }
-    _retireImage(image: _checkerboard);
+    _imageRetirer.retire(image: _checkerboard);
     super.dispose();
   }
 
@@ -322,7 +304,7 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
       _rendered.value = _RenderedRegion(image: image, region: region, scaling: scaling);
       if (previous != null)
       {
-        _retireImage(image: previous.image);
+        _imageRetirer.retire(image: previous.image);
       }
     }, onError: (final Object e, final StackTrace s) {
       _isRendering = false;

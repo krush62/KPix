@@ -132,33 +132,23 @@ class SaveAsWidgetState extends State<SaveAsWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: IconButton.outlined(
-                      tooltip: l10n.cancel,
-                      icon: const Icon(TablerIcons.x),
-                      onPressed: () {
-                        widget.dismiss();
-                      },
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: ValueListenableBuilder<FileNameStatus>(
-                      valueListenable: _fileNameStatus,
-                      builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
-                        return IconButton.outlined(
-                          tooltip: l10n.saveProject,
-                          icon: const Icon(TablerIcons.check),
-                          onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ? accept : null,
-                        );
-                      },
-                    ),
-                  ),
-                ),
+              DialogActionButton(
+                tooltip: l10n.cancel,
+                icon: TablerIcons.x,
+                onPressed: () {
+                  widget.dismiss();
+                },
+              ),
+                ValueListenableBuilder<FileNameStatus>(
+           valueListenable: _fileNameStatus,
+           builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
+             return DialogActionButton(
+               tooltip: l10n.saveProject,
+               icon: TablerIcons.check,
+               onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ? accept : null,
+             );
+           },
+         ),
               ],
             ),
           ],

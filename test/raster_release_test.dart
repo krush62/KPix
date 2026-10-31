@@ -39,6 +39,9 @@ class _FakeSettings extends LayerSettings
 /// exercised without the service locator that the real layer types need.
 class _FakeRasterLayer extends RasterableLayerState
 {
+  @override
+  LayerKind get kind => LayerKind.drawing;
+
   _FakeRasterLayer() : super(layerSettings: _FakeSettings());
 
   @override

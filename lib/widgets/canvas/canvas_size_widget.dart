@@ -442,18 +442,11 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                              child: IconButton.outlined(
-                                tooltip: l10n.centerHorizontally,
-                                icon: const Icon(
-                                  TablerIcons.layout_align_middle,
-                                  size: OverlayEntryAlertDialogOptions.iconSize,
-                                ),
-                                onPressed: _centerH,
-                              ),
-                            ),
+                          DialogActionButton(
+                            tooltip: l10n.centerHorizontally,
+                            icon: TablerIcons.layout_align_middle,
+                            iconSize: OverlayEntryAlertDialogOptions.iconSize,
+                            onPressed: _centerH,
                           ),
                           Expanded(
                             child: Padding(
@@ -485,33 +478,19 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                  child: IconButton.outlined(
-                    tooltip: l10n.cancel,
-                    icon: const Icon(
-                      TablerIcons.x,
-                      size: OverlayEntryAlertDialogOptions.iconSize,
-                    ),
-                    onPressed: () {
-                      widget.dismiss();
-                    },
-                  ),
-                ),
+              DialogActionButton(
+                tooltip: l10n.cancel,
+                icon: TablerIcons.x,
+                iconSize: OverlayEntryAlertDialogOptions.iconSize,
+                onPressed: () {
+                  widget.dismiss();
+                },
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                  child: IconButton.outlined(
-                    tooltip: l10n.apply,
-                    icon: const Icon(
-                      TablerIcons.check,
-                      size: OverlayEntryAlertDialogOptions.iconSize,
-                    ),
-                    onPressed: accept,
-                  ),
-                ),
+              DialogActionButton(
+                tooltip: l10n.apply,
+                icon: TablerIcons.check,
+                iconSize: OverlayEntryAlertDialogOptions.iconSize,
+                onPressed: accept,
               ),
             ],
           ),

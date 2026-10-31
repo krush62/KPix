@@ -21,7 +21,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_image.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -56,6 +55,7 @@ import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/image_helper.dart';
 import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 
 
@@ -98,7 +98,7 @@ class KPixPainter extends CustomPainter
   late ui.Image _checkerboardImage;
   ui.Image? _backupImage;
   bool _isDisposed = false;
-  final List<ui.Image> _imagesToRetire = <ui.Image>[];
+  final ImageRetirer _imageRetirer = ImageRetirer();
   final List<int> _previousRasterHashes = <int>[];
   List<ContentRasterSet> _lastContentRasters = <ContentRasterSet>[];
   late final Timer _backupTimer;
@@ -255,7 +255,7 @@ class KPixPainter extends CustomPainter
         _handleReferenceLayer(drawParams: drawParams, refLayer: drawParams.currentReferenceLayer!);
       }
       _drawLayers(drawParams: drawParams);
-      if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer.runtimeType == DrawingLayerState && !drawParams.isPlaying)
+      if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer?.kind == LayerKind.drawing && !drawParams.isPlaying)
       {
         _drawSelection(drawParams: drawParams);
       }
@@ -519,7 +519,7 @@ class KPixPainter extends CustomPainter
     final bool isHidden = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.visibilityState.value == LayerVisibilityState.hidden;
     final bool isLocked = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.lockState.value == LayerLockState.locked;
     final bool forbiddenDrawingTool = toolPainter.runtimeType != SelectionPainter && toolPainter.runtimeType != ColorPickPainter;
-    final bool isDrawingLayer = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.runtimeType == DrawingLayerState;
+    final bool isDrawingLayer = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.kind == LayerKind.drawing;
     final bool isShadingLayer = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer! is ShadingLayerState;
 
 
@@ -741,25 +741,6 @@ class KPixPainter extends CustomPainter
     return false;
   }
 
-  void _retireImage({required final ui.Image image})
-  {
-    _imagesToRetire.add(image);
-    if (_imagesToRetire.length > 1)
-    {
-      //a flush is already scheduled and will take this one too
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((final Duration _) {
-      final List<ui.Image> images = List<ui.Image>.of(_imagesToRetire);
-      _imagesToRetire.clear();
-      for (final ui.Image image in images)
-      {
-        image.dispose();
-      }
-    });
-    WidgetsBinding.instance.scheduleFrame();
-  }
-
   void _captureTimeout()
   {
     if (!_primaryDown.value && _shouldCapture())
@@ -774,7 +755,7 @@ class KPixPainter extends CustomPainter
         _backupImage = img;
         if (previous != null)
         {
-          _retireImage(image: previous);
+          _imageRetirer.retire(image: previous);
         }
         final Frame? frame = _documentState.timeline.selectedFrame;
         if (frame != null)
@@ -883,7 +864,7 @@ class KPixPainter extends CustomPainter
                 _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: displayImage);
               }
             }
-            else if (visibleLayers[i].runtimeType == ReferenceLayerState)
+            else if (visibleLayers[i].kind == LayerKind.reference)
             {
               final ReferenceLayerState refLayer = visibleLayers[i] as ReferenceLayerState;
               if (refLayer.image != null)
@@ -958,7 +939,7 @@ class KPixPainter extends CustomPainter
                 drawParams.canvas.drawImageRect(image, srcRect, targetRect, paint);
               }
             }
-            else if (visibleLayers[i].runtimeType == GridLayerState)
+            else if (visibleLayers[i].kind == LayerKind.grid)
             {
               final GridLayerState gridLayer = visibleLayers[i] as GridLayerState;
               if (gridLayer.raster != null)
@@ -1338,7 +1319,7 @@ class KPixPainter extends CustomPainter
     _backupImage = null;
     if (backup != null)
     {
-      _retireImage(image: backup);
+      _imageRetirer.retire(image: backup);
     }
   }
 

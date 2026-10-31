@@ -16,7 +16,6 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_eraser_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
@@ -39,14 +38,12 @@ class EraserOptions extends IToolOptions
       children: <Widget>[
         ToolSliderRow<int>(
           label: AppLocalizations.of(context)!.size,
-          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: eraserOptions.size,
           minVal: EraserConstraints.sizeMin.toDouble(),
           maxVal: EraserConstraints.sizeMax.toDouble(),
         ),
         ToolDropdownRow<PencilShape>(
           label: AppLocalizations.of(context)!.shape,
-          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: eraserOptions.shape,
           valueMap: PencilShape.getLabelMap(AppLocalizations.of(context)!),
         ),

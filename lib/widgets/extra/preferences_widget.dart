@@ -178,25 +178,15 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                  child: IconButton.outlined(
-                    tooltip: l10n.cancel,
-                    icon: const Icon(TablerIcons.x),
-                    onPressed: widget.dismiss,
-                  ),
-                ),
+              DialogActionButton(
+                tooltip: l10n.cancel,
+                icon: TablerIcons.x,
+                onPressed: widget.dismiss,
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                  child: IconButton.outlined(
-                    tooltip: l10n.apply,
-                    icon: const Icon(TablerIcons.check),
-                    onPressed: widget.accept,
-                  ),
-                ),
+              DialogActionButton(
+                tooltip: l10n.apply,
+                icon: TablerIcons.check,
+                onPressed: widget.accept,
               ),
             ],
           ),

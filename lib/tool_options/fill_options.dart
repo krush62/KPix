@@ -39,7 +39,7 @@ class FillOptions extends IToolOptions
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         ToolModifierSwitchRow(
-          //flex: toolSettingsWidgetOptions.columnWidthRatio,
+          flex: 1,
           notifier: fillOptions.fillAdjacent,
           unmodifiedNotifier: fillOptions.unmodifiedFillAdjacent,
           label: AppLocalizations.of(context)!.fillAdjacent,
@@ -47,7 +47,7 @@ class FillOptions extends IToolOptions
           modifierNotifier: hotkeyManager.controlNotifier,
         ),
         ToolSwitchRow(
-          //flex: toolSettingsWidgetOptions.columnWidthRatio,
+          flex: 1,
           notifier: fillOptions.fillWholeRamp,
           label: AppLocalizations.of(context)!.fillWholeRamp,
         ),

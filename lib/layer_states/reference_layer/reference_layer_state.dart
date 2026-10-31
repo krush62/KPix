@@ -30,6 +30,9 @@ import 'package:kpix/models/view_state.dart';
 
 class ReferenceLayerState extends LayerState
 {
+  @override
+  LayerKind get kind => LayerKind.reference;
+
   final ValueNotifier<int> opacityNotifier;
   final ValueNotifier<double> aspectRatioNotifier;
   final ValueNotifier<int> zoomNotifier;

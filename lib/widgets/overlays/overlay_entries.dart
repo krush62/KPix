@@ -181,6 +181,40 @@ abstract final class OverlayEntryAlertDialogOptions
   static const double elevation = 8.0;
 }
 
+/// A button in the row at the bottom of a dialog, sharing the row with the others.
+class DialogActionButton extends StatelessWidget
+{
+  final String tooltip;
+  final IconData icon;
+  final double? iconSize;
+  final double padding;
+  final VoidCallback? onPressed;
+
+  const DialogActionButton({
+    super.key,
+    required this.tooltip,
+    required this.icon,
+    required this.onPressed,
+    this.iconSize,
+    this.padding = OverlayEntryAlertDialogOptions.padding,
+  });
+
+  @override
+  Widget build(final BuildContext context)
+  {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.all(padding),
+        child: IconButton.outlined(
+          tooltip: tooltip,
+          icon: Icon(icon, size: iconSize),
+          onPressed: onPressed,
+        ),
+      ),
+    );
+  }
+}
+
 
 /// How long the smoke behind an overlay takes to fade in.
 ///
@@ -296,15 +330,10 @@ KPixOverlay _messageDialog({
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   for (final _DialogAction action in actions)
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                        child: IconButton.outlined(
-                          tooltip: action.tooltip(l10n),
-                          icon: Icon(action.icon),
-                          onPressed: action.onPressed,
-                        ),
-                      ),
+                    DialogActionButton(
+                      tooltip: action.tooltip(l10n),
+                      icon: action.icon,
+                      onPressed: action.onPressed,
                     ),
                 ],
               ),

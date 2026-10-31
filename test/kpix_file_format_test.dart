@@ -20,7 +20,6 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
@@ -164,16 +163,16 @@ void main()
       }),);
       await settle();
 
-      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, select: true).$2! as ShadingLayerState;
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.shading, select: true).$2! as ShadingLayerState;
       await settle();
       await _shade(layer: shading, values: <CoordinateSetI, int>{CoordinateSetI(x: 2, y: 3): -3, CoordinateSetI(x: 7, y: 3): 0, CoordinateSetI(x: 9, y: 8): 5});
 
       //empty layers of both kinds
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: DitherLayerState, select: true);
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.dither, select: true);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, select: true);
       await settle();
 
-      final DrawingLayerState top = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+      final DrawingLayerState top = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
       top.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{
         CoordinateSetI(x: 6, y: 1): ramps[3].references[1],
         CoordinateSetI(x: 8, y: 2): ramps[3].references[1],
@@ -222,7 +221,7 @@ void main()
       drawing.settings.outerStrokeStyle.value = OuterStrokeStyle.solid;
       drawing.settings.innerStrokeStyle.value = InnerStrokeStyle.solid;
       drawing.settings.dropShadowStyle.value = DropShadowStyle.solid;
-      final GridLayerState grid = GetIt.I.get<LayerManager>().addNewLayer(layerType: GridLayerState, select: true).$2! as GridLayerState;
+      final GridLayerState grid = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.grid, select: true).$2! as GridLayerState;
       grid.visibilityState.value = LayerVisibilityState.hidden;
       grid.gridTypeNotifier.value = GridType.values.last;
       await settle();

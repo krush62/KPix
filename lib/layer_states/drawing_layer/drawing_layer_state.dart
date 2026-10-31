@@ -50,6 +50,9 @@ import 'package:logger/logger.dart';
 
 class DrawingLayerState extends RasterableLayerState
 {
+  @override
+  LayerKind get kind => LayerKind.drawing;
+
 
   //the pixels as color codes of _codec; see docs/dev/pixel_storage_plan.md
   PixelGrid _data;

@@ -18,7 +18,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
@@ -62,7 +61,7 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState keeper = layerAt(projectSession: projectSession, index: 0);
-        final DrawingLayerState doomed = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+        final DrawingLayerState doomed = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
         await _paint(projectSession: projectSession, layer: doomed, coord: pixel, color: color);
 
         GetIt.I.get<DocumentState>().selectionState.selectAll();
@@ -83,7 +82,7 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState keeper = layerAt(projectSession: projectSession, index: 0);
-        final DrawingLayerState doomed = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+        final DrawingLayerState doomed = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
         await _paint(projectSession: projectSession, layer: keeper, coord: pixel, color: color);
 
         //select on the keeper, so the floating content belongs to it
@@ -103,8 +102,8 @@ void main()
   group("reordering layers", () {
     testWidgets("keeps the same layer selected when one moves down past it", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
-        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
-        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
         await settle();
 
         final List<LayerState> before = _layers(projectSession: projectSession);
@@ -125,8 +124,8 @@ void main()
 
     testWidgets("keeps the same layer selected when one moves up past it", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
-        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
-        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
         await settle();
 
         final List<LayerState> before = _layers(projectSession: projectSession);
@@ -145,8 +144,8 @@ void main()
     testWidgets("does not move a floating selection onto a different layer", (final WidgetTester tester) async {
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
-        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
-        GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
+        GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
         await settle();
 
         final List<LayerState> before = _layers(projectSession: projectSession);
@@ -174,7 +173,7 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState locked = layerAt(projectSession: projectSession, index: 0);
-        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
         await _paint(projectSession: projectSession, layer: owner, coord: pixel, color: color);
 
         locked.lockState.value = LayerLockState.locked;
@@ -195,7 +194,7 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState locked = layerAt(projectSession: projectSession, index: 0);
-        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
         await _paint(projectSession: projectSession, layer: owner, coord: pixel, color: color);
 
         locked.lockState.value = LayerLockState.locked;
@@ -217,7 +216,7 @@ void main()
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState owner = layerAt(projectSession: projectSession, index: 0);
         await _paint(projectSession: projectSession, layer: owner, coord: pixel, color: color);
-        final LayerState? shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState).$2;
+        final LayerState? shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.shading).$2;
         await settle();
 
         GetIt.I.get<LayerManager>().selectLayer(newLayer: owner);
@@ -238,7 +237,7 @@ void main()
       await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
         final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
         final DrawingLayerState locked = layerAt(projectSession: projectSession, index: 0);
-        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+        final DrawingLayerState owner = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
         await _paint(projectSession: projectSession, layer: owner, coord: pixel, color: color);
 
         locked.lockState.value = LayerLockState.locked;

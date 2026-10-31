@@ -449,56 +449,36 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                  child: IconButton.outlined(
-                    tooltip: l10n.close,
-                    icon: const Icon(TablerIcons.x),
-                    onPressed: _dismissPressed,
-                  ),
-                ),
+              DialogActionButton(
+                tooltip: l10n.close,
+                icon: TablerIcons.x,
+                onPressed: _dismissPressed,
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                  child: IconButton.outlined(
-                    tooltip: l10n.importProject,
-                    icon: const Icon(TablerIcons.file_import),
-                    onPressed: kIsWeb ? null : _importProjectPressed,
-                  ),
-                ),
+              DialogActionButton(
+                tooltip: l10n.importProject,
+                icon: TablerIcons.file_import,
+                onPressed: kIsWeb ? null : _importProjectPressed,
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                  child: ValueListenableBuilder<String?>(
-                    valueListenable: _projectManager.selectedPath,
-                    builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
-                      return IconButton.outlined(
-                        tooltip: l10n.deleteSelectedProject,
-                        icon: const Icon(TablerIcons.trash),
-                        onPressed: (selectedPath != null) ? _deleteProjectPressed : null,
-                      );
-                    },
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                  child: ValueListenableBuilder<String?>(
-                    valueListenable: _projectManager.selectedPath,
-                    builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
-                      return IconButton.outlined(
-                        tooltip: l10n.loadSelectedProject,
-                        icon: const Icon(TablerIcons.check),
-                        onPressed: selectedPath != null ? _loadProject : null,
-                      );
-                    },
-                  ),
-                ),
-              ),
+              ValueListenableBuilder<String?>(
+         valueListenable: _projectManager.selectedPath,
+         builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
+           return DialogActionButton(
+             tooltip: l10n.deleteSelectedProject,
+             icon: TablerIcons.trash,
+             onPressed: (selectedPath != null) ? _deleteProjectPressed : null,
+           );
+         },
+       ),
+              ValueListenableBuilder<String?>(
+         valueListenable: _projectManager.selectedPath,
+         builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
+           return DialogActionButton(
+             tooltip: l10n.loadSelectedProject,
+             icon: TablerIcons.check,
+             onPressed: selectedPath != null ? _loadProject : null,
+           );
+         },
+       ),
             ],
           ),
         ],

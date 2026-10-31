@@ -19,7 +19,6 @@ import 'dart:collection';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -39,6 +38,7 @@ import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/image_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:logger/logger.dart';
 
@@ -476,11 +476,11 @@ class LayerCollection with ChangeNotifier {
       {
         result = LayerActionResult.lockedLayerMergeFrom;
       }
-      else if (_layers[mergeLayerIndex + 1].runtimeType == DrawingLayerState && (_layers[mergeLayerIndex + 1] as DrawingLayerState).lockState.value == LayerLockState.locked)
+      else if (_layers[mergeLayerIndex + 1].kind == LayerKind.drawing && (_layers[mergeLayerIndex + 1] as DrawingLayerState).lockState.value == LayerLockState.locked)
       {
         result = LayerActionResult.lockedLayerMergeTo;
       }
-      else if (_layers[mergeLayerIndex + 1].runtimeType != DrawingLayerState)
+      else if (_layers[mergeLayerIndex + 1].kind != LayerKind.drawing)
       {
         result = LayerActionResult.onlyMergeDrawingLayers;
       }
@@ -488,7 +488,7 @@ class LayerCollection with ChangeNotifier {
       {
         result = LayerActionResult.linkedLayerMergeTo;
       }
-      else if (mergeLayer.layerSettings.hasActiveSettings() || _layers[mergeLayerIndex + 1].runtimeType == DrawingLayerState && (_layers[mergeLayerIndex + 1] as DrawingLayerState).layerSettings.hasActiveSettings())
+      else if (mergeLayer.layerSettings.hasActiveSettings() || _layers[mergeLayerIndex + 1].kind == LayerKind.drawing && (_layers[mergeLayerIndex + 1] as DrawingLayerState).layerSettings.hasActiveSettings())
       {
         result = LayerActionResult.effectLayerMerge;
       }
@@ -664,7 +664,7 @@ class LayerCollection with ChangeNotifier {
           final ColorReference? curCol = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true,);
           if (curCol != null)
           {
-            if (shadingLayer.runtimeType == ShadingLayerState)
+            if (shadingLayer.kind == LayerKind.shading)
             {
               shadeLayerMap[drawingLayer]![coord] = curCol.shiftedBy(steps: value);
               break;
@@ -752,8 +752,7 @@ class LayerCollection with ChangeNotifier {
     {
       return;
     }
-    SchedulerBinding.instance.addPostFrameCallback((final Duration _) => image.dispose());
-    SchedulerBinding.instance.scheduleFrame();
+    disposeAfterFrame(images: <ui.Image>[image]);
   }
 
   void layerRasterDone({required final LayerState layer})

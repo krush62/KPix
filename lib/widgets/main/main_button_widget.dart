@@ -151,6 +151,19 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   }
 
+  @override
+  void dispose()
+  {
+    _hotkeyManager.removeListener(func: _loadFile, action: HotkeyAction.generalOpen);
+    _hotkeyManager.removeListener(func: _saveFile, action: HotkeyAction.generalSave);
+    _hotkeyManager.removeListener(func: _saveAsFile, action: HotkeyAction.generalSaveAs);
+    _hotkeyManager.removeListener(func: _newFile, action: HotkeyAction.generalNew);
+    _hotkeyManager.removeListener(func: _undoPressed, action: HotkeyAction.generalUndo);
+    _hotkeyManager.removeListener(func: _redoPressed, action: HotkeyAction.generalRedo);
+    _hotkeyManager.removeListener(func: _exportFile, action: HotkeyAction.generalExport);
+    super.dispose();
+  }
+
   void _exportImagePressed({required final ImageExportData exportData, required final ImageExportType exportType})
   {
     //taken now: the export runs past the point where the context could be used

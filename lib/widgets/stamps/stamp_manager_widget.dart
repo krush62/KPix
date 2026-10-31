@@ -137,18 +137,13 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
     }
   }
 
-  Expanded _createExpandedButton({required final String tooltip, required final IconData icon, required final AppLocalizations l10n, required final void Function(AppLocalizations l10n) onPressedFunc, final bool isEnabled = true})
+  Widget _createExpandedButton({required final String tooltip, required final IconData icon, required final AppLocalizations l10n, required final void Function(AppLocalizations l10n) onPressedFunc, final bool isEnabled = true})
   {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-        child: IconButton.outlined(
-          tooltip: tooltip,
-          icon: Icon(icon),
-          onPressed: isEnabled ? () {onPressedFunc(l10n);} : null,
-        ),
-      ),
-    );
+    return DialogActionButton(
+             tooltip: tooltip,
+             icon: icon,
+             onPressed: isEnabled ? () {onPressedFunc(l10n);} : null,
+           );
   }
 
   @override

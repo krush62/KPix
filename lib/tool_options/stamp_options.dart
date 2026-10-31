@@ -89,14 +89,11 @@ class StampOptions extends IToolOptions
           child: ToolSliderRow<int>(
             label: AppLocalizations.of(context)!.scale,
             notifier: stampOptions.scale,
-            flex: ToolSettingsWidgetOptions.columnWidthRatio,
             minVal: StampConstraints.scaleMin.toDouble(),
             maxVal: StampConstraints.scaleMax.toDouble(),
-            //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
           ),
         ),
         ToolModifierSwitchRow(
-          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: stampOptions.gridAlign,
           unmodifiedNotifier: stampOptions.unmodifiedGridAlign,
           label: AppLocalizations.of(context)!.gridAlign,
@@ -221,7 +218,6 @@ class StampOptions extends IToolOptions
                         return KPixSlider(
                           value: notifier.value.toDouble(),
                           max: stampSize(stampData) - 1,
-                          //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
                           onChanged: (final double newVal) {notifier.value = newVal.round();},
                           textStyle: Theme.of(context).textTheme.bodyLarge!,
                         );

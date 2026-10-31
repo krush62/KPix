@@ -107,7 +107,6 @@ class SelectOptions extends IToolOptions
             iconData: SelectShape.getLabelIconMap(AppLocalizations.of(context)!),
             label: AppLocalizations.of(context)!.shape,
             notifier: selectOptions.shape,
-            //flex: ToolSettingsWidgetOptions.columnWidthRatio,
             iconSize: ToolSettingsWidgetOptions.smallIconSize,
           ),
         ),
@@ -153,7 +152,6 @@ class SelectOptions extends IToolOptions
               child: ToolSwitchRow(
                 notifier: selectOptions.wandWholeRamp,
                 label: AppLocalizations.of(context)!.wholeRamp,
-                flex: ToolSettingsWidgetOptions.columnWidthRatio,
               ),
             );
           },

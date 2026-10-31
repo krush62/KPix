@@ -17,6 +17,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
@@ -38,7 +39,7 @@ void main()
   {
     final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
     final DrawingLayerState lower = layerAt(projectSession: projectSession, index: 0);
-    final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+    final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
     upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
     await settle();
 

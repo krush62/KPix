@@ -112,7 +112,7 @@ void main()
     await withProject(tester: tester, canvasSize: _canvasSize, body: (final ProjectSession projectSession) async {
       final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       layer.setDataAll(list: _filled(color: GetIt.I.get<PaletteState>().colorRamps.first.references[2]));
-      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, addToHistoryStack: false).$2! as ShadingLayerState;
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.shading, addToHistoryStack: false).$2! as ShadingLayerState;
       final HashMap<CoordinateSetI, int> shades = HashMap<CoordinateSetI, int>();
       for (int x = 40; x < 90; x++)
       {
@@ -206,7 +206,7 @@ void main()
     await withProject(tester: tester, canvasSize: _canvasSize, body: (final ProjectSession projectSession) async {
       final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       layer.setDataAll(list: _filled(color: GetIt.I.get<PaletteState>().colorRamps.first.references[2]));
-      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, addToHistoryStack: false).$2! as ShadingLayerState;
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.shading, addToHistoryStack: false).$2! as ShadingLayerState;
       final HashMap<CoordinateSetI, int> shades = HashMap<CoordinateSetI, int>();
       for (int x = 0; x < _canvasSize.x; x++)
       {

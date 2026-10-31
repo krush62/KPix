@@ -17,6 +17,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state.dart';
@@ -42,7 +43,7 @@ Future<(DrawingLayerState, DrawingLayerState)> _twoLayersWithFloatingPixel({
 {
   final ColorReference color = GetIt.I.get<PaletteState>().colorRamps.first.references.first;
   final DrawingLayerState lower = layerAt(projectSession: projectSession, index: 0);
-  final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true).$2! as DrawingLayerState;
+  final DrawingLayerState upper = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, select: true).$2! as DrawingLayerState;
   upper.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
   await settle();
 
@@ -144,7 +145,7 @@ void main()
   testWidgets("a layer switch with nothing selected stays a cheap selection change", (final WidgetTester tester) async {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async {
       final DrawingLayerState lower = layerAt(projectSession: projectSession, index: 0);
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: true);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, select: true);
       await settle();
 
       GetIt.I.get<LayerManager>().selectLayer(newLayer: lower);

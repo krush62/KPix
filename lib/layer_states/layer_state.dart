@@ -17,13 +17,13 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history/history_ramp_data.dart';
+import 'package:kpix/util/helpers/image_helper.dart';
 
 enum LayerVisibilityState
 {
@@ -153,8 +153,20 @@ class RasterScheduler
 /// The one scheduler every layer polls through.
 final RasterScheduler rasterScheduler = RasterScheduler();
 
+/// What a layer is. A switch over it makes the compiler ask about every kind.
+enum LayerKind
+{
+  drawing,
+  reference,
+  grid,
+  shading,
+  dither,
+}
+
 abstract class LayerState
 {
+  LayerKind get kind;
+
   Completer<void>? _rasterCompleter;
 
   /// Completes once nothing is queued or running for this layer any more.
@@ -268,16 +280,7 @@ abstract class LayerState
       return;
     }
 
-    SchedulerBinding.instance.addPostFrameCallback((final Duration _)
-    {
-      for (final ui.Image image in unique)
-      {
-        image.dispose();
-      }
-    });
-    //disposal can be triggered from a microtask, where no frame is pending and the
-    //callback would otherwise sit until something else asks for one
-    SchedulerBinding.instance.scheduleFrame();
+    disposeAfterFrame(images: unique);
   }
 
   /// Releases everything this layer holds that the garbage collector cannot.

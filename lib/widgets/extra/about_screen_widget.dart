@@ -170,7 +170,6 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                   ),
 
                   Text(l10n.aPixelArtCreationTool, style: Theme.of(context).textTheme.labelMedium),
-                  //Text("This is free software licensed under GNU AGPLv3", style: Theme.of(context).textTheme.labelMedium),
                   RichText(
                     textAlign: TextAlign.right,
                     text: TextSpan(

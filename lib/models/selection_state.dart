@@ -730,7 +730,7 @@ class SelectionState with ChangeNotifier
     }
     final CoordinateColorMapNullable colors = HashMap<CoordinateSetI, ColorReference?>();
     content.pixels.forEach(action: (final int x, final int y, final int code) => colors[CoordinateSetI(x: x, y: y)] = content.codec.decode(code: code));
-    final (LayerActionResult, LayerState?) layerResult = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value, content: colors);
+    final (LayerActionResult, LayerState?) layerResult = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, select: _behaviorOptions.selectLayerAfterInsert.value, content: colors);
     return (SelectionActionResult.success, layerResult.$1);
   }
 

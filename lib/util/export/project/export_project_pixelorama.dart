@@ -24,7 +24,7 @@ Future<Uint8List?> getPixeloramaData({required final List<KPalRampData> colorRam
   for (int l = 0; l < layerCollection.length; l++)
   {
     final LayerState layerState = layerCollection.getLayer(index: l);
-    if (layerState.runtimeType == DrawingLayerState)
+    if (layerState.kind == LayerKind.drawing)
     {
       drawingLayers.add(layerState as DrawingLayerState);
     }
@@ -91,7 +91,7 @@ Future<Uint8List?> getPixeloramaData({required final List<KPalRampData> colorRam
   for (int l = 0; l < layerCollection.length; l++)
   {
     final LayerState layer = layerCollection.getLayer(index: l);
-    if (layer.runtimeType == DrawingLayerState)
+    if (layer.kind == LayerKind.drawing)
     {
       final ByteData layerData = ByteData(layerFileSize);
       final ByteData indexData = ByteData(indexFileSize);

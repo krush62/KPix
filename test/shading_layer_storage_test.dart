@@ -72,7 +72,7 @@ T _layer<T extends LayerState>({required final int index})
 }
 
 /// Adds a [type] layer above the drawing layer the project starts with.
-Future<void> _addAbove({required final Type type}) async
+Future<void> _addAbove({required final LayerKind type}) async
 {
   GetIt.I.get<LayerManager>().addNewLayer(layerType: type, select: true);
   await settle();
@@ -108,7 +108,7 @@ void main()
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps[0].references[2];
       layerAt(projectSession: projectSession, index: 0).setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{a: color, b: color}));
       await settle();
-      await _addAbove(type: ShadingLayerState);
+      await _addAbove(type: LayerKind.shading);
       final ShadingLayerState shading = _layer<ShadingLayerState>(index: 0);
 
       await _shade(layer: shading, values: <CoordinateSetI, int>{a: 1});
@@ -138,7 +138,7 @@ void main()
       final CoordinateSetI next = CoordinateSetI(x: 1, y: 0);
       layerAt(projectSession: projectSession, index: 0).setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color, next: color}));
       await settle();
-      await _addAbove(type: DitherLayerState);
+      await _addAbove(type: LayerKind.dither);
       final DitherLayerState dither = _layer<DitherLayerState>(index: 0);
 
       //half the steps: a checkerboard, set at 0|0 and clear at 1|0
@@ -153,11 +153,11 @@ void main()
   {
     await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
     {
-      await _addAbove(type: ShadingLayerState);
+      await _addAbove(type: LayerKind.shading);
       await _shade(layer: _layer<ShadingLayerState>(index: 0), values: <CoordinateSetI, int>{a: 0, b: -2});
       final PixelGridSnapshot recorded = _recordOf(layer: _layer<ShadingLayerState>(index: 0)).pixels;
 
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
       await settle();
       expect(_recordOf(layer: _layer<ShadingLayerState>(index: 1)).pixels, same(recorded), reason: "a step that did not touch the layer shares its pixels");
       GetIt.I.get<HistoryController>().undoPressed();
@@ -178,7 +178,7 @@ void main()
   {
     await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
     {
-      await _addAbove(type: ShadingLayerState);
+      await _addAbove(type: LayerKind.shading);
       final ShadingLayerState shading = _layer<ShadingLayerState>(index: 0);
       await _shade(layer: shading, values: <CoordinateSetI, int>{a: 1});
 
@@ -195,9 +195,9 @@ void main()
   {
     await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
     {
-      await _addAbove(type: ShadingLayerState);
+      await _addAbove(type: LayerKind.shading);
       await _shade(layer: _layer<ShadingLayerState>(index: 0), values: <CoordinateSetI, int>{a: -3, b: 0});
-      GetIt.I.get<LayerManager>().addNewLayer(layerType: DitherLayerState, select: true);
+      GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.dither, select: true);
       await settle();
       await _shade(layer: _layer<DitherLayerState>(index: 0), values: <CoordinateSetI, int>{a: 16, b: -7});
 
@@ -228,7 +228,7 @@ void main()
     //not square, so the size shows whether the layer turned
     await withProject(tester: tester, canvasSize: CoordinateSetI(x: 6, y: 4), body: (final ProjectSession projectSession) async
     {
-      await _addAbove(type: ShadingLayerState);
+      await _addAbove(type: LayerKind.shading);
       await _shade(layer: _layer<ShadingLayerState>(index: 0), values: <CoordinateSetI, int>{CoordinateSetI(x: 1, y: 0): 2});
 
       GetIt.I.get<CanvasState>().canvasTransform(transformation: CanvasTransformation.rotate);
@@ -248,7 +248,7 @@ void main()
   {
     await withProject(tester: tester, canvasSize: CoordinateSetI(x: 6, y: 4), body: (final ProjectSession projectSession) async
     {
-      await _addAbove(type: ShadingLayerState);
+      await _addAbove(type: LayerKind.shading);
       await _shade(layer: _layer<ShadingLayerState>(index: 0), values: <CoordinateSetI, int>{CoordinateSetI(x: 1, y: 0): 2, CoordinateSetI(x: 0, y: 3): -1});
 
       GetIt.I.get<CanvasState>().changeCanvasSize(newSize: CoordinateSetI(x: 8, y: 5), offset: CoordinateSetI(x: 2, y: -1));
@@ -266,7 +266,7 @@ void main()
   {
     await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
     {
-      await _addAbove(type: ShadingLayerState);
+      await _addAbove(type: LayerKind.shading);
       final ShadingLayerState shading = _layer<ShadingLayerState>(index: 0);
       final int highest = shading.settings.constraints.shadingStepsMax;
       final int lowest = shading.settings.constraints.shadingStepsMin;
@@ -288,7 +288,7 @@ void main()
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps[0].references[2];
       layerAt(projectSession: projectSession, index: 0).setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{a: color, b: color}));
       await settle();
-      await _addAbove(type: ShadingLayerState);
+      await _addAbove(type: LayerKind.shading);
       await _shade(layer: _layer<ShadingLayerState>(index: 0), values: <CoordinateSetI, int>{a: -1});
 
       GetIt.I.get<LayerManager>().layerRasterPressed(rasterLayer: _layer<ShadingLayerState>(index: 0));
@@ -308,7 +308,7 @@ void main()
       final ColorReference color = GetIt.I.get<PaletteState>().colorRamps[0].references[2];
       layerAt(projectSession: projectSession, index: 0).setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{a: color, b: color}));
       await settle();
-      await _addAbove(type: ShadingLayerState);
+      await _addAbove(type: LayerKind.shading);
       final ShadingLayerState shading = _layer<ShadingLayerState>(index: 0);
 
       await _shade(layer: shading, values: <CoordinateSetI, int>{a: 1});
@@ -338,7 +338,7 @@ void main()
       final CoordinateSetI next = CoordinateSetI(x: 1, y: 0);
       layerAt(projectSession: projectSession, index: 0).setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{origin: color, next: color}));
       await settle();
-      await _addAbove(type: DitherLayerState);
+      await _addAbove(type: LayerKind.dither);
       final DitherLayerState dither = _layer<DitherLayerState>(index: 0);
 
       await _shade(layer: dither, values: <CoordinateSetI, int>{origin: 8, next: 8});

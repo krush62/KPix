@@ -21,11 +21,9 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/l10n/app_localizations.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
-import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
@@ -466,10 +464,8 @@ class _LayerWidgetState extends State<LayerWidget> {
                                 ],
                               );
 
-                              if (widget.layerState.runtimeType ==
-                                      DrawingLayerState ||
-                                  widget.layerState.runtimeType ==
-                                      ShadingLayerState) {
+                              if (widget.layerState.kind == LayerKind.drawing ||
+                                  widget.layerState.kind == LayerKind.shading) {
                                 rightColumn.children
                                     .add(const SizedBox(height: LayerWidgetOptions.innerPadding));
 

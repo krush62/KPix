@@ -43,7 +43,7 @@ Future<Uint8List?> getAsepriteData({required final List<KPalRampData> colorRamps
   {
     final LayerState layer = layerCollection.getLayer(index: l);
 
-    if (layer.runtimeType == DrawingLayerState)
+    if (layer.kind == LayerKind.drawing)
     {
       final DrawingLayerState layerState = layer as DrawingLayerState;
       final List<int> imgBytes = <int>[];

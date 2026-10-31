@@ -58,7 +58,7 @@ class _KPalRampState extends State<KPalRamp>
   bool _hasRenderChanges = false;
   bool _hasShiftChanges = false;
   bool _isDisposed = false;
-  final List<ui.Image> _imagesToRetire = <ui.Image>[];
+  final ImageRetirer _imageRetirer = ImageRetirer();
   late Timer _renderTimer;
   late List<RasterableLayerState> _drawingLayers;
 
@@ -117,29 +117,6 @@ class _KPalRampState extends State<KPalRamp>
 
   /// Disposes [image] once the current frame has been painted.
   ///
-  /// The preview is shown through a [RawImage], which holds the handle until the
-  /// frame that drops it has been drawn; releasing earlier trips an assertion in
-  /// the engine.
-  void _retireImage({required final ui.Image image})
-  {
-    _imagesToRetire.add(image);
-    if (_imagesToRetire.length > 1)
-    {
-      //a flush is already scheduled and will take this one too
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((final Duration _) {
-      final List<ui.Image> images = List<ui.Image>.of(_imagesToRetire);
-      _imagesToRetire.clear();
-      for (final ui.Image image in images)
-      {
-        image.dispose();
-      }
-    });
-    //nothing else may be dirty, in which case no frame would ever be produced
-    WidgetsBinding.instance.scheduleFrame();
-  }
-
   @override
   void deactivate() {
     super.deactivate();
@@ -164,7 +141,7 @@ class _KPalRampState extends State<KPalRamp>
     _colorCards.dispose();
     if (lastPreview != null)
     {
-      _retireImage(image: lastPreview);
+      _imageRetirer.retire(image: lastPreview);
     }
     super.dispose();
   }
@@ -189,7 +166,7 @@ class _KPalRampState extends State<KPalRamp>
         _previewImage.value = img;
         if (previous != null)
         {
-          _retireImage(image: previous);
+          _imageRetirer.retire(image: previous);
         }
       });
       _hasRenderChanges = false;
@@ -226,7 +203,7 @@ class _KPalRampState extends State<KPalRamp>
         final HashMap<int, int> indexMap = remapIndices(oldLength: widget.originalRampData.shiftedColors.length, newLength: widget.rampData.shiftedColors.length);
         for (final LayerState layerState in _drawingLayers)
         {
-          if (layerState.runtimeType == DrawingLayerState)
+          if (layerState.kind == LayerKind.drawing)
           {
             final DrawingLayerState drawingLayer = layerState as DrawingLayerState;
             drawingLayer.remapSingleRamp(newData: widget.rampData, map: indexMap);
@@ -373,7 +350,6 @@ class _KPalRampState extends State<KPalRamp>
                                   value: widget.rampData.settings.colorCount.toDouble(),
                                   min: KPalConstraints.colorCountMin.toDouble(),
                                   max: KPalConstraints.colorCountMax.toDouble(),
-                                  //divisions: KPalConstraints.colorCountMax - KPalConstraints.colorCountMin,
                                   onChanged: (final double newVal) {_colorCountSliderChanged(newVal: newVal);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
@@ -443,7 +419,6 @@ class _KPalRampState extends State<KPalRamp>
                                   showPlusSignForPositive: true,
                                   min: KPalConstraints.hueShiftMin.toDouble(),
                                   max: KPalConstraints.hueShiftMax.toDouble(),
-                                  //divisions: KPalConstraints.hueShiftMax - KPalConstraints.hueShiftMin,
                                   onChanged: (final double newVal) {_hueShiftSliderChanged(newVal: newVal);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
@@ -474,7 +449,6 @@ class _KPalRampState extends State<KPalRamp>
                                   value: widget.rampData.settings.hueShiftExp,
                                   min: KPalConstraints.hueShiftExpMin,
                                   max: KPalConstraints.hueShiftExpMax,
-                                  //divisions: (KPalConstraints.hueShiftExpMax * 100.0 - KPalConstraints.hueShiftExpMin * 100.0).round(),
                                   onChanged: (final double newVal) {_hueShiftExpSliderChanged(newVal: newVal);},
                                   label: widget.rampData.settings.hueShiftExp.toStringAsFixed(2),
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
@@ -511,7 +485,6 @@ class _KPalRampState extends State<KPalRamp>
                                   value: widget.rampData.settings.baseSat.toDouble(),
                                   min: KPalConstraints.baseSatMin.toDouble(),
                                   max: KPalConstraints.baseSatMax.toDouble(),
-                                  //divisions: KPalConstraints.baseSatMax - KPalConstraints.baseSatMin,
                                   onChanged: (final double newVal) {_baseSatSliderChanged(newVal: newVal);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
@@ -543,7 +516,6 @@ class _KPalRampState extends State<KPalRamp>
                                   min: KPalConstraints.satShiftMin.toDouble(),
                                   max: KPalConstraints.satShiftMax.toDouble(),
                                   showPlusSignForPositive: true,
-                                  //divisions: KPalConstraints.satShiftMax - KPalConstraints.satShiftMin,
                                   onChanged: (final double newVal) {_satShiftSliderChanged(newVal: newVal);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
@@ -574,7 +546,6 @@ class _KPalRampState extends State<KPalRamp>
                                   value: widget.rampData.settings.satShiftExp,
                                   min: KPalConstraints.satShiftExpMin,
                                   max: KPalConstraints.satShiftExpMax,
-                                  //divisions: (KPalConstraints.satShiftExpMax * 100.0 - KPalConstraints.satShiftExpMin * 100.0).round(),
                                   onChanged: (final double newVal) {_satShiftExpSliderChanged(newVal: newVal);},
                                   label: widget.rampData.settings.satShiftExp.toStringAsFixed(2),
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
@@ -658,7 +629,6 @@ class _KPalRampState extends State<KPalRamp>
                                   values: RangeValues(widget.rampData.settings.valueRangeMin.toDouble(), widget.rampData.settings.valueRangeMax.toDouble()),
                                   min: KPalConstraints.valueRangeMin.toDouble(),
                                   max: KPalConstraints.valueRangeMax.toDouble(),
-                                  //divisions: KPalConstraints.valueRangeMax - KPalConstraints.valueRangeMin,
                                   onChanged: (final RangeValues newVals) {_valueRangeSliderChanged(newVals: newVals);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),

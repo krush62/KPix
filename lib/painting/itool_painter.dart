@@ -93,8 +93,8 @@ class DrawingParameters
   }) :
         scaledCanvasSize = CoordinateSetI(x: canvasSize.x * pixelSize, y: canvasSize.y * pixelSize),
         currentRasterLayer = currentLayer is RasterableLayerState ? currentLayer : null,
-        currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null,
-        currentGridLayer = currentLayer.runtimeType == GridLayerState ? (currentLayer as GridLayerState) : null;
+        currentReferenceLayer = currentLayer.kind == LayerKind.reference ? (currentLayer as ReferenceLayerState) : null,
+        currentGridLayer = currentLayer.kind == LayerKind.grid ? (currentLayer as GridLayerState) : null;
 }
 
 /// The color a pixel drawn on a layer shows on the canvas: the visible layers
@@ -138,7 +138,7 @@ class PreviewColors
         final int? shadingVal = layer.getRawValueAt(coord: coord);
         if (shadingVal != null)
         {
-          if (layer.runtimeType == ShadingLayerState)
+          if (layer.kind == LayerKind.shading)
           {
             colRef = colRef.shiftedBy(steps: shadingVal);
           }
@@ -577,7 +577,7 @@ abstract class IToolPainter
             final ColorReference? shiftedColor = _resolveComposedColorAtCoord(coord: coord, frame: frame, toIndex: currentLayerPos, requireVisibility: true, shiftLayer: currentLayer, layerShift: shift,);
             if (shiftedColor != null)
             {
-              if (currentLayer.runtimeType == ShadingLayerState)
+              if (currentLayer.kind == LayerKind.shading)
               {
                 pixelMap[coord] = shiftedColor;
               }
@@ -673,7 +673,7 @@ abstract class IToolPainter
             final ColorReference? shiftedColor = _resolveComposedColorAtCoord(coord: coord, frame: frame, toIndex: currentLayerPos, requireVisibility: false, shiftLayer: currentLayer, layerShift: shadingAmount,);
             if (shiftedColor != null)
             {
-              if (currentLayer.runtimeType == ShadingLayerState)
+              if (currentLayer.kind == LayerKind.shading)
               {
                 pixelMap[coord] = shiftedColor;
               }
@@ -715,7 +715,6 @@ abstract class IToolPainter
     shadingLayer.removeCoords(coords: removeCoords);
     shadingLayer.addCoords(coords: changeCoords);
 
-    //projectSession.rasterDrawingLayersAbove();
 
     hasHistoryData = true;
     resetContentRaster(currentLayer: shadingLayer);
@@ -741,7 +740,6 @@ abstract class IToolPainter
     shadingLayer.removeCoords(coords: removeCoords);
     shadingLayer.addCoords(coords: changeCoords);
 
-    //projectSession.rasterDrawingLayersAbove();
 
     hasHistoryData = true;
     resetContentRaster(currentLayer: shadingLayer);

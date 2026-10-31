@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_manager.dart';
@@ -38,7 +39,7 @@ void main()
 
   ReferenceLayerState addReferenceLayer()
   {
-    return GetIt.I.get<LayerManager>().addNewLayer(layerType: ReferenceLayerState, select: true).$2! as ReferenceLayerState;
+    return GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.reference, select: true).$2! as ReferenceLayerState;
   }
 
   Future<void> undo() async

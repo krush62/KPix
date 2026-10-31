@@ -22,8 +22,8 @@ import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/models/constraints/grid_layer_constraints.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state_type.dart';
+import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
-import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 bool isPerspectiveGridType({required final GridType gridType})
 {
@@ -91,47 +91,25 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
 
   Widget _createIntRow({required final String label, required final ValueNotifier<int> notifier, required final int min, required final int max, final String Function(int value)? valueLabel})
   {
-    return _createLabeledRow(
+    return ToolSliderRow<int>(
       label: label,
-      child: ValueListenableBuilder<int>(
-        valueListenable: notifier,
-        builder: (final BuildContext context, final int value, final Widget? child) {
-          return KPixSlider(
-            value: value.toDouble(),
-            label: valueLabel?.call(value),
-            min: min.toDouble(),
-            max: max.toDouble(),
-            onChanged: (final double newVal) {
-              notifier.value = newVal.round();
-            },
-            onChangedEnd: (final double value) {_commitChange();},
-            textStyle: Theme.of(context).textTheme.bodyLarge!,
-          );
-        },
-      ),
+      notifier: notifier,
+      minVal: min.toDouble(),
+      maxVal: max.toDouble(),
+      labelBuilder: valueLabel,
+      onChangedEnd: (final double value) {_commitChange();},
     );
   }
 
   Widget _createPositionRow({required final String label, required final ValueNotifier<double> notifier})
   {
-    return _createLabeledRow(
+    return ToolSliderRow<double>(
       label: label,
-      child: ValueListenableBuilder<double>(
-        valueListenable: notifier,
-        builder: (final BuildContext context, final double value, final Widget? child) {
-          return KPixSlider(
-            value: value,
-            min: GridLayerConstraints.vanishingPointMin,
-            max: GridLayerConstraints.vanishingPointMax,
-            decimals: 2,
-            onChanged: (final double newVal) {
-              notifier.value = newVal;
-            },
-            onChangedEnd: (final double value) {_commitChange();},
-            textStyle: Theme.of(context).textTheme.bodyLarge!,
-          );
-        },
-      ),
+      notifier: notifier,
+      minVal: GridLayerConstraints.vanishingPointMin,
+      maxVal: GridLayerConstraints.vanishingPointMax,
+      decimals: 2,
+      onChangedEnd: (final double value) {_commitChange();},
     );
   }
 

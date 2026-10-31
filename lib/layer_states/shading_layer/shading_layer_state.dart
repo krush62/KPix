@@ -47,6 +47,9 @@ import 'package:logger/logger.dart';
 
 class ShadingLayerState extends RasterableLayerState
 {
+  @override
+  LayerKind get kind => LayerKind.shading;
+
   final ShadingLayerSettings settings;
   final HashMap<int, int> _thumbnailBrightnessMap = HashMap<int, int>();
   //the shading steps as signed pixels (see SignedPixels), canvas sized

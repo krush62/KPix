@@ -18,9 +18,7 @@ import 'dart:collection';
 
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
@@ -63,29 +61,29 @@ class LayerManager
     hotkeyManager.addListener(func: selectLayerBelow, action: HotkeyAction.layersSelectBelow);
   }
 
-  (LayerActionResult, LayerState?) addNewLayer({required final Type layerType, final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
+  (LayerActionResult, LayerState?) addNewLayer({required final LayerKind layerType, final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
   {
-    HistoryStateTypeIdentifier? identifier;
     (LayerActionResult, LayerState?) tuple = (LayerActionResult.unknownError, null);
     if (GetIt.I.get<DocumentState>().timeline.selectedFrame != null)
     {
 
       GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
 
+      final HistoryStateTypeIdentifier identifier;
       switch (layerType) {
-        case const(ReferenceLayerState):
+        case LayerKind.reference:
           tuple = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewReferenceLayer(select: select);
           identifier = HistoryStateTypeIdentifier.layerNewReference;
-        case const(DitherLayerState):
+        case LayerKind.dither:
           tuple = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewDitherLayer(select: select);
           identifier = HistoryStateTypeIdentifier.layerNewDither;
-        case const(ShadingLayerState):
+        case LayerKind.shading:
           tuple = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewShadingLayer(select: select);
           identifier = HistoryStateTypeIdentifier.layerNewShading;
-        case const(GridLayerState):
+        case LayerKind.grid:
           tuple = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewGridLayer(select: select);
           identifier = HistoryStateTypeIdentifier.layerNewGrid;
-        case const(DrawingLayerState):
+        case LayerKind.drawing:
           final bool setSelectionStateLayer = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.isEmpty;
           tuple = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewDrawingLayer(canvasSize: GetIt.I.get<CanvasState>().canvasSize, select: select, content: content, ramps: GetIt.I.get<PaletteState>().colorRamps);
           identifier = HistoryStateTypeIdentifier.layerNewDrawing;
@@ -94,7 +92,7 @@ class LayerManager
             GetIt.I.get<DocumentState>().selectionState.selection.changeLayer(oldLayer: null, newLayer: tuple.$2!);
           }
       }
-      if (tuple.$2 != null && identifier != null)
+      if (tuple.$2 != null)
       {
         if (addToHistoryStack)
         {

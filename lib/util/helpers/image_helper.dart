@@ -16,12 +16,58 @@
 
 import 'dart:ui' as ui;
 
+import 'package:flutter/scheduler.dart';
+
 /// Decodes the project thumbnail at [thumbnailPath].
 ///
 /// Returns null when the file is missing or cannot be decoded. The latter
 /// happens while a sync tool is still writing it, so a failure here is expected
 /// and not worth a log entry: the cache retries a missing thumbnail on the next
 /// scan.
+/// Disposes [images] once the frame that may still draw them is over.
+void disposeAfterFrame({required final Iterable<ui.Image> images})
+{
+  SchedulerBinding.instance.addPostFrameCallback((final Duration _)
+  {
+    for (final ui.Image image in images)
+    {
+      image.dispose();
+    }
+  });
+  //disposal can be triggered from a microtask, where no frame is pending and the
+  //callback would otherwise sit until something else asks for one
+  SchedulerBinding.instance.scheduleFrame();
+}
+
+/// Collects replaced images and disposes them together after the current frame.
+class ImageRetirer
+{
+  final List<ui.Image> _pending = <ui.Image>[];
+
+  void retire({required final ui.Image image})
+  {
+    _pending.add(image);
+    if (_pending.length > 1)
+    {
+      //a flush is already scheduled and will take this one too
+      return;
+    }
+    SchedulerBinding.instance.addPostFrameCallback((final Duration _) => disposeNow());
+    //nothing else may be dirty, in which case no frame would ever be produced
+    SchedulerBinding.instance.scheduleFrame();
+  }
+
+  void disposeNow()
+  {
+    final List<ui.Image> images = List<ui.Image>.of(_pending);
+    _pending.clear();
+    for (final ui.Image image in images)
+    {
+      image.dispose();
+    }
+  }
+}
+
 Future<ui.Image?> loadThumbnail({required final String thumbnailPath}) async
 {
   try

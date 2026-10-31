@@ -31,8 +31,10 @@ import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/palette_adjustment.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/image_helper.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';
 
 abstract final class PaletteAdjustmentWidgetOptions
@@ -95,7 +97,7 @@ class PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
   ui.Image? _originalImage;
   final ValueNotifier<bool> _showOriginal = ValueNotifier<bool>(false);
 
-  final List<ui.Image> _imagesToRetire = <ui.Image>[];
+  final ImageRetirer _imageRetirer = ImageRetirer();
   late Timer _renderTimer;
   late List<RasterableLayerState> _previewLayers;
   bool _hasRenderChanges = false;
@@ -159,29 +161,6 @@ class PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
 
   /// Disposes [image] once the current frame has been painted.
   ///
-  /// The preview is shown through a [RawImage], which holds the handle until the
-  /// frame that drops it has been drawn; releasing earlier trips an assertion in
-  /// the engine.
-  void _retireImage({required final ui.Image image})
-  {
-    _imagesToRetire.add(image);
-    if (_imagesToRetire.length > 1)
-    {
-      //a flush is already scheduled and will take this one too
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((final Duration _) {
-      final List<ui.Image> images = List<ui.Image>.of(_imagesToRetire);
-      _imagesToRetire.clear();
-      for (final ui.Image image in images)
-      {
-        image.dispose();
-      }
-    });
-    //nothing else may be dirty, in which case no frame would ever be produced
-    WidgetsBinding.instance.scheduleFrame();
-  }
-
   @override
   void deactivate()
   {
@@ -210,11 +189,11 @@ class PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
     _previewImage.dispose();
     if (lastPreview != null)
     {
-      _retireImage(image: lastPreview);
+      _imageRetirer.retire(image: lastPreview);
     }
     if (original != null && original != lastPreview)
     {
-      _retireImage(image: original);
+      _imageRetirer.retire(image: original);
     }
     super.dispose();
   }
@@ -235,7 +214,7 @@ class PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
         _originalImage ??= img;
         if (previous != null && previous != _originalImage)
         {
-          _retireImage(image: previous);
+          _imageRetirer.retire(image: previous);
         }
       });
       _hasRenderChanges = false;
@@ -585,35 +564,20 @@ class PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(PaletteAdjustmentWidgetOptions.padding),
-                    child: IconButton.outlined(
-                      tooltip: l10n.cancel,
-                      icon: const Icon(TablerIcons.x),
-                      onPressed: cancel,
-                    ),
-                  ),
+                DialogActionButton(
+                  tooltip: l10n.cancel,
+                  icon: TablerIcons.x,
+                  onPressed: cancel,
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(PaletteAdjustmentWidgetOptions.padding),
-                    child: IconButton.outlined(
-                      tooltip: l10n.resetAllAdjustments,
-                      icon: const Icon(TablerIcons.refresh),
-                      onPressed: _resetPressed,
-                    ),
-                  ),
+                DialogActionButton(
+                  tooltip: l10n.resetAllAdjustments,
+                  icon: TablerIcons.refresh,
+                  onPressed: _resetPressed,
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(PaletteAdjustmentWidgetOptions.padding),
-                    child: IconButton.outlined(
-                      tooltip: l10n.apply,
-                      icon: const Icon(TablerIcons.check),
-                      onPressed: accept,
-                    ),
-                  ),
+                DialogActionButton(
+                  tooltip: l10n.apply,
+                  icon: TablerIcons.check,
+                  onPressed: accept,
                 ),
               ],
             ),

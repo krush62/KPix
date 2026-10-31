@@ -22,6 +22,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/document_state.dart';
@@ -89,7 +90,7 @@ void main()
       layer.setDataAll(list: content);
       await settle();
 
-      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, addToHistoryStack: false).$2! as ShadingLayerState;
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.shading, addToHistoryStack: false).$2! as ShadingLayerState;
       shading.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{
         //over the content
         CoordinateSetI(x: 1, y: 0): 1,
@@ -146,7 +147,7 @@ void main()
       layer.setDataAll(list: content);
       await settle();
 
-      final DitherLayerState dither = GetIt.I.get<LayerManager>().addNewLayer(layerType: DitherLayerState, addToHistoryStack: false).$2! as DitherLayerState;
+      final DitherLayerState dither = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.dither, addToHistoryStack: false).$2! as DitherLayerState;
       dither.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{
         CoordinateSetI(x: 1, y: 0): 1,
         CoordinateSetI(x: 3, y: 2): -1,
@@ -172,7 +173,7 @@ void main()
       final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{CoordinateSetI(x: 1, y: 0): base}));
       await settle();
-      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, addToHistoryStack: false).$2! as ShadingLayerState;
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.shading, addToHistoryStack: false).$2! as ShadingLayerState;
       shading.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{CoordinateSetI(x: 1, y: 0): 1}));
       await settle();
       await _settleShading(layer: shading);
@@ -204,7 +205,7 @@ void main()
       final DrawingLayerState shared = layerAt(projectSession: projectSession, index: 0);
       shared.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: ramp.references[1]}));
       await settle();
-      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: ShadingLayerState, addToHistoryStack: false).$2! as ShadingLayerState;
+      final ShadingLayerState shading = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.shading, addToHistoryStack: false).$2! as ShadingLayerState;
       shading.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{dot: 1}));
       await settle();
       await _settleShading(layer: shading);
@@ -218,7 +219,7 @@ void main()
 
       //only the second frame gets a different color below the shading
       timeline.selectFrame(frame: frameTwo, layerIndex: 1);
-      final DrawingLayerState between = GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState, addToHistoryStack: false, content: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: ramp.references[2]})).$2! as DrawingLayerState;
+      final DrawingLayerState between = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing, addToHistoryStack: false, content: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{dot: ramp.references[2]})).$2! as DrawingLayerState;
       await settle();
       await _settleShading(layer: shading);
       expect(frameTwo.layerList.getLayer(index: 1), same(between), reason: "setup: the new layer sits between the shading and the shared layer");
@@ -252,7 +253,7 @@ void main()
       final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
       layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{CoordinateSetI(x: 1, y: 0): GetIt.I.get<PaletteState>().colorRamps.first.references[2]}));
       await settle();
-      final DitherLayerState dither = GetIt.I.get<LayerManager>().addNewLayer(layerType: DitherLayerState, addToHistoryStack: false).$2! as DitherLayerState;
+      final DitherLayerState dither = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.dither, addToHistoryStack: false).$2! as DitherLayerState;
       dither.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{CoordinateSetI(x: 1, y: 0): 8}));
       await settle();
       await _settleShading(layer: dither);
@@ -290,7 +291,7 @@ void main()
       layer.setDataAll(list: content);
       await settle();
 
-      final DitherLayerState dither = GetIt.I.get<LayerManager>().addNewLayer(layerType: DitherLayerState, addToHistoryStack: false).$2! as DitherLayerState;
+      final DitherLayerState dither = GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.dither, addToHistoryStack: false).$2! as DitherLayerState;
       //two rasters first, so the layer has an image to render regions onto
       dither.addCoords(coords: HashMap<CoordinateSetI, int>.from(<CoordinateSetI, int>{CoordinateSetI(x: 0, y: 0): 8}));
       await settle();

@@ -18,7 +18,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
-import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_pencil_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
@@ -45,19 +44,15 @@ class PencilOptions extends IToolOptions
         ToolSliderRow<int>(
           label: AppLocalizations.of(context)!.size,
           notifier: pencilOptions.size,
-          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           minVal: PencilConstraints.sizeMin.toDouble(),
           maxVal: PencilConstraints.sizeMax.toDouble(),
-          //divisions: pencilOptions.sizeMax - pencilOptions.sizeMin,
         ),
         ToolDropdownRow<PencilShape>(
           label: AppLocalizations.of(context)!.shape,
           notifier: pencilOptions.shape,
           valueMap: PencilShape.getLabelMap(AppLocalizations.of(context)!),
-          flex: ToolSettingsWidgetOptions.columnWidthRatio,
         ),
         ToolModifierSwitchRow(
-          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: pencilOptions.pixelPerfect,
           unmodifiedNotifier: pencilOptions.unmodifiedPixelPerfect,
           label: AppLocalizations.of(context)!.smooth,

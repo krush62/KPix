@@ -42,16 +42,16 @@ class _TouchPreferencesState extends State<TouchPreferences>
         PrefSliderRow<int>(
           text: l10n.touchDelay,
           notifier: widget.prefs.singleTouchDelay,
-          minVal: widget.prefs.singleTouchDelayMin.toDouble(),
-          maxVal: widget.prefs.singleTouchDelayMax.toDouble(),
+          minVal: widget.prefs.singleTouchDelay.min.toDouble(),
+          maxVal: widget.prefs.singleTouchDelay.max.toDouble(),
           labelBuilder: (final int val) => "${val}ms",
         ),
         PrefSliderRow<double>(
           text: l10n.zoomStepDistance,
           notifier: widget.prefs.zoomStepDistance,
-          minVal: widget.prefs.zoomStepDistanceMin,
-          maxVal: widget.prefs.zoomStepDistanceMax,
-          divisions: (widget.prefs.zoomStepDistanceMax - widget.prefs.zoomStepDistanceMin).round(),
+          minVal: widget.prefs.zoomStepDistance.min,
+          maxVal: widget.prefs.zoomStepDistance.max,
+          divisions: (widget.prefs.zoomStepDistance.max - widget.prefs.zoomStepDistance.min).round(),
           labelBuilder: (final double val) => "${val.round()}px",
         ),
         PrefSwitchRow(

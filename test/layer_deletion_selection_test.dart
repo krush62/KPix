@@ -16,7 +16,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
@@ -37,8 +36,8 @@ List<LayerState> _layers({required final ProjectSession projectSession})
 
 Future<List<LayerState>> _threeLayers({required final ProjectSession projectSession}) async
 {
-  GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
-  GetIt.I.get<LayerManager>().addNewLayer(layerType: DrawingLayerState);
+  GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
+  GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.drawing);
   await settle();
   final List<LayerState> layers = _layers(projectSession: projectSession);
   expect(layers.length, 3, reason: "setup: three layers, top to bottom");

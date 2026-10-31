@@ -949,7 +949,7 @@ class KPixPainter extends CustomPainter
             }
           }
 
-          if (!drawParams.isPlaying)
+          if (!drawParams.isPlaying && drawParams.currentRasterLayer?.visibilityState.value != LayerVisibilityState.hidden && drawParams.currentRasterLayer?.lockState.value != LayerLockState.locked)
           {
             final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
             if (cursorRasterSet != null)

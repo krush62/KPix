@@ -65,6 +65,153 @@ third_party:
     files:
       - fonts/Oxanium-*.ttf
 
+  - name: Belanidi Serif
+    description: Pixel art font
+    url: https://hanshuyuri.itch.io/
+    copyright:
+      - 2023 HanshuYuri, with Reserved Font Name Belanidi Serif
+    license: OFL-1.1
+    files:
+      - fonts/BelanidiSerif.*
+
+  - name: Bytesized
+    description: Pixel art font
+    url: https://github.com/balt-dev/bytesized-gf
+    copyright:
+      - 2024 The Bytesized Project Authors (https://github.com/balt-dev/bytesized-gf)
+    license: OFL-1.1
+    files:
+      - fonts/Bytesized.*
+
+  - name: C64esque
+    description: Pixel art font
+    url: https://www.pentacom.jp/pentacom/bitfontmaker2/gallery/?id=1248
+    copyright:
+      - andraaspar
+    license: LicenseRef-PublicDomain
+    files:
+      - fonts/c64esque.*
+
+  - name: Cairopixel
+    description: Pixel art font
+    url: https://ggbot.itch.io/cairopixel-font
+    copyright:
+      - 2025 GGBotNet
+    license: OFL-1.1
+    files:
+      - fonts/Cairopixel.*
+
+  - name: Cute Pixel
+    description: Pixel art font
+    url: https://www.dafont.com/cutepixel.font
+    copyright:
+      - zK4rim
+    license: NOASSERTION
+    notice: >-
+      No license text exists. The author's note on DaFont declares the font 100% free for personal and commercial use and asks for credit where possible.
+    files:
+      - fonts/CutePixel.*
+
+  - name: Gibberesque
+    description: Pixel art font
+    url: https://www.dafont.com/gibberesque.font
+    copyright:
+      - Zoo977
+    license: CC0-1.0
+    notice: >-
+      The font names Zoo977 as its author, DaFont credits Hazel Abbiati.
+    files:
+      - fonts/Gibberesque.*
+
+  - name: Jacquard 12
+    description: Pixel art font
+    url: https://github.com/scfried/soft-type-jacquard
+    copyright:
+      - 2023 The Soft Type Project Authors (https://github.com/scfried/soft-type-jacquard)
+    license: OFL-1.1
+    files:
+      - fonts/Jacquard12.*
+
+  - name: Jacquarda Bastarda 9
+    description: Pixel art font
+    url: https://github.com/scfried/soft-type-jacquarda-bastarda
+    copyright:
+      - 2023 The Soft Type Project Authors (https://github.com/scfried/soft-type-jacquarda-bastarda)
+    license: OFL-1.1
+    files:
+      - fonts/JacquardaBastarda9.*
+
+  - name: Kubasta
+    description: Pixel art font
+    url: https://zichy.itch.io/kubasta
+    copyright:
+      - Kai Kubasta
+    license: CC0-1.0
+    files:
+      - fonts/Kubasta.*
+
+  - name: LCD Block
+    description: Pixel art font
+    copyright:
+      - vacuumfan7072
+    license: CC0-1.0
+    files:
+      - fonts/LCDBlock.*
+
+  - name: Orange Kid
+    description: Pixel art font
+    url: https://typodermicfonts.com
+    copyright:
+      - Ray Larabie
+    license: CC0-1.0
+    files:
+      - fonts/OrangeKid.*
+
+  - name: Pixelify Sans
+    description: Pixel art font
+    url: https://github.com/eifetx/Pixelify-Sans
+    copyright:
+      - 2021 The Pixelify Sans Project Authors (https://github.com/eifetx/Pixelify-Sans)
+    license: OFL-1.1
+    files:
+      - fonts/PixelifySans.*
+
+  - name: Pixelzone
+    description: Pixel art font
+    url: https://ggbot.itch.io/pixelzone-font
+    copyright:
+      - GGBotNet
+    license: CC0-1.0
+    files:
+      - fonts/Pixelzone.*
+
+  - name: Tiny Unicode
+    description: Pixel art font
+    url: https://www.dafont.com/tinyunicode.font
+    copyright:
+      - DuffsDevice
+    license: NOASSERTION
+    notice: >-
+      No license is stated in the font. The BitFontMaker2 gallery lists it as Creative Commons Attribution without a version,
+      and the author's note on DaFont allows any use as long as the font is not claimed as one's own.
+    files:
+      - fonts/TinyUnicode.*
+
+  - name: Upheaval Pro
+    description: Pixel art font, an extended version of Upheaval by Brian Kent
+    url: https://www.dafont.com/upheaval-pro.font
+    copyright:
+      - 2012 Aleksandr Savenkov
+      - Brian Kent
+    license: LicenseRef-Upheaval
+    notice: >-
+      The terms below are those of Upheaval by Brian Kent, whose text file ships unchanged as fonts/upheaval.txt.
+      Upheaval Pro extends that font with Cyrillic, Greek and Hebrew. Its font file states "All rights reserved", and its author's note on DaFont says Brian Kent permitted the extension.
+      KPix ships the font file unchanged. The .sfl and .PNG files are a bitmap conversion made for the text tool, a change Brian Kent allows if it is noted and the original stays attributed to him (his 2008 reply in the copyright file of Debian's ttf-aenigma package).
+    files:
+      - fonts/UpheavalPro.*
+      - fonts/upheaval.txt
+
   - name: xBR
     description: xBR-lv2 upscaling shader, ported from the libretro slang shaders
     url: https://github.com/libretro/slang-shaders

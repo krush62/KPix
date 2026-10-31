@@ -78,12 +78,27 @@ flutter:
     - family: "Alkhemikal"
       fonts:
         - asset: fonts/Alkhemikal.ttf
+    - family: "Belanidi Serif"
+      fonts:
+        - asset: fonts/BelanidiSerif.otf
+    - family: "Bytesized"
+      fonts:
+        - asset: fonts/Bytesized.ttf
+    - family: "C64esque"
+      fonts:
+        - asset: fonts/c64esque.ttf
+    - family: "Cairopixel"
+      fonts:
+        - asset: fonts/Cairopixel.ttf
     - family: "Cartridge"
       fonts:
         - asset: fonts/Cartridge.ttf
     - family: "Comicoro"
       fonts:
         - asset: fonts/Comicoro.ttf
+    - family: "Cute Pixel"
+      fonts:
+        - asset: fonts/CutePixel.ttf
     - family: "Cyborg Sister"
       fonts:
         - asset: fonts/CyborgSister.ttf
@@ -108,18 +123,33 @@ flutter:
     - family: "Five By Five"
       fonts:
         - asset: fonts/FiveByFive.ttf
+    - family: "Gibberesque"
+      fonts:
+        - asset: fonts/Gibberesque.ttf
     - family: "Grape Soda"
       fonts:
         - asset: fonts/GrapeSoda.ttf
+    - family: "Jacquard 12"
+      fonts:
+        - asset: fonts/Jacquard12.ttf
+    - family: "Jacquarda Bastarda 9"
+      fonts:
+        - asset: fonts/JacquardaBastarda9.ttf
     - family: "Kapel"
       fonts:
         - asset: fonts/Kapel.ttf
     - family: "Kiwi Soda"
       fonts:
         - asset: fonts/KiwiSoda.ttf
+    - family: "Kubasta"
+      fonts:
+        - asset: fonts/Kubasta.ttf
     - family: "Larceny"
       fonts:
         - asset: fonts/Larceny.ttf
+    - family: "LCD Block"
+      fonts:
+        - asset: fonts/LCDBlock.ttf
     - family: "Lunch Menu"
       fonts:
         - asset: fonts/LunchMenu.ttf
@@ -144,12 +174,21 @@ flutter:
     - family: "Optixal"
       fonts:
         - asset: fonts/Optixal.ttf
+    - family: "Orange Kid"
+      fonts:
+        - asset: fonts/OrangeKid.otf
     - family: "Owre Kynge"
       fonts:
         - asset: fonts/OwreKynge.ttf
     - family: "Pear Soda"
       fonts:
         - asset: fonts/PearSoda.ttf
+    - family: "Pixelify Sans"
+      fonts:
+        - asset: fonts/PixelifySans.ttf
+    - family: "Pixelzone"
+      fonts:
+        - asset: fonts/Pixelzone.ttf
     - family: "Planetary Contact"
       fonts:
         - asset: fonts/PlanetaryContact.ttf
@@ -171,6 +210,12 @@ flutter:
     - family: "Squarewave Bold"
       fonts:
         - asset: fonts/Squarewave-Bold.ttf
+    - family: "Tiny Unicode"
+      fonts:
+        - asset: fonts/TinyUnicode.ttf
+    - family: "Upheaval Pro"
+      fonts:
+        - asset: fonts/UpheavalPro.ttf
     - family: "Oxanium"
       fonts:
         - asset: fonts/Oxanium-Regular.ttf

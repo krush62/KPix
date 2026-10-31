@@ -49,7 +49,7 @@ void main() {
       }
     }
 
-    expect(fonts.length, 32);
+    expect(fonts.length, 47);
     // a disposal that broke decoding would show up as zero or garbage here
     expect(glyphCount, greaterThan(9000));
     expect(setPixels, greaterThan(100000));

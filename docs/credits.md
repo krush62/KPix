@@ -11,7 +11,20 @@ Frank Kruschinski
 
 ## Additional Resources
 ### Fonts
-Font End Dev (https://fontenddev.com/)
+Font End Dev (https://fontenddev.com/)\
+Belanidi Serif by HanshuYuri\
+Bytesized by baltdev\
+C64esque by andraaspar\
+Cairopixel and Pixelzone by GGBotNet\
+Cute Pixel by zK4rim\
+Gibberesque by Zoo977\
+Jacquard 12 and Jacquarda Bastarda 9 by Sarah Cadigan-Fried\
+Kubasta by Kai Kubasta\
+LCD Block by vacuumfan7072\
+Orange Kid by Ray Larabie\
+Pixelify Sans by Stefie Justprince\
+Tiny Unicode by DuffsDevice\
+Upheaval Pro by Aleksandr Savenkov, based on Upheaval by Brian Kent
 ### Palettes
 Default, Harlem, Sunset and Mononoke by krush62\
 Apollo by Adam C. Younis\

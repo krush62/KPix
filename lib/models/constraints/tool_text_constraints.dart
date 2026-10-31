@@ -18,7 +18,7 @@
 
 abstract final class TextConstraints
 {
-  static const int fontIndexDefault = 0;
+  static const int fontIndexDefault = 12;
 
   static const int sizeMin = 1;
   static const int sizeDefault = 1;

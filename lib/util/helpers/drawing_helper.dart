@@ -16,6 +16,8 @@
  *
  */
 
+import 'dart:math';
+
 import 'package:kpix/util/helpers/geometry_helper.dart';
 
 /// Implementation of Bresenham's line algorithm.
@@ -148,6 +150,15 @@ Set<CoordinateSetI> _drawEllipse({required final CoordinateSetI start, required 
   return pixels;
 }
 
+//an even width collapses its center column, which can leave x0 past x1 in the outermost rows
+void _plotFilledRows(final int x0, final int y0, final int x1, final int y1, final int vPixels, final Set<CoordinateSetI> pixels)
+{
+  for (int x = min(x0, x1); x <= max(x0, x1); x++)
+  {
+    pixels.add(CoordinateSetI(x: x, y: y0)); // top half
+    pixels.add(CoordinateSetI(x: x, y: y1)); // bottom half
+  }
+}
 
 /// Draws a stroked ellipse inside the given bounds and stroke width.
 Set<CoordinateSetI> drawStrokedEllipse({required final CoordinateSetI start, required final CoordinateSetI end, required final int strokeWidth})
@@ -171,18 +182,7 @@ Set<CoordinateSetI> drawStrokedEllipse({required final CoordinateSetI start, req
   }
   else
   {
-    final Set<CoordinateSetI> pixels = _drawEllipse(
-      start: start,
-      end: end,
-      plot: (final int x0, final int y0, final int x1, final int y1, final int vPixels, final Set<CoordinateSetI> pixels)
-      {
-        for (int x = x0; x <= x1; x++)
-        {
-          pixels.add(CoordinateSetI(x: x, y: y0)); // top half
-          pixels.add(CoordinateSetI(x: x, y: y1)); // bottom half
-        }
-      },
-    );
+    final Set<CoordinateSetI> pixels = _drawEllipse(start: start, end: end, plot: _plotFilledRows);
 
     if (width > strokeWidth * 2 && height > strokeWidth * 2)
     {
@@ -198,16 +198,5 @@ Set<CoordinateSetI> drawStrokedEllipse({required final CoordinateSetI start, req
 /// Draws a filled ellipse inside the given bounds.
 Set<CoordinateSetI> drawFilledEllipse({required final CoordinateSetI start, required final CoordinateSetI end})
 {
-  return _drawEllipse(
-    start: start,
-    end: end,
-    plot: (final int x0, final int y0, final int x1, final int y1, final int vPixels, final Set<CoordinateSetI> pixels)
-    {
-      for (int x = x0; x <= x1; x++)
-      {
-        pixels.add(CoordinateSetI(x: x, y: y0)); // top half
-        pixels.add(CoordinateSetI(x: x, y: y1)); // bottom half
-      }
-    },
-  );
+  return _drawEllipse(start: start, end: end, plot: _plotFilledRows);
 }

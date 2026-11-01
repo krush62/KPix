@@ -358,11 +358,6 @@ List<String> _ellipseProblems({required final int limit})
   {
     for (int h = 1; h <= limit; h++)
     {
-      //see the test for these sizes below
-      if (w == 6 && h >= 14)
-      {
-        continue;
-      }
       final CoordinateSetI start = CoordinateSetI(x: 30, y: 40);
       final CoordinateSetI end = CoordinateSetI(x: 30 + w - 1, y: 40 + h - 1);
       final Set<CoordinateSetI> filled = drawFilledEllipse(start: start, end: end);
@@ -419,19 +414,24 @@ void main()
       expect(_ellipseProblems(limit: 24), isEmpty);
     });
 
-    //BUG: skipped until fixed, an ellipse this narrow and tall loses its top and bottom
-    //row when filled: the stroked one has them, and the fill cannot draw them
-    test("keeps its top and bottom row when narrow and tall", ()
+    //the sizes past the limit above where the outermost rows have two pixels at most
+    for (final (int w, int h) size in <(int, int)>[(6, 14), (6, 40), (10, 40), (14, 78), (14, 90)])
     {
-      final CoordinateSetI start = CoordinateSetI.zero();
-      final CoordinateSetI end = CoordinateSetI(x: 5, y: 13);
+      test("keeps its top and bottom row at ${size.$1} x ${size.$2}", ()
+      {
+        final CoordinateSetI start = CoordinateSetI.zero();
+        final CoordinateSetI end = CoordinateSetI(x: size.$1 - 1, y: size.$2 - 1);
 
-      final Set<CoordinateSetI> filled = drawFilledEllipse(start: start, end: end);
+        final Set<CoordinateSetI> filled = drawFilledEllipse(start: start, end: end);
+        final Set<CoordinateSetI> thick = drawStrokedEllipse(start: start, end: end, strokeWidth: 2);
 
-      expect(CoordinateSetI.getMin(coordList: filled.toList()), start);
-      expect(CoordinateSetI.getMax(coordList: filled.toList()), end);
-      expect(filled, containsAll(drawStrokedEllipse(start: start, end: end, strokeWidth: 1)));
-    }, skip: true,);
+        expect(CoordinateSetI.getMin(coordList: filled.toList()), start);
+        expect(CoordinateSetI.getMax(coordList: filled.toList()), end);
+        expect(filled, containsAll(drawStrokedEllipse(start: start, end: end, strokeWidth: 1)));
+        expect(CoordinateSetI.getMin(coordList: thick.toList()), start);
+        expect(CoordinateSetI.getMax(coordList: thick.toList()), end);
+      });
+    }
 
     test("does not care which corner it is given first", ()
     {
@@ -664,8 +664,68 @@ void main()
       expect(colorsOf(layer: layer), <CoordinateSetI, ColorReference>{CoordinateSetI(x: 2, y: 2): GetIt.I.get<PaletteState>().selectedColor!});
     });
 
-    //BUG: skipped until fixed, a press that starts and ends where the last one did
-    //counts as nothing changed, so the second click draws nothing at all
+    _shapeTest("keeps working after a drag that drew nothing", (final ProjectSession projectSession, final DrawingLayerState layer) async
+    {
+      _useShape(shape: DrawingShape.rectangle);
+      final ShapePainter painter = _painter();
+      layer.lockState.value = LayerLockState.transparency;
+      dragTool(painter: painter, layer: layer, path: <CoordinateSetI>[CoordinateSetI(x: 1, y: 1), CoordinateSetI(x: 3, y: 3)]);
+      await settle();
+      expect(colorsOf(layer: layer), isEmpty, reason: "setup");
+      expect(painter.hasHistoryData, isFalse);
+
+      layer.lockState.value = LayerLockState.unlocked;
+      dragTool(painter: painter, layer: layer, path: <CoordinateSetI>[CoordinateSetI(x: 1, y: 1), CoordinateSetI(x: 3, y: 3)]);
+      await settle();
+
+      expect(colorsOf(layer: layer), hasLength(9));
+    });
+
+    _shapeTest("starts where it was pressed, with the last shape moved from there", (final ProjectSession projectSession, final DrawingLayerState layer) async
+    {
+      _useShape(shape: DrawingShape.rectangle);
+      final ShapePainter painter = _painter();
+      final CoordinateSetI press = CoordinateSetI(x: 2, y: 2);
+      final CoordinateSetI grown = CoordinateSetI(x: 4, y: 4);
+      final CoordinateSetI moved = CoordinateSetI(x: 8, y: 4);
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: press));
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: press, primaryDown: true, pressStart: press));
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: grown, primaryDown: true, pressStart: press));
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: moved, primaryDown: true, pressStart: press, stylusButtonDown: true));
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: moved, pressStart: press));
+      await settle();
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: moved, pressStart: press));
+      expect(colorsOf(layer: layer), contains(CoordinateSetI(x: 8, y: 2)), reason: "setup: the shape moved along");
+      expect(colorsOf(layer: layer), isNot(contains(press)), reason: "setup: the shape moved along");
+      layer.removeDataAll(removeCoordList: colorsOf(layer: layer).keys.toSet());
+      await settle();
+
+      //the canvas keeps the press position between presses
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: press, pressStart: press));
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: press, primaryDown: true, pressStart: press));
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: CoordinateSetI(x: 3, y: 3), primaryDown: true, pressStart: press));
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: CoordinateSetI(x: 3, y: 3), pressStart: press));
+      await settle();
+
+      expect(colorsOf(layer: layer).keys.toSet(), <CoordinateSetI>{
+        CoordinateSetI(x: 2, y: 2), CoordinateSetI(x: 3, y: 2),
+        CoordinateSetI(x: 2, y: 3), CoordinateSetI(x: 3, y: 3),
+      },);
+    });
+
+    _shapeTest("does not jump when the press starts with the move held", (final ProjectSession projectSession, final DrawingLayerState layer) async
+    {
+      _useShape(shape: DrawingShape.rectangle);
+      final ShapePainter painter = _painter();
+      final CoordinateSetI spot = CoordinateSetI(x: 5, y: 5);
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: spot));
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: spot, primaryDown: true, pressStart: spot, stylusButtonDown: true));
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: spot, pressStart: spot));
+      await settle();
+
+      expect(colorsOf(layer: layer).keys.toSet(), <CoordinateSetI>{spot});
+    });
+
     _shapeTest("draws again on a click in the same place", (final ProjectSession projectSession, final DrawingLayerState layer) async
     {
       _useShape(shape: DrawingShape.rectangle);
@@ -683,7 +743,7 @@ void main()
       await settle();
 
       expect(colorsOf(layer: layer)[spot], ramp[2]);
-    }, skip: true,);
+    });
   });
 
   group("while dragging", ()

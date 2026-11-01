@@ -258,8 +258,6 @@ void main()
       });
     }
 
-    //BUG: skipped until fixed, the steps are counted one pixel off, so the last one
-    //comes out too short and another one too long: a jag where the line has none
     _lineTest("sorts the steps the plain line has", (final ProjectSession projectSession, final DrawingLayerState layer) async
     {
       _options.segmentSorting.value = true;
@@ -271,7 +269,7 @@ void main()
 
       final List<int> plainRuns = _runLengths(points: bresenham(start: start, end: end).toSet(), perRow: true, first: start.y, last: end.y);
       expect(_runLengths(points: points, perRow: true, first: start.y, last: end.y), plainRuns..sort());
-    }, skip: true,);
+    });
 
     for (final (String direction, CoordinateSetI start, CoordinateSetI end) line in <(String, CoordinateSetI, CoordinateSetI)>[
       ("right and down", CoordinateSetI(x: 2, y: 3), CoordinateSetI(x: 15, y: 8)),
@@ -282,6 +280,7 @@ void main()
       ("steeply left and up", CoordinateSetI(x: 8, y: 14), CoordinateSetI(x: 3, y: 1)),
       ("straight across", CoordinateSetI(x: 2, y: 5), CoordinateSetI(x: 12, y: 5)),
       ("straight down", CoordinateSetI(x: 5, y: 2), CoordinateSetI(x: 5, y: 12)),
+      ("with a diagonal last step", CoordinateSetI(x: 2, y: 3), CoordinateSetI(x: 4, y: 4)),
     ])
     {
       _lineTest("reaches both ends going ${line.$1}", (final ProjectSession projectSession, final DrawingLayerState layer) async
@@ -362,8 +361,6 @@ void main()
       expect(points.where((final CoordinateSetI p) => p.x == 9), hasLength(greaterThanOrEqualTo(3)));
     });
 
-    //BUG: skipped until fixed, the curve is worked out before the pull is updated, so
-    //it always bends towards where the cursor was one event before the release
     _lineTest("bends towards where the pull was released", (final ProjectSession projectSession, final DrawingLayerState layer) async
     {
       final CoordinateSetI start = CoordinateSetI(x: 1, y: 1);
@@ -373,7 +370,7 @@ void main()
 
       expect(points, contains(CoordinateSetI(x: 9, y: 7)));
       expect(points, containsAll(<CoordinateSetI>[start, end]));
-    }, skip: true,);
+    });
 
     _lineTest("the cursor info shows its chord", (final ProjectSession projectSession, final DrawingLayerState layer) async
     {

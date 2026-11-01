@@ -205,8 +205,6 @@ void main()
       expect(playing.bytes, (await canvas.render()).bytes);
     });
 
-    //BUG: skipped until fixed, the condition reads a || b && !playing, so a horizontal
-    //guide stays on the canvas during playback
     _overlayTest("the horizontal one is left out during playback", (final ProjectSession projectSession, final _Canvas canvas) async
     {
       final SymmetryState symmetry = GetIt.I.get<SymmetryState>();
@@ -219,7 +217,7 @@ void main()
 
       symmetry.horizontalActivated.value = false;
       expect(playing.bytes, (await canvas.render()).bytes);
-    }, skip: true,);
+    });
   });
 
   group("frame blending", ()

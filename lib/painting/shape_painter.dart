@@ -71,9 +71,12 @@ class ShapePainter extends IToolPainter
     if (drawParams.currentRasterLayer != null && drawParams.cursorPosNorm != null)
     {
       final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
-      bool selectionChanged = _modifiersDirty;
+      final bool wasStarted = _isStarted;
+      //nothing of the last press carries over, even at the same place
+      final bool isNewPress = drawParams.primaryDown && !wasStarted;
+      bool selectionChanged = _modifiersDirty || isNewPress;
       _modifiersDirty = false;
-      if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dy != drawParams.primaryPressStart.dy)
+      if (isNewPress || _lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dy != drawParams.primaryPressStart.dy)
       {
         _normStartPos.x = getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: effPxlSize);
         _normStartPos.y = getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: effPxlSize);
@@ -87,7 +90,7 @@ class ShapePainter extends IToolPainter
         _isStarted = drawParams.primaryDown && drawParams.cursorPos != null;
         if (_isStarted)
         {
-          if ((_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed) || drawParams.stylusButtonDown)
+          if (!isNewPress && ((_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed) || drawParams.stylusButtonDown))
           {
             _normStartPos.x -= _lastNormEndPos.x - drawParams.cursorPosNorm!.x;
             _normStartPos.y -= _lastNormEndPos.y - drawParams.cursorPosNorm!.y;
@@ -183,7 +186,7 @@ class ShapePainter extends IToolPainter
             });
           }
         }
-        if (!drawParams.primaryDown && _drawingPixels.isNotEmpty) //DUMPING
+        if (!drawParams.primaryDown && wasStarted) //DUMPING
         {
           final Set<CoordinateSetI> contentPoints = _calculateSelectionContent(options: _options, selectionStart: _selectionStart, selectionEnd: _selectionEnd);
           final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: contentPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
@@ -191,7 +194,7 @@ class ShapePainter extends IToolPainter
           {
             _drawingPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
             _dumpDrawingLayer(layer: rasterLayer, canvasSize: drawParams.canvasSize);
-            _waitingForRasterization = true;
+            _waitingForRasterization = _drawingPixels.isNotEmpty;
           }
           else if (rasterLayer is ShadingLayerState)
           {

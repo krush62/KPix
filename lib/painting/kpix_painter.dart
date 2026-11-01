@@ -273,7 +273,7 @@ class KPixPainter extends CustomPainter
       {
         toolPainter?.setStatusBarData(drawParams: drawParams);
       }
-      if (drawParams.symmetryHorizontal != null || drawParams.symmetryVertical != null && !drawParams.isPlaying)
+      if ((drawParams.symmetryHorizontal != null || drawParams.symmetryVertical != null) && !drawParams.isPlaying)
       {
         _drawSymmetry(drawParams: drawParams);
       }

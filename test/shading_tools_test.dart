@@ -185,7 +185,7 @@ void main()
 
   group("with nothing below", ()
   {
-    for (final _Tool tool in _rowTools.where((final _Tool t) => t.name != "shape"))
+    for (final _Tool tool in _rowTools)
     {
       _shadingTest("the ${tool.name} still shades, for what is drawn there later", (final ShadingLayerState layer, final DrawingLayerState below) async
       {
@@ -195,16 +195,6 @@ void main()
         expect(shadesOf(layer: layer), _all(coords: _row, value: 1));
       });
     }
-
-    //BUG: skipped until fixed, the shape tool only commits when its preview holds
-    //pixels, and the preview of a shading layer over nothing is empty
-    _shadingTest("the shape still shades, for what is drawn there later", (final ShadingLayerState layer, final DrawingLayerState below) async
-    {
-      _rowTools.firstWhere((final _Tool t) => t.name == "shape").use(layer);
-      await settle();
-
-      expect(shadesOf(layer: layer), _all(coords: _row, value: 1));
-    }, skip: true,);
   });
 
   group("pencil", ()
@@ -382,10 +372,9 @@ void main()
       expect(preview, <CoordinateSetI, ColorReference>{CoordinateSetI(x: 4, y: 3): ramp[2], CoordinateSetI(x: 5, y: 3): ramp[3]}, reason: "nothing below to preview at the third pixel");
     });
 
-    //BUG: skipped until fixed, the stamp preview asks for hidden layers to be included,
-    //unlike every other tool, so it shows pixels that are not on the canvas
     _shadingTest("the preview leaves out hidden layers", (final ShadingLayerState layer, final DrawingLayerState below) async
     {
+      selectStamp();
       final List<ColorReference> ramp = GetIt.I.get<PaletteState>().colorRamps[0].references;
       below.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{CoordinateSetI(x: 4, y: 3): ramp[1]}));
       below.visibilityState.value = LayerVisibilityState.hidden;
@@ -395,7 +384,7 @@ void main()
       final CoordinateColorMap preview = painter.getStampPixelsToDrawForShading(canvasSize: _canvasSize, currentLayer: layer, stampData: HashMap<CoordinateSetI, int>.of(<CoordinateSetI, int>{CoordinateSetI(x: 4, y: 3): 0}), shaderOptions: _shader);
 
       expect(preview, isEmpty);
-    }, skip: true,);
+    });
   });
 
   group("what a tool previews on a shading layer", ()

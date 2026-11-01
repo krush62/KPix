@@ -524,13 +524,13 @@ abstract class IToolPainter
   /// applied where that layer sits in the stack, so it passes through the same
   /// clamping a real draw would. Applying it to the returned color instead would
   /// move pixels whose ramp is already exhausted, which the draw leaves alone.
-  ColorReference? _resolveComposedColorAtCoord({required final CoordinateSetI coord, required final Frame frame, required final int toIndex, required final bool requireVisibility, final LayerState? shiftLayer, final int layerShift = 0,})
+  ColorReference? _resolveComposedColorAtCoord({required final CoordinateSetI coord, required final Frame frame, required final int toIndex, final LayerState? shiftLayer, final int layerShift = 0,})
   {
     ColorReference? currentColor;
     for (int i = frame.layerList.length - 1; i >= toIndex; i--)
     {
       final LayerState layer = frame.layerList.getLayer(index: i);
-      if (!requireVisibility || layer.visibilityState.value == LayerVisibilityState.visible)
+      if (layer.visibilityState.value == LayerVisibilityState.visible)
       {
         if (layer is DrawingLayerState)
         {
@@ -574,7 +574,7 @@ abstract class IToolPainter
             }
             //stop at this layer: rasterizePixels applies everything above it, so
             //composing past it here would apply those layers a second time
-            final ColorReference? shiftedColor = _resolveComposedColorAtCoord(coord: coord, frame: frame, toIndex: currentLayerPos, requireVisibility: true, shiftLayer: currentLayer, layerShift: shift,);
+            final ColorReference? shiftedColor = _resolveComposedColorAtCoord(coord: coord, frame: frame, toIndex: currentLayerPos, shiftLayer: currentLayer, layerShift: shift,);
             if (shiftedColor != null)
             {
               if (currentLayer.kind == LayerKind.shading)
@@ -670,7 +670,7 @@ abstract class IToolPainter
             final int currentVal = currentLayer.getRawValueAt(coord: coord) ?? 0;
             final int targetVal = (shadingDirection + currentVal + (stampEntry.value * shadingDirection)).clamp(-currentLayer.settings.shadingStepsMinus.value, currentLayer.settings.shadingStepsPlus.value,);
             final int shadingAmount = targetVal - currentVal;
-            final ColorReference? shiftedColor = _resolveComposedColorAtCoord(coord: coord, frame: frame, toIndex: currentLayerPos, requireVisibility: false, shiftLayer: currentLayer, layerShift: shadingAmount,);
+            final ColorReference? shiftedColor = _resolveComposedColorAtCoord(coord: coord, frame: frame, toIndex: currentLayerPos, shiftLayer: currentLayer, layerShift: shadingAmount,);
             if (shiftedColor != null)
             {
               if (currentLayer.kind == LayerKind.shading)

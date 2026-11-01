@@ -65,6 +65,13 @@ class LinePainter extends IToolPainter
   {
     if (drawParams.cursorPosNorm != null)
     {
+      //the curve below bends towards the pull, so this comes first
+      if (_dragStarted && drawParams.primaryDown)
+      {
+        _lineEndPos2.x = drawParams.cursorPosNorm!.x;
+        _lineEndPos2.y = drawParams.cursorPosNorm!.y;
+      }
+
       if (drawParams.cursorPosNorm! != _previousCursorPosNorm || _options.width.value != _previousSize || _modifiersDirty)
       {
         _modifiersDirty = false;
@@ -166,15 +173,11 @@ class LinePainter extends IToolPainter
           {
             _lineEndPos1.x = drawParams.cursorPosNorm!.x;
             _lineEndPos1.y = drawParams.cursorPosNorm!.y;
+            _lineEndPos2.x = drawParams.cursorPosNorm!.x;
+            _lineEndPos2.y = drawParams.cursorPosNorm!.y;
             _dragStarted = true;
           }
           _isDown = true;
-        }
-
-        if (_dragStarted)
-        {
-          _lineEndPos2.x = drawParams.cursorPosNorm!.x;
-          _lineEndPos2.y = drawParams.cursorPosNorm!.y;
         }
       }
       else if (!drawParams.primaryDown && _isDown) //DUMPING
@@ -259,8 +262,9 @@ class LinePainter extends IToolPainter
       {
         if (isHorizontal)
         {
-          segments.add(lengthCounter);
-          lengthCounter = 0;
+          //the x step above already moved on to the next run
+          segments.add(lengthCounter - 1);
+          lengthCounter = 1;
         }
         else
         {
@@ -271,9 +275,6 @@ class LinePainter extends IToolPainter
       }
     }
     segments.add(lengthCounter);
-    segments.removeWhere((final int element) {
-      return element == 0;
-    });
     segments.sort();
     if (sortStyle == SegmentSortStyle.desc || sortStyle == SegmentSortStyle.descAsc)
     {

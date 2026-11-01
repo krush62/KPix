@@ -88,17 +88,6 @@ class ReferenceImageManager
     }
   }
 
-
-  Future<void> removeImageByPath({required final String path}) async
-  {
-    final String absolutePath = File(path).absolute.path;
-    final Iterable<ReferenceImage> foundImages = _images.where((final ReferenceImage i) => i.path == absolutePath);
-    for (final ReferenceImage refImage in foundImages)
-    {
-      _images.remove(refImage);
-    }
-  }
-
   Future<void> removeImage({required final ReferenceImage refImage}) async
   {
     _images.remove(refImage);

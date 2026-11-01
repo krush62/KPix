@@ -712,22 +712,6 @@ class LayerCollection with ChangeNotifier {
     }
   }
 
-  int getFrameIndex()
-  {
-    int index = -1;
-    final DocumentState documentState = GetIt.I.get<DocumentState>();
-    for (int i = 0; i < documentState.timeline.frames.value.length; i++)
-    {
-      if (documentState.timeline.frames.value[i].layerList == this)
-      {
-        index = i;
-        break;
-      }
-    }
-
-    return index;
-  }
-
   void reRasterAllDrawingLayers()
   {
     for (int i = _layers.length - 1; i >= 0; i--)
@@ -1101,23 +1085,6 @@ class LayerCollection with ChangeNotifier {
             _addDependency(dependent: layer as RasterableLayerState, dependency: _layers[j] as RasterableLayerState,);
           }
         }
-      }
-    }
-  }
-
-  void invalidateLayerInAllFrames({required final RasterableLayerState layer})
-  {
-    layer.doManualRaster = true;
-    invalidateDependents(layer: layer);
-    final DocumentState documentState = GetIt.I.get<DocumentState>();
-    final List<Frame> framesWithThisLayer = documentState.timeline
-        .findFramesForLayer(layer: layer);
-
-    for (final Frame frame in framesWithThisLayer)
-    {
-      if (frame.layerList != this)
-      {
-        frame.layerList.invalidateDependents(layer: layer);
       }
     }
   }

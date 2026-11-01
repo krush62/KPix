@@ -167,12 +167,18 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
     return ValueListenableBuilder<HashMap<Alignment, bool>>(
       valueListenable: notifier,
       builder: (final BuildContext context, final HashMap<Alignment, bool> selectionMap, final Widget? child) {
-        return KPixDirectionWidget(
-          selectionMap: selectionMap,
-          onChange: (final HashMap<Alignment, bool> directionMap) {
-            notifier.value = directionMap;
-          },
-          isExclusive: isExclusive,
+        //its buttons are square, so a wide panel must not make them taller than the row
+        return Center(
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: KPixDirectionWidget(
+              selectionMap: selectionMap,
+              onChange: (final HashMap<Alignment, bool> directionMap) {
+                notifier.value = directionMap;
+              },
+              isExclusive: isExclusive,
+            ),
+          ),
         );
       },
     );
@@ -269,6 +275,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
             valueListenable: recursiveNotifier,
             builder: (final BuildContext context, final bool glowRec, final Widget? child) {
               return Switch(
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 value: glowRec,
                 onChanged: (final bool value) {
                   recursiveNotifier.value = value;

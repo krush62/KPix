@@ -95,8 +95,8 @@ class _KPalRampState extends State<KPalRamp>
       }
       else if (visibleLayer is ShadingLayerState)
       {
-        final ShadingLayerState shadingLayer = ShadingLayerState.from(other: visibleLayer, layerStack: drawingLayers);
-        drawingLayers.add(shadingLayer);
+        //copy() keeps a dither layer what it is
+        drawingLayers.add(visibleLayer.copy(layerStack: drawingLayers));
       }
     }
     return drawingLayers;

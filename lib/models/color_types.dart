@@ -163,7 +163,8 @@ class KPalRampData
     }
 
 
-    updateColors(colorCountChanged: colorChange);
+    //the shifts were only just put back, so they have to stay
+    updateColors(colorCountChanged: colorChange, resetListeners: false);
 
   }
 

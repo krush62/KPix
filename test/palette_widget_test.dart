@@ -302,7 +302,6 @@ void main()
 
     for (final (String, int) change in <(String, int)>[("up", 2), ("down", -2)])
     {
-      //BUG: updateFromOther restores the shifts of the colors, and then updateColors(colorCountChanged: true) resets them
       projectWidgetTest("puts the colors back when cancelled after the number of colors went ${change.$1}", _column, (final WidgetTester tester) async
       {
         await _openEditor(tester);
@@ -318,10 +317,9 @@ void main()
         expect(find.byType(KPal), findsNothing);
         expect(ramp.references, hasLength(count));
         expect(<Color>[for (final ValueNotifier<IdColor> color in ramp.shiftedColors) color.value.color], colors);
-      }, skip: true,);
+      });
     }
 
-    //BUG: discardChange goes through the accept callback, so cancelling adds a "update ramp" undo step and marks the project as changed
     projectWidgetTest("adds no undo step when cancelled", _column, (final WidgetTester tester) async
     {
       final HistoryState? before = _history.getCurrentState();
@@ -332,7 +330,7 @@ void main()
 
       expect(_history.getCurrentState(), same(before));
       expect(GetIt.I.get<ProjectSession>().hasChanges.value, isFalse);
-    }, skip: true,);
+    });
 
     projectWidgetTest("names what deleting a ramp would take with it", _column, (final WidgetTester tester) async
     {
@@ -417,7 +415,6 @@ void main()
         await tester.pump(const Duration(seconds: 1));
       });
 
-      //BUG: _KPalRampState._copyLayers copies a dither layer as a plain ShadingLayerState, so the preview shades all of it instead of the pattern
       projectWidgetTest("shows dither as dither", _column, (final WidgetTester tester) async
       {
         final DrawingLayerState layer = GetIt.I.get<DocumentState>().timeline.getCurrentLayer()! as DrawingLayerState;
@@ -441,7 +438,7 @@ void main()
         expect(colors.length, greaterThan(1), reason: "the pattern shows");
         await tapTooltip(tester, testL10n.cancel);
         await tester.pump(const Duration(seconds: 1));
-      }, skip: true,);
+      });
     });
   });
 

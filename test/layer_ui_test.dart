@@ -375,7 +375,6 @@ void main()
 
     SegmentedButton<T> styleButton<T>(final WidgetTester tester) => tester.widget<SegmentedButton<T>>(find.byType(SegmentedButton<T>));
 
-    //BUG: the direction buttons get a third of a flex share as their height too, which overflows the fixed row height above a panel width of about 380
     projectWidgetTest("fits its direction buttons into the widest panel of a 2560 wide window", () => settingsAt(width: 512), (final WidgetTester tester) async
     {
       layer().settings.outerStrokeStyle.value = OuterStrokeStyle.solid;
@@ -384,11 +383,11 @@ void main()
       expect(tester.takeException(), isNull);
       layer().settings.outerStrokeStyle.value = OuterStrokeStyle.off;
       await settleUi(tester);
-    }, skip: true,);
+    });
 
     settingsTest("offers every outer stroke style", (final WidgetTester tester) async
     {
-      for (final OuterStrokeStyle style in OuterStrokeStyle.values.where((final OuterStrokeStyle s) => s != OuterStrokeStyle.glow))
+      for (final OuterStrokeStyle style in OuterStrokeStyle.values)
       {
         styleButton<OuterStrokeStyle>(tester).onSelectionChanged!(<OuterStrokeStyle>{style});
         await tester.pump();
@@ -401,7 +400,7 @@ void main()
 
     settingsTest("offers every inner stroke style", (final WidgetTester tester) async
     {
-      for (final InnerStrokeStyle style in InnerStrokeStyle.values.where((final InnerStrokeStyle s) => s != InnerStrokeStyle.glow))
+      for (final InnerStrokeStyle style in InnerStrokeStyle.values)
       {
         styleButton<InnerStrokeStyle>(tester).onSelectionChanged!(<InnerStrokeStyle>{style});
         await tester.pump();
@@ -412,7 +411,6 @@ void main()
       await settleUi(tester);
     });
 
-    //BUG: the recursive switch and the depth slider need 88 pixels, but the row of a style is fixed at 80
     projectWidgetTest("fits the glow controls into their row", settings, (final WidgetTester tester) async
     {
       layer().settings.outerStrokeStyle.value = OuterStrokeStyle.glow;
@@ -421,7 +419,7 @@ void main()
       expect(tester.takeException(), isNull);
       layer().settings.outerStrokeStyle.value = OuterStrokeStyle.off;
       await settleUi(tester);
-    }, skip: true, textScale: 0.5,);
+    }, textScale: 0.5,);
 
     settingsTest("offers every drop shadow style", (final WidgetTester tester) async
     {

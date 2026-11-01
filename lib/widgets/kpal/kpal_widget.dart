@@ -130,7 +130,7 @@ class KPalState extends State<KPal>
   void discardChange()
   {
     widget._colorRamp.updateFromOther(other: _originalData);
-    widget._accept(ramp: widget._colorRamp, originalData: _originalData);
+    widget._accept(ramp: widget._colorRamp, originalData: _originalData, addToHistoryStack: false);
   }
 
   void _acceptDeletion()

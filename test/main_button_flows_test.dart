@@ -64,7 +64,7 @@ HistoryManager get _history => GetIt.I.get<HistoryManager>();
 HotkeyManager get _hotkeys => GetIt.I.get<HotkeyManager>();
 AppPaths get _paths => GetIt.I.get<AppPaths>();
 
-void _flowTest(final String description, final Future<void> Function(WidgetTester tester) body, {final bool skip = false})
+void _flowTest(final String description, final Future<void> Function(WidgetTester tester) body)
 {
   testWidgets(description, (final WidgetTester tester) async
   {
@@ -86,7 +86,7 @@ void _flowTest(final String description, final Future<void> Function(WidgetTeste
 
     GetIt.I.get<ProjectManager>().dispose();
     await closeTestApp(tester);
-  }, skip: skip, semanticsEnabled: false,);
+  }, semanticsEnabled: false,);
 }
 
 Future<void> _openMenu(final WidgetTester tester, {required final String tooltip}) async
@@ -149,6 +149,7 @@ void main()
       await _pickFromMenu(tester, entry: testL10n.importImage);
 
       expect(find.text(testL10n.thereAreUnsavedChanges), findsNothing);
+      expect(findTooltipStarting(testL10n.newProject), findsNothing);
       expect(find.byType(ImportWidget), findsOneWidget);
     });
 
@@ -181,7 +182,6 @@ void main()
         expect(find.byType(ImportWidget), findsOneWidget);
       });
 
-      //BUG: _saveImportWarningNo opens the import without hiding the warning, which stays behind the dialog until that closes
       _flowTest("takes the warning away on no", (final WidgetTester tester) async
       {
         await askForImport(tester);
@@ -189,7 +189,9 @@ void main()
         await tapTooltip(tester, testL10n.no);
 
         expect(find.text(testL10n.thereAreUnsavedChanges), findsNothing);
-      }, skip: true,);
+        expect(findTooltipStarting(testL10n.newProject), findsNothing);
+        expect(find.byType(ImportWidget), findsOneWidget);
+      });
 
       _flowTest("saves first on yes, once the project has a name", (final WidgetTester tester) async
       {

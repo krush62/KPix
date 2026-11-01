@@ -280,6 +280,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _saveBeforeImportFinished()
   {
+    _closeAllMenus();
     _importDialog?.show(context: context);
   }
 

@@ -85,7 +85,7 @@ void _expectSignature({required final String? path, required final String direct
   expect(bytes.sublist(signature.$1, signature.$1 + signature.$2.length), signature.$2);
 }
 
-void _handlerTest(final String description, final Future<void> Function(ProjectSession projectSession) body, {final bool skip = false})
+void _handlerTest(final String description, final Future<void> Function(ProjectSession projectSession) body)
 {
   testWidgets(description, (final WidgetTester tester) async
   {
@@ -94,7 +94,7 @@ void _handlerTest(final String description, final Future<void> Function(ProjectS
       await paintPixels(projectSession: projectSession, pixels: <CoordinateSetI, ColorReference>{CoordinateSetI(x: 2, y: 1): GetIt.I.get<PaletteState>().colorRamps[1].references[2]});
       await body(projectSession);
     },);
-  }, skip: skip,);
+  });
 }
 
 void main()
@@ -187,11 +187,9 @@ void main()
 
   group("saveCurrentPalette", ()
   {
-    //BUG: skipped until fixed, the widget shows an error when this returns null, but a
-    //failed write throws instead, so nothing is shown and the error goes unhandled
     _handlerTest("reports a directory it cannot write to", (final ProjectSession projectSession) async
     {
       expect(await saveCurrentPalette(fileName: "out", directory: _missingDir, extension: fileExtensionKpal), isNull);
-    }, skip: true,);
+    });
   });
 }

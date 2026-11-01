@@ -29,7 +29,7 @@ Future<Uint8List> getPaletteCorelData({required final List<KPalRampData> rampLis
 
   for (final ui.Color color in colorList)
   {
-    stringBuffer.writeln('''\t\t\t<color cs="RGB" tints="${color.r.toStringAsFixed(6)},${color.g.toStringAsFixed(6)},${color.b.toStringAsFixed(6)}"name="${escapeXml(input: colorNames.getColorName(r: color.r, g: color.g, b: color.b))}" />''');
+    stringBuffer.writeln('''\t\t\t<color cs="RGB" tints="${color.r.toStringAsFixed(6)},${color.g.toStringAsFixed(6)},${color.b.toStringAsFixed(6)}" name="${escapeXml(input: colorNames.getColorName(r: color.r, g: color.g, b: color.b))}" />''');
   }
 
   stringBuffer.writeln("\t\t</page>");

@@ -17,9 +17,11 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -33,6 +35,8 @@ Future<ui.Image> getImageFromLayers({
   final List<RasterableLayerState>? layerStack,
   final int scalingFactor = 1,}) async
 {
+  //a layer linked into several frames has a raster for each of them
+  final Frame? rasterFrame = frame ?? GetIt.I.get<DocumentState>().timeline.findFrameForCollection(collection: layerCollection);
   final List<RasterableLayerState> visibleLayers = layerCollection.getVisibleRasterLayers().toList();
   List<RasterableLayerState> layerList;
   if (layerStack != null)
@@ -62,7 +66,7 @@ Future<ui.Image> getImageFromLayers({
     final LayerState cLayer = layerList[i];
     if (cLayer.visibilityState.value == LayerVisibilityState.visible && cLayer is RasterableLayerState)
     {
-      final ui.Image? mapImage = frame != null ? cLayer.rasterImageMap.value[frame]?.raster : null;
+      final ui.Image? mapImage = rasterFrame != null ? cLayer.rasterImageMap.value[rasterFrame]?.raster : null;
       final ui.Image? rasterImage = cLayer.rasterImage.value;
       final ui.Image? previousRaster = cLayer.previousRaster;
       final ui.Image? imageToUse = mapImage ?? (rasterImage ?? previousRaster);

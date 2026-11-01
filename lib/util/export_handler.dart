@@ -117,8 +117,13 @@ Future<String?> _runExport({
 
 Future<String?> saveCurrentPalette({required final String fileName, required final String directory, required final String extension,}) async
 {
-  final Uint8List data = await createPaletteKPalData(rampList: GetIt.I.get<PaletteState>().colorRamps);
-  return await _writeDataToFile(data: data, directory: directory, fileName: fileName, extension: extension,);
+  return await _runExport(
+    what: "palette",
+    directory: directory,
+    fileName: fileName,
+    extension: extension,
+    createData: () => createPaletteKPalData(rampList: GetIt.I.get<PaletteState>().colorRamps),
+  );
 }
 
 Future<Uint8List?> _createPaletteData({required final PaletteExportType paletteType}) async

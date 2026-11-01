@@ -68,7 +68,7 @@ int _rgb({required final Color color}) => (_byte(color.r) << 16) | (_byte(color.
 
 List<String> _lines({required final Uint8List bytes}) => const LineSplitter().convert(utf8.decode(bytes));
 
-void _paletteTest(final String description, final Future<void> Function(List<KPalRampData> ramps) body, {final bool skip = false})
+void _paletteTest(final String description, final Future<void> Function(List<KPalRampData> ramps) body)
 {
   testWidgets(description, (final WidgetTester tester) async
   {
@@ -76,7 +76,7 @@ void _paletteTest(final String description, final Future<void> Function(List<KPa
     {
       await body(_ramps());
     },);
-  }, skip: skip,);
+  });
 }
 
 void main()
@@ -131,7 +131,7 @@ void main()
       final String text = utf8.decode(await getPaletteCorelData(rampList: ramps, colorNames: _FixedNames(name: _markupName)));
       final List<Color> colors = _colors(ramps: ramps);
 
-      final List<RegExpMatch> entries = RegExp(r'<color cs="RGB" tints="([0-9.]+),([0-9.]+),([0-9.]+)"\s*name="([^"]*)" />').allMatches(text).toList();
+      final List<RegExpMatch> entries = RegExp('<color cs="RGB" tints="([0-9.]+),([0-9.]+),([0-9.]+)" name="([^"]*)" />').allMatches(text).toList();
       expect(entries, hasLength(colors.length));
       for (int i = 0; i < colors.length; i++)
       {
@@ -141,14 +141,6 @@ void main()
         expect(entries[i].group(4), _escapedMarkupName);
       }
     });
-
-    //BUG: skipped until fixed, tints="..."name="..." is not well formed xml
-    _paletteTest("separates the attributes of a color", (final List<KPalRampData> ramps) async
-    {
-      final String text = utf8.decode(await getPaletteCorelData(rampList: ramps, colorNames: _FixedNames(name: _plainName)));
-
-      expect(text, isNot(contains('"name=')));
-    }, skip: true,);
   });
 
   group("open office", ()
@@ -224,14 +216,22 @@ void main()
       expect(file.celIndices.single, List<int>.generate(colors.length + 1, (final int i) => i));
     });
 
-    //BUG: skipped until fixed, this is only an assert: in a release build the indices
-    //wrap around and the file shows the wrong colors without any warning
+    //black takes one of the 255 places, so this is one color too many
     _paletteTest("refuses a palette with more colors than an index holds", (final List<KPalRampData> ramps) async
     {
-      final List<KPalRampData> tooMany = <KPalRampData>[for (int i = 0; i < 20; i++) KPalRampData(uuid: "ramp $i", settings: KPalRampSettings()..colorCount = 15)];
+      final List<KPalRampData> tooMany = <KPalRampData>[for (int i = 0; i < 17; i++) KPalRampData(uuid: "ramp $i", settings: KPalRampSettings()..colorCount = 15)];
 
       expect(await getPaletteAsepriteData(rampList: tooMany), isNull);
-    }, skip: true,);
+    });
+
+    _paletteTest("takes a palette that just fits", (final List<KPalRampData> ramps) async
+    {
+      final List<KPalRampData> fitting = <KPalRampData>[for (int i = 0; i < 17; i++) KPalRampData(uuid: "ramp $i", settings: KPalRampSettings()..colorCount = i == 0 ? 14 : 15)];
+
+      final AsepriteFile file = readAseprite(bytes: (await getPaletteAsepriteData(rampList: fitting))!);
+
+      expect(file.palette, hasLength(255));
+    });
   });
 
   group("adobe", ()
@@ -253,14 +253,18 @@ void main()
       }
     });
 
-    //BUG: skipped until fixed, hyphens are left out of the name but still counted in
-    //its length and the block size, which shifts every color after the first
-    _paletteTest("stays readable for a name with a hyphen", (final List<KPalRampData> ramps) async
+    _paletteTest("leaves hyphens out of a name and stays readable", (final List<KPalRampData> ramps) async
     {
-      final List<AdobeColor> entries = readAdobePalette(bytes: await getPaletteAdobeData(rampList: ramps, colorNames: _FixedNames(name: "3713-Salmon Very Light")));
+      final List<AdobeColor> entries = readAdobePalette(bytes: await getPaletteAdobeData(rampList: ramps, colorNames: _FixedNames(name: "3713-Salmon-Light")));
+      final List<Color> colors = _colors(ramps: ramps);
 
-      expect(entries, hasLength(_colors(ramps: ramps).length));
-    }, skip: true,);
+      expect(entries, hasLength(colors.length));
+      for (int i = 0; i < colors.length; i++)
+      {
+        expect(entries[i].name, "3713SalmonLight");
+        expect(entries[i].red, closeTo(colors[i].r, 0.000001));
+      }
+    });
   });
 
   group("color names", ()

@@ -22,7 +22,10 @@ Future<Uint8List?> getPaletteAsepriteData({required final List<KPalRampData> ram
 {
   final List<ui.Color> colorList = _getColorList(ramps: rampList);
   colorList.insert(0, Colors.black);
-  assert(colorList.length < 256);
+  if (colorList.length > _maxIndexedColors)
+  {
+    return null;
+  }
   final List<List<int>> layerEncBytes = <List<int>>[];
   final List<Uint8List> layerNames = <Uint8List>[];
   final List<int> imgBytes = <int>[];

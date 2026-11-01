@@ -33,7 +33,10 @@ Future<Uint8List?> getAsepriteData({required final List<KPalRampData> colorRamps
       index++;
     }
   }
-  assert(colorList.length < 256);
+  if (colorList.length > _maxIndexedColors)
+  {
+    return null;
+  }
 
   final List<List<int>> layerEncBytes = <List<int>>[];
   final List<Uint8List> layerNames = <Uint8List>[];

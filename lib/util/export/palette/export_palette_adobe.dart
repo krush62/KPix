@@ -27,16 +27,13 @@ Future<Uint8List> getPaletteAdobeData({required final List<KPalRampData> rampLis
   buffer.add(intToBytes(value: colorList.length, length: 4, reverse: true));
   for (final ui.Color color in colorList)
   {
-    final String colorName = colorNames.getColorName(r: color.r, g: color.g, b: color.b);
+    final String colorName = colorNames.getColorName(r: color.r, g: color.g, b: color.b).replaceAll("-", "");
     buffer.add(intToBytes(value: 0x0100, length: 2));
     buffer.add(intToBytes(value: 22 + (colorName.length * 2), length: 4, reverse: true));
     buffer.add(intToBytes(value: colorName.length + 1, length: 2, reverse: true));
     for (final int codeUnit in colorName.codeUnits)
     {
-      if (codeUnit != '-'.codeUnitAt(0))
-      {
-        buffer.add(intToBytes(value: codeUnit, length: 2, reverse: true));
-      }
+      buffer.add(intToBytes(value: codeUnit, length: 2, reverse: true));
     }
     buffer.add(intToBytes(value: 0, length: 2, reverse: true));
 

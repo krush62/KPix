@@ -48,14 +48,16 @@ Future<Uint8List?> getPixeloramaData({required final List<KPalRampData> colorRam
   }
 
   dataBuffer.write(']}],"layers": [');
-  for (final DrawingLayerState drawingLayer in drawingLayers)
+  //bottom layer first, which is how the image files below are numbered
+  for (int i = drawingLayers.length - 1; i >= 0; i--)
   {
+    final DrawingLayerState drawingLayer = drawingLayers[i];
     dataBuffer.write('{"locked": ');
     drawingLayer.lockState.value == LayerLockState.locked ? dataBuffer.write('true') : dataBuffer.write('false');
     dataBuffer.write(',"visible": ');
     drawingLayer.visibilityState.value == LayerVisibilityState.visible ? dataBuffer.write('true') : dataBuffer.write('false');
     dataBuffer.write('}');
-    if (drawingLayer != drawingLayers.last)
+    if (i != 0)
     {
       dataBuffer.write(',');
     }

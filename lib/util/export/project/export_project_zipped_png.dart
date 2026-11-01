@@ -28,7 +28,7 @@ Future<Uint8List?> exportZippedPng({required final AnimationExportData exportDat
     final Uint8List? png = await exportPNG(exportData: exportData, selection: GetIt.I.get<DocumentState>().selectionState.selection, canvasSize: GetIt.I.get<CanvasState>().canvasSize, layerList: GetIt.I.get<DocumentState>().timeline.frames.value[i].layerList);
     if (png != null)
     {
-      files["frame_${(i + startFrame + 1).toString().padLeft(3, "0")}.png"] = png;
+      files["frame_${(i - startFrame + 1).toString().padLeft(3, "0")}.png"] = png;
     }
   }
 

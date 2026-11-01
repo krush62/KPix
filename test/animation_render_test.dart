@@ -16,6 +16,7 @@
 
 import 'dart:collection';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,6 +24,7 @@ import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
+import 'package:kpix/layer_states/layer_image.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/color_types.dart';
@@ -31,6 +33,7 @@ import 'package:kpix/models/export_types.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
@@ -110,7 +113,7 @@ final List<_AnimatedFormat> _animatedFormats = <_AnimatedFormat>[
   const _AnimatedFormat(name: "webp", export: exportWebPAnimation, decode: img.decodeWebP),
 ];
 
-void _animationTest(final String description, final Future<void> Function() body, {final bool skip = false})
+void _animationTest(final String description, final Future<void> Function() body)
 {
   testWidgets(description, (final WidgetTester tester) async
   {
@@ -119,7 +122,7 @@ void _animationTest(final String description, final Future<void> Function() body
       await _threeFrames();
       await body();
     },);
-  }, skip: skip,);
+  });
 }
 
 void main()
@@ -200,8 +203,6 @@ void main()
       expect(_pixelsOf(image: img.decodePng(archive.files[1].content)!), _expectedPixels(frame: 2));
     });
 
-    //BUG: skipped until fixed, the names add the start of the range instead of taking
-    //it away, so a loop over frames 2 and 3 comes out as frame_003 and frame_004
     _animationTest("numbers the frames of a loop range from one", () async
     {
       _timeline.loopStartIndex.value = 1;
@@ -210,7 +211,7 @@ void main()
       final Archive archive = ZipDecoder().decodeBytes((await exportZippedPng(exportData: _exportData(loopOnly: true)))!);
 
       expect(archive.files.map((final ArchiveFile file) => file.name), <String>["frame_001.png", "frame_002.png"]);
-    }, skip: true,);
+    });
   });
 
   group("texture pack animation", ()
@@ -286,8 +287,6 @@ void main()
       },);
     });
 
-    //BUG: skipped until fixed, exportPNG does not say which frame it renders, so every
-    //png of the sequence takes the linked layer's raster of the first frame
     testWidgets("shows each frame's own result in a png sequence", (final WidgetTester tester) async
     {
       await withProject(tester: tester, canvasSize: _canvasSize, body: (final ProjectSession projectSession) async
@@ -299,6 +298,46 @@ void main()
         expect(_pixelsOf(image: img.decodePng(archive.files[0].content)!)[CoordinateSetI(x: 2, y: 2)], expected[0]);
         expect(_pixelsOf(image: img.decodePng(archive.files[1].content)!)[CoordinateSetI(x: 2, y: 2)], expected[1]);
       },);
-    }, skip: true,);
+    });
+
+    for (final (String name, Future<Uint8List?> Function({required ImageExportData exportData, required CoordinateSetI canvasSize, required LayerCollection layerList, required SelectionList selection}) export, img.Image? Function(Uint8List) decode) format in <(String, Future<Uint8List?> Function({required ImageExportData exportData, required CoordinateSetI canvasSize, required LayerCollection layerList, required SelectionList selection}), img.Image? Function(Uint8List))>[
+      ("png", exportPNG, img.decodePng),
+      ("webp", exportWebP, img.decodeWebP),
+    ])
+    {
+      testWidgets("shows the second frame's own result in a still ${format.$1}", (final WidgetTester tester) async
+      {
+        await withProject(tester: tester, canvasSize: _canvasSize, body: (final ProjectSession projectSession) async
+        {
+          final List<int> expected = await linkedShading();
+
+          final Uint8List? bytes = await format.$2(
+            exportData: const ImageExportData(name: "IMAGE", extension: "bin", scalable: true),
+            canvasSize: _canvasSize,
+            layerList: _timeline.frames.value[1].layerList,
+            selection: GetIt.I.get<DocumentState>().selectionState.selection,
+          );
+
+          expect(_pixelsOf(image: format.$3(bytes!)!)[CoordinateSetI(x: 2, y: 2)], expected[1]);
+        },);
+      });
+    }
+
+    testWidgets("falls back to the layer's last raster for layers outside the document", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: _canvasSize, body: (final ProjectSession projectSession) async
+      {
+        final DrawingLayerState layer = _timeline.selectedFrame!.layerList.getLayer(index: 0) as DrawingLayerState;
+        final ColorReference color = GetIt.I.get<PaletteState>().colorRamps[1].references[2];
+        layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{CoordinateSetI(x: 2, y: 2): color}));
+        await settle();
+
+        final ui.Image image = await getImageFromLayers(layerCollection: LayerCollection(layers: <LayerState>[layer], selLayerIdx: 0), canvasSize: _canvasSize, selection: GetIt.I.get<DocumentState>().selectionState.selection);
+        final ByteData pixels = (await image.toByteData())!;
+        image.dispose();
+
+        expect(pixels.getUint8((2 * _canvasSize.x + 2) * 4 + 3), 255);
+      },);
+    });
   });
 }

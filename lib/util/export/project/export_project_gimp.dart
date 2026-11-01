@@ -32,7 +32,10 @@ Future<Uint8List?> getGimpData({required final List<KPalRampData> colorRamps, re
       index++;
     }
   }
-  assert(colorList.length < 256);
+  if (colorList.length > _maxIndexedColors)
+  {
+    return null;
+  }
 
   final int fullHeaderSize = 30 + //header
       12 + (3 * colorList.length) + //color map

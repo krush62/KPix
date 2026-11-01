@@ -61,7 +61,7 @@ final List<_LayeredFormat> _layeredFormats = <_LayeredFormat>[
   _LayeredFormat(name: "pixelorama", export: getPixeloramaData, read: (final Uint8List bytes) => readPixelorama(bytes: bytes), keepsLock: true),
 ];
 
-void _fixtureTest(final String description, final Future<void> Function(ExportFixture fixture) body, {final bool skip = false})
+void _fixtureTest(final String description, final Future<void> Function(ExportFixture fixture) body)
 {
   testWidgets(description, (final WidgetTester tester) async
   {
@@ -69,7 +69,7 @@ void _fixtureTest(final String description, final Future<void> Function(ExportFi
     {
       await body(await buildExportFixture(projectSession: projectSession));
     },);
-  }, skip: skip,);
+  });
 }
 
 Future<Uint8List> _exported({required final _LayeredFormat format}) async
@@ -119,24 +119,21 @@ void main()
         expect(file.layers.map((final ExportedLayer layer) => layer.pixels).toList(), fixture.expectedLayers);
       });
 
-      //BUG: skipped until fixed for pixelorama, the layer list is written top to bottom
-      //while the image files are numbered from the bottom, so the flags land on the wrong layers
       _fixtureTest("marks the hidden layer", (final ExportFixture fixture) async
       {
         final ExportedProject file = format.read(await _exported(format: format));
 
         expect(file.layers.map((final ExportedLayer layer) => layer.visible), <bool>[true, false, true, true]);
-      }, skip: format.name == "pixelorama",);
+      });
 
       if (format.keepsLock)
       {
-        //BUG: skipped until fixed for pixelorama, same as the hidden layer
         _fixtureTest("marks the locked layer", (final ExportFixture fixture) async
         {
           final ExportedProject file = format.read(await _exported(format: format));
 
           expect(file.layers.map((final ExportedLayer layer) => layer.locked), <bool>[false, false, true, false]);
-        }, skip: format.name == "pixelorama",);
+        });
       }
 
       testWidgets("includes the pixels of a layer effect", (final WidgetTester tester) async
@@ -253,21 +250,47 @@ void main()
 
   group("more colors than an index holds", ()
   {
-    //BUG: skipped until fixed, this is only an assert: in a release build the indices
-    //wrap around and the file shows the wrong colors without any warning
-    for (final _LayeredFormat format in _layeredFormats.where((final _LayeredFormat f) => f.name == "aseprite" || f.name == "gimp"))
+    //aseprite keeps one of the 255 places for its transparent color
+    for (final (_LayeredFormat format, int fittingColors) limit in <(_LayeredFormat, int)>[
+      (_layeredFormats.firstWhere((final _LayeredFormat f) => f.name == "aseprite"), 254),
+      (_layeredFormats.firstWhere((final _LayeredFormat f) => f.name == "gimp"), 255),
+    ])
     {
-      testWidgets("${format.name} refuses instead of writing wrong colors", (final WidgetTester tester) async
+      /// Ramps of 15 colors, with a smaller one first to reach exactly [colors].
+      List<KPalRampData> rampsWith({required final int colors})
+      {
+        final int fullRamps = colors ~/ 15;
+        final int rest = colors % 15;
+        return <KPalRampData>[
+          if (rest != 0) KPalRampData(uuid: "rest", settings: KPalRampSettings()..colorCount = rest),
+          for (int i = 0; i < fullRamps; i++) KPalRampData(uuid: "ramp $i", settings: KPalRampSettings()..colorCount = 15),
+        ];
+      }
+
+      testWidgets("${limit.$1.name} refuses one color too many", (final WidgetTester tester) async
       {
         await withProject(tester: tester, canvasSize: exportCanvasSize, body: (final ProjectSession projectSession) async
         {
-          final List<KPalRampData> ramps = <KPalRampData>[for (int i = 0; i < 20; i++) KPalRampData(uuid: "ramp $i", settings: KPalRampSettings()..colorCount = 15)];
-
-          final Uint8List? bytes = await format.export(colorRamps: ramps, layerCollection: GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList, canvasSize: exportCanvasSize, selection: GetIt.I.get<DocumentState>().selectionState.selection);
+          final Uint8List? bytes = await limit.$1.export(colorRamps: rampsWith(colors: limit.$2 + 1), layerCollection: GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList, canvasSize: exportCanvasSize, selection: GetIt.I.get<DocumentState>().selectionState.selection);
 
           expect(bytes, isNull);
         },);
-      }, skip: true,);
+      });
+
+      testWidgets("${limit.$1.name} reaches the last color that fits", (final WidgetTester tester) async
+      {
+        await withProject(tester: tester, canvasSize: exportCanvasSize, body: (final ProjectSession projectSession) async
+        {
+          final List<KPalRampData> ramps = rampsWith(colors: limit.$2);
+          final ColorReference last = ramps.last.references.last;
+          layerAt(projectSession: projectSession, index: 0).setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{CoordinateSetI(x: 1, y: 1): last}));
+          await settle();
+
+          final Uint8List? bytes = await limit.$1.export(colorRamps: ramps, layerCollection: GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList, canvasSize: exportCanvasSize, selection: GetIt.I.get<DocumentState>().selectionState.selection);
+
+          expect(limit.$1.read(bytes!).layers.single.pixels, <CoordinateSetI, int>{CoordinateSetI(x: 1, y: 1): rgbOf(reference: last)});
+        },);
+      });
     }
   });
 

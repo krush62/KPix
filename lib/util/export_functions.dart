@@ -87,6 +87,9 @@ part 'export/project/export_project_webp.dart';
 part 'export/project/export_project_zipped_png.dart';
 
 
+/// How many colors a format that stores pixels as one byte indices can hold.
+const int _maxIndexedColors = 255;
+
 /// One rendered animation frame as plain data.
 ///
 /// Rendering needs `dart:ui` and therefore has to happen on the UI isolate, but

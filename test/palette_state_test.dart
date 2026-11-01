@@ -45,7 +45,7 @@ HistoryManager get _history => GetIt.I.get<HistoryManager>();
 Timeline get _timeline => GetIt.I.get<DocumentState>().timeline;
 ToolState get _tools => GetIt.I.get<ToolState>();
 
-void _test(final String description, final Future<void> Function(DrawingLayerState layer) body, {final bool skip = false})
+void _test(final String description, final Future<void> Function(DrawingLayerState layer) body)
 {
   testWidgets(description, (final WidgetTester tester) async
   {
@@ -53,7 +53,7 @@ void _test(final String description, final Future<void> Function(DrawingLayerSta
     {
       await body(layerAt(projectSession: projectSession, index: 0));
     },);
-  }, skip: skip,);
+  });
 }
 
 void _paint({required final DrawingLayerState layer, required final ColorReference color})
@@ -179,14 +179,25 @@ void main()
       });
     }
 
-    //BUG: appendPalette does not check rampCountMax, which adding a ramp is held to
-    _test("stops at the most ramps a palette may have", skip: true, (final DrawingLayerState layer) async
+    _test("stops at the most ramps a palette may have", (final DrawingLayerState layer) async
     {
-      final int free = KPalConstraints.rampCountMax - _palette.colorRamps.length;
+      final int rampCount = _palette.colorRamps.length;
+      final int free = KPalConstraints.rampCountMax - rampCount;
+      final HistoryState? before = _history.getCurrentState();
 
       expect(_palette.appendPalette(loadPaletteSet: LoadPaletteSet(status: "", rampData: _newRamps(count: free + 1))), PaletteActionResult.rampCountMaxReached);
 
-      expect(_palette.colorRamps.length, lessThanOrEqualTo(KPalConstraints.rampCountMax));
+      expect(_palette.colorRamps, hasLength(rampCount), reason: "all or nothing");
+      expect(_history.getCurrentState(), same(before));
+    });
+
+    _test("may fill up the palette exactly", (final DrawingLayerState layer) async
+    {
+      final int free = KPalConstraints.rampCountMax - _palette.colorRamps.length;
+
+      expect(_palette.appendPalette(loadPaletteSet: LoadPaletteSet(status: "", rampData: _newRamps(count: free))), PaletteActionResult.success);
+
+      expect(_palette.colorRamps, hasLength(KPalConstraints.rampCountMax));
     });
   });
 
@@ -204,8 +215,7 @@ void main()
       });
     }
 
-    //BUG: replacePalette files itself as kPalAdd, so undo announces "add new ramp"; kPalPaletteReplace is never used
-    _test("is named as such in the history", skip: true, (final DrawingLayerState layer) async
+    _test("is named as such in the history", (final DrawingLayerState layer) async
     {
       _palette.replacePalette(loadPaletteSet: LoadPaletteSet(status: "", rampData: _newRamps(count: 2)), paletteReplaceBehavior: PaletteReplaceBehavior.replace);
       await settle();
@@ -445,8 +455,7 @@ void main()
       expect(_palette.colorRamps, ramps);
     });
 
-    //BUG: changeColorOrder adds its history state even if nothing moved, unlike changeLayerOrder
-    _test("adds no undo step when dropped where it is", skip: true, (final DrawingLayerState layer) async
+    _test("adds no undo step when dropped where it is", (final DrawingLayerState layer) async
     {
       final HistoryState? before = _history.getCurrentState();
 

@@ -286,10 +286,10 @@ class PaletteState
         newListOfRamps.insert(newPosition, ramp);
       }
       _colorRamps.value = newListOfRamps;
-    }
-    if (addToHistoryStack)
-    {
-      GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalOrderChange);
+      if (addToHistoryStack)
+      {
+        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalOrderChange);
+      }
     }
   }
 
@@ -345,7 +345,7 @@ class PaletteState
         }
         _selectedColor.value = loadPaletteSet.rampData![0].references[0];
         _colorRamps.value = loadPaletteSet.rampData!;
-        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalAdd);
+        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.kPalPaletteReplace);
         return PaletteActionResult.success;
       }
       else
@@ -365,6 +365,10 @@ class PaletteState
   {
     if (loadPaletteSet.rampData != null && loadPaletteSet.rampData!.isNotEmpty)
     {
+      if (colorRamps.length + loadPaletteSet.rampData!.length > KPalConstraints.rampCountMax)
+      {
+        return PaletteActionResult.rampCountMaxReached;
+      }
       final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
       for (final KPalRampData ramp in loadPaletteSet.rampData!)
       {

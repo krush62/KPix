@@ -406,24 +406,6 @@ class LayerCollection with ChangeNotifier {
     }
   }
 
-  void selectLayerAbove()
-  {
-    if (selectedLayerIndex != null && selectedLayerIndex! > 0)
-    {
-      selectLayer(newLayer: _layers[selectedLayerIndex! - 1]);
-      notifyListeners();
-    }
-  }
-
-  void selectLayerBelow()
-  {
-    if (selectedLayerIndex != null && selectedLayerIndex! < _layers.length - 1)
-    {
-      selectLayer(newLayer: _layers[selectedLayerIndex! + 1]);
-      notifyListeners();
-    }
-  }
-
   bool deleteLayer({required final LayerState deleteLayer})
   {
     if (_layers.length > 1)
@@ -524,10 +506,11 @@ class LayerCollection with ChangeNotifier {
         }
       }
       _layers.remove(drawingIntoLayer);
+      //the selected index may have been at or below the layer that just left
+      _selectedLayerIndexNotifier.value = _layers.indexOf(drawingMergeLayer);
       _rebuildDependencies();
       GetIt.I.get<LayerManager>().disposeUnusedLayers(candidates: <LayerState>[drawingIntoLayer]);
       drawingMergeLayer.setDataAll(list: refs);
-      selectLayer(newLayer: drawingMergeLayer);
       notifyListeners();
     }
     return result;
@@ -552,6 +535,11 @@ class LayerCollection with ChangeNotifier {
         if (currentIndex != null)
         {
           _layers.insert(currentIndex, addLayer);
+          final int? selectedBefore = selectedLayerIndex;
+          if (selectedBefore != null && selectedBefore > currentIndex)
+          {
+            _selectedLayerIndexNotifier.value = selectedBefore + 1;
+          }
         }
       }
       _rebuildDependencies();
@@ -608,25 +596,21 @@ class LayerCollection with ChangeNotifier {
     return orderChanged;
   }
 
-  void rasterLayer(
-      {required final LayerState rasterLayer, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps,})
+  Future<void> rasterLayer(
+      {required final LayerState rasterLayer, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps,}) async
   {
     if (rasterLayer is GridLayerState)
     {
-      rasterLayer.getHashMap().then((final CoordinateColorMap data)
-      {
-        _replaceCurrentLayerWithDrawingLayer(data: data,
-            originalLayer: rasterLayer,
-            canvasSize: canvasSize,
-            ramps: ramps,);
-      });
+      final CoordinateColorMap data = await rasterLayer.getHashMap();
+      _replaceCurrentLayerWithDrawingLayer(data: data,
+          originalLayer: rasterLayer,
+          canvasSize: canvasSize,
+          ramps: ramps,);
     }
     else if (rasterLayer is ShadingLayerState)
     {
-      _rasterShadingLayer(shadingLayer: rasterLayer).then((final void _)
-      {
-        _shadingLayerRastered(shadingLayer: rasterLayer);
-      },);
+      await _rasterShadingLayer(shadingLayer: rasterLayer);
+      _shadingLayerRastered(shadingLayer: rasterLayer);
     }
   }
 

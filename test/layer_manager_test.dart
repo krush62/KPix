@@ -54,7 +54,7 @@ SelectionState get _selection => GetIt.I.get<DocumentState>().selectionState;
 LayerCollection get _layers => _timeline.selectedFrame!.layerList;
 List<ColorReference> get _ramp => GetIt.I.get<PaletteState>().colorRamps[0].references;
 
-void _test(final String description, final Future<void> Function(DrawingLayerState bottom) body, {final bool skip = false})
+void _test(final String description, final Future<void> Function(DrawingLayerState bottom) body)
 {
   testWidgets(description, (final WidgetTester tester) async
   {
@@ -62,7 +62,7 @@ void _test(final String description, final Future<void> Function(DrawingLayerSta
     {
       await body(layerAt(projectSession: projectSession, index: 0));
     },);
-  }, skip: skip,);
+  });
 }
 
 void _paint({required final DrawingLayerState layer, required final CoordinateSetI coord, required final ColorReference color})
@@ -402,8 +402,7 @@ void main()
       expect(_timeline.getCurrentLayer(), same(stack[1]));
     });
 
-    //BUG: selectLayerAbove/Below skip LayerManager.selectLayer, so the arrow keys neither hand over a selection, nor report the change, nor add an undo step
-    _test("hands a floating selection over, like clicking the layer does", skip: true, (final DrawingLayerState bottom) async
+    _test("hands a floating selection over, like clicking the layer does", (final DrawingLayerState bottom) async
     {
       final DrawingLayerState upper = _add<DrawingLayerState>(kind: LayerKind.drawing);
       _paint(layer: upper, coord: _pixel, color: _ramp[0]);
@@ -418,10 +417,15 @@ void main()
       expect(_timeline.getCurrentLayer(), same(bottom));
       expect(upper.getDataEntry(coord: _pixel), _ramp[0], reason: "the layer that was left gets its pixel back");
       expect(_selection.selection.owner, same(bottom));
+      expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.layerChangeWithSelection);
+
+      _selection.deselect(addToHistoryStack: false);
+      await settle();
+      expect(upper.getDataEntry(coord: _pixel), _ramp[0], reason: "deselecting leaves the pixel on its own layer");
+      expect(bottom.getDataEntry(coord: _pixel), isNull);
     });
 
-    //BUG: see above
-    _test("tells the widgets about it, like clicking the layer does", skip: true, (final DrawingLayerState bottom) async
+    _test("tells the widgets about it, like clicking the layer does", (final DrawingLayerState bottom) async
     {
       _add<DrawingLayerState>(kind: LayerKind.drawing);
       int reports = 0;
@@ -434,8 +438,7 @@ void main()
       expect(reports, greaterThan(0), reason: "the tool bar and the tools follow the kind of layer that is selected");
     });
 
-    //BUG: see above
-    _test("is an undo step, like clicking the layer is", skip: true, (final DrawingLayerState bottom) async
+    _test("is an undo step, like clicking the layer is", (final DrawingLayerState bottom) async
     {
       _add<DrawingLayerState>(kind: LayerKind.drawing);
       await settle();
@@ -444,6 +447,19 @@ void main()
       _manager.selectLayerBelow();
 
       expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.layerChange);
+
+      await _undo();
+      expect(_layers.selectedLayerIndex, 0);
+    });
+
+    _test("adds no undo step at either end", (final DrawingLayerState bottom) async
+    {
+      final HistoryState? before = _history.getCurrentState();
+
+      _manager.selectLayerAbove();
+      _manager.selectLayerBelow();
+
+      _expectNoUndoStep(before: before);
     });
   });
 
@@ -629,8 +645,7 @@ void main()
       expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.layerDuplicate);
     });
 
-    //BUG: LayerCollection.duplicateLayer inserts above the selected layer without moving the selected index, so the selection slips to another layer
-    _test("above the selected layer leaves that one selected", skip: true, (final DrawingLayerState bottom) async
+    _test("above the selected layer leaves that one selected", (final DrawingLayerState bottom) async
     {
       final DrawingLayerState upper = _add<DrawingLayerState>(kind: LayerKind.drawing);
       _manager.selectLayer(newLayer: bottom, addToHistoryStack: false);
@@ -687,8 +702,7 @@ void main()
       expect(_layers.length, LayerCollection.maxLayers);
     });
 
-    //BUG: layerDuplicateSelected adds its history state without looking at the result
-    _test("adds no undo step when it is refused", skip: true, (final DrawingLayerState bottom) async
+    _test("adds no undo step when it is refused", (final DrawingLayerState bottom) async
     {
       _fill(layers: _layers);
       final HistoryState? before = _history.getCurrentState();
@@ -726,6 +740,12 @@ void main()
       final DrawingLayerState bottomBack = _layers.getLayer(index: 1) as DrawingLayerState;
       expect(upperBack.getDataEntry(coord: _otherPixel), isNull);
       expect(bottomBack.getDataEntry(coord: _pixel), _ramp[2]);
+
+      await _redo();
+      expect(_layers.length, 1);
+      final DrawingLayerState merged = _layers.getLayer(index: 0) as DrawingLayerState;
+      expect(merged.getDataEntry(coord: _pixel), _ramp[1]);
+      expect(merged.getDataEntry(coord: _otherPixel), _ramp[3]);
     });
 
     _test("drops a floating selection first", (final DrawingLayerState bottom) async
@@ -743,8 +763,7 @@ void main()
       expect(upper.getDataEntry(coord: _pixel), _ramp[1]);
     });
 
-    //BUG: LayerCollection.mergeLayer removes the layer below and then reads the old selected index in selectLayer: RangeError, with the layer already gone
-    _test("while the layer below is selected", skip: true, (final DrawingLayerState bottom) async
+    _test("while the layer below is selected", (final DrawingLayerState bottom) async
     {
       final DrawingLayerState upper = _add<DrawingLayerState>(kind: LayerKind.drawing);
       _manager.selectLayer(newLayer: bottom, addToHistoryStack: false);
@@ -757,8 +776,7 @@ void main()
       expect(_timeline.getCurrentLayer(), same(upper));
     });
 
-    //BUG: see above
-    _test("while a layer further down is selected", skip: true, (final DrawingLayerState bottom) async
+    _test("while a layer further down is selected", (final DrawingLayerState bottom) async
     {
       final List<DrawingLayerState> stack = await _stack(bottom: bottom);
       _manager.selectLayer(newLayer: stack[2], addToHistoryStack: false);
@@ -875,6 +893,21 @@ void main()
         expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.layerRaster);
       });
 
+      _test("tells the widgets once the new layer is there", (final DrawingLayerState bottom) async
+      {
+        final GridLayerState grid = _add<GridLayerState>(kind: LayerKind.grid);
+        await settle();
+        final List<LayerKind?> reported = <LayerKind?>[];
+        void listener() {reported.add(_timeline.getCurrentLayer()?.kind);}
+        _timeline.layerChangeNotifier.addListener(listener);
+        addTearDown(() {_timeline.layerChangeNotifier.removeListener(listener);});
+
+        _manager.layerRasterPressed(rasterLayer: grid);
+        await _until(condition: () => reported.isNotEmpty);
+
+        expect(reported, <LayerKind>[LayerKind.drawing], reason: "the tools follow the kind of layer that is selected");
+      });
+
       _test("keeps a hidden grid hidden", (final DrawingLayerState bottom) async
       {
         final GridLayerState grid = _add<GridLayerState>(kind: LayerKind.grid);
@@ -899,8 +932,7 @@ void main()
         expect(_layers.getLayer(index: 0), isA<GridLayerState>());
       });
 
-      //BUG: layerRasterPressed files its history state before the raster has happened, so redo brings back the grid
-      _test("can be redone", skip: true, (final DrawingLayerState bottom) async
+      _test("can be redone", (final DrawingLayerState bottom) async
       {
         final GridLayerState grid = _add<GridLayerState>(kind: LayerKind.grid);
         await settle();
@@ -943,8 +975,7 @@ void main()
         expect((_layers.getLayer(index: 1) as DrawingLayerState).getDataEntry(coord: _pixel), _ramp[3]);
       });
 
-      //BUG: same as for the grid, redo brings back the shading layer on top of the shaded pixels
-      _test("can be redone", skip: true, (final DrawingLayerState bottom) async
+      _test("can be redone", (final DrawingLayerState bottom) async
       {
         final ShadingLayerState shading = shadeAbove(layer: bottom);
         await settle();
@@ -957,6 +988,40 @@ void main()
 
         expect(_layers.length, 1);
         expect((_layers.getLayer(index: 0) as DrawingLayerState).getDataEntry(coord: _pixel), _ramp[4]);
+      });
+
+      _test("reaches the pixels of a floating selection below it", (final DrawingLayerState bottom) async
+      {
+        final ShadingLayerState shading = shadeAbove(layer: bottom);
+        _manager.selectLayer(newLayer: bottom, addToHistoryStack: false);
+        await settle();
+        _selection.selectAll();
+        await settle();
+        expect(bottom.getDataEntry(coord: _pixel), isNull, reason: "setup: the pixel floats");
+
+        _manager.layerRasterPressed(rasterLayer: shading, addToHistoryStack: false);
+        await settle();
+
+        expect(_selection.selection.isEmpty, isTrue);
+        expect(bottom.getDataEntry(coord: _pixel), _ramp[4]);
+      });
+
+      _test("leaves no selection behind that belongs to it", (final DrawingLayerState bottom) async
+      {
+        final ShadingLayerState shading = shadeAbove(layer: bottom);
+        _manager.selectLayer(newLayer: bottom, addToHistoryStack: false);
+        await settle();
+        _selection.selectAll();
+        await settle();
+        _manager.selectLayer(newLayer: shading, addToHistoryStack: false);
+        await settle();
+
+        _manager.layerRasterPressed(rasterLayer: shading, addToHistoryStack: false);
+        await settle();
+
+        expect(_selection.selection.isEmpty, isTrue);
+        expect(_timeline.getCurrentLayer(), same(bottom));
+        expect(bottom.getDataEntry(coord: _pixel), _ramp[4]);
       });
 
       _test("only reaches the visible layers below it", (final DrawingLayerState bottom) async

@@ -26,7 +26,7 @@ import 'support/selection_harness.dart';
 
 HistoryManager get _history => GetIt.I.get<HistoryManager>();
 
-void _test(final String description, final void Function() body, {final bool skip = false})
+void _test(final String description, final void Function() body)
 {
   testWidgets(description, (final WidgetTester tester) async
   {
@@ -35,7 +35,7 @@ void _test(final String description, final void Function() body, {final bool ski
       _history.clear();
       body();
     },);
-  }, skip: skip,);
+  });
 }
 
 void _addStates({required final int count})
@@ -108,8 +108,7 @@ void main()
       expect(_undoStepsLeft(), 2);
     });
 
-    //BUG: changeMaxEntries drops the redo states first and then removes a negative count: RangeError
-    _test("copes with a history that fits once the redo states are gone", skip: true, ()
+    _test("copes with a history that fits once the redo states are gone", ()
     {
       _addStates(count: 6);
       for (int i = 0; i < 4; i++)
@@ -123,6 +122,33 @@ void main()
       expect(_history.getCurrentState(), same(current));
       expect(_history.hasRedo.value, isFalse);
       expect(_undoStepsLeft(), 1);
+    });
+  });
+
+  group("lowering the undo steps after undoing everything", ()
+  {
+    _test("stays on the only state that is left", ()
+    {
+      _addStates(count: 6);
+      _undoStepsLeft();
+      final HistoryState? current = _history.getCurrentState();
+
+      _history.changeMaxEntries(maxEntries: 3);
+
+      expect(_history.getCurrentState(), same(current));
+      expect(_history.hasUndo.value, isFalse);
+      expect(_history.hasRedo.value, isFalse);
+    });
+
+    _test("still takes new states afterwards", ()
+    {
+      _addStates(count: 6);
+      _undoStepsLeft();
+      _history.changeMaxEntries(maxEntries: 3);
+
+      _addStates(count: 5);
+
+      expect(_undoStepsLeft(), 2);
     });
   });
 

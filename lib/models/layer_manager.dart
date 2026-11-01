@@ -291,17 +291,25 @@ class LayerManager
 
   void selectLayerAbove()
   {
-    if (GetIt.I.get<DocumentState>().timeline.selectedFrame != null)
-    {
-      GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.selectLayerAbove();
-    }
+    _selectLayerAtDistance(distance: -1);
   }
 
   void selectLayerBelow()
   {
-    if (GetIt.I.get<DocumentState>().timeline.selectedFrame != null)
+    _selectLayerAtDistance(distance: 1);
+  }
+
+  void _selectLayerAtDistance({required final int distance})
+  {
+    final LayerCollection? layers = GetIt.I.get<DocumentState>().timeline.selectedFrame?.layerList;
+    final int? selectedIndex = layers?.selectedLayerIndex;
+    if (layers != null && selectedIndex != null)
     {
-      GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.selectLayerBelow();
+      final int newIndex = selectedIndex + distance;
+      if (newIndex >= 0 && newIndex < layers.length)
+      {
+        selectLayer(newLayer: layers.getLayer(index: newIndex));
+      }
     }
   }
 
@@ -410,22 +418,27 @@ class LayerManager
     {
       GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
       result = frame.layerList.duplicateLayer(duplicateLayer: duplicateLayer);
-      if (addToHistoryStack)
+      if (result.$1 == LayerActionResult.success)
       {
-        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerDuplicate);
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerDuplicate);
+        }
+        newRasterData(layer: duplicateLayer);
+        GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
       }
-      newRasterData(layer: duplicateLayer);
-      GetIt.I.get<DocumentState>().timeline.layerChangeNotifier.reportChange();
     }
     return result;
   }
 
-  void layerRasterPressed({required final LayerState rasterLayer, final bool addToHistoryStack = true})
+  Future<void> layerRasterPressed({required final LayerState rasterLayer, final bool addToHistoryStack = true}) async
   {
     final Frame? frame = GetIt.I.get<DocumentState>().timeline.selectedFrame;
     if (frame != null)
     {
-      frame.layerList.rasterLayer(rasterLayer: rasterLayer, canvasSize: GetIt.I.get<CanvasState>().canvasSize, ramps: GetIt.I.get<PaletteState>().colorRamps);
+      //floating pixels are not in their layer, so the raster would miss them
+      GetIt.I.get<DocumentState>().selectionState.deselect(addToHistoryStack: false);
+      await frame.layerList.rasterLayer(rasterLayer: rasterLayer, canvasSize: GetIt.I.get<CanvasState>().canvasSize, ramps: GetIt.I.get<PaletteState>().colorRamps);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerRaster);

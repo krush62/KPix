@@ -73,7 +73,8 @@ class HistoryManager
     if (maxEntries < _maxEntries && _states.length > maxEntries)
     {
       _removeFutureEntries();
-      final int deleteCount = _states.length - maxEntries;
+      //dropping the states to redo can be enough already
+      final int deleteCount = max(_states.length - maxEntries, 0);
 
       _states.removeRange(0, deleteCount);
       _curPos -= deleteCount;

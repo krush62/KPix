@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/l10n/app_localizations.dart';
+import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/history_controller.dart';
+import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/painting/shader_options.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
 import 'package:kpix/widgets/tools/shader_widget.dart';
 import 'package:toastification/toastification.dart';
@@ -188,6 +195,78 @@ void main()
       await tester.pump();
       expect(GetIt.I.get<HistoryManager>().hasUndo.value, true, reason: "two listeners would undo both steps");
       await finishUndo(tester);
+    });
+  });
+
+  group("the selection bar with real keys", () {
+    final CoordinateSetI pixel = CoordinateSetI(x: 1, y: 1);
+    SelectionState selection() => GetIt.I.get<DocumentState>().selectionState;
+
+    Future<void> pumpBar(final WidgetTester tester, final HotkeyManager hotkeys) async {
+      await tester.pumpWidget(ToastificationWrapper(child: MaterialApp(
+        theme: monochromeTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Material(child: CallbackShortcuts(
+          bindings: hotkeys.callbackMap,
+          child: const Focus(autofocus: true, child: SelectionBarWidget()),
+        ),),
+      ),),);
+      await tester.pump();
+    }
+
+    Future<void> press(final WidgetTester tester, final LogicalKeyboardKey key) async {
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(key);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.runAsync(settle);
+      await tester.pump();
+    }
+
+    _hotkeyTest("ctrl + c and ctrl + v copy and paste the floating pixels", (final WidgetTester tester, final HotkeyManager hotkeys) async {
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps[0].references[1];
+      final DrawingLayerState layer = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getLayer(index: 0) as DrawingLayerState;
+      layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
+      await tester.runAsync(settle);
+      selection().selectAll();
+      await tester.runAsync(settle);
+      await pumpBar(tester, hotkeys);
+      expect(selection().hasClipboard, isFalse, reason: "setup");
+
+      await press(tester, LogicalKeyboardKey.keyC);
+      expect(selection().hasClipboard, isTrue);
+      expect(selection().selection.isEmpty, isTrue, reason: "copying drops the selection");
+      expect(layer.getDataEntry(coord: pixel), color, reason: "and puts the pixels back");
+
+      await press(tester, LogicalKeyboardKey.keyV);
+      expect(selection().selection.getColorReference(coord: pixel), color);
+      expect(layer.getDataEntry(coord: pixel), color, reason: "pasting floats a copy above what is there");
+    });
+
+    _hotkeyTest("ctrl + x cuts the floating pixels", (final WidgetTester tester, final HotkeyManager hotkeys) async {
+      final ColorReference color = GetIt.I.get<PaletteState>().colorRamps[0].references[1];
+      final DrawingLayerState layer = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.getLayer(index: 0) as DrawingLayerState;
+      layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{pixel: color}));
+      await tester.runAsync(settle);
+      selection().selectAll();
+      await tester.runAsync(settle);
+      await pumpBar(tester, hotkeys);
+
+      await press(tester, LogicalKeyboardKey.keyX);
+
+      expect(selection().hasClipboard, isTrue);
+      expect(selection().selection.getColorReference(coord: pixel), isNull);
+      expect(layer.getDataEntry(coord: pixel), isNull);
+    });
+
+    _hotkeyTest("ctrl + c and ctrl + v do nothing without a selection or a clipboard", (final WidgetTester tester, final HotkeyManager hotkeys) async {
+      await pumpBar(tester, hotkeys);
+
+      await press(tester, LogicalKeyboardKey.keyC);
+      await press(tester, LogicalKeyboardKey.keyV);
+
+      expect(selection().hasClipboard, isFalse);
+      expect(selection().selection.isEmpty, isTrue);
     });
   });
 }

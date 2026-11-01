@@ -111,4 +111,58 @@ void main()
     expect(moveFrame(), 1);
     expect(nextFrame(), 0);
   });
+
+  group("a key press triggers its action and nothing else", () {
+    const LogicalKeyboardKey ctrl = LogicalKeyboardKey.controlLeft;
+    const LogicalKeyboardKey shift = LogicalKeyboardKey.shiftLeft;
+    const LogicalKeyboardKey alt = LogicalKeyboardKey.altLeft;
+
+    for (final (List<LogicalKeyboardKey>, LogicalKeyboardKey, HotkeyAction) entry in <(List<LogicalKeyboardKey>, LogicalKeyboardKey, HotkeyAction)>[
+      (<LogicalKeyboardKey>[ctrl], LogicalKeyboardKey.keyC, HotkeyAction.selectionCopy),
+      (<LogicalKeyboardKey>[ctrl, shift], LogicalKeyboardKey.keyC, HotkeyAction.selectionCopyMerged),
+      (<LogicalKeyboardKey>[ctrl], LogicalKeyboardKey.keyX, HotkeyAction.selectionCut),
+      (<LogicalKeyboardKey>[ctrl], LogicalKeyboardKey.keyV, HotkeyAction.selectionPaste),
+      (<LogicalKeyboardKey>[ctrl, shift], LogicalKeyboardKey.keyV, HotkeyAction.selectionPasteAsNewLayer),
+      (<LogicalKeyboardKey>[shift], LogicalKeyboardKey.keyV, HotkeyAction.selectionFlipV),
+      (<LogicalKeyboardKey>[], LogicalKeyboardKey.keyC, HotkeyAction.selectToolSelectCircle),
+      (<LogicalKeyboardKey>[ctrl], LogicalKeyboardKey.keyZ, HotkeyAction.generalUndo),
+      (<LogicalKeyboardKey>[ctrl], LogicalKeyboardKey.keyY, HotkeyAction.generalRedo),
+      (<LogicalKeyboardKey>[ctrl, shift], LogicalKeyboardKey.keyZ, HotkeyAction.generalRedo),
+      (<LogicalKeyboardKey>[ctrl], LogicalKeyboardKey.keyQ, HotkeyAction.generalExit),
+      (<LogicalKeyboardKey>[alt], LogicalKeyboardKey.f4, HotkeyAction.generalExit),
+      (<LogicalKeyboardKey>[ctrl], LogicalKeyboardKey.keyD, HotkeyAction.selectionDeselect),
+      (<LogicalKeyboardKey>[], LogicalKeyboardKey.escape, HotkeyAction.selectionDeselect),
+      (<LogicalKeyboardKey>[], LogicalKeyboardKey.delete, HotkeyAction.selectionDelete),
+      (<LogicalKeyboardKey>[shift], LogicalKeyboardKey.delete, HotkeyAction.layersDelete),
+      (<LogicalKeyboardKey>[], LogicalKeyboardKey.space, HotkeyAction.shadingToggle),
+      (<LogicalKeyboardKey>[], LogicalKeyboardKey.arrowUp, HotkeyAction.layersSelectAbove),
+      (<LogicalKeyboardKey>[shift], LogicalKeyboardKey.arrowUp, HotkeyAction.layersMoveUp),
+      (<LogicalKeyboardKey>[ctrl], LogicalKeyboardKey.arrowUp, HotkeyAction.selectionMoveUp),
+      (<LogicalKeyboardKey>[], LogicalKeyboardKey.numpadAdd, HotkeyAction.panZoomZoomIn),
+      (<LogicalKeyboardKey>[], LogicalKeyboardKey.enter, HotkeyAction.timelinePlay),
+      (<LogicalKeyboardKey>[], LogicalKeyboardKey.pageDown, HotkeyAction.timelineExpand),
+    ]) {
+      final String keys = <String>[...entry.$1.map((final LogicalKeyboardKey key) => key.debugName ?? ""), entry.$2.debugName ?? ""].join(" + ");
+
+      testWidgets("$keys is ${entry.$3.name}", (final WidgetTester tester) async {
+        final _Host host = _Host();
+        final List<HotkeyAction> triggered = <HotkeyAction>[];
+        for (final HotkeyAction action in HotkeyAction.values) {
+          host.manager.addListener(func: () {triggered.add(action);}, action: action);
+        }
+        await host.pump(tester);
+        await _focus(tester, host.appFocus);
+
+        for (final LogicalKeyboardKey modifier in entry.$1) {
+          await tester.sendKeyDownEvent(modifier);
+        }
+        await tester.sendKeyEvent(entry.$2);
+        for (final LogicalKeyboardKey modifier in entry.$1.reversed) {
+          await tester.sendKeyUpEvent(modifier);
+        }
+
+        expect(triggered, <HotkeyAction>[entry.$3]);
+      });
+    }
+  });
 }

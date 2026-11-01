@@ -23,6 +23,7 @@ import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
@@ -44,11 +45,210 @@ Frame _firstFrame()
   return GetIt.I.get<DocumentState>().timeline.frames.value.first;
 }
 
+/// A square of five pixels from 1|1 to 5|5 in the middle of a long ramp, so that the
+/// steps of an effect can be read off the color index.
+Future<(DrawingLayerState, KPalRampData)> _square({required final ProjectSession projectSession}) async
+{
+  final KPalRampData ramp = KPalRampData(uuid: "long", settings: KPalRampSettings()..colorCount = 15);
+  final PaletteState palette = GetIt.I.get<PaletteState>();
+  palette.colorRamps = <KPalRampData>[ramp];
+  palette.selectedColor = ramp.references[0];
+  final DrawingLayerState layer = layerAt(projectSession: projectSession, index: 0);
+  layer.setDataAll(list: CoordinateColorMapNullable.from(<CoordinateSetI, ColorReference?>{
+    for (int x = 1; x <= 5; x++)
+      for (int y = 1; y <= 5; y++) CoordinateSetI(x: x, y: y): ramp.references[_base],
+  }),);
+  await settle();
+  return (layer, ramp);
+}
+
+const int _base = 7;
+
+/// How many steps along the ramp the effects moved the pixel at [x]|[y].
+int _stepsAt({required final DrawingLayerState layer, required final int x, required final int y})
+{
+  return layer.getDataEntry(coord: CoordinateSetI(x: x, y: y), withSettingsPixels: true)!.colorIndex - _base;
+}
+
+HashMap<Alignment, bool> _everyDirection()
+{
+  return HashMap<Alignment, bool>.of(<Alignment, bool>{for (final Alignment alignment in allAlignments) alignment: true});
+}
+
+HashMap<Alignment, bool> _noDirection()
+{
+  return HashMap<Alignment, bool>.of(<Alignment, bool>{for (final Alignment alignment in allAlignments) alignment: false});
+}
+
 /// How a drawing layer keeps and hands out the pixels of its effects.
 void main()
 {
   final CoordinateSetI pixel = CoordinateSetI(x: 3, y: 3);
   final CoordinateSetI right = CoordinateSetI(x: 4, y: 3);
+
+  group("the inner glow", ()
+  {
+    Future<DrawingLayerState> glow({required final ProjectSession projectSession, required final int depth, final bool recursive = false, final HashMap<Alignment, bool>? directions}) async
+    {
+      final (DrawingLayerState layer, KPalRampData _) = await _square(projectSession: projectSession);
+      layer.settings.innerSelectionMap.value = directions ?? _everyDirection();
+      layer.settings.innerGlowDepth.value = depth;
+      layer.settings.innerGlowRecursive.value = recursive;
+      layer.settings.innerStrokeStyle.value = InnerStrokeStyle.glow;
+      await settle();
+      return layer;
+    }
+
+    testWidgets("fades from the edge inwards", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
+      {
+        final DrawingLayerState layer = await glow(projectSession: projectSession, depth: 2);
+
+        expect(_stepsAt(layer: layer, x: 1, y: 3), 2, reason: "the outer ring");
+        expect(_stepsAt(layer: layer, x: 1, y: 1), 2, reason: "a corner of it");
+        expect(_stepsAt(layer: layer, x: 2, y: 3), 1, reason: "the next ring");
+        expect(_stepsAt(layer: layer, x: 3, y: 3), 0, reason: "deeper than the glow");
+      },);
+    });
+
+    testWidgets("darkens with a negative depth", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
+      {
+        final DrawingLayerState layer = await glow(projectSession: projectSession, depth: -2);
+
+        expect(_stepsAt(layer: layer, x: 1, y: 3), -2);
+        expect(_stepsAt(layer: layer, x: 2, y: 3), -1);
+        expect(_stepsAt(layer: layer, x: 3, y: 3), 0);
+      },);
+    });
+
+    testWidgets("only comes from the chosen direction", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
+      {
+        final DrawingLayerState layer = await glow(projectSession: projectSession, depth: 2, directions: _only(direction: Alignment.centerRight));
+
+        expect(_stepsAt(layer: layer, x: 5, y: 3), 2);
+        expect(_stepsAt(layer: layer, x: 4, y: 3), 1);
+        expect(_stepsAt(layer: layer, x: 3, y: 3), 0);
+        expect(_stepsAt(layer: layer, x: 1, y: 3), 0);
+      },);
+    });
+
+    testWidgets("adds a step for every further open side when recursive", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
+      {
+        final DrawingLayerState layer = await glow(projectSession: projectSession, depth: 2, recursive: true);
+
+        expect(_stepsAt(layer: layer, x: 1, y: 3), 4, reason: "three open neighbours on the edge");
+        expect(_stepsAt(layer: layer, x: 1, y: 1), 6, reason: "five open neighbours in the corner");
+        expect(_stepsAt(layer: layer, x: 2, y: 3), 3, reason: "the next ring, three open again");
+        expect(_stepsAt(layer: layer, x: 2, y: 2), 5, reason: "its corner, five open again");
+        expect(_stepsAt(layer: layer, x: 3, y: 3), 0);
+      },);
+    });
+
+    testWidgets("goes the other way when recursive with a negative depth", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
+      {
+        final DrawingLayerState layer = await glow(projectSession: projectSession, depth: -2, recursive: true);
+
+        expect(_stepsAt(layer: layer, x: 1, y: 3), -4);
+        expect(_stepsAt(layer: layer, x: 2, y: 3), -3);
+      },);
+    });
+
+    testWidgets("stops once there is nothing left to peel", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
+      {
+        final DrawingLayerState layer = await glow(projectSession: projectSession, depth: 6);
+
+        expect(_stepsAt(layer: layer, x: 1, y: 3), 6);
+        expect(_stepsAt(layer: layer, x: 2, y: 3), 5);
+        expect(_stepsAt(layer: layer, x: 3, y: 3), 4);
+      },);
+    });
+  });
+
+  group("the bevel", ()
+  {
+    Future<DrawingLayerState> bevel({required final ProjectSession projectSession, required final HashMap<Alignment, bool> directions, final int distance = 1, final int strength = 1}) async
+    {
+      final (DrawingLayerState layer, KPalRampData _) = await _square(projectSession: projectSession);
+      layer.settings.innerSelectionMap.value = directions;
+      layer.settings.bevelDistance.value = distance;
+      layer.settings.bevelStrength.value = strength;
+      layer.settings.innerStrokeStyle.value = InnerStrokeStyle.bevel;
+      await settle();
+      return layer;
+    }
+
+    for (final (Alignment direction, int left, int top, int right, int bottom) edges in <(Alignment, int, int, int, int)>[
+      (Alignment.centerRight, -1, 0, 1, 0),
+      (Alignment.centerLeft, 1, 0, -1, 0),
+      (Alignment.topCenter, 0, 1, 0, -1),
+      (Alignment.bottomCenter, 0, -1, 0, 1),
+      (Alignment.topLeft, 1, 1, -1, -1),
+      (Alignment.topRight, -1, 1, 1, -1),
+      (Alignment.bottomRight, -1, -1, 1, 1),
+      (Alignment.bottomLeft, 1, -1, -1, 1),
+    ])
+    {
+      testWidgets("lights the edges facing ${edges.$1} and darkens the others", (final WidgetTester tester) async
+      {
+        await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
+        {
+          final DrawingLayerState layer = await bevel(projectSession: projectSession, directions: _only(direction: edges.$1));
+
+          expect(_stepsAt(layer: layer, x: 1, y: 3), edges.$2, reason: "left edge");
+          expect(_stepsAt(layer: layer, x: 3, y: 1), edges.$3, reason: "top edge");
+          expect(_stepsAt(layer: layer, x: 5, y: 3), edges.$4, reason: "right edge");
+          expect(_stepsAt(layer: layer, x: 3, y: 5), edges.$5, reason: "bottom edge");
+          expect(_stepsAt(layer: layer, x: 3, y: 3), 0, reason: "the middle");
+        },);
+      });
+    }
+
+    testWidgets("moves its edges inwards with the distance", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
+      {
+        final DrawingLayerState layer = await bevel(projectSession: projectSession, directions: _only(direction: Alignment.centerRight), distance: 2);
+
+        expect(_stepsAt(layer: layer, x: 5, y: 3), 0, reason: "the peeled ring");
+        expect(_stepsAt(layer: layer, x: 4, y: 3), 1);
+        expect(_stepsAt(layer: layer, x: 2, y: 3), -1);
+        expect(_stepsAt(layer: layer, x: 3, y: 3), 0);
+      },);
+    });
+
+    testWidgets("moves further along the ramp with its strength", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
+      {
+        final DrawingLayerState layer = await bevel(projectSession: projectSession, directions: _only(direction: Alignment.centerRight), strength: 3);
+
+        expect(_stepsAt(layer: layer, x: 5, y: 3), 3);
+        expect(_stepsAt(layer: layer, x: 1, y: 3), -3);
+      },);
+    });
+
+    testWidgets("does nothing without a direction", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: CoordinateSetI(x: 8, y: 8), body: (final ProjectSession projectSession) async
+      {
+        final DrawingLayerState layer = await bevel(projectSession: projectSession, directions: _noDirection());
+
+        expect(_stepsAt(layer: layer, x: 5, y: 3), 0);
+        expect(_stepsAt(layer: layer, x: 1, y: 3), 0);
+      },);
+    });
+  });
 
   testWidgets("an outer shading of zero is told apart from none, and goes with the effect", (final WidgetTester tester) async
   {

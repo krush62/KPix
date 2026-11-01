@@ -40,14 +40,14 @@ import 'package:toastification/toastification.dart';
 ///
 /// The real bootstrap in main.dart also builds stamps, package info and the
 /// project manager; none of that is reachable from the code under test.
-Future<ProjectSession> bootProject({required final CoordinateSetI canvasSize, final AppPaths? appPaths}) async
+Future<ProjectSession> bootProject({required final CoordinateSetI canvasSize, final AppPaths? appPaths, final FontManager? fontManager}) async
 {
   SharedPreferences.setMockInitialValues(<String, Object>{});
 
   await GetIt.I.reset();
   GetIt.I.registerSingleton<Logger>(Logger(level: Level.off));
   GetIt.I.registerSingleton<HotkeyManager>(HotkeyManager());
-  registerToolServices(fontManager: FontManager(kFontMap: <PixelFontType, KFont>{}), sharedPreferences: await SharedPreferences.getInstance());
+  registerToolServices(fontManager: fontManager ?? FontManager(kFontMap: <PixelFontType, KFont>{}), sharedPreferences: await SharedPreferences.getInstance());
   registerDocumentServices(appPaths: appPaths ?? AppPaths(exportDir: ".", internalDir: ".", projectsDir: "."), devicePixelRatio: 1.0);
   final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
   GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
@@ -69,11 +69,12 @@ Future<void> withProject({
   required final CoordinateSetI canvasSize,
   required final Future<void> Function(ProjectSession projectSession) body,
   final AppPaths? appPaths,
+  final FontManager? fontManager,
 }) async
 {
   await tester.pumpWidget(const ToastificationWrapper(child: MaterialApp(home: SizedBox.shrink())));
   await tester.runAsync(() async {
-    final ProjectSession projectSession = await bootProject(canvasSize: canvasSize, appPaths: appPaths);
+    final ProjectSession projectSession = await bootProject(canvasSize: canvasSize, appPaths: appPaths, fontManager: fontManager);
     await body(projectSession);
   });
 }

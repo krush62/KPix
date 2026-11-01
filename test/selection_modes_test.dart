@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:ui';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
@@ -82,6 +84,22 @@ void _selectionTest(final String description, final Future<void> Function(Projec
 }
 
 SelectionPainter _painter() => SelectionPainter(painterOptions: testPainterOptions());
+
+/// Keeps the outlines a tool draws, which a real canvas does not tell.
+class _OutlineCanvas implements Canvas
+{
+  final List<Rect> rects = <Rect>[];
+  final List<Rect> ovals = <Rect>[];
+
+  @override
+  void drawRect(final Rect rect, final Paint paint) => rects.add(rect);
+
+  @override
+  void drawOval(final Rect rect, final Paint paint) => ovals.add(rect);
+
+  @override
+  dynamic noSuchMethod(final Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 Future<void> _undo() async
 {
@@ -536,6 +554,44 @@ void main()
 
       expect(painter.hasNewSelection, isTrue);
       expect(painter.selectionEnd, CoordinateSetI(x: 3, y: 2));
+    });
+
+    group("the cursor outline", ()
+    {
+      final CoordinateSetI start = CoordinateSetI(x: 1, y: 1);
+      final CoordinateSetI cursor = CoordinateSetI(x: 5, y: 4);
+      const Rect cursorPixel = Rect.fromLTRB(20, 16, 24, 20);
+      const Rect box = Rect.fromLTRB(4, 4, 24, 20);
+
+      for (final SelectShape shape in <SelectShape>[SelectShape.rectangle, SelectShape.ellipse])
+      {
+        _selectionTest("marks the pixel under the cursor while hovering: ${shape.name}", (final ProjectSession projectSession, final DrawingLayerState layer) async
+        {
+          final SelectionPainter painter = _painter();
+          _options.shape.value = shape;
+          final _OutlineCanvas canvas = _OutlineCanvas();
+
+          painter.calculate(drawParams: toolParams(layer: layer, cursor: cursor));
+          painter.drawCursorOutline(drawParams: toolParams(layer: layer, cursor: cursor, canvas: canvas));
+
+          expect(canvas.rects, <Rect>[cursorPixel, cursorPixel]);
+          expect(canvas.ovals, isEmpty);
+        });
+
+        _selectionTest("shows only the box during a drag: ${shape.name}", (final ProjectSession projectSession, final DrawingLayerState layer) async
+        {
+          final SelectionPainter painter = _painter();
+          _options.shape.value = shape;
+          final _OutlineCanvas canvas = _OutlineCanvas();
+
+          painter.calculate(drawParams: toolParams(layer: layer, cursor: start, primaryDown: true, pressStart: start));
+          painter.calculate(drawParams: toolParams(layer: layer, cursor: cursor, primaryDown: true, pressStart: start));
+          painter.drawCursorOutline(drawParams: toolParams(layer: layer, cursor: cursor, primaryDown: true, pressStart: start, canvas: canvas));
+
+          expect(canvas.rects, shape == SelectShape.rectangle ? <Rect>[box, box] : isEmpty);
+          expect(canvas.ovals, shape == SelectShape.ellipse ? <Rect>[box, box] : isEmpty);
+        });
+      }
     });
 
     group("polygon", ()

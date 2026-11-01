@@ -391,7 +391,7 @@ class ShapePainter extends IToolPainter
 
     if (dx == 0 && dy == 0)
     {
-      return sqrt((pd.x - p1.x) * (pd.x - p1.x) + (pd.x - p1.y) * (pd.y - p1.y));
+      return sqrt((pd.x - p1.x) * (pd.x - p1.x) + (pd.y - p1.y) * (pd.y - p1.y));
     }
 
     final double t = ((pd.x - p1.x) * dx + (pd.y - p1.y) * dy) / (dx * dx + dy * dy);

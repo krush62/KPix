@@ -237,7 +237,7 @@ class SelectionPainter extends IToolPainter
         }
       }
 
-      if (!drawParams.primaryDown && options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse)
+      if (!drawParams.primaryDown && (options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse))
       {
         final CoordinateSetD cursorPos = CoordinateSetD(
           x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * effPxlSize,

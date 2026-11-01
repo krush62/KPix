@@ -58,12 +58,13 @@ DrawingParameters toolParams({
   final double? symmetryHorizontal,
   final double? symmetryVertical,
   final bool stylusButtonDown = false,
+  final Canvas? canvas,
 })
 {
   final Offset? cursorOnScreen = cursor == null ? null : screenPosOf(coord: cursor);
   return DrawingParameters(
     offset: Offset.zero,
-    canvas: Canvas(ui.PictureRecorder()),
+    canvas: canvas ?? Canvas(ui.PictureRecorder()),
     paint: Paint(),
     pixelSize: toolPixelSize,
     canvasSize: GetIt.I.get<CanvasState>().canvasSize,

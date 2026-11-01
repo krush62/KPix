@@ -16,7 +16,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
@@ -56,7 +55,6 @@ void main()
   {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async
     {
-      GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
       final ReferenceLayerState reference = addReferenceLayer();
       final int position = layerList().getLayerPosition(state: reference)!;
       final int defaultZoom = reference.zoomSliderValue;
@@ -85,7 +83,6 @@ void main()
   {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async
     {
-      GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
       final HistoryManager history = GetIt.I.get<HistoryManager>();
       final ReferenceLayerState reference = addReferenceLayer();
       final int position = layerList().getLayerPosition(state: reference)!;
@@ -108,7 +105,6 @@ void main()
   {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async
     {
-      GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
       final LayerManager layers = GetIt.I.get<LayerManager>();
       final ReferenceLayerState first = addReferenceLayer();
       final ReferenceLayerState second = addReferenceLayer();

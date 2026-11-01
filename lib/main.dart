@@ -38,23 +38,20 @@ import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/file_callbacks.dart';
-import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/history/history_manager.dart';
-import 'package:kpix/models/history/history_state.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/models/update_state.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/app_directories.dart';
-import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/platform_helper.dart';
 import 'package:kpix/util/helpers/update_helper.dart';
-import 'package:kpix/util/import/import_kpix.dart';
 import 'package:kpix/util/messages.dart';
+import 'package:kpix/util/project_recovery.dart';
 import 'package:kpix/widgets/canvas/canvas_widget.dart';
 import 'package:kpix/widgets/controls/kpix_splitter.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
@@ -162,7 +159,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   KPixOverlay? _saveNewWarningDialog;
   Timer? _recoverTimer;
   late AppLifecycleState _lastAppLifeCycleState;
-  HistoryState? _lastHistoryState;
+  final ProjectRecovery _projectRecovery = ProjectRecovery();
 
 
   @override
@@ -197,24 +194,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   void _recoverCheck({final bool ignoreState = false})
   {
     _lastAppLifeCycleState = WidgetsBinding.instance.lifecycleState ?? _lastAppLifeCycleState;
-    final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
-    if (projectSession.hasProject && projectSession.hasChanges.value)
-    {
-      if ((ignoreState || _lastAppLifeCycleState == AppLifecycleState.resumed) && GetIt.I.get<HistoryManager>().getCurrentState() != _lastHistoryState)
-      {
-        _lastHistoryState = GetIt.I.get<HistoryManager>().getCurrentState();
-        clearRecoverDir().then((final void value)
-        {
-          final String fileName = projectSession.projectName.value ?? recoverFileName;
-          final String finalPath = p.join(GetIt.I.get<AppPaths>().internalDir, recoverSubDirName, "$fileName.$fileExtensionKpix");
-          saveKPixFile(path: finalPath);
-        },);
-      }
-    }
-    else
-    {
-      clearRecoverDir();
-    }
+    unawaited(_projectRecovery.update(mayWrite: ignoreState || _lastAppLifeCycleState == AppLifecycleState.resumed));
   }
 
   @override
@@ -478,76 +458,42 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   Future<void> _handleInitialFile() async
   {
-    final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
-    final PreferenceManager preferenceManager = GetIt.I.get<PreferenceManager>();
-
-    bool fromRecovery = false;
-    String? initialFilePath = await getRecoveryFile();
-
-    if (initialFilePath == null)
+    final InitialProject initialProject = await findInitialProject(requestedPath: _requestedFilePath);
+    final ProjectImportResult? importResult = initialProject.importResult;
+    if (importResult != null && mounted && context.mounted)
     {
-      if (cmdLineArgs.isNotEmpty && isDesktop())
-      {
-        initialFilePath = cmdLineArgs.first;
-      }
-      else if (!kIsWeb && Platform.isAndroid)
-      {
-        const MethodChannel channel = MethodChannel('app.channel.shared.data');
-        initialFilePath = await channel.invokeMethod('getSharedFile');
-      }
-
-      final ProjectImportResult importResult = await importProject(path: initialFilePath);
-      if (mounted && context.mounted)
-      {
-        showMessageForProjectImport(result: importResult, l10n: AppLocalizations.of(context)!);
-      }
-      final String fileName = extractFilenameFromPath(path: initialFilePath);
-      final String expectedFileName = initialFilePath = p.join(GetIt.I.get<AppPaths>().projectsDir, fileName);
-      final File expectedFile = File(expectedFileName);
-
-      if (await expectedFile.exists())
-      {
-        initialFilePath = expectedFileName;
-      }
-      else
-      {
-        initialFilePath = null;
-      }
-    }
-    else
-    {
-      fromRecovery = true;
+      showMessageForProjectImport(result: importResult, l10n: AppLocalizations.of(context)!);
     }
 
-    if (initialFilePath != null && initialFilePath.isNotEmpty)
+    final ProjectLoadResult? loadResult = await openInitialProject(project: initialProject);
+    if (loadResult != null)
     {
-      final LoadFileSet lfs = await loadKPixFile(
-          fileData: null,
-          path: initialFilePath,
-          drawingLayerSettingsConstraints: preferenceManager.drawingLayerSettingsConstraints,
-          shadingLayerSettingsConstraints: preferenceManager.shadingLayerSettingsConstraints,
-          frameConstraints: preferenceManager.frameConstraints,
-      );
-      if (lfs.path != null && lfs.historyState != null)
+      GetIt.I.get<ProjectSession>().hasProjectNotifier.value = true;
+      _newProjectDialog.hide();
+      if (mounted)
       {
-        final ProjectLoadResult loadResult = await projectSession.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
-        projectSession.hasProjectNotifier.value = true;
-        _newProjectDialog.hide();
-        if (mounted)
-        {
-          showMessagesForProjectLoad(result: loadResult, l10n: AppLocalizations.of(context)!);
-          showMessage(text: AppLocalizations.of(context)!.workRecovered, toastType: ToastType.info);
-        }
-      }
-      else
-      {
-        _hasProjectChanged();
+        showMessagesForProjectLoad(result: loadResult, l10n: AppLocalizations.of(context)!);
+        showMessage(text: AppLocalizations.of(context)!.workRecovered, toastType: ToastType.info);
       }
     }
     else
     {
       _hasProjectChanged();
     }
+  }
+
+  Future<String?> _requestedFilePath() async
+  {
+    if (cmdLineArgs.isNotEmpty && isDesktop())
+    {
+      return cmdLineArgs.first;
+    }
+    if (!kIsWeb && Platform.isAndroid)
+    {
+      const MethodChannel channel = MethodChannel('app.channel.shared.data');
+      return channel.invokeMethod<String>('getSharedFile');
+    }
+    return null;
   }
 
   void _hasProjectChanged()

@@ -60,7 +60,6 @@ void main()
         Canvas(recorder).drawRect(const Rect.fromLTWH(0, 0, 16, 8), Paint()..color = const Color(0xFFCC3333));
         picture = await recorder.endRecording().toImage(16, 8);
       });
-      GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
       final ReferenceLayerState reference = GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList.addNewReferenceLayer(select: true).$2!;
       await tester.pumpWidget(ToastificationWrapper(child: MaterialApp(
         theme: monochromeTheme,

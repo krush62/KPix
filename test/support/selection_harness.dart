@@ -19,8 +19,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/app_services.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/document_state.dart';
@@ -38,7 +40,7 @@ import 'package:toastification/toastification.dart';
 ///
 /// The real bootstrap in main.dart also builds stamps, package info and the
 /// project manager; none of that is reachable from the code under test.
-Future<ProjectSession> bootProject({required final CoordinateSetI canvasSize}) async
+Future<ProjectSession> bootProject({required final CoordinateSetI canvasSize, final AppPaths? appPaths}) async
 {
   SharedPreferences.setMockInitialValues(<String, Object>{});
 
@@ -46,8 +48,9 @@ Future<ProjectSession> bootProject({required final CoordinateSetI canvasSize}) a
   GetIt.I.registerSingleton<Logger>(Logger(level: Level.off));
   GetIt.I.registerSingleton<HotkeyManager>(HotkeyManager());
   registerToolServices(fontManager: FontManager(kFontMap: <PixelFontType, KFont>{}), sharedPreferences: await SharedPreferences.getInstance());
-  registerDocumentServices(appPaths: AppPaths(exportDir: ".", internalDir: ".", projectsDir: "."), devicePixelRatio: 1.0);
+  registerDocumentServices(appPaths: appPaths ?? AppPaths(exportDir: ".", internalDir: ".", projectsDir: "."), devicePixelRatio: 1.0);
   final ProjectSession projectSession = GetIt.I.get<ProjectSession>();
+  GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
   GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: 64));
 
   projectSession.init(dimensions: canvasSize);
@@ -65,11 +68,12 @@ Future<void> withProject({
   required final WidgetTester tester,
   required final CoordinateSetI canvasSize,
   required final Future<void> Function(ProjectSession projectSession) body,
+  final AppPaths? appPaths,
 }) async
 {
   await tester.pumpWidget(const ToastificationWrapper(child: MaterialApp(home: SizedBox.shrink())));
   await tester.runAsync(() async {
-    final ProjectSession projectSession = await bootProject(canvasSize: canvasSize);
+    final ProjectSession projectSession = await bootProject(canvasSize: canvasSize, appPaths: appPaths);
     await body(projectSession);
   });
 }
@@ -90,7 +94,7 @@ Future<void> settle({final int maxTicks = 60}) async
       for (int i = 0; i < frame.layerList.length; i++)
       {
         final LayerState layer = frame.layerList.getLayer(index: i);
-        if (layer is DrawingLayerState && (layer.rasterQueue.isNotEmpty || layer.doManualRaster || layer.isRasterizing))
+        if (layer is RasterableLayerState && (layer.doManualRaster || layer.isRasterizing || (layer is DrawingLayerState && layer.rasterQueue.isNotEmpty)))
         {
           pending = true;
         }

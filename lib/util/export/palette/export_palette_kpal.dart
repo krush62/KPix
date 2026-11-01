@@ -68,7 +68,7 @@ Future<Uint8List> createPaletteKPalData({required final List<KPalRampData> rampL
     //sat curve option
     byteData.setUint8(offset++, 1); //option type sat curve
     //sat curve value
-    byteData.setUint8(offset++, rampData.settings.satCurve.id);
+    byteData.setUint8(offset++, rampData.settings.satCurve.kPalId);
   }
 
   //link count

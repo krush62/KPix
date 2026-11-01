@@ -20,8 +20,6 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
-// ignore: implementation_imports
-import 'package:file_picker/src/platform/file_picker_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/project_manager.dart';
@@ -63,14 +61,6 @@ void _importTest(final String description, final Future<void> Function(ProjectSe
   });
 }
 
-Future<void> _setReadOnly({required final String path, required final bool readOnly}) async
-{
-  final ProcessResult result = Platform.isWindows
-      ? await Process.run("attrib", <String>[if (readOnly) "+r" else "-r", path])
-      : await Process.run("chmod", <String>[if (readOnly) "444" else "644", path]);
-  expect(result.exitCode, 0, reason: "setup: ${result.stderr}");
-}
-
 /// Waits until [condition] holds, on a clock that is not the one under test.
 Future<void> _waitFor({required final bool Function() condition, required final String what}) async
 {
@@ -82,33 +72,6 @@ Future<void> _waitFor({required final bool Function() condition, required final 
       fail("Timed out waiting for $what.");
     }
     await Future<void>.delayed(const Duration(milliseconds: 20));
-  }
-}
-
-class _FakeFilePicker extends FilePickerPlatform
-{
-  final FilePickerResult? result;
-  int pickCount = 0;
-  _FakeFilePicker({required this.result});
-
-  @override
-  Future<FilePickerResult?> pickFiles({
-    final String? dialogTitle,
-    final String? initialDirectory,
-    final FileType type = FileType.any,
-    final List<String>? allowedExtensions,
-    final Function(FilePickerStatus)? onFileLoading,
-    final int compressionQuality = 0,
-    final bool allowMultiple = false,
-    final bool withData = false,
-    final bool withReadStream = false,
-    final bool lockParentWindow = false,
-    final bool readSequential = false,
-    final bool cancelUploadOnWindowBlur = true,
-  }) async
-  {
-    pickCount++;
-    return result;
   }
 }
 
@@ -183,7 +146,7 @@ void main()
     _importTest("leaves the copy of a read-only file writable", (final ProjectSession projectSession) async
     {
       final File source = await _exportedProject();
-      await _setReadOnly(path: source.path, readOnly: true);
+      await setReadOnly(path: source.path, readOnly: true);
       try
       {
         if (Platform.isWindows)
@@ -199,7 +162,7 @@ void main()
       }
       finally
       {
-        await _setReadOnly(path: source.path, readOnly: false);
+        await setReadOnly(path: source.path, readOnly: false);
       }
     });
 
@@ -266,9 +229,7 @@ void main()
     /// Presses load with [picked] coming back from the file dialog.
     Future<({bool started, ProjectLoadResult? result})> pressLoad({required final FilePickerResult picked}) async
     {
-      final FilePickerPlatform previous = FilePickerPlatform.instance;
-      FilePickerPlatform.instance = _FakeFilePicker(result: picked);
-      addTearDown(() => FilePickerPlatform.instance = previous);
+      installFakeFilePicker(result: picked);
 
       bool started = false;
       final Completer<ProjectLoadResult?> finished = Completer<ProjectLoadResult?>();
@@ -321,10 +282,7 @@ void main()
 
     _importTest("does nothing when the dialog is cancelled", (final ProjectSession projectSession) async
     {
-      final FilePickerPlatform previous = FilePickerPlatform.instance;
-      final _FakeFilePicker picker = _FakeFilePicker(result: null);
-      FilePickerPlatform.instance = picker;
-      addTearDown(() => FilePickerPlatform.instance = previous);
+      final FakeFilePicker picker = installFakeFilePicker(result: null);
       bool called = false;
 
       loadFilePressed(loadStartCallback: () {called = true;}, finishCallback: (final ProjectLoadResult? result) {called = true;});

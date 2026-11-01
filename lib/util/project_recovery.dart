@@ -53,6 +53,8 @@ class ProjectRecovery
     }
     else
     {
+      //going back to the last written state later has to write it again
+      _lastWrittenState = null;
       await clearRecoverDir();
     }
   }

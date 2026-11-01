@@ -18,17 +18,24 @@
 
 enum SatCurve
 {
-  noFlat(0),
-  darkFlat(1),
-  brightFlat(2),
-  linear(3);
+  noFlat(0, 1),
+  darkFlat(1, 0),
+  brightFlat(2, 3),
+  linear(3, 2);
 
-  const SatCurve(this.id);
+  const SatCurve(this.id, this.kPalId);
 
   final int id;
 
+  /// The id in a kpal file, which the original KPal numbers differently.
+  final int kPalId;
+
   static SatCurve? fromId(final int id) {
     return SatCurve.values.where((final SatCurve curve) => curve.id == id).firstOrNull;
+  }
+
+  static SatCurve? fromKPalId(final int id) {
+    return SatCurve.values.where((final SatCurve curve) => curve.kPalId == id).firstOrNull;
   }
 }
 

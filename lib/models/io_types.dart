@@ -44,6 +44,11 @@ class LoadFileSet
 /// [cancelled] means no file was picked, which is not worth a message.
 enum ProjectImportResult { success, cancelled, couldNotOpenFile, projectAlreadyExists, notAKPixFile }
 
+/// The outcome of importing a palette file, turned into a message by the widgets.
+///
+/// [cancelled] means no file was picked, which is not worth a message.
+enum PaletteImportResult { success, cancelled, failed, paletteAlreadyExists, notAKPalFile }
+
 /// Why moving the project files to another directory did not work.
 enum ProjectDirectoryMoveError
 {

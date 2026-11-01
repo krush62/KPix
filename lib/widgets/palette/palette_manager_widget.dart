@@ -14,17 +14,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/l10n/app_localizations.dart';
-import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/export_types.dart';
-import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_manager_data.dart';
 import 'package:kpix/models/palette_state.dart';
@@ -37,7 +33,6 @@ import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/palette_action_messages.dart';
-import 'package:path/path.dart' as p;
 
 abstract final class _PaletteManagerOptions
 {
@@ -223,44 +218,19 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     });
   }
 
-  void _importFileChosen({required final String? path})
+  Future<void> _importFileChosen({required final String? path}) async
   {
-    if (path != null && path.isNotEmpty)
+    final PaletteImportResult result = await importPalette(path: path);
+    if (!mounted)
     {
-      if (path.endsWith(fileExtensionKpal))
-      {
-        final String fileName = extractFilenameFromPath(path: path);
-        final String targetPath = p.join(GetIt.I.get<AppPaths>().internalDir, palettesSubDirName, fileName);
-        if (!File(targetPath).existsSync())
-        {
-          File(path).copy(targetPath).then((final File newFile) {
-            _importFinished(newFile: newFile);
-          });
-        }
-        else
-        {
-          showMessage(text: AppLocalizations.of(context)!.paletteWithSameNameExists, toastType: ToastType.error);
-        }
-      }
-      else
-      {
-        showMessage(text: AppLocalizations.of(context)!.pleaseSelectAKPalFile, toastType: ToastType.warning);
-      }
+      return;
     }
-  }
-
-  void _importFinished({required final File newFile})
-  {
-    if (newFile.existsSync())
+    showMessageForPaletteImport(result: result, l10n: AppLocalizations.of(context)!);
+    if (result == PaletteImportResult.success)
     {
       _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
         _paletteEntries.value = pList;
       });
-      showMessage(text: AppLocalizations.of(context)!.paletteImportSuccessful, toastType: ToastType.success);
-    }
-    else
-    {
-      showMessage(text: AppLocalizations.of(context)!.paletteImportFailed, toastType: ToastType.error);
     }
   }
 

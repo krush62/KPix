@@ -16,6 +16,7 @@
 
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/kpal_constraints.dart';
+import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/messages.dart';
 
@@ -31,5 +32,23 @@ void showMessageForPaletteResult({required final PaletteActionResult result, req
       showMessage(text: l10n.loadingPaletteFailed, toastType: ToastType.error);
     case PaletteActionResult.success:
       break;
+  }
+}
+
+void showMessageForPaletteImport({required final PaletteImportResult result, required final AppLocalizations l10n})
+{
+  switch (result)
+  {
+    case PaletteImportResult.success:
+      showMessage(text: l10n.paletteImportSuccessful, toastType: ToastType.success);
+    case PaletteImportResult.cancelled:
+      //no file was picked, so there is nothing to report
+      break;
+    case PaletteImportResult.failed:
+      showMessage(text: l10n.paletteImportFailed, toastType: ToastType.error);
+    case PaletteImportResult.paletteAlreadyExists:
+      showMessage(text: l10n.paletteWithSameNameExists, toastType: ToastType.error);
+    case PaletteImportResult.notAKPalFile:
+      showMessage(text: l10n.pleaseSelectAKPalFile, toastType: ToastType.warning);
   }
 }

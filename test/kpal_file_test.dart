@@ -26,6 +26,7 @@ import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/constraints/kpal_constraints.dart';
 import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/history/history_shift_set.dart';
+import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_manager_data.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
@@ -166,7 +167,7 @@ void _expectEqualRamps({required final KPalRampData actual, required final KPalR
   }
 }
 
-void _paletteTest(final String description, final Future<void> Function() body, {final bool skip = false})
+void _paletteTest(final String description, final Future<void> Function() body)
 {
   testWidgets(description, (final WidgetTester tester) async
   {
@@ -175,7 +176,7 @@ void _paletteTest(final String description, final Future<void> Function() body, 
       await createInternalDirectories();
       await body();
     },);
-  }, skip: skip,);
+  });
 }
 
 void main()
@@ -220,8 +221,6 @@ void main()
 
     for (final SatCurve curve in SatCurve.values)
     {
-      //BUG: skipped until fixed, the export writes the kpix id of a curve and the
-      //import reads it as the id the original KPal uses, which differ
       _paletteTest("keeps the saturation curve ${curve.name}", () async
       {
         _writePalette(name: "saved.$fileExtensionKpal", bytes: await createPaletteKPalData(rampList: <KPalRampData>[_customRamp(satCurve: curve)]));
@@ -229,7 +228,19 @@ void main()
         final PaletteManagerEntryData palette = (await loadPalettesFromInternal()).single;
 
         expect(palette.rampDataList.single.settings.satCurve, curve);
-      }, skip: true,);
+      });
+    }
+
+    //the ids of the original KPal, so that it can read what is saved here
+    for (final (SatCurve curve, int id) mapping in <(SatCurve, int)>[(SatCurve.darkFlat, 0), (SatCurve.noFlat, 1), (SatCurve.linear, 2), (SatCurve.brightFlat, 3)])
+    {
+      _paletteTest("writes the saturation curve ${mapping.$1.name} as id ${mapping.$2}", () async
+      {
+        final Uint8List bytes = await createPaletteKPalData(rampList: <KPalRampData>[_customRamp(satCurve: mapping.$1)]);
+
+        //the curve is the last ramp option, followed only by the link count
+        expect(bytes[bytes.length - 2], mapping.$2);
+      });
     }
   });
 
@@ -345,8 +356,6 @@ void main()
       expect(await loadPalettesFromInternal(), isEmpty);
     });
 
-    //BUG: skipped until fixed, nothing catches a read past the end, so one damaged
-    //file takes the whole list of palettes down with it
     _paletteTest("drops a truncated palette and keeps the others", () async
     {
       final Uint8List whole = _kpalFile(ramps: <_Ramp>[_Ramp()]);
@@ -356,9 +365,8 @@ void main()
       final List<PaletteManagerEntryData> palettes = await loadPalettesFromInternal();
 
       expect(palettes.map(_nameOf), <String>["fine"]);
-    }, skip: true,);
+    });
 
-    //BUG: skipped until fixed, same read past the end as above
     _paletteTest("drops an empty file and keeps the others", () async
     {
       _writePalette(name: "broken.$fileExtensionKpal", bytes: const <int>[]);
@@ -367,7 +375,7 @@ void main()
       final List<PaletteManagerEntryData> palettes = await loadPalettesFromInternal();
 
       expect(palettes.map(_nameOf), <String>["fine"]);
-    }, skip: true,);
+    });
 
     _paletteTest("ignores other files and sub directories", () async
     {
@@ -386,6 +394,106 @@ void main()
       {
         expect(await loadPalettesFromInternal(), isEmpty);
       },);
+    });
+  });
+
+  group("importing a file", ()
+  {
+    String outside({required final String name}) => p.join(GetIt.I.get<AppPaths>().exportDir, name);
+
+    _paletteTest("without a path was cancelled", () async
+    {
+      expect(await importPalette(path: null), PaletteImportResult.cancelled);
+      expect(await importPalette(path: ""), PaletteImportResult.cancelled);
+    });
+
+    _paletteTest("refuses another file type without opening it", () async
+    {
+      expect(await importPalette(path: outside(name: "does not exist.png")), PaletteImportResult.notAKPalFile);
+    });
+
+    _paletteTest("adds the palette to the saved ones and leaves the source alone", () async
+    {
+      final List<int> bytes = _kpalFile(ramps: <_Ramp>[_Ramp()]);
+      final File source = File(outside(name: "picked.$fileExtensionKpal"))..writeAsBytesSync(bytes);
+
+      expect(await importPalette(path: source.path), PaletteImportResult.success);
+
+      expect(source.existsSync(), isTrue);
+      expect(File(p.join(_palettesDir, "picked.$fileExtensionKpal")).readAsBytesSync(), bytes);
+      expect((await loadPalettesFromInternal()).map(_nameOf), <String>["picked"]);
+    });
+
+    _paletteTest("does not overwrite a palette of the same name", () async
+    {
+      _writePalette(name: "taken.$fileExtensionKpal", bytes: _kpalFile(ramps: <_Ramp>[_Ramp()..baseHue = 111]));
+      final File source = File(outside(name: "taken.$fileExtensionKpal"))..writeAsBytesSync(_kpalFile(ramps: <_Ramp>[_Ramp()..baseHue = 222]));
+
+      expect(await importPalette(path: source.path), PaletteImportResult.paletteAlreadyExists);
+
+      expect((await loadPalettesFromInternal()).single.rampDataList.single.settings.baseHue, 111);
+    });
+
+    for (final (String condition, List<int> Function() bytes) damaged in <(String, List<int> Function())>[
+      ("empty", () => const <int>[]),
+      ("truncated", ()
+      {
+        final Uint8List whole = _kpalFile(ramps: <_Ramp>[_Ramp()]);
+        return Uint8List.sublistView(whole, 0, whole.length ~/ 2);
+      }),
+      ("holding an invalid value", () => _kpalFile(ramps: <_Ramp>[_Ramp()..baseHue = KPalConstraints.baseHueMax + 1])),
+      ("without ramps", () => _kpalFile(ramps: const <_Ramp>[])),
+    ])
+    {
+      _paletteTest("fails for a file ${damaged.$1} and adds nothing", () async
+      {
+        final File source = File(outside(name: "broken.$fileExtensionKpal"))..writeAsBytesSync(damaged.$2());
+
+        expect(await importPalette(path: source.path), PaletteImportResult.failed);
+
+        expect(Directory(_palettesDir).listSync(), isEmpty);
+      });
+    }
+
+    _paletteTest("fails for a file that is not there", () async
+    {
+      expect(await importPalette(path: outside(name: "gone.$fileExtensionKpal")), PaletteImportResult.failed);
+      expect(Directory(_palettesDir).listSync(), isEmpty);
+    });
+
+    testWidgets("fails without a palettes directory to write to", (final WidgetTester tester) async
+    {
+      await withProject(tester: tester, canvasSize: _canvasSize, appPaths: createTestPaths(), body: (final ProjectSession projectSession) async
+      {
+        final File source = File(outside(name: "picked.$fileExtensionKpal"))..writeAsBytesSync(_kpalFile(ramps: <_Ramp>[_Ramp()]));
+
+        expect(await importPalette(path: source.path), PaletteImportResult.failed);
+      },);
+    });
+
+    //a file picked from a phone over MTP arrives read-only on Windows, and File.copy
+    //would pass that on to a palette that could then never be deleted
+    _paletteTest("leaves the copy of a read-only file writable", () async
+    {
+      final File source = File(outside(name: "picked.$fileExtensionKpal"))..writeAsBytesSync(_kpalFile(ramps: <_Ramp>[_Ramp()]));
+      await setReadOnly(path: source.path, readOnly: true);
+      try
+      {
+        if (Platform.isWindows)
+        {
+          expect(() => source.writeAsBytesSync(<int>[1]), throwsA(isA<FileSystemException>()), reason: "setup: the source is read-only");
+        }
+
+        expect(await importPalette(path: source.path), PaletteImportResult.success);
+
+        final File copy = File(p.join(_palettesDir, "picked.$fileExtensionKpal"));
+        expect(() => copy.writeAsBytesSync(<int>[1]), returnsNormally);
+        expect(() => copy.deleteSync(), returnsNormally);
+      }
+      finally
+      {
+        await setReadOnly(path: source.path, readOnly: false);
+      }
     });
   });
 

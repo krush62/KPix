@@ -32,17 +32,9 @@ import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_manager_data.dart';
 import 'package:kpix/util/file_byte_reader.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
+import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
-
-//original kpal uses a different id mapping
-const Map<int, SatCurve> _kpalKpixSatCurveMap =
-<int, SatCurve>{
-  1:SatCurve.noFlat,
-  0:SatCurve.darkFlat,
-  3:SatCurve.brightFlat,
-  2: SatCurve.linear,
-};
 
 Future<List<PaletteManagerEntryData>> loadPalettesFromAssets() async
 {
@@ -88,9 +80,59 @@ Future<List<PaletteManagerEntryData>> loadPalettesFromInternal() async
   return paletteData;
 }
 
-Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required final String path}) async
+/// Adds the palette file at [path] to the saved palettes, if it can be loaded.
+Future<PaletteImportResult> importPalette({required final String? path}) async
 {
-  fileData ??= await File(path).readAsBytes();
+  if (path == null || path.isEmpty)
+  {
+    return PaletteImportResult.cancelled;
+  }
+  if (!path.endsWith(fileExtensionKpal))
+  {
+    return PaletteImportResult.notAKPalFile;
+  }
+  final String targetPath = p.join(GetIt.I.get<AppPaths>().internalDir, palettesSubDirName, extractFilenameFromPath(path: path));
+  if (await File(targetPath).exists())
+  {
+    return PaletteImportResult.paletteAlreadyExists;
+  }
+
+  try
+  {
+    final Uint8List fileData = await File(path).readAsBytes();
+    final LoadPaletteSet palette = await _loadKPalFile(fileData: fileData, path: path);
+    if (palette.rampData == null)
+    {
+      GetIt.I.get<Logger>().w("Not importing palette $path: ${palette.status}");
+      return PaletteImportResult.failed;
+    }
+    //not File.copy: that keeps a read-only source read-only, e.g. a file picked from a phone on Windows
+    await File(targetPath).writeAsBytes(fileData);
+    return PaletteImportResult.success;
+  }
+  catch (e, s)
+  {
+    GetIt.I.get<Logger>().w("Error importing palette $path.", error: e, stackTrace: s);
+    return PaletteImportResult.failed;
+  }
+}
+
+Future<LoadPaletteSet> _loadKPalFile({required final Uint8List? fileData, required final String path}) async
+{
+  try
+  {
+    return _parseKPal(fileData: fileData ?? await File(path).readAsBytes());
+  }
+  catch (e, s)
+  {
+    //a damaged file reads past its end, which must not cost the other palettes
+    GetIt.I.get<Logger>().w("Could not load palette $path.", error: e, stackTrace: s);
+    return LoadPaletteSet(status: "Could not load palette $path");
+  }
+}
+
+LoadPaletteSet _parseKPal({required final Uint8List fileData})
+{
   final FileByteReader reader = FileByteReader(fileData);
 
   //skip options
@@ -144,7 +186,7 @@ Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required fin
       if (optionType == 1) //sat curve
       {
         final int satCurveVal = reader.getInt8();
-        kPalRampSettings.satCurve = _kpalKpixSatCurveMap[satCurveVal]?? SatCurve.noFlat;
+        kPalRampSettings.satCurve = SatCurve.fromKPalId(satCurveVal) ?? SatCurve.noFlat;
       }
       else
       {

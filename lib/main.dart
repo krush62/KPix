@@ -473,7 +473,10 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       if (mounted)
       {
         showMessagesForProjectLoad(result: loadResult, l10n: AppLocalizations.of(context)!);
-        showMessage(text: AppLocalizations.of(context)!.workRecovered, toastType: ToastType.info);
+        if (initialProject.fromRecovery)
+        {
+          showMessage(text: AppLocalizations.of(context)!.workRecovered, toastType: ToastType.info);
+        }
       }
     }
     else

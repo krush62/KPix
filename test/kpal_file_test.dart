@@ -166,7 +166,7 @@ void _expectEqualRamps({required final KPalRampData actual, required final KPalR
   }
 }
 
-void _paletteTest(final String description, final Future<void> Function() body, {final bool skip = false})
+void _paletteTest(final String description, final Future<void> Function() body)
 {
   testWidgets(description, (final WidgetTester tester) async
   {
@@ -175,7 +175,7 @@ void _paletteTest(final String description, final Future<void> Function() body, 
       await createInternalDirectories();
       await body();
     },);
-  }, skip: skip,);
+  });
 }
 
 void main()
@@ -220,8 +220,6 @@ void main()
 
     for (final SatCurve curve in SatCurve.values)
     {
-      //BUG: skipped until fixed, the export writes the kpix id of a curve and the
-      //import reads it as the id the original KPal uses, which differ
       _paletteTest("keeps the saturation curve ${curve.name}", () async
       {
         _writePalette(name: "saved.$fileExtensionKpal", bytes: await createPaletteKPalData(rampList: <KPalRampData>[_customRamp(satCurve: curve)]));
@@ -229,7 +227,19 @@ void main()
         final PaletteManagerEntryData palette = (await loadPalettesFromInternal()).single;
 
         expect(palette.rampDataList.single.settings.satCurve, curve);
-      }, skip: true,);
+      });
+    }
+
+    //the ids of the original KPal, so that it can read what is saved here
+    for (final (SatCurve curve, int id) mapping in <(SatCurve, int)>[(SatCurve.darkFlat, 0), (SatCurve.noFlat, 1), (SatCurve.linear, 2), (SatCurve.brightFlat, 3)])
+    {
+      _paletteTest("writes the saturation curve ${mapping.$1.name} as id ${mapping.$2}", () async
+      {
+        final Uint8List bytes = await createPaletteKPalData(rampList: <KPalRampData>[_customRamp(satCurve: mapping.$1)]);
+
+        //the curve is the last ramp option, followed only by the link count
+        expect(bytes[bytes.length - 2], mapping.$2);
+      });
     }
   });
 
@@ -345,8 +355,6 @@ void main()
       expect(await loadPalettesFromInternal(), isEmpty);
     });
 
-    //BUG: skipped until fixed, nothing catches a read past the end, so one damaged
-    //file takes the whole list of palettes down with it
     _paletteTest("drops a truncated palette and keeps the others", () async
     {
       final Uint8List whole = _kpalFile(ramps: <_Ramp>[_Ramp()]);
@@ -356,9 +364,8 @@ void main()
       final List<PaletteManagerEntryData> palettes = await loadPalettesFromInternal();
 
       expect(palettes.map(_nameOf), <String>["fine"]);
-    }, skip: true,);
+    });
 
-    //BUG: skipped until fixed, same read past the end as above
     _paletteTest("drops an empty file and keeps the others", () async
     {
       _writePalette(name: "broken.$fileExtensionKpal", bytes: const <int>[]);
@@ -367,7 +374,7 @@ void main()
       final List<PaletteManagerEntryData> palettes = await loadPalettesFromInternal();
 
       expect(palettes.map(_nameOf), <String>["fine"]);
-    }, skip: true,);
+    });
 
     _paletteTest("ignores other files and sub directories", () async
     {

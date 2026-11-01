@@ -62,7 +62,7 @@ void _expectDot({required final ProjectSession projectSession})
 }
 
 /// Runs [body] in a project whose internal directories exist on disk.
-void _recoveryTest(final String description, final Future<void> Function(ProjectSession projectSession) body, {final bool skip = false})
+void _recoveryTest(final String description, final Future<void> Function(ProjectSession projectSession) body)
 {
   testWidgets(description, (final WidgetTester tester) async
   {
@@ -71,7 +71,7 @@ void _recoveryTest(final String description, final Future<void> Function(Project
       await createInternalDirectories();
       await body(projectSession);
     },);
-  }, skip: skip,);
+  });
 }
 
 Future<String?> _noRequest() async => null;
@@ -230,7 +230,6 @@ void main()
       expect(_recoveryFiles(), isEmpty);
     });
 
-    //BUG: skipped until fixed, clearing the directory does not forget the last written state
     _recoveryTest("writes again after going back to a state whose file was cleared", (final ProjectSession projectSession) async
     {
       final ProjectRecovery recovery = ProjectRecovery();
@@ -249,7 +248,7 @@ void main()
       await recovery.update(mayWrite: true);
 
       expect(_recoveryFiles(), hasLength(1));
-    }, skip: true,);
+    });
   });
 
   group("start up", ()

@@ -170,8 +170,7 @@ class CanvasViewport
   {
     cancelOptimalZoom();
     //squared for finer control near the center
-    final double speed = deflection.distanceSquared * _ViewportOptions.joystickPanSpeed;
-    setOffset(newOffset: offset.value - (deflection / deflection.distance) * speed * seconds);
+    setOffset(newOffset: offset.value - deflection * deflection.distance * _ViewportOptions.joystickPanSpeed * seconds);
   }
 
   void joystickZoom({required final Offset deflection, required final double seconds})

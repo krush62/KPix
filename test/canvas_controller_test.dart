@@ -163,7 +163,7 @@ Future<void> _holdStylusButton({required final WidgetTester tester, required fin
   }
 }
 
-void _inputTest(final String description, final Future<void> Function(WidgetTester tester, CanvasController controller) body, {final bool skip = false})
+void _inputTest(final String description, final Future<void> Function(WidgetTester tester, CanvasController controller) body)
 {
   testWidgets(description, (final WidgetTester tester) async
   {
@@ -174,7 +174,7 @@ void _inputTest(final String description, final Future<void> Function(WidgetTest
     await _release(tester);
     //what the layers still had planned, like building the composite
     await tester.pump(const Duration(milliseconds: 300));
-  }, skip: skip,);
+  });
 }
 
 ReferenceLayerState _addReferenceLayer()
@@ -490,11 +490,12 @@ void main()
       expect(_tools.selectedTool, ToolType.pencil);
     });
 
-    //BUG: pointerUp asks again whether it shades, and _previousTool was only set by a press that picked: LateInitializationError
-    _inputTest("survives the shading being turned off while the secondary button is down", skip: true, (final WidgetTester tester, final CanvasController controller) async
+    _inputTest("survives the shading being turned off while the secondary button is down", (final WidgetTester tester, final CanvasController controller) async
     {
       _shader.isEnabled.value = true;
       _tools.setToolSelection(tool: ToolType.pencil);
+      final ShaderDirection direction = _shader.shaderDirection.value;
+      final ColorReference color = _palette.selectedColor!;
       const Offset position = Offset(400, 300);
       controller.pointerDown(details: _press(at: position, buttons: kSecondaryButton));
 
@@ -502,10 +503,11 @@ void main()
       controller.pointerUp(details: _lift(at: position));
 
       expect(_tools.selectedTool, ToolType.pencil);
+      expect(_palette.selectedColor, color, reason: "the press was going to shade, not to pick");
+      expect(_shader.shaderDirection.value, isNot(direction));
     });
 
-    //BUG: same as above: a press that picked and a release that shades never restore the tool
-    _inputTest("does not stay on the pick tool when the shading is turned on while the secondary button is down", skip: true, (final WidgetTester tester, final CanvasController controller) async
+    _inputTest("does not stay on the pick tool when the shading is turned on while the secondary button is down", (final WidgetTester tester, final CanvasController controller) async
     {
       _tools.setToolSelection(tool: ToolType.pencil);
       const Offset position = Offset(400, 300);
@@ -697,8 +699,7 @@ void main()
 
       for (final LayerKind kind in <LayerKind>[LayerKind.shading, LayerKind.dither])
       {
-        //BUG: _stylusButtonLongPress only remembers the size on drawing layers, so a shading layer starts from a stale value
-        _inputTest("changes the tool size from where it is on a ${kind.name} layer too", skip: true, (final WidgetTester tester, final CanvasController controller) async
+        _inputTest("changes the tool size from where it is on a ${kind.name} layer too", (final WidgetTester tester, final CanvasController controller) async
         {
           _layers.addNewLayer(layerType: kind, select: true, addToHistoryStack: false);
           await tester.runAsync(settle);
@@ -747,8 +748,7 @@ void main()
         await tester.pump(const Duration(milliseconds: 200));
       });
 
-      //BUG: _setStylusButton treats every quick release as a tap, so zooming for less than the pick duration also picks a color
-      _inputTest("does not pick anything after zooming", skip: true, (final WidgetTester tester, final CanvasController controller) async
+      _inputTest("does not pick anything after zooming", (final WidgetTester tester, final CanvasController controller) async
       {
         final ColorReference color = _palette.selectedColor!;
         final Offset position = _at(controller: controller, x: 13, y: 7);
@@ -758,6 +758,18 @@ void main()
         controller.pointerHover(details: _hover(at: position - const Offset(0, 30), kind: stylus));
 
         expect(_palette.selectedColor, color);
+        await tester.pump(const Duration(milliseconds: 200));
+      });
+
+      _inputTest("still picks when it was not moved and released in time", (final WidgetTester tester, final CanvasController controller) async
+      {
+        final ColorReference? expected = _drawing.getDataEntry(coord: CoordinateSetI(x: 13, y: 7));
+        final Offset position = _at(controller: controller, x: 13, y: 7);
+        await _holdStylusButton(tester: tester, controller: controller, at: position);
+
+        controller.pointerHover(details: _hover(at: position, kind: stylus));
+
+        expect(_palette.selectedColor, expected);
         await tester.pump(const Duration(milliseconds: 200));
       });
 
@@ -801,8 +813,21 @@ void main()
         await tester.pump(const Duration(milliseconds: 200));
       });
 
-      //BUG: see above, panning for less than the pick duration also picks a color
-      _inputTest("does not pick anything", skip: true, (final WidgetTester tester, final CanvasController controller) async
+      _inputTest("does not turn the shading around", (final WidgetTester tester, final CanvasController controller) async
+      {
+        _shader.isEnabled.value = true;
+        final ShaderDirection direction = _shader.shaderDirection.value;
+        const Offset position = Offset(400, 300);
+
+        controller.pointerHover(details: _hover(at: position, kind: stylus, button: true));
+        controller.pointerHover(details: _hover(at: position + const Offset(20, 0), kind: stylus, button: true));
+        controller.pointerHover(details: _hover(at: position + const Offset(40, 0), kind: stylus));
+
+        expect(_shader.shaderDirection.value, direction);
+        await tester.pump(const Duration(milliseconds: 200));
+      });
+
+      _inputTest("does not pick anything", (final WidgetTester tester, final CanvasController controller) async
       {
         final ColorReference color = _palette.selectedColor!;
         final Offset position = _at(controller: controller, x: 13, y: 7);
@@ -1042,8 +1067,19 @@ void main()
         await tester.pump(const Duration(milliseconds: 200));
       });
 
-      //BUG: pointerUp and pointerCancel end a touch pan without going back to the default cursor, which a mouse on the same device keeps seeing
-      _inputTest("gives the mouse cursor back afterwards", skip: true, (final WidgetTester tester, final CanvasController controller) async
+      _inputTest("gives the mouse cursor back when one of them is cancelled", (final WidgetTester tester, final CanvasController controller) async
+      {
+        final MouseCursor cursor = controller.mouseCursor.value;
+        final (Offset first, Offset second) = await putDown(tester: tester, controller: controller);
+
+        controller.pointerCancel(details: _cancel(at: second, kind: touch, pointer: 2));
+
+        expect(controller.mouseCursor.value, cursor);
+        controller.pointerUp(details: _lift(at: first, kind: touch));
+        await tester.pump(const Duration(milliseconds: 200));
+      });
+
+      _inputTest("gives the mouse cursor back afterwards", (final WidgetTester tester, final CanvasController controller) async
       {
         final MouseCursor cursor = controller.mouseCursor.value;
         final (Offset first, Offset second) = await putDown(tester: tester, controller: controller);
@@ -1060,8 +1096,7 @@ void main()
     {
       const PointerDeviceKind stylus = PointerDeviceKind.stylus;
 
-      //BUG: pointerDown and pointerMove follow every pointer, so a touch during a stylus stroke drags the stroke over to it
-      _inputTest("does not take over its stroke", skip: true, (final WidgetTester tester, final CanvasController controller) async
+      _inputTest("does not take over its stroke", (final WidgetTester tester, final CanvasController controller) async
       {
         final ColorReference color = _palette.selectedColor!;
         final Offset start = _at(controller: controller, x: 10, y: 8);
@@ -1086,8 +1121,61 @@ void main()
         await tester.pump(const Duration(milliseconds: 200));
       });
 
-      //BUG: pointerDown only starts a stroke without a touch on the screen, and _checkTouchDraw then starts one at the palm
-      _inputTest("does not get in the way when it was there first", skip: true, (final WidgetTester tester, final CanvasController controller) async
+      _inputTest("does not end its stroke when it is lifted", (final WidgetTester tester, final CanvasController controller) async
+      {
+        final ColorReference color = _palette.selectedColor!;
+        final Offset start = _at(controller: controller, x: 10, y: 8);
+        final Offset end = _at(controller: controller, x: 12, y: 8);
+        final Offset palm = _at(controller: controller, x: 20, y: 20);
+        controller.pointerDown(details: _press(at: start, kind: stylus));
+        _frame(controller);
+        controller.pointerDown(details: _press(at: palm, kind: touch, pointer: 2));
+        _frame(controller);
+
+        controller.pointerUp(details: _lift(at: palm, kind: touch, pointer: 2));
+        _frame(controller);
+        controller.pointerMove(details: _move(at: end, kind: stylus));
+        _frame(controller);
+        controller.pointerUp(details: _lift(at: end, kind: stylus));
+        _frame(controller);
+        await tester.runAsync(settle);
+
+        expect(_drawing.getDataEntry(coord: CoordinateSetI(x: 12, y: 8)), color);
+        expect(_drawing.getDataEntry(coord: CoordinateSetI(x: 20, y: 20)), isNot(color));
+        await tester.pump(const Duration(milliseconds: 200));
+      });
+
+      _inputTest("does not move its stroke, or the canvas, however many fingers there are", (final WidgetTester tester, final CanvasController controller) async
+      {
+        final ColorReference color = _palette.selectedColor!;
+        final Offset start = _at(controller: controller, x: 10, y: 8);
+        final Offset palm = _at(controller: controller, x: 20, y: 20);
+        final Offset view = controller.viewport.offset.value;
+        final int zoom = _view.zoomFactor;
+        controller.pointerDown(details: _press(at: start, kind: stylus));
+        _frame(controller);
+
+        controller.pointerDown(details: _press(at: palm, kind: touch, pointer: 2));
+        controller.pointerDown(details: _press(at: palm + const Offset(100, 0), kind: touch, pointer: 3));
+        controller.pointerMove(details: _move(at: palm + const Offset(50, 50), kind: touch, pointer: 2));
+        _frame(controller);
+
+        expect(controller.viewport.offset.value, view);
+        expect(_view.zoomFactor, zoom);
+        expect(controller.mouseCursor.value, isNot(SystemMouseCursors.move));
+
+        controller.pointerUp(details: _lift(at: start, kind: stylus));
+        _frame(controller);
+        await tester.runAsync(settle);
+
+        expect(_drawing.getDataEntry(coord: CoordinateSetI(x: 10, y: 8)), color);
+        expect(_drawing.getDataEntry(coord: CoordinateSetI(x: 20, y: 20)), isNot(color));
+        controller.pointerCancel(details: _cancel(at: palm, kind: touch, pointer: 2));
+        controller.pointerCancel(details: _cancel(at: palm, kind: touch, pointer: 3));
+        await tester.pump(const Duration(milliseconds: 200));
+      });
+
+      _inputTest("does not get in the way when it was there first", (final WidgetTester tester, final CanvasController controller) async
       {
         final ColorReference color = _palette.selectedColor!;
         final Offset start = _at(controller: controller, x: 10, y: 8);
@@ -1232,8 +1320,7 @@ void main()
       }),
     ])
     {
-      //BUG: only the zoom branch checks for a vertical scroll, the others take anything but up for down
-      _inputTest("does nothing sideways with ${modifier.$1}", skip: true, (final WidgetTester tester, final CanvasController controller) async
+      _inputTest("does nothing sideways with ${modifier.$1}", (final WidgetTester tester, final CanvasController controller) async
       {
         _tools.setToolSelection(tool: ToolType.pencil);
         _tools.setToolSize(0, 5);
@@ -1348,18 +1435,34 @@ void main()
       controller.panZoomUpdate(event: _panZoom());
 
       controller.panZoomUpdate(event: _panZoom(scale: 3.1));
-      expect(_view.zoomFactor, zoom + 3);
-
-      controller.panZoomUpdate(event: _panZoom(scale: 2.1));
       expect(_view.zoomFactor, zoom + 2);
 
+      controller.panZoomUpdate(event: _panZoom(scale: 2.1));
+      expect(_view.zoomFactor, zoom + 1);
+
       controller.panZoomUpdate(event: _panZoom(scale: 0.5));
-      expect(_view.zoomFactor, zoom - 2);
+      expect(_view.zoomFactor, zoom - 1);
+
+      controller.panZoomUpdate(event: _panZoom(scale: 0.25));
+      expect(_view.zoomFactor, zoom - 3);
       controller.panZoomEnd();
     });
 
-    //BUG: panZoomUpdate maps a scale of 1.0 to +24 and anything below to -25 or less, so the slightest pinch in is a whole step and no pan
-    _inputTest("does not zoom out from the slightest pinch", skip: true, (final WidgetTester tester, final CanvasController controller) async
+    _inputTest("keeps panning until the pinch makes a whole step, in both directions", (final WidgetTester tester, final CanvasController controller) async
+    {
+      final int zoom = _view.zoomFactor;
+      final Offset start = controller.viewport.offset.value;
+      controller.panZoomUpdate(event: _panZoom());
+
+      controller.panZoomUpdate(event: _panZoom(scale: 1.9, panDelta: const Offset(4, 0)));
+      controller.panZoomUpdate(event: _panZoom(scale: 0.6, panDelta: const Offset(4, 0)));
+
+      expect(_view.zoomFactor, zoom);
+      expect(controller.viewport.offset.value, start + const Offset(8, 0));
+      controller.panZoomEnd();
+    });
+
+    _inputTest("does not zoom out from the slightest pinch", (final WidgetTester tester, final CanvasController controller) async
     {
       final int zoom = _view.zoomFactor;
       final Offset start = controller.viewport.offset.value;
@@ -1372,8 +1475,7 @@ void main()
       controller.panZoomEnd();
     });
 
-    //BUG: same formula: a scale of 1.0 counts as 24, which is several steps when the step distance is small
-    _inputTest("does not zoom without a pinch, whatever the step distance", skip: true, (final WidgetTester tester, final CanvasController controller) async
+    _inputTest("does not zoom without a pinch, whatever the step distance", (final WidgetTester tester, final CanvasController controller) async
     {
       _touchPrefs.zoomStepDistance.value = _touchPrefs.zoomStepDistance.min;
       final int zoom = _view.zoomFactor;
@@ -1387,8 +1489,7 @@ void main()
       controller.panZoomEnd();
     });
 
-    //BUG: panZoomUpdate zooms without viewport.zoomAround, unlike the wheel and two fingers, so the canvas slides away from under the fingers
-    _inputTest("keeps the part of the canvas between the fingers in place", skip: true, (final WidgetTester tester, final CanvasController controller) async
+    _inputTest("keeps the part of the canvas between the fingers in place", (final WidgetTester tester, final CanvasController controller) async
     {
       const Offset focus = Offset(420, 310);
       final Offset before = (focus - controller.viewport.offset.value) / _view.zoomFactor.toDouble();
@@ -1442,8 +1543,22 @@ void main()
       expect(_history.getCurrentState(), same(before));
     });
 
-    //BUG: _handleReferenceLayer only arms its reset when the press moved, so a drag from the same spot leaves its distance behind for the next press
-    _inputTest("does not jump after a second drag from the same spot", skip: true, (final WidgetTester tester, final CanvasController controller) async
+    _inputTest("does not jump when pressed at the same spot after zooming", (final WidgetTester tester, final CanvasController controller) async
+    {
+      final ReferenceLayerState reference = _addReferenceLayer();
+      await tester.runAsync(settle);
+      final double x = reference.offsetXNotifier.value;
+      final Offset spot = _at(controller: controller, x: 5, y: 5);
+      _dragAlong(controller: controller, path: <Offset>[spot, _at(controller: controller, x: 7, y: 5)]);
+      expect(reference.offsetXNotifier.value, closeTo(x + 2, 1e-9), reason: "setup");
+
+      controller.pointerSignal(ev: _scroll(dy: 20, at: const Offset(100, 100)));
+      _dragAlong(controller: controller, path: <Offset>[spot]);
+
+      expect(reference.offsetXNotifier.value, closeTo(x + 2, 1e-9));
+    });
+
+    _inputTest("does not jump after a second drag from the same spot", (final WidgetTester tester, final CanvasController controller) async
     {
       final ReferenceLayerState reference = _addReferenceLayer();
       await tester.runAsync(settle);
@@ -1727,8 +1842,7 @@ void main()
         await _release(tester);
       });
 
-      //BUG: joystickPan divides by the length of the deflection, which is zero exactly at the edge of the dead zone: the canvas is gone
-      testWidgets("stays put at no deflection at all", skip: true, (final WidgetTester tester) async
+      testWidgets("stays put at no deflection at all", (final WidgetTester tester) async
       {
         final CanvasViewport v = await viewport(tester: tester);
 
@@ -1886,14 +2000,14 @@ void main()
       await trackpad.panZoomUpdate(const Offset(500, 400));
       await trackpad.panZoomUpdate(const Offset(500, 400), scale: 3.1);
       await tester.pump();
-      expect(_view.zoomFactor, zoom + 3);
+      expect(_view.zoomFactor, zoom + 2);
 
       await trackpad.panZoomEnd();
       await tester.pump();
       await trackpad.panZoomStart(const Offset(500, 400));
       await trackpad.panZoomUpdate(const Offset(500, 400), scale: 3.1);
       await tester.pump();
-      expect(_view.zoomFactor, zoom + 3, reason: "the next one starts over");
+      expect(_view.zoomFactor, zoom + 2, reason: "the next one starts over");
       await trackpad.panZoomEnd();
       await tester.pump();
     });

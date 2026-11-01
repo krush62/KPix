@@ -107,7 +107,6 @@ class KPixPainter extends CustomPainter
   bool _referenceImgMovementStarted = false;
   final CoordinateSetD _referenceImgNormStartPos = CoordinateSetD.zero();
   final CoordinateSetD _referenceImgcursorPosNorm = CoordinateSetD.zero();
-  Offset _referenceImglastStartPos = Offset.zero;
   final CoordinateSetD _referenceImgLastReferenceOffset = CoordinateSetD.zero();
 
   // INFO BOX
@@ -326,11 +325,12 @@ class KPixPainter extends CustomPainter
   void _handleReferenceLayer({required final DrawingParameters drawParams, required final ReferenceLayerState refLayer})
   {
     final double effPxSize = drawParams.pixelSize.toDouble() / _viewState.devicePixelRatio;
-    if (_referenceImglastStartPos != drawParams.primaryPressStart)
+    if (drawParams.primaryDown && !_referenceImgMovementStarted)
     {
       _referenceImgNormStartPos.x = (drawParams.primaryPressStart.dx - drawParams.offset.dx) / effPxSize;
       _referenceImgNormStartPos.y = (drawParams.primaryPressStart.dy - drawParams.offset.dy) / effPxSize;
-      _referenceImglastStartPos = drawParams.primaryPressStart;
+      _referenceImgLastReferenceOffset.x = 0;
+      _referenceImgLastReferenceOffset.y = 0;
       _referenceImgMovementStarted = true;
     }
     if (drawParams.cursorPos != null)
@@ -351,10 +351,8 @@ class KPixPainter extends CustomPainter
        }
     }
 
-    if (!drawParams.primaryDown && _referenceImgMovementStarted)
+    if (!drawParams.primaryDown)
     {
-      _referenceImgLastReferenceOffset.x = 0;
-      _referenceImgLastReferenceOffset.y = 0;
       _referenceImgMovementStarted = false;
     }
   }

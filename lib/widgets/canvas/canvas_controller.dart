@@ -109,6 +109,8 @@ class CanvasController
   DateTime _stylusDownTimeStamp = DateTime.now();
   //a stylus button pressed during a stroke only counts after it was released
   bool _stylusButtonSuppressed = false;
+  //what a press of the secondary button does is decided when it goes down
+  bool _secondaryShades = false;
 
   //stylus and touch pointers on the screen keep the cursor visible
   final Set<int> _contactPointers = <int>{};
@@ -340,7 +342,7 @@ class CanvasController
       {
         Timer(Duration(milliseconds: _touchPrefs.singleTouchDelay.value), _checkTouchDraw);
       }
-      else if (_touchPointers.length == 2)
+      else if (_touchPointers.length == 2 && !_isDuringStrokeOfOtherDevice(details: details))
       {
         _dragStartLoc = _touchCenter();
         _isDragging.value = true;
@@ -350,14 +352,16 @@ class CanvasController
       }
     }
 
-    if (details.buttons == kPrimaryButton && _touchPointers.isEmpty)
+    //a touch can be a resting palm, which must not keep the stylus from drawing
+    if (details.buttons == kPrimaryButton && (_touchPointers.isEmpty || (details.kind != PointerDeviceKind.touch && !_primaryIsDown.value)))
     {
       _startDown(position: details.localPosition, pointer: details.pointer);
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = true;
-      if (!_shadesOnSecondary())
+      _secondaryShades = _shadesOnSecondary();
+      if (!_secondaryShades)
       {
         _previousTool = _toolState.selectedTool;
         _toolState.setToolSelection(tool: ToolType.pick);
@@ -381,6 +385,12 @@ class CanvasController
   double _touchDistance()
   {
     return (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
+  }
+
+  /// Whether [details] is a touch (e.g. a palm) while a stylus or a mouse draws.
+  bool _isDuringStrokeOfOtherDevice({required final PointerEvent details})
+  {
+    return details.kind == PointerDeviceKind.touch && _primaryPointer != null && !_touchPointers.containsKey(_primaryPointer);
   }
 
   void _startDown({required final Offset position, required final int pointer})
@@ -408,9 +418,9 @@ class CanvasController
 
   /// A tap of the secondary button or the stylus button: turns the shading
   /// direction around while shading, picks the color under the cursor otherwise.
-  void _secondaryTap()
+  void _secondaryTap({required final bool shades})
   {
-    if (_shadesOnSecondary())
+    if (shades)
     {
       _shaderOptions.toggleDirection();
     }
@@ -426,10 +436,17 @@ class CanvasController
 
   void pointerUp({required final PointerEvent details})
   {
+    if (_isDuringStrokeOfOtherDevice(details: details))
+    {
+      _touchPointers.remove(details.pointer);
+      _releaseContact(details: details);
+      return;
+    }
+
     if (details.kind == PointerDeviceKind.touch)
     {
       _touchPointers.clear();
-      _isDragging.value = false;
+      _endTouchPan();
     }
 
     if (_primaryIsDown.value)
@@ -445,9 +462,8 @@ class CanvasController
     else if (_secondaryIsDown.value && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = false;
-      final bool shades = _shadesOnSecondary();
-      _secondaryTap();
-      if (!shades)
+      _secondaryTap(shades: _secondaryShades);
+      if (!_secondaryShades)
       {
         _toolState.setToolSelection(tool: _previousTool);
       }
@@ -498,7 +514,7 @@ class CanvasController
     {
       if (_touchPointers.remove(details.pointer) != null && _touchPointers.length == 1)
       {
-        _isDragging.value = false;
+        _endTouchPan();
       }
       if (details.kind == PointerDeviceKind.stylus)
       {
@@ -510,6 +526,15 @@ class CanvasController
     else
     {
       pointerUp(details: details);
+    }
+  }
+
+  void _endTouchPan()
+  {
+    if (_isDragging.value)
+    {
+      _isDragging.value = false;
+      _setDefaultCursor();
     }
   }
 
@@ -574,6 +599,11 @@ class CanvasController
     if (details.kind == PointerDeviceKind.touch)
     {
       _touchPointers[details.pointer]?.currentPos = details.localPosition;
+    }
+
+    if (_isDuringStrokeOfOtherDevice(details: details))
+    {
+      return;
     }
 
     if (details.kind == PointerDeviceKind.touch && _touchPointers.length == 2)
@@ -738,6 +768,10 @@ class CanvasController
     {
       return;
     }
+    if (ev.scrollDelta.dy == 0.0)
+    {
+      return;
+    }
     final bool up = ev.scrollDelta.dy < 0.0;
     final bool shift = _hotkeyManager.shiftIsPressed;
     final bool alt = _hotkeyManager.altIsPressed;
@@ -748,7 +782,7 @@ class CanvasController
       {
         viewport.zoomAround(focus: ev.localPosition, zoom: _viewState.increaseZoomLevel);
       }
-      else if (ev.scrollDelta.dy > 0.0)
+      else
       {
         viewport.zoomAround(focus: ev.localPosition, zoom: _viewState.decreaseZoomLevel);
       }
@@ -845,9 +879,11 @@ class CanvasController
     else if (!pressed && _stylusButtonDown.value)
     {
       final int diffMs = DateTime.now().difference(_stylusDownTimeStamp).inMilliseconds;
-      if (diffMs <= _stylusPrefs.stylusPickMaxDuration.value && _cursorPos.value != null)
+      //panning and zooming are no tap, however quick they were
+      final bool moved = _isDragging.value || _stylusLongMoveVertical.value || _stylusLongMoveHorizontal.value;
+      if (diffMs <= _stylusPrefs.stylusPickMaxDuration.value && !moved && _cursorPos.value != null)
       {
-        _secondaryTap();
+        _secondaryTap(shades: _shadesOnSecondary());
       }
 
       _stylusButtonDown.value = false;
@@ -872,7 +908,7 @@ class CanvasController
     _stylusLongMoveStarted.value = true;
     _stylusZoomStartLevel = _viewState.zoomFactor;
     final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
-    if (currentLayer?.kind == LayerKind.drawing)
+    if (currentLayer is RasterableLayerState)
     {
       _stylusToolStartSize = _toolState.getCurrentToolSize();
     }
@@ -900,9 +936,9 @@ class CanvasController
     else
     {
       const double factor = 25.0;
-      final double currentDistance = event.scale >= 1.0 ? event.scale * factor - 1 : -(1.0 / event.scale) * factor;
+      final double currentDistance = event.scale >= 1.0 ? (event.scale - 1.0) * factor : -(1.0 / event.scale - 1.0) * factor;
       final double zoomSteps = (currentDistance - _initialTouchZoomDistance) / _touchPrefs.zoomStepDistance.value;
-      _viewState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps.toInt());
+      viewport.zoomAround(focus: event.localPosition, zoom: () => _viewState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps.toInt()));
       if (zoomSteps > -1.0 && zoomSteps < 1.0)
       {
         viewport.setOffset(newOffset: viewport.offset.value + event.panDelta);

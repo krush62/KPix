@@ -108,7 +108,7 @@ enum PreferenceInt
   DefaultShadingLayerSettings_Darken(defaultValue: 0),
   DefaultShadingLayerSettings_MaxDarken(defaultValue: 5),
 
-  ThemeType(defaultValue: 0),
+  ThemeType(defaultValue: 2),
 
   StylusOptions_LongPressDelay(defaultValue: 150),
   StylusOptions_LongPressDelayMin(defaultValue: 50),

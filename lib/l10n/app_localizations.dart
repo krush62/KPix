@@ -2324,6 +2324,18 @@ abstract class AppLocalizations {
   /// **'Outline Strength'**
   String get outlineStrength;
 
+  /// No description provided for @intensityLevels.
+  ///
+  /// In en, this message translates to:
+  /// **'Intensity Levels'**
+  String get intensityLevels;
+
+  /// No description provided for @intensityMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Intensity Mode'**
+  String get intensityMode;
+
   /// No description provided for @shaderMinScaling.
   ///
   /// In en, this message translates to:

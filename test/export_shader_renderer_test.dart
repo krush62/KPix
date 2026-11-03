@@ -118,6 +118,79 @@ ExportShaderValues _effect({required final String variant, final Map<String, Obj
   return values;
 }
 
+/// Every parameter pinned, so the tests do not depend on the tuned defaults.
+ExportShaderValues _oilify({final Map<String, Object> overrides = const <String, Object>{}})
+{
+  return _effect(variant: "Oilify", overrides: <String, Object>{"uRadius": 4.0, "uExponent": 8.0, "uIntensities": 128.0, "uIntensityMode": true, ...overrides});
+}
+
+/// GIMP's oilify with real histograms, run on the image scaled up by [scaling]; pixels outside the image are left out.
+/// Opaque sources only.
+List<int> _oilifyReference({
+  required final List<int> Function(int x, int y) source,
+  required final int width,
+  required final int height,
+  required final int scaling,
+  required final int x,
+  required final int y,
+  required final int radius,
+  required final int exponent,
+  required final int intensities,
+  required final bool intensityMode,})
+{
+  final int levels = intensities - 1;
+  //per channel (or once for the intensity): bin -> pixel count, and the summed colors per intensity bin
+  final List<Map<int, int>> histograms = <Map<int, int>>[for (int c = 0; c < 4; c++) <int, int>{}];
+  final Map<int, List<int>> colorSums = <int, List<int>>{};
+  for (int j = -radius; j <= radius; j++)
+  {
+    for (int i = -radius; i <= radius; i++)
+    {
+      final int px = x + i;
+      final int py = y + j;
+      if (i * i + j * j > radius * radius || px < 0 || py < 0 || px >= width * scaling || py >= height * scaling)
+      {
+        continue;
+      }
+      final List<int> color = source(px ~/ scaling, py ~/ scaling);
+      if (intensityMode)
+      {
+        final int bin = ((0.299 * color[0] + 0.587 * color[1] + 0.114 * color[2]) / 255 * levels + 0.5).floor();
+        histograms[0][bin] = (histograms[0][bin] ?? 0) + 1;
+        final List<int> sum = colorSums.putIfAbsent(bin, () => <int>[0, 0, 0, 0]);
+        for (int c = 0; c < 4; c++)
+        {
+          sum[c] += color[c];
+        }
+      }
+      else
+      {
+        for (int c = 0; c < 4; c++)
+        {
+          final int bin = (color[c] / 255 * levels + 0.5).floor();
+          histograms[c][bin] = (histograms[c][bin] ?? 0) + 1;
+        }
+      }
+    }
+  }
+
+  final List<int> result = <int>[];
+  for (int c = 0; c < 4; c++)
+  {
+    final Map<int, int> histogram = histograms[intensityMode ? 0 : c];
+    final int most = histogram.values.reduce(max);
+    double sum = 0;
+    double weights = 0;
+    histogram.forEach((final int bin, final int count) {
+      final double weight = pow(count / most, exponent).toDouble();
+      weights += weight;
+      sum += weight * (intensityMode ? colorSums[bin]![c] / count : bin / levels * 255);
+    });
+    result.add((sum / weights).round());
+  }
+  return result;
+}
+
 /// The largest difference of any channel of any pixel from [color].
 int _maxDeviation({required final Uint8List rgba, required final List<int> color})
 {
@@ -511,6 +584,140 @@ void main()
 
         expect(_pixel(out, 3, 4), <int>[0, 0, 0, 255]);
         expect(_pixel(out, 12, 4)[3], 0);
+        source.dispose();
+      });
+    });
+  });
+
+  group("oilify shader", () {
+    //the counts below are for a radius of 4 around an output pixel in the last column (or row) before a cell edge:
+    //29 of its 49 mask pixels lie on its own side, 20 on the other; around a cell corner the quarters have 8, 12, 12 and 17
+    const List<List<int>> palette = <List<int>>[
+      <int>[0xD0, 0x40, 0x30, 0xFF], <int>[0x30, 0x90, 0x50, 0xFF], <int>[0x20, 0x30, 0xA0, 0xFF], <int>[0xF0, 0xE0, 0x90, 0xFF],
+    ];
+    List<int> scattered(final int x, final int y) => palette[(x * 3 + y * 5 + x * y) % palette.length];
+    ui.Color colorOf(final List<int> c) => ui.Color.fromARGB(c[3], c[0], c[1], c[2]);
+
+    testWidgets("leaves flat areas as they are", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 3, height: 3, color: (final int x, final int y) => const ui.Color(0xFF3366CC));
+        for (final bool intensityMode in <bool>[true, false])
+        {
+          final (Uint8List, int) out = await _render(values: _oilify(overrides: <String, Object>{"uRadius": 12.0, "uIntensityMode": intensityMode}), source: source, scaling: 4);
+          expect(_maxDeviation(rgba: out.$1, color: <int>[0x33, 0x66, 0xCC, 0xFF]), lessThanOrEqualTo(1), reason: "intensity mode $intensityMode");
+        }
+        source.dispose();
+      });
+    });
+
+    testWidgets("matches GIMP's histogram algorithm on the scaled-up image", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        const int width = 6;
+        const int height = 5;
+        const int scaling = 4;
+        final ui.Image source = await _source(width: width, height: height, color: (final int x, final int y) => colorOf(scattered(x, y)));
+        for (final bool intensityMode in <bool>[true, false])
+        {
+          final (Uint8List, int) out = await _render(values: _oilify(overrides: <String, Object>{"uRadius": 6.0, "uIntensityMode": intensityMode}), source: source, scaling: scaling);
+          int worst = 0;
+          for (int y = 0; y < height * scaling; y++)
+          {
+            for (int x = 0; x < width * scaling; x++)
+            {
+              final List<int> expected = _oilifyReference(
+                source: scattered, width: width, height: height, scaling: scaling, x: x, y: y, radius: 6, exponent: 8, intensities: 128, intensityMode: intensityMode,);
+              final List<int> actual = _pixel(out, x, y);
+              for (int c = 0; c < 4; c++)
+              {
+                worst = max(worst, (expected[c] - actual[c]).abs());
+              }
+            }
+          }
+          //channel mode in GIMP averages bin numbers instead of the values in the bins: half a bin is one step of 255
+          expect(worst, lessThanOrEqualTo(2), reason: "intensity mode $intensityMode");
+        }
+        source.dispose();
+      });
+    });
+
+    testWidgets("rounds the corners of blocks and melts details smaller than the radius", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image block = await _source(width: 4, height: 4, color: (final int x, final int y) => x >= 1 && x <= 2 && y >= 1 && y <= 2 ? const ui.Color(0xFF0000FF) : const ui.Color(0xFFFFFFFF));
+        final (Uint8List, int) rounded = await _render(values: _oilify(), source: block, scaling: 8);
+        expect(_pixel(rounded, 8, 8)[0], greaterThan(240), reason: "the corner pixel of the blue block turns white");
+        expect(_pixel(rounded, 15, 15), <int>[0, 0, 255, 255], reason: "the inside of the block stays blue");
+        block.dispose();
+
+        final ui.Image speck = await _source(width: 5, height: 5, color: (final int x, final int y) => x == 2 && y == 2 ? _red : const ui.Color(0xFF808080));
+        final (Uint8List, int) melted = await _render(values: _oilify(overrides: <String, Object>{"uRadius": 8.0}), source: speck, scaling: 4);
+        expect(_maxDeviation(rgba: Uint8List.fromList(_pixel(melted, 9, 9)), color: <int>[0x80, 0x80, 0x80, 0xFF]), lessThanOrEqualTo(1), reason: "a single red pixel disappears");
+        speck.dispose();
+      });
+    });
+
+    testWidgets("averages with exponent 1 and lets the larger side win with a high exponent", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 2, height: 3, color: (final int x, final int y) => x == 0 ? const ui.Color(0xFF000000) : const ui.Color(0xFFFFFFFF));
+        final (Uint8List, int) average = await _render(values: _oilify(overrides: <String, Object>{"uExponent": 1.0}), source: source, scaling: 8);
+        final (Uint8List, int) sharp = await _render(values: _oilify(overrides: <String, Object>{"uExponent": 20.0}), source: source, scaling: 8);
+
+        expect(_pixel(average, 7, 12)[0], closeTo(255 * 20 / 49, 2));
+        expect(_pixel(sharp, 7, 12)[0], lessThanOrEqualTo(1));
+        source.dispose();
+      });
+    });
+
+    testWidgets("keeps colors whole in intensity mode, and decides every channel on its own without", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        //red in the top left and bottom right, magenta in the top right, blue in the bottom left
+        const List<ui.Color> quarters = <ui.Color>[ui.Color(0xFFFF0000), ui.Color(0xFFFF00FF), ui.Color(0xFF0000FF), ui.Color(0xFFFF0000)];
+        final ui.Image source = await _source(width: 2, height: 2, color: (final int x, final int y) => quarters[y * 2 + x]);
+        final (Uint8List, int) whole = await _render(values: _oilify(), source: source, scaling: 8);
+        final (Uint8List, int) channels = await _render(values: _oilify(overrides: <String, Object>{"uIntensityMode": false}), source: source, scaling: 8);
+
+        //red covers 25 of 49 pixels, so it wins as a color; but blue is 255 in 24 of them and 0 in 25, nearly a tie
+        expect(_pixel(whole, 8, 8)[0], greaterThan(250));
+        expect(_pixel(whole, 8, 8)[2], lessThan(5));
+        expect(_pixel(channels, 8, 8)[0], greaterThan(250));
+        expect(_pixel(channels, 8, 8)[2], greaterThan(60));
+        source.dispose();
+      });
+    });
+
+    testWidgets("puts close brightnesses into one bin with few intensity levels", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 2, height: 3, color: (final int x, final int y) => x == 0 ? const ui.Color(0xFF5C5C5C) : const ui.Color(0xFF7C7C7C));
+        final (Uint8List, int) few = await _render(values: _oilify(overrides: <String, Object>{"uIntensities": 8.0}), source: source, scaling: 8);
+        final (Uint8List, int) many = await _render(values: _oilify(overrides: <String, Object>{"uIntensities": 256.0}), source: source, scaling: 8);
+
+        expect(_pixel(few, 7, 12)[0], closeTo((29 * 0x5C + 20 * 0x7C) / 49, 2), reason: "one bin: the plain average");
+        expect(_pixel(many, 7, 12)[0], closeTo(0x5C, 3), reason: "two bins: the larger one wins");
+        source.dispose();
+      });
+    });
+
+    testWidgets("keeps transparency transparent without darkening the colors next to it", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 2, height: 3, color: (final int x, final int y) => x == 0 ? const ui.Color(0xFFFFFFFF) : _transparent);
+        for (final bool intensityMode in <bool>[true, false])
+        {
+          final (Uint8List, int) out = await _render(values: _oilify(overrides: <String, Object>{"uIntensityMode": intensityMode}), source: source, scaling: 8);
+          final List<int> edge = _pixel(out, 7, 12);
+          expect(edge.sublist(0, 3), everyElement(greaterThanOrEqualTo(253)), reason: "intensity mode $intensityMode");
+          expect(edge[3], inInclusiveRange(200, 254), reason: "intensity mode $intensityMode");
+          expect(_pixel(out, 13, 12)[3], 0, reason: "intensity mode $intensityMode");
+        }
+        source.dispose();
+      });
+    });
+
+    testWidgets("limits the radius to 3 source pixels", (final WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final ui.Image source = await _source(width: 8, height: 8, color: (final int x, final int y) => colorOf(scattered(x, y)));
+        final (Uint8List, int) limit = await _render(values: _oilify(overrides: <String, Object>{"uRadius": 12.0}), source: source, scaling: 4);
+        final (Uint8List, int) beyond = await _render(values: _oilify(overrides: <String, Object>{"uRadius": 25.0}), source: source, scaling: 4);
+
+        expect(_sameBytes(limit.$1, beyond.$1), isTrue);
         source.dispose();
       });
     });

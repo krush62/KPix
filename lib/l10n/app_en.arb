@@ -498,6 +498,8 @@
   "shadowDistance": "Shadow Distance",
   "outlineWidth": "Outline Width",
   "outlineStrength": "Outline Strength",
+  "intensityLevels": "Intensity Levels",
+  "intensityMode": "Intensity Mode",
   "shaderMinScaling": "Scaling should be at least {factor}:1 for this shader.",
   "@shaderMinScaling": {
     "placeholders": {

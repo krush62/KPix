@@ -418,6 +418,8 @@
   "shadowDistance": "Schattenabstand",
   "outlineWidth": "Umrissbreite",
   "outlineStrength": "Umrissstärke",
+  "intensityLevels": "Intensitätsstufen",
+  "intensityMode": "Intensitätsmodus",
   "shaderMinScaling": "Die Skalierung sollte für diesen Shader mindestens {factor}:1 betragen.",
 
   "centerHorizontally": "Horizontal zentrieren",

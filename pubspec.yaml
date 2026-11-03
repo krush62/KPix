@@ -250,6 +250,7 @@ flutter:
     - shaders/effects_bead.frag
     - shaders/effects_relief.frag
     - shaders/effects_cel.frag
+    - shaders/effects_oilify.frag
     - shaders/crt.frag
     - shaders/color_adjust.frag
 

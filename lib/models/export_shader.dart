@@ -227,8 +227,6 @@ String _outlineStrengthLabel(final AppLocalizations l10n) => l10n.outlineStrengt
 String _saturationLabel(final AppLocalizations l10n) => l10n.saturation;
 String _radiusLabel(final AppLocalizations l10n) => l10n.radius;
 String _exponentLabel(final AppLocalizations l10n) => l10n.exponent;
-String _intensityLevelsLabel(final AppLocalizations l10n) => l10n.intensityLevels;
-String _intensityModeLabel(final AppLocalizations l10n) => l10n.intensityMode;
 //CRT STRINGS
 String _crtName(final AppLocalizations l10n) => l10n.shaderCrt;
 String _mediumSection(final AppLocalizations l10n) => l10n.medium;
@@ -502,13 +500,11 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
       ExportShaderVariant(
         name: "Oilify",
         asset: "shaders/effects_oilify.frag",
-        minScalingFactor: 4,
+        minScalingFactor: 6,
         parameters: <ExportShaderParameter>[
           //the shader clamps the radius to 3 source pixels
-          ExportShaderSliderParameter(uniform: "uRadius", label: _radiusLabel, min: 1.0, max: 25.0, initial: 8.0, divisions: 24, format: ExportShaderValueFormat.pixels),
-          ExportShaderSliderParameter(uniform: "uExponent", label: _exponentLabel, min: 1.0, max: 20.0, initial: 8.0, divisions: 19, format: ExportShaderValueFormat.integer),
-          ExportShaderSliderParameter(uniform: "uIntensities", label: _intensityLevelsLabel, min: 8.0, max: 256.0, initial: 128.0, divisions: 248, format: ExportShaderValueFormat.integer),
-          ExportShaderToggleParameter(uniform: "uIntensityMode", label: _intensityModeLabel, initial: true),
+          ExportShaderSliderParameter(uniform: "uRadius", label: _radiusLabel, min: 1.0, max: 16.0, initial: 4.0, divisions: 15, format: ExportShaderValueFormat.pixels),
+          ExportShaderSliderParameter(uniform: "uExponent", label: _exponentLabel, min: 1.0, max: 20.0, initial: 12.0, divisions: 19, format: ExportShaderValueFormat.integer),
         ],
       ),
     ],

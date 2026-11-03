@@ -18,8 +18,6 @@ uniform float uFlipY;
 
 uniform float uRadius;          // 1 .. 25, in output pixels, at most 3 source pixels
 uniform float uExponent;        // 1 .. 20, 1 = plain average, higher = the most common intensity takes over
-uniform float uIntensities;     // 8 .. 256, number of bins
-uniform float uIntensityMode;   // 1 = bins by brightness, colors stay whole; 0 = every channel on its own
 
 uniform sampler2D uSource;
 
@@ -30,6 +28,10 @@ const int MAX_CELLS = 49;
 const int MAX_ROWS = 51;
 
 const vec3 luma = vec3(0.299, 0.587, 0.114);
+
+// These were uniforms before
+const float uIntensities = 128.0;   // 8 .. 256, number of bins
+const float uIntensityMode = 1.0;   // 1 = bins by brightness, colors stay whole; 0 = every channel on its own
 
 // premultiplied source pixel
 vec4 tap(vec2 texel)

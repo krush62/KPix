@@ -2264,6 +2264,12 @@ abstract class AppLocalizations {
   /// **'Shadow'**
   String get shadowMask;
 
+  /// No description provided for @checkerboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkerboard'**
+  String get checkerboard;
+
   /// No description provided for @panel.
   ///
   /// In en, this message translates to:

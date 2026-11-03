@@ -488,6 +488,7 @@
   "apertureGrille": "Grille",
   "slotMask": "Slot",
   "shadowMask": "Shadow",
+  "checkerboard": "Checkerboard",
   "panel": "Panel",
   "panelColors": "Panel Colors",
   "blackLevel": "Black Level",

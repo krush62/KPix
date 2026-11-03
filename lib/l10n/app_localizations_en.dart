@@ -1152,6 +1152,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shadowMask => 'Shadow';
 
   @override
+  String get checkerboard => 'Checkerboard';
+
+  @override
   String get panel => 'Panel';
 
   @override

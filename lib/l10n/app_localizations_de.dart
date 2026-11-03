@@ -1168,7 +1168,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get slotMask => 'Schlitz';
 
   @override
-  String get shadowMask => 'Loch';
+  String get shadowMask => 'Lochmaske';
+
+  @override
+  String get checkerboard => 'Schachbrett';
 
   @override
   String get panel => 'Panel';

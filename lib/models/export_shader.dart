@@ -227,6 +227,8 @@ String _outlineStrengthLabel(final AppLocalizations l10n) => l10n.outlineStrengt
 String _saturationLabel(final AppLocalizations l10n) => l10n.saturation;
 String _radiusLabel(final AppLocalizations l10n) => l10n.radius;
 String _exponentLabel(final AppLocalizations l10n) => l10n.exponent;
+String _checkerboardOption(final AppLocalizations l10n) => l10n.checkerboard;
+String _blueNoiseOption(final AppLocalizations l10n) => l10n.noise;
 //CRT STRINGS
 String _crtName(final AppLocalizations l10n) => l10n.shaderCrt;
 String _mediumSection(final AppLocalizations l10n) => l10n.medium;
@@ -505,6 +507,15 @@ const Map<ExportShaderType, ExportShaderDefinition> exportShaderDefinitions = <E
           //the shader clamps the radius to 3 source pixels
           ExportShaderSliderParameter(uniform: "uRadius", label: _radiusLabel, min: 1.0, max: 16.0, initial: 4.0, divisions: 15, format: ExportShaderValueFormat.pixels),
           ExportShaderSliderParameter(uniform: "uExponent", label: _exponentLabel, min: 1.0, max: 20.0, initial: 12.0, divisions: 19, format: ExportShaderValueFormat.integer),
+        ],
+      ),
+      ExportShaderVariant(
+        name: "Blend",
+        asset: "shaders/effects_blend.frag",
+        minScalingFactor: 6,
+        parameters: <ExportShaderParameter>[
+          ExportShaderSliderParameter(uniform: "uBleed", label: _radiusLabel, min: 0.0, max: 1.0, initial: 0.5, divisions: 20, format: ExportShaderValueFormat.percent),
+          ExportShaderChoiceParameter(uniform: "uDitherType", label: _bayerLevelLabel, options: <String Function(AppLocalizations)>[_bayer8Option, _bayer4Option, _bayer2Option, _checkerboardOption, _blueNoiseOption], values: <double>[0.0, 1.0, 2.0, 3.0, 4.0], initial: 1),
         ],
       ),
     ],

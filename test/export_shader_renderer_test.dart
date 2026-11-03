@@ -667,6 +667,8 @@ void main()
       });
     });
 
+    // Intensity mode is not user-editable anymore
+    /*
     testWidgets("keeps colors whole in intensity mode, and decides every channel on its own without", (final WidgetTester tester) async {
       await tester.runAsync(() async {
         //red in the top left and bottom right, magenta in the top right, blue in the bottom left
@@ -694,7 +696,7 @@ void main()
         expect(_pixel(many, 7, 12)[0], closeTo(0x5C, 3), reason: "two bins: the larger one wins");
         source.dispose();
       });
-    });
+    });*/
 
     testWidgets("keeps transparency transparent without darkening the colors next to it", (final WidgetTester tester) async {
       await tester.runAsync(() async {

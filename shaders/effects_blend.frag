@@ -1,6 +1,9 @@
 #version 460 core
 precision highp float;
 
+// SPDX-FileCopyrightText: Andreas Kruschinski
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 // Dither blend: neighboring pixels bleed into each other through a dither pattern.
 // Every output pixel shifts its sample position by a dither offset, so the pattern is
 // continuous across pixel edges. Only original source pixels are output, no new colors.

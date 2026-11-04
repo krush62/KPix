@@ -16,7 +16,7 @@
 
 import 'dart:io';
 
-import 'package:file_picker/src/platform/file_picker_platform_interface.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -39,7 +39,14 @@ class _FakePicker extends FilePickerPlatform
   String? answer;
 
   @override
-  Future<String?> getDirectoryPath({final String? dialogTitle, final bool lockParentWindow = false, final String? initialDirectory}) async => answer;
+  Future<String?> getDirectoryPath({
+    final String? dialogTitle,
+    final String? initialDirectory,
+    final AndroidOptions androidOptions = const AndroidOptions(),
+    final WindowsOptions windowsOptions = const WindowsOptions(),
+    final LinuxOptions linuxOptions = const LinuxOptions(),
+    final WebOptions webOptions = const WebOptions(),
+  }) async => answer;
 }
 
 int _accepted = 0;

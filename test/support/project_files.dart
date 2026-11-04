@@ -17,9 +17,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+// ignore: depend_on_referenced_packages
+import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
-// ignore: implementation_imports
-import 'package:file_picker/src/platform/file_picker_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
@@ -90,38 +90,74 @@ Future<void> setReadOnly({required final String path, required final bool readOn
   expect(result.exitCode, 0, reason: "setup: ${result.stderr}");
 }
 
-class FakeFilePicker extends FilePickerPlatform
+/// A file the way a native dialog hands it back: a path on disk, read on demand.
+final class FakePickedFile extends PlatformFile
 {
-  final FilePickerResult? result;
-  int pickCount = 0;
-  FakeFilePicker({required this.result});
+  final File file;
+  int readCount = 0;
+  FakePickedFile(this.file);
 
   @override
-  Future<FilePickerResult?> pickFiles({
+  String get name => p.basename(file.path);
+
+  @override
+  Uri get uri => Uri.file(file.path);
+
+  @override
+  XFile get xFile => XFile(file.path, name: name);
+
+  @override
+  int? lengthSync() => file.lengthSync();
+
+  @override
+  Future<int?> length() => file.length();
+
+  @override
+  Future<Uint8List> readAsBytes()
+  {
+    readCount++;
+    return file.readAsBytes();
+  }
+
+  @override
+  Stream<Uint8List> readAsByteStream()
+  {
+    readCount++;
+    return file.openRead().map<Uint8List>(Uint8List.fromList);
+  }
+}
+
+class FakeFilePicker extends FilePickerPlatform
+{
+  final PlatformFile? file;
+  int pickCount = 0;
+  FakeFilePicker({required this.file});
+
+  @override
+  Future<PlatformFile?> pickFile({
     final String? dialogTitle,
     final String? initialDirectory,
     final FileType type = FileType.any,
     final List<String>? allowedExtensions,
     final Function(FilePickerStatus)? onFileLoading,
     final int compressionQuality = 0,
-    final bool allowMultiple = false,
-    final bool withData = false,
-    final bool withReadStream = false,
-    final bool lockParentWindow = false,
-    final bool readSequential = false,
-    final bool cancelUploadOnWindowBlur = true,
+    final AndroidOptions androidOptions = const AndroidOptions(),
+    final DarwinOptions darwinOptions = const DarwinOptions(),
+    final WindowsOptions windowsOptions = const WindowsOptions(),
+    final LinuxOptions linuxOptions = const LinuxOptions(),
+    final WebOptions webOptions = const WebOptions(),
   }) async
   {
     pickCount++;
-    return result;
+    return file;
   }
 }
 
-/// Answers the file dialog with [result] until the end of the test.
-FakeFilePicker installFakeFilePicker({required final FilePickerResult? result})
+/// Answers the file dialog with [file] until the end of the test.
+FakeFilePicker installFakeFilePicker({required final PlatformFile? file})
 {
   final FilePickerPlatform previous = FilePickerPlatform.instance;
-  final FakeFilePicker picker = FakeFilePicker(result: result);
+  final FakeFilePicker picker = FakeFilePicker(file: file);
   FilePickerPlatform.instance = picker;
   addTearDown(() => FilePickerPlatform.instance = previous);
   return picker;

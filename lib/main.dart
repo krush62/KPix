@@ -26,6 +26,7 @@ import 'package:kpix/app_services.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/infra/stylus_bridge.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/kpix_language.dart';
 import 'package:kpix/kpix_logger.dart';
 import 'package:kpix/kpix_theme.dart';
@@ -76,8 +77,6 @@ const Size minimumApplicationSize = Size(1200, 600);
 const String _mainWindowPidKey = 'mainWindowPid';
 // Pref key for window Id
 const String _mainWindowIdKey = 'mainWindowId';
-
-const String windowTitle = 'KPix';
 
 /// Command line arguments.
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
@@ -228,9 +227,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       {
         _recoverTimer = Timer.periodic(const Duration(minutes: _MainLayoutOptions.recoverCheckIntervalMinutes), (final Timer _) {_recoverCheck();});
       }
-      if (isDesktop())
+      if (isDesktop() && GetIt.I.isRegistered<Window>())
       {
-        final Window window = WindowManager.instance.getCurrent()!;
+        final Window window = GetIt.I.get<Window>();
         window.addListener((final WindowEvent ev)
         {
           if (ev is WindowCloseRequestedEvent)

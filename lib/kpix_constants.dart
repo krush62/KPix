@@ -35,3 +35,6 @@ abstract final class ToolSettingsWidgetOptions
   static const double smallButtonSize = 36.0;
   static const double smallIconSize = 20.0;
 }
+
+/// Title of the main window; main also recognizes its native window by it.
+const String windowTitle = 'KPix';

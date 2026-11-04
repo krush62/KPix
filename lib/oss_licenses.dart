@@ -2355,13 +2355,13 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
   );
 
-/// material_color_utilities 0.13.1
+/// material_color_utilities 0.13.0
 const _material_color_utilities = Package(
     name: 'material_color_utilities',
     description: 'Algorithms and utilities that power the Material Design 3 color system, including choosing theme colors from images and creating tones of colors; all in a new color space.',
     repository: 'https://github.com/material-foundation/material-color-utilities/tree/main/dart',
     authors: [],
-    version: '0.13.1',
+    version: '0.13.0',
     spdxIdentifiers: ['Apache-2.0'],
     isMarkdown: false,
     isSdk: false,

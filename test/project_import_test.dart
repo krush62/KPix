@@ -227,9 +227,9 @@ void main()
   group("loadFilePressed", ()
   {
     /// Presses load with [picked] coming back from the file dialog.
-    Future<({bool started, ProjectLoadResult? result})> pressLoad({required final FilePickerResult picked}) async
+    Future<({bool started, ProjectLoadResult? result})> pressLoad({required final PlatformFile picked}) async
     {
-      installFakeFilePicker(result: picked);
+      installFakeFilePicker(file: picked);
 
       bool started = false;
       final Completer<ProjectLoadResult?> finished = Completer<ProjectLoadResult?>();
@@ -248,7 +248,7 @@ void main()
       projectSession.init(dimensions: CoordinateSetI(x: 3, y: 3));
       await settle();
 
-      final ({bool started, ProjectLoadResult? result}) load = await pressLoad(picked: FilePickerResult(<PlatformFile>[PlatformFile(name: "picked.$fileExtensionKpix", path: source.path, size: source.lengthSync())]));
+      final ({bool started, ProjectLoadResult? result}) load = await pressLoad(picked: FakePickedFile(source));
       await settle();
 
       expect(load.started, isTrue);
@@ -257,15 +257,16 @@ void main()
       expect(layerAt(projectSession: projectSession, index: 0).getDataEntry(coord: _dot)!.colorIndex, 2);
     });
 
-    //what web hands back: bytes and a name, but no path to read from
-    _importTest("prefers bytes that came with the pick", (final ProjectSession projectSession) async
+    //only web reads the bytes of a pick; native loads from the path so a large project is not held twice
+    _importTest("loads a native pick from its path, not through the picker", (final ProjectSession projectSession) async
     {
-      final Uint8List bytes = await projectBytes();
+      final FakePickedFile picked = FakePickedFile(await _exportedProject(name: "from disk.$fileExtensionKpix"));
 
-      final ({bool started, ProjectLoadResult? result}) load = await pressLoad(picked: FilePickerResult(<PlatformFile>[PlatformFile(name: "from web.$fileExtensionKpix", bytes: bytes, size: bytes.length)]));
+      final ({bool started, ProjectLoadResult? result}) load = await pressLoad(picked: picked);
 
       expect(load.result!.restore, HistoryRestoreResult.success);
-      expect(projectSession.projectName.value, "from web");
+      expect(projectSession.projectName.value, "from disk");
+      expect(picked.readCount, 0);
     });
 
     _importTest("reports a damaged file without touching the session", (final ProjectSession projectSession) async
@@ -273,7 +274,7 @@ void main()
       projectSession.projectName.value = "current";
       final File damaged = File(p.join(_exportDir, "damaged.$fileExtensionKpix"))..writeAsBytesSync(<int>[1, 2, 3, 4, 5, 6, 7, 8]);
 
-      final ({bool started, ProjectLoadResult? result}) load = await pressLoad(picked: FilePickerResult(<PlatformFile>[PlatformFile(name: "damaged.$fileExtensionKpix", path: damaged.path, size: 8)]));
+      final ({bool started, ProjectLoadResult? result}) load = await pressLoad(picked: FakePickedFile(damaged));
 
       expect(load.result!.restore, isNull);
       expect(load.result!.status, isNotEmpty);
@@ -282,7 +283,7 @@ void main()
 
     _importTest("does nothing when the dialog is cancelled", (final ProjectSession projectSession) async
     {
-      final FakeFilePicker picker = installFakeFilePicker(result: null);
+      final FakeFilePicker picker = installFakeFilePicker(file: null);
       bool called = false;
 
       loadFilePressed(loadStartCallback: () {called = true;}, finishCallback: (final ProjectLoadResult? result) {called = true;});

@@ -17,7 +17,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -61,11 +60,13 @@ import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/project_action_messages.dart';
 import 'package:kpix/widgets/timeline/timeline_widget.dart';
+import 'package:kpix/window_buttons.dart';
 import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:version/version.dart';
+import 'package:window_manager/window_manager.dart';
 
 /// Default size of the desktop application.
 const Size defaultDesktopSize = Size(1600, 900);
@@ -75,7 +76,7 @@ const Size minimumApplicationSize = Size(1200, 600);
 /// Command line arguments.
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
 
-void main(final List<String> args)
+Future<void> main(final List<String> args) async
 {
   final KPixLogger logger = KPixLogger();
   GetIt.I.registerSingleton<Logger>(logger);
@@ -89,6 +90,26 @@ void main(final List<String> args)
   GetIt.I.registerSingleton<StylusBridge>(StylusBridge());
   //built once: the app rebuilds when either the theme or the language changes
   final Listenable appSettings = Listenable.merge(<Listenable>[themeSettings, languageSettings]);
+  if (isDesktop()) {
+    await windowManager.ensureInitialized();
+    const WindowOptions windowOptions = WindowOptions(
+      minimumSize: defaultDesktopSize,
+      size: defaultDesktopSize,
+      center: true,
+      title: "KPix",
+      titleBarStyle: TitleBarStyle.hidden,
+    );
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.maximize();
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
+  else
+  {
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  }
+
   runApp(
     ValueListenableBuilder<Map<SingleActivator, VoidCallback>>(
       valueListenable: hotkeyManager.callbackMapNotifier,
@@ -126,19 +147,6 @@ void main(final List<String> args)
       },
     ),
   );
-
-  if (isDesktop()) {
-    doWhenWindowReady(() {
-      appWindow.minSize = defaultDesktopSize;
-      appWindow.size = defaultDesktopSize;
-      appWindow.alignment = Alignment.center;
-      appWindow.title = "KPix";
-      appWindow.maximize();
-      appWindow.show();
-    });
-  } else {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  }
 }
 
 class KPixApp extends StatefulWidget
@@ -150,7 +158,7 @@ class KPixApp extends StatefulWidget
 }
 
 
-class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
+class _KPixAppState extends State<KPixApp> with WindowListener, WidgetsBindingObserver
 {
   final ValueNotifier<bool> initialized = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isFocused = ValueNotifier<bool>(true);
@@ -173,6 +181,11 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       {
         _recoverTimer = Timer.periodic(const Duration(minutes: _MainLayoutOptions.recoverCheckIntervalMinutes), (final Timer _) {_recoverCheck();});
       }
+      if (isDesktop())
+      {
+        windowManager.addListener(this);
+        windowManager.setPreventClose(true);
+      }
     },);
 
   }
@@ -187,6 +200,10 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     if (GetIt.I.isRegistered<ProjectManager>())
     {
       GetIt.I.get<ProjectManager>().dispose();
+    }
+    if (isDesktop())
+    {
+      windowManager.removeListener(this);
     }
     super.dispose();
   }
@@ -248,9 +265,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   /// Exits the application and clears the recovery directory.
   void exitApplication({final int exitCode = 0})
   {
-    clearRecoverDir().then((final void value)
+    clearRecoverDir().whenComplete(()
     {
-      if (Platform.isAndroid)
+      if (!kIsWeb && Platform.isAndroid)
       {
         SystemNavigator.pop();
       }
@@ -712,7 +729,8 @@ class MainWidget extends StatelessWidget
                         child: Stack(
                           alignment: Alignment.centerLeft,
                           children: <Widget>[
-                            WindowTitleBarBox(child: MoveWindow()),
+                            //WindowTitleBarBox(child: MoveWindow()),
+                            const WindowDragArea(),
                             Padding(
                               padding: const EdgeInsets.all(_MainLayoutOptions.titleBarPadding),
                               child: ListenableBuilder(

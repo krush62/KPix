@@ -21,6 +21,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/l10n/app_localizations.dart';
+import 'package:kpix/main.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/update_state.dart';
 import 'package:kpix/util/helpers/update_helper.dart';
@@ -130,7 +131,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      Text("KPix ${_pInfo.version}", style: Theme.of(context).textTheme.headlineLarge),
+                      Text("$windowTitle ${_pInfo.version}", style: Theme.of(context).textTheme.headlineLarge),
                       const Expanded(child: SizedBox(width: OverlayEntryAlertDialogOptions.padding)),
                       ValueListenableBuilder<bool>(
                         valueListenable: GetIt.I.get<UpdateState>().hasUpdateNotifier,

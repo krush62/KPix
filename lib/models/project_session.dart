@@ -22,6 +22,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
+import 'package:kpix/main.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/constraints/frame_constraints.dart';
@@ -101,7 +102,7 @@ class ProjectSession
 
   String getTitle()
   {
-    return "KPix ${projectName.value ?? ""}${hasChanges.value ? "*" : ""}";
+    return "$windowTitle ${projectName.value ?? ""}${hasChanges.value ? "*" : ""}";
   }
 
   Future<ProjectLoadResult> restoreFromFile({required final LoadFileSet loadFileSet, final bool setHasChanges = false}) async

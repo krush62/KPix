@@ -77,9 +77,10 @@ const String _mainWindowPidKey = 'mainWindowPid';
 // Pref key for window Id
 const String _mainWindowIdKey = 'mainWindowId';
 
+const String windowTitle = 'KPix';
+
 /// Command line arguments.
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
-
 
 Future<void> main(final List<String> args) async
 {
@@ -100,7 +101,7 @@ Future<void> main(final List<String> args) async
     if (window != null)
     {
       GetIt.I.registerSingleton<Window>(window);
-      window.title = "KPix";
+      window.title = windowTitle;
       window.minimumSize = defaultDesktopSize.toNative();
       window.center();
       window.titleBarStyle = TitleBarStyle.hidden;
@@ -161,12 +162,15 @@ Future<Window?> _findMainWindow() async
   {
     final int? id = prefs.getInt(_mainWindowIdKey);
     final Window? window = id != null ? WindowManager.instance.get(id) : null;
-    if (window != null) return window;
+    if (window != null && window.title != null && window.title!.startsWith(windowTitle))
+    {
+      return window;
+    }
   }
 
   // Fresh start: the focused window is ours
   final Window? window = WindowManager.instance.getCurrent();
-  if (window != null)
+  if (window != null && window.title != null && window.title!.startsWith(windowTitle))
   {
     await prefs.setInt(_mainWindowPidKey, pid);
     await prefs.setInt(_mainWindowIdKey, window.id);

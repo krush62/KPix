@@ -137,15 +137,19 @@ Future<void> _closeApp(final WidgetTester tester) async
   await tester.pumpWidget(const SizedBox.shrink());
   if (GetIt.I.isRegistered<DocumentState>())
   {
-    for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
-    {
-      for (int i = 0; i < frame.layerList.length; i++)
-      {
-        frame.layerList.getLayer(index: i).dispose();
-      }
-    }
+    _closeLayers();
   }
   await tester.pump(const Duration(seconds: 10));
+}
+
+/// Disposes the project's layers and cancels the real-time composite timers of
+/// their frames, which would otherwise fire after the next boot reset GetIt.
+void _closeLayers()
+{
+  for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
+  {
+    frame.layerList.clear(notify: false);
+  }
 }
 
 void main()
@@ -589,13 +593,7 @@ Future<File> _createProject(final WidgetTester tester) async
     await bootProject(canvasSize: CoordinateSetI(x: 8, y: 8));
     final String? written = await saveKPixFile(path: file.path);
     expect(written, isNotNull, reason: "setup");
-    for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
-    {
-      for (int i = 0; i < frame.layerList.length; i++)
-      {
-        frame.layerList.getLayer(index: i).dispose();
-      }
-    }
+    _closeLayers();
   });
   return file;
 }

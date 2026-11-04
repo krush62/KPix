@@ -43,6 +43,7 @@ dependencies:
   image: ^4.9.1
   intl: any
   logger: ^2.6.2
+  nativeapi_flutter: ^0.5.8
   package_info_plus: ^10.2.2
   path: ^1.9.1
   path_provider: ^2.1.5

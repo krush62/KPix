@@ -127,6 +127,7 @@ const dependencies = <Package>[
   _image,
   _intl,
   _logger,
+  _nativeapi_flutter,
   _package_info_plus,
   _path,
   _path_provider,
@@ -4693,7 +4694,7 @@ const _kpix = Package(
     spdxIdentifiers: ['AGPL-3.0'],
     isMarkdown: false,
     isSdk: false,
-    dependencies: [PackageRef('archive'), PackageRef('device_info_plus'), PackageRef('file_picker'), PackageRef('file_saver'), PackageRef('flutter'), PackageRef('flutter_localizations'), PackageRef('flutter_markdown_plus'), PackageRef('flutter_tabler_icons'), PackageRef('get_it'), PackageRef('http'), PackageRef('image'), PackageRef('intl'), PackageRef('logger'), PackageRef('package_info_plus'), PackageRef('path'), PackageRef('path_provider'), PackageRef('shared_preferences'), PackageRef('toastification'), PackageRef('url_launcher'), PackageRef('uuid'), PackageRef('version'), PackageRef('window_manager')],
+    dependencies: [PackageRef('archive'), PackageRef('device_info_plus'), PackageRef('file_picker'), PackageRef('file_saver'), PackageRef('flutter'), PackageRef('flutter_localizations'), PackageRef('flutter_markdown_plus'), PackageRef('flutter_tabler_icons'), PackageRef('get_it'), PackageRef('http'), PackageRef('image'), PackageRef('intl'), PackageRef('logger'), PackageRef('nativeapi_flutter'), PackageRef('package_info_plus'), PackageRef('path'), PackageRef('path_provider'), PackageRef('shared_preferences'), PackageRef('toastification'), PackageRef('url_launcher'), PackageRef('uuid'), PackageRef('version'), PackageRef('window_manager')],
     devDependencies: [PackageRef('yaml')],
     license: '''GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007

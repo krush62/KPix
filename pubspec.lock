@@ -558,7 +558,7 @@ packages:
     source: hosted
     version: "0.5.8"
   nativeapi_flutter:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: nativeapi_flutter
       sha256: b62a42b8a86538119ba67b8eab8328eb89d69ac4a2142d623d08ac163faa9cd8

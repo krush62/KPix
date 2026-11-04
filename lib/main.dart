@@ -38,6 +38,7 @@ import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/file_callbacks.dart';
+import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/project_session.dart';
@@ -63,6 +64,7 @@ import 'package:kpix/widgets/project_action_messages.dart';
 import 'package:kpix/widgets/timeline/timeline_widget.dart';
 import 'package:kpix/window_buttons.dart';
 import 'package:logger/logger.dart';
+import 'package:nativeapi_flutter/nativeapi_flutter.dart' show DropRegion, DropRegionDropDetails;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -82,6 +84,9 @@ const MethodChannel _sharedDataChannel = MethodChannel('app.channel.shared.data'
 
 /// Command line arguments.
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
+
+/// Set once the application is up: takes the paths of files dropped on the window.
+void Function(List<String> paths)? filesDroppedCallback;
 
 Future<void> main(final List<String> args) async
 {
@@ -129,24 +134,26 @@ Future<void> main(final List<String> args) async
               onKeyEvent: hotkeyManager.handleRawKeyboardEvent,
               child: Listener(
                 onPointerDown: hotkeyManager.handleMouseEvent,
-                child: AnimatedBuilder(
-                  animation: appSettings,
-                  builder: (final BuildContext context, final Widget? child)
-                  {
-                    return getToastificationWrapper(
-                      child: MaterialApp(
-                        debugShowCheckedModeBanner: false,
-                        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[AppLocalizations.delegate, ...flutter_localizations.GlobalMaterialLocalizations.delegates],
-                        supportedLocales: AppLocalizations.supportedLocales,
-                        //null follows the system language
-                        locale: languageSettings.locale,
-                        home: const KPixApp(),
-                        theme: monochromeTheme,
-                        darkTheme: monochromeThemeDark,
-                        themeMode: themeSettings.themeMode,
-                      ),
-                    );
-                  },
+                child: _fileDropRegion(
+                  child: AnimatedBuilder(
+                    animation: appSettings,
+                    builder: (final BuildContext context, final Widget? child)
+                    {
+                      return getToastificationWrapper(
+                        child: MaterialApp(
+                          debugShowCheckedModeBanner: false,
+                          localizationsDelegates: const <LocalizationsDelegate<dynamic>>[AppLocalizations.delegate, ...flutter_localizations.GlobalMaterialLocalizations.delegates],
+                          supportedLocales: AppLocalizations.supportedLocales,
+                          //null follows the system language
+                          locale: languageSettings.locale,
+                          home: const KPixApp(),
+                          theme: monochromeTheme,
+                          darkTheme: monochromeThemeDark,
+                          themeMode: themeSettings.themeMode,
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -154,6 +161,21 @@ Future<void> main(final List<String> args) async
         );
       },
     ),
+  );
+}
+
+/// Above the navigator, so that drops also land while a dialog is open: only a
+/// region in the hit test path at the drop position receives the drop.
+Widget _fileDropRegion({required final Widget child})
+{
+  if (!GetIt.I.isRegistered<Window>() || !DropRegion.isSupported)
+  {
+    return child;
+  }
+  return DropRegion(
+    window: GetIt.I.get<Window>(),
+    onDropped: (final DropRegionDropDetails details) => filesDroppedCallback?.call(details.filePaths),
+    child: child,
   );
 }
 
@@ -255,6 +277,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   {
     WidgetsBinding.instance.removeObserver(this);
     _sharedDataChannel.setMethodCallHandler(null);
+    filesDroppedCallback = null;
     //the timer is only started for non-web builds and only once the preferences
     //have been initialized, so it can still be null here
     _recoverTimer?.cancel();
@@ -474,6 +497,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       {
         //calls sent before this point wait in the channel buffer
         _sharedDataChannel.setMethodCallHandler(_platformCallReceived);
+        filesDroppedCallback = _filesDropped;
       }
       logger.i("Application initialized. Version: $versionString");
 
@@ -596,10 +620,24 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     }
   }
 
-  /// A second launch handed [path] over instead of running alongside.
+  /// The first KPix file among [paths] opens like one a second launch hands over.
+  void _filesDropped(final List<String> paths)
+  {
+    final String? path = paths.where((final String candidate) => candidate.endsWith(fileExtensionKpix)).firstOrNull;
+    if (path != null)
+    {
+      _fileHandedOver(path: path);
+    }
+    else if (paths.isNotEmpty && mounted)
+    {
+      showMessage(text: AppLocalizations.of(context)!.pleaseSelectAKPixFile, toastType: ToastType.warning);
+    }
+  }
+
+  /// [path] was handed over by a second launch or dropped on the window.
   void _fileHandedOver({required final String path})
   {
-    GetIt.I.get<Logger>().i("Opening a file handed over by another launch: $path");
+    GetIt.I.get<Logger>().i("Opening a handed over file: $path");
     _handedOverPath = path;
     if (GetIt.I.get<ProjectSession>().hasChanges.value)
     {

@@ -102,6 +102,7 @@ Future<Directory> _bootApp(final WidgetTester tester, {final void Function(Strin
     GetIt.I.registerSingleton<StylusBridge>(StylusBridge());
     saveFileCallback = null;
     openFileCallback = null;
+    filesDroppedCallback = null;
     cmdLineArgs = <String>[];
     prepare?.call(internalDir);
   });
@@ -290,6 +291,25 @@ void main()
       expect(find.text(testL10n.unsavedChangesSaveFirst), findsNothing);
       expect(session.hasChanges.value, isFalse);
       await tester.runAsync(settle);
+      await _closeApp(tester);
+    });
+
+    testWidgets("opens the KPix file among those dropped on the window", (final WidgetTester tester) async
+    {
+      final File project = await _createProject(tester);
+      await _bootApp(tester);
+      await _waitForBoot(tester, until: () => find.byType(NewProjectWidget).evaluate().isNotEmpty);
+
+      filesDroppedCallback!(<String>["somewhere/picture.png"]);
+      await settleUi(tester);
+      expect(find.text(testL10n.pleaseSelectAKPixFile), findsOneWidget);
+      expect(find.byType(NewProjectWidget), findsOneWidget, reason: "nothing to open");
+
+      filesDroppedCallback!(<String>["somewhere/picture.png", project.path]);
+      await _waitForBoot(tester, until: () => GetIt.I.get<ProjectSession>().projectName.value == "project" && find.byType(CanvasWidget).evaluate().isNotEmpty);
+      await tester.runAsync(settle);
+
+      expect(find.byType(NewProjectWidget), findsNothing);
       await _closeApp(tester);
     });
 

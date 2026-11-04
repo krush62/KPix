@@ -66,33 +66,43 @@ float gauss(float d, float sigma)
 }
 
 // gamma encoded source pixel; transparency shows as the black screen, outside the picture is blanking
+// no early returns in what reads the texture or runs in the loops: Impeller's GLES output turns them into
+// loops that ANGLE takes seconds to compile
 vec3 sourcePixel(vec2 texel)
 {
-    if (texel.x < 0.0 || texel.y < 0.0 || texel.x >= uSourceSize.x || texel.y >= uSourceSize.y)
-    {
-        return vec3(0.0);
-    }
     vec2 uv = (texel + 0.5) / uSourceSize;
     uv.y = mix(uv.y, 1.0 - uv.y, uFlipY);
-    return texture(uSource, uv).rgb;
+    vec3 c = texture(uSource, uv).rgb;
+    bool outside = texel.x < 0.0 || texel.y < 0.0 || texel.x >= uSourceSize.x || texel.y >= uSourceSize.y;
+    return outside ? vec3(0.0) : c;
 }
 
 vec3 encode(vec3 c, bool pal)
 {
+    vec3 e;
     if (pal)
     {
-        return mat3(0.299, -0.147, 0.615, 0.587, -0.289, -0.515, 0.114, 0.436, -0.100) * c;   // YUV
+        e = mat3(0.299, -0.147, 0.615, 0.587, -0.289, -0.515, 0.114, 0.436, -0.100) * c;   // YUV
     }
-    return mat3(0.299, 0.596, 0.211, 0.587, -0.274, -0.523, 0.114, -0.322, 0.312) * c;        // YIQ
+    else
+    {
+        e = mat3(0.299, 0.596, 0.211, 0.587, -0.274, -0.523, 0.114, -0.322, 0.312) * c;    // YIQ
+    }
+    return e;
 }
 
 vec3 decode(vec3 s, bool pal)
 {
+    vec3 c;
     if (pal)
     {
-        return mat3(1.0, 1.0, 1.0, 0.0, -0.395, 2.032, 1.140, -0.581, 0.0) * s;
+        c = mat3(1.0, 1.0, 1.0, 0.0, -0.395, 2.032, 1.140, -0.581, 0.0) * s;
     }
-    return mat3(1.0, 1.0, 1.0, 0.956, -0.272, -1.106, 0.621, -0.647, 1.703) * s;
+    else
+    {
+        c = mat3(1.0, 1.0, 1.0, 0.956, -0.272, -1.106, 0.621, -0.647, 1.703) * s;
+    }
+    return c;
 }
 
 // a VHS, Betamax or Video8 tape with some wear
@@ -107,15 +117,9 @@ bool isFilm()
     return isMode(uMedium, 4.0);
 }
 
-// the source pixel as it appears on the medium: unchanged for tapes (they work on the signal),
-// a dye transfer print for film
-vec3 mediumPixel(vec2 texel)
+// source pixel [c] at [texel] as a dye transfer print shows it
+vec3 filmPrint(vec3 c, vec2 texel)
 {
-    vec3 c = sourcePixel(texel);
-    if (!isFilm() || texel.x < 0.0 || texel.y < 0.0 || texel.x >= uSourceSize.x || texel.y >= uSourceSize.y)
-    {
-        return c;
-    }
     float wear = clamp(uWear, 0.0, 1.0);
 
     // three separate black and white records printed with pure dyes: every channel is cleaned of
@@ -157,6 +161,15 @@ vec3 mediumPixel(vec2 texel)
     }
 
     return clamp(c, 0.0, 1.0);
+}
+
+// the source pixel as it appears on the medium: unchanged for tapes (they work on the signal),
+// a dye transfer print for film
+vec3 mediumPixel(vec2 texel)
+{
+    vec3 c = sourcePixel(texel);
+    bool plain = !isFilm() || texel.x < 0.0 || texel.y < 0.0 || texel.x >= uSourceSize.x || texel.y >= uSourceSize.y;
+    return plain ? c : filmPrint(c, texel);
 }
 
 // the value for the current tape format
@@ -422,25 +435,9 @@ vec3 maskColor(vec2 p)
     return m / average;
 }
 
-void main()
+// the linear picture at output pixel [q], at position [tube] (0 .. 1) on the curved screen
+vec3 tubePicture(vec2 q, vec2 tube)
 {
-    vec2 outSize = uSourceSize * uScale;
-    vec2 q = FlutterFragCoord().xy + uOffset;
-    vec2 uv = q / outSize;
-
-    // curved tube
-    vec2 cc = uv * 2.0 - 1.0;
-    float curvature = clamp(uCurvature, 0.0, 1.0);
-    cc *= vec2(1.0 + cc.y * cc.y * 0.06 * curvature, 1.0 + cc.x * cc.x * 0.08 * curvature);
-    vec2 tube = cc * 0.5 + 0.5;
-    vec2 edge = min(tube, 1.0 - tube) * outSize;
-    float inside = clamp(min(edge.x, edge.y) + 0.5, 0.0, 1.0);
-    if (inside <= 0.0)
-    {
-        fragColor = vec4(0.0, 0.0, 0.0, 1.0);
-        return;
-    }
-
     // the beam: the two nearest scanlines, a brighter line is a wider line
     vec2 t = tube * uSourceSize;
     float rowPos = t.y - 0.5;
@@ -562,6 +559,28 @@ void main()
     float vignette = 16.0 * tube.x * tube.y * (1.0 - tube.x) * (1.0 - tube.y);
     color *= pow(max(vignette, 0.0), 0.35 * clamp(uVignette, 0.0, 1.0));
     color *= max(uBrightness, 0.0);
+    return color;
+}
 
-    fragColor = vec4(pow(clamp(color, 0.0, 1.0), vec3(1.0 / 2.2)) * inside, 1.0);
+void main()
+{
+    vec2 outSize = uSourceSize * uScale;
+    vec2 q = FlutterFragCoord().xy + uOffset;
+    vec2 uv = q / outSize;
+
+    // curved tube
+    vec2 cc = uv * 2.0 - 1.0;
+    float curvature = clamp(uCurvature, 0.0, 1.0);
+    cc *= vec2(1.0 + cc.y * cc.y * 0.06 * curvature, 1.0 + cc.x * cc.x * 0.08 * curvature);
+    vec2 tube = cc * 0.5 + 0.5;
+    vec2 edge = min(tube, 1.0 - tube) * outSize;
+    float inside = clamp(min(edge.x, edge.y) + 0.5, 0.0, 1.0);
+    if (inside <= 0.0)
+    {
+        fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+    else
+    {
+        fragColor = vec4(pow(clamp(tubePicture(q, tube), 0.0, 1.0), vec3(1.0 / 2.2)) * inside, 1.0);
+    }
 }

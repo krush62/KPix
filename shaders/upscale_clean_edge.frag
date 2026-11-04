@@ -85,14 +85,17 @@ bool similar5(vec4 col1, vec4 col2, vec4 col3, vec4 col4, vec4 col5){
 }
 
 bool higher(vec4 thisCol, vec4 otherCol){
-	if(similar(thisCol, otherCol)) return false;
-	if(thisCol.a == otherCol.a){
+	bool result;
+	if(similar(thisCol, otherCol)) {
+		result = false;
+	} else if(thisCol.a == otherCol.a){
 //		return yuv(thisCol.rgb).x > yuv(otherCol.rgb).x;
 //		return distance(yuv(thisCol.rgb), yuv(highestColor)) < distance(yuv(otherCol.rgb), yuv(highestColor));
-		return distance(thisCol.rgb, highestColor) < distance(otherCol.rgb, highestColor);
+		result = distance(thisCol.rgb, highestColor) < distance(otherCol.rgb, highestColor);
 	} else {
-		return thisCol.a > otherCol.a;
+		result = thisCol.a > otherCol.a;
 	}
+	return result;
 }
 
 vec4 higherCol(vec4 thisCol, vec4 otherCol){
@@ -132,7 +135,9 @@ vec4 sliceDist(vec2 point, vec2 mainDir, vec2 pointDir, vec4 u, vec4 uf, vec4 uf
 	if(similar4(f, d, b, u) && similar3(uf, df, db/*, ub*/) && !similar(c, f)){ //checkerboard edge case
 		shouldSlice = false;
 	}
-	if(!shouldSlice) return vec4(-1.0);
+	//one exit instead of early returns, which compile slowly on Impeller (see crt.frag)
+	vec4 result = vec4(-1.0);
+	if(shouldSlice){
 	
 	//only applicable for very large lineWidth (>1.3)
 //	if(similar3(c, f, df)){ //don't make slice for same color
@@ -171,7 +176,7 @@ vec4 sliceDist(vec2 point, vec2 mainDir, vec2 pointDir, vec4 u, vec4 uf, vec4 uf
 		#endif
 		
 		dist -= (_lineWidth/2.0);
-		return dist <= 0.0 ? ((cd(c,f) <= cd(c,d)) ? f : d) : vec4(-1.0);
+		result = dist <= 0.0 ? ((cd(c,f) <= cd(c,d)) ? f : d) : vec4(-1.0);
 	} else if(similar3(uf, f, d) && !similar3(u, f, d) && !similar(uf, db)){ //forward steep 2:1 slant
 		if(similar(c, df) && higher(c, d)){ //single pixel wide diagonal, dont flip
 			
@@ -200,7 +205,7 @@ vec4 sliceDist(vec2 point, vec2 mainDir, vec2 pointDir, vec4 u, vec4 uf, vec4 uf
 		#endif
 		
 		dist -= (_lineWidth/2.0);
-		return dist <= 0.0 ? ((cd(c,f) <= cd(c,d)) ? f : d) : vec4(-1.0);
+		result = dist <= 0.0 ? ((cd(c,f) <= cd(c,d)) ? f : d) : vec4(-1.0);
 	} else 
 	#endif
 	if(similar(f, d)) { //45 diagonal
@@ -244,7 +249,7 @@ vec4 sliceDist(vec2 point, vec2 mainDir, vec2 pointDir, vec4 u, vec4 uf, vec4 uf
 		#endif
 		
 		dist -= (_lineWidth/2.0);
-		return dist <= 0.0 ? ((cd(c,f) <= cd(c,d)) ? f : d) : vec4(-1.0);
+		result = dist <= 0.0 ? ((cd(c,f) <= cd(c,d)) ? f : d) : vec4(-1.0);
 	} 
 	#ifdef SLOPE
 	else if(similar3(ff, df, d) && !similar3(ff, df, c) && !similar(uff, d)){ //far corner of shallow slant 
@@ -267,7 +272,7 @@ vec4 sliceDist(vec2 point, vec2 mainDir, vec2 pointDir, vec4 u, vec4 uf, vec4 uf
 		}
 		
 		dist -= (_lineWidth/2.0);
-		return dist <= 0.0 ? ((cd(f,ff) <= cd(f,df)) ? ff : df) : vec4(-1.0);
+		result = dist <= 0.0 ? ((cd(f,ff) <= cd(f,df)) ? ff : df) : vec4(-1.0);
 	} else if(similar3(f, df, dd) && !similar3(c, df, dd) && !similar(f, ddb)){ //far corner of steep slant
 		if(similar(d, ddf) && higher(d, dd)){ //single pixel wide diagonal, dont flip
 			
@@ -291,10 +296,11 @@ vec4 sliceDist(vec2 point, vec2 mainDir, vec2 pointDir, vec4 u, vec4 uf, vec4 uf
 			dist = distToLine(point, center+vec2(1.0, -0.5+1.0)*pointDir, center+vec2(0.0, 1.5+1.0)*pointDir, pointDir); //midpoints of neighbor two-pixel groupings
 		}
 		dist -= (_lineWidth/2.0);
-		return dist <= 0.0 ? ((cd(d,df) <= cd(d,dd)) ? df : dd) : vec4(-1.0);
+		result = dist <= 0.0 ? ((cd(d,df) <= cd(d,dd)) ? df : dd) : vec4(-1.0);
 	}
 	#endif
-	return vec4(-1.0);
+	}
+	return result;
 }
 
 void main()

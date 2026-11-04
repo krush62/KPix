@@ -15,18 +15,27 @@
  *  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-import 'dart:async';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:window_manager/window_manager.dart'
+    show
+    DragToMoveArea,
+    ListenerId,
+    Window,
+    WindowEvent,
+    WindowManager,
+    WindowMaximizedEvent,
+    WindowResizedEvent,
+    WindowRestoredEvent;
 
 /// Size of a caption button (matches the Windows caption button size).
 const Size windowButtonSize = Size(46.0, 32.0);
 
+Window? get _currentWindow => WindowManager.instance.getCurrent();
+
 /// Drop-in replacement for bitsdojo's WindowButtonColors (same field names).
-class WindowButtonColors {
+class WindowButtonColors
+{
   final Color normal;
   final Color mouseOver;
   final Color mouseDown;
@@ -49,52 +58,60 @@ enum _WindowIconType { minimize, maximize, restore, close }
 
 /// Replacement for bitsdojo's `WindowTitleBarBox(child: MoveWindow())`.
 /// Dragging moves the window, double-click toggles maximize.
-class WindowDragArea extends StatelessWidget {
+class WindowDragArea extends StatelessWidget
+{
   const WindowDragArea({super.key});
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context)
+  {
     return SizedBox(
       height: windowButtonSize.height,
-      child: const DragToMoveArea(child: SizedBox.expand()),
+      child: DragToMoveArea(window: _currentWindow, child: const SizedBox.expand()),
     );
   }
 }
 
-class MinimizeWindowButton extends StatelessWidget {
+
+class MinimizeWindowButton extends StatelessWidget
+{
   final WindowButtonColors colors;
   final VoidCallback? onPressed;
 
   const MinimizeWindowButton({super.key, required this.colors, this.onPressed});
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context)
+  {
     return _WindowButton(
       type: _WindowIconType.minimize,
       colors: colors,
-      onPressed: onPressed ?? () => unawaited(windowManager.minimize()),
+      onPressed: onPressed ?? () => _currentWindow?.minimize(),
     );
   }
 }
 
-class CloseWindowButton extends StatelessWidget {
+class CloseWindowButton extends StatelessWidget
+{
   final WindowButtonColors colors;
   final VoidCallback? onPressed;
 
   const CloseWindowButton({super.key, required this.colors, this.onPressed});
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context)
+  {
     return _WindowButton(
       type: _WindowIconType.close,
       colors: colors,
-      onPressed: onPressed ?? () => unawaited(windowManager.close()),
+      onPressed: onPressed ?? () => _currentWindow?.close(),
     );
   }
 }
 
 /// Shows the maximize or restore icon depending on the actual window state.
-class MaximizeWindowButton extends StatefulWidget {
+class MaximizeWindowButton extends StatefulWidget
+{
   final WindowButtonColors colors;
   final VoidCallback? onPressed;
 
@@ -104,57 +121,75 @@ class MaximizeWindowButton extends StatefulWidget {
   State<MaximizeWindowButton> createState() => _MaximizeWindowButtonState();
 }
 
-class _MaximizeWindowButtonState extends State<MaximizeWindowButton> with WindowListener {
+class _MaximizeWindowButtonState extends State<MaximizeWindowButton>
+{
+  Window? _window;
+  ListenerId? _listenerId;
   bool _isMaximized = false;
 
   @override
-  void initState() {
+  void initState()
+  {
     super.initState();
-    windowManager.addListener(this);
-    unawaited(_syncState());
+    _window = _currentWindow;
+    final Window? window = _window;
+    if (window != null)
+    {
+      _isMaximized = window.isMaximized;
+      _listenerId = window.addListener(_onWindowEvent);
+    }
   }
 
   @override
-  void dispose() {
-    windowManager.removeListener(this);
+  void dispose()
+  {
+    final ListenerId? id = _listenerId;
+    if (id != null)
+    {
+      _window?.removeListener(id);
+    }
     super.dispose();
   }
 
-  Future<void> _syncState() async {
-    final bool maximized = await windowManager.isMaximized();
-    if (mounted && maximized != _isMaximized) {
-      setState(() => _isMaximized = maximized);
+  void _onWindowEvent(final WindowEvent event)
+  {
+    if (event is WindowMaximizedEvent || event is WindowRestoredEvent || event is WindowResizedEvent)
+    {
+      final bool maximized = _window?.isMaximized ?? false;
+      if (mounted && maximized != _isMaximized)
+      {
+        setState(() => _isMaximized = maximized);
+      }
     }
   }
 
-  Future<void> _toggle() async {
-    if (await windowManager.isMaximized()) {
-      await windowManager.unmaximize();
-    } else {
-      await windowManager.maximize();
+  void _toggle()
+  {
+    final Window? window = _window;
+    if (window == null) return;
+    if (window.isMaximized)
+    {
+      window.restore();
+    }
+    else
+    {
+      window.maximize();
     }
   }
 
   @override
-  void onWindowMaximize() => setState(() => _isMaximized = true);
-
-  @override
-  void onWindowUnmaximize() => setState(() => _isMaximized = false);
-
-  @override
-  void onWindowRestore() => unawaited(_syncState());
-
-  @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context)
+  {
     return _WindowButton(
       type: _isMaximized ? _WindowIconType.restore : _WindowIconType.maximize,
       colors: widget.colors,
-      onPressed: widget.onPressed ?? () => unawaited(_toggle()),
+      onPressed: widget.onPressed ?? _toggle,
     );
   }
 }
 
-class _WindowButton extends StatefulWidget {
+class _WindowButton extends StatefulWidget
+{
   final _WindowIconType type;
   final WindowButtonColors colors;
   final VoidCallback onPressed;
@@ -165,19 +200,22 @@ class _WindowButton extends StatefulWidget {
   State<_WindowButton> createState() => _WindowButtonState();
 }
 
-class _WindowButtonState extends State<_WindowButton> {
+class _WindowButtonState extends State<_WindowButton>
+{
   bool _hovered = false;
   bool _pressed = false;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context)
+  {
     final WindowButtonColors c = widget.colors;
     final Color background = _pressed ? c.mouseDown : (_hovered ? c.mouseOver : c.normal);
     final Color icon = _pressed ? c.iconMouseDown : (_hovered ? c.iconMouseOver : c.iconNormal);
 
     return MouseRegion(
       onEnter: (final PointerEnterEvent _) => setState(() => _hovered = true),
-      onExit: (final PointerExitEvent _) => setState(() {
+      onExit: (final PointerExitEvent _) => setState(()
+      {
         _hovered = false;
         _pressed = false;
       }),
@@ -202,21 +240,24 @@ class _WindowButtonState extends State<_WindowButton> {
 }
 
 /// Thin 10x10 caption icons, similar to bitsdojo's / Windows' style.
-class _WindowIconPainter extends CustomPainter {
+class _WindowIconPainter extends CustomPainter
+{
   final _WindowIconType type;
   final Color color;
 
   const _WindowIconPainter({required this.type, required this.color});
 
   @override
-  void paint(final Canvas canvas, final Size size) {
+  void paint(final Canvas canvas, final Size size)
+  {
     final Paint p = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0
       ..isAntiAlias = type == _WindowIconType.close;
 
-    switch (type) {
+    switch (type)
+    {
       case _WindowIconType.minimize:
         canvas.drawLine(const Offset(0.0, 5.5), const Offset(10.0, 5.5), p);
       case _WindowIconType.maximize:

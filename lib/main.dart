@@ -91,19 +91,15 @@ Future<void> main(final List<String> args) async
   //built once: the app rebuilds when either the theme or the language changes
   final Listenable appSettings = Listenable.merge(<Listenable>[themeSettings, languageSettings]);
   if (isDesktop()) {
-    await windowManager.ensureInitialized();
-    const WindowOptions windowOptions = WindowOptions(
-      minimumSize: defaultDesktopSize,
-      size: defaultDesktopSize,
-      center: true,
-      title: "KPix",
-      titleBarStyle: TitleBarStyle.hidden,
-    );
-    await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.maximize();
-      await windowManager.show();
-      await windowManager.focus();
-    });
+    final Window window = WindowManager.instance.getCurrent()!;
+    window.title = "KPix";
+    window.minimumSize = defaultDesktopSize.toNative();
+    window.setSize(defaultDesktopSize.toNative(), false);
+    window.center();
+    window.titleBarStyle = TitleBarStyle.hidden;
+    window.maximize();
+    window.show();
+    window.focus();
   }
   else
   {
@@ -158,7 +154,7 @@ class KPixApp extends StatefulWidget
 }
 
 
-class _KPixAppState extends State<KPixApp> with WindowListener, WidgetsBindingObserver
+class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 {
   final ValueNotifier<bool> initialized = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isFocused = ValueNotifier<bool>(true);
@@ -183,8 +179,15 @@ class _KPixAppState extends State<KPixApp> with WindowListener, WidgetsBindingOb
       }
       if (isDesktop())
       {
-        windowManager.addListener(this);
-        windowManager.setPreventClose(true);
+        final Window window = WindowManager.instance.getCurrent()!;
+        window.addListener((final WindowEvent ev)
+        {
+          if (ev is WindowCloseRequestedEvent)
+          {
+            ev.request.cancel();
+            _closePressed(); // ends in exitApplication() → exit()
+          }
+        });
       }
     },);
 
@@ -200,10 +203,6 @@ class _KPixAppState extends State<KPixApp> with WindowListener, WidgetsBindingOb
     if (GetIt.I.isRegistered<ProjectManager>())
     {
       GetIt.I.get<ProjectManager>().dispose();
-    }
-    if (isDesktop())
-    {
-      windowManager.removeListener(this);
     }
     super.dispose();
   }

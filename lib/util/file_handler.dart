@@ -80,44 +80,32 @@ Future<String?> saveKPixFile({
 void loadFilePressed({final void Function(ProjectLoadResult? result)? finishCallback, final Function()? loadStartCallback})
 {
   final String exportDir = GetIt.I.get<AppPaths>().exportDir;
-  if (isDesktop(includingWeb: true))
+  final Future<PlatformFile?> pick = isDesktop(includingWeb: true)
+      ? FilePicker.pickFile(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpix], initialDirectory: exportDir,)
+      : FilePicker.pickFile(initialDirectory: exportDir,); //mobile
+  pick.then((final PlatformFile? file)
   {
-    //withData is only forced on web, where there is no path to read from later;
-    //native keeps loading from disk so a large project is not held twice
-    FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpix], withData: kIsWeb, initialDirectory: exportDir,).then
-      ((final FilePickerResult? result)
-        {
-          _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
-        }
-      );
-  } 
-  else //mobile
-  {
-    FilePicker.pickFiles(withData: kIsWeb, initialDirectory: exportDir,).then
-      ((final FilePickerResult? result)
-        {
-          _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
-        }
-      );
-  }
+    _loadFileChosen(file: file, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
+  });
 }
 
-void _loadFileChosen({final FilePickerResult? result, required final void Function(ProjectLoadResult? result)? finishCallback, required final Function()? loadStartCallback,})
+Future<void> _loadFileChosen({final PlatformFile? file, required final void Function(ProjectLoadResult? result)? finishCallback, required final Function()? loadStartCallback,}) async
 {
-  if (result != null && result.files.isNotEmpty) 
+  if (file != null)
   {
-    final String path = pickedFilePath(file: result.files.first);
+    final String path = pickedFilePath(file: file);
     loadStartCallback?.call();
-    loadKPixFile(
-      fileData: result.files.first.bytes,
+    //bytes are only read on web, where there is no path to read from later;
+    //native keeps loading from disk so a large project is not held twice
+    final Uint8List? fileData = kIsWeb ? await file.readAsBytes() : null;
+    final LoadFileSet loadFileSet = await loadKPixFile(
+      fileData: fileData,
       path: path,
       drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
       shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
       frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
-    ).then((final LoadFileSet loadFileSet)
-    {
-      fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);
-    });
+    );
+    fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);
   }
 }
 

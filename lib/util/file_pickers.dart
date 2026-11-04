@@ -31,10 +31,10 @@ String pickedFilePath({required final PlatformFile file})
 Future<String?> _pickFile({required final String extension}) async
 {
   final String exportDir = GetIt.I.get<AppPaths>().exportDir;
-  final FilePickerResult? result = isDesktop(includingWeb: true)
-      ? await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[extension], initialDirectory: exportDir,)
-      : await FilePicker.pickFiles(initialDirectory: exportDir,);
-  return result != null && result.files.isNotEmpty ? pickedFilePath(file: result.files.first) : null;
+  final PlatformFile? file = isDesktop(includingWeb: true)
+      ? await FilePicker.pickFile(type: FileType.custom, allowedExtensions: <String>[extension], initialDirectory: exportDir,)
+      : await FilePicker.pickFile(initialDirectory: exportDir,);
+  return file != null ? pickedFilePath(file: file) : null;
 }
 
 Future<String?> getPathForKPixFile() async
@@ -49,29 +49,30 @@ Future<String?> getPathForKPalFile() async
 
 Future<(String?, Uint8List?)> getPathAndDataForImage() async
 {
-  FilePickerResult? result;
+  final String exportDir = GetIt.I.get<AppPaths>().exportDir;
+  final PlatformFile? file;
   if (isDesktop())
   {
-    result = await FilePicker.pickFiles(type: FileType.image, allowedExtensions: imageExtensions, initialDirectory: GetIt.I.get<AppPaths>().exportDir,);
-  } 
+    file = await FilePicker.pickFile(type: FileType.image, allowedExtensions: imageExtensions, initialDirectory: exportDir,);
+  }
   else if (kIsWeb)
   {
-    //web has no file system to read from afterwards, so the bytes have to come
-    //back with the pick itself
-    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: imageExtensions, withData: true, initialDirectory: GetIt.I.get<AppPaths>().exportDir,);
-  } 
+    file = await FilePicker.pickFile(type: FileType.custom, allowedExtensions: imageExtensions, initialDirectory: exportDir,);
+  }
   else //mobile
-  {
-    result = await FilePicker.pickFiles(initialDirectory: GetIt.I.get<AppPaths>().exportDir,);
+      {
+    file = await FilePicker.pickFile(initialDirectory: exportDir,);
   }
-  if (result != null && result.files.isNotEmpty) 
-  {
-    return (pickedFilePath(file: result.files.first), result.files.first.bytes);
-  }
-  else
+
+  if (file == null)
   {
     return (null, null);
   }
+
+  //web has no file system to read from afterwards, so the bytes have to be
+  //read right after the pick
+  final Uint8List? data = kIsWeb ? await file.readAsBytes() : null;
+  return (pickedFilePath(file: file), data);
 }
 
 Future<String?> getDirectory({required final String startDir, required final String dialogTitle}) async

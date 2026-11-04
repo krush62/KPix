@@ -80,27 +80,6 @@ const String _mainWindowIdKey = 'mainWindowId';
 /// Command line arguments.
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
 
-Future<Window?> _findMainWindow() async
-{
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  // Hot restart: same process, so the stored window id is still valid
-  if (prefs.getInt(_mainWindowPidKey) == pid)
-  {
-    final int? id = prefs.getInt(_mainWindowIdKey);
-    final Window? window = id != null ? WindowManager.instance.get(id) : null;
-    if (window != null) return window;
-  }
-
-  // Fresh start: the focused window is ours
-  final Window? window = WindowManager.instance.getCurrent();
-  if (window != null)
-  {
-    await prefs.setInt(_mainWindowPidKey, pid);
-    await prefs.setInt(_mainWindowIdKey, window.id);
-  }
-  return window;
-}
 
 Future<void> main(final List<String> args) async
 {
@@ -171,6 +150,46 @@ Future<void> main(final List<String> args) async
       },
     ),
   );
+}
+
+Future<Window?> _findMainWindow() async
+{
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  // Hot restart: same process, so the stored window id is still valid
+  if (prefs.getInt(_mainWindowPidKey) == pid)
+  {
+    final int? id = prefs.getInt(_mainWindowIdKey);
+    final Window? window = id != null ? WindowManager.instance.get(id) : null;
+    if (window != null) return window;
+  }
+
+  // Fresh start: the focused window is ours
+  final Window? window = WindowManager.instance.getCurrent();
+  if (window != null)
+  {
+    await prefs.setInt(_mainWindowPidKey, pid);
+    await prefs.setInt(_mainWindowIdKey, window.id);
+  }
+  return window;
+}
+
+Future<void> _clearWindowIds() async
+{
+  if (isDesktop())
+  {
+    final Logger logger = GetIt.I.get<Logger>();
+    try
+    {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_mainWindowPidKey);
+      await prefs.remove(_mainWindowIdKey);
+    }
+    catch (e, s)
+    {
+      logger.w("Error clearing recovery directory.", error: e, stackTrace: s);
+    }
+  }
 }
 
 class KPixApp extends StatefulWidget
@@ -300,7 +319,10 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       }
       else
       {
-        exit(exitCode);
+        _clearWindowIds().whenComplete(()
+        {
+            exit(exitCode);
+        });
       }
     },);
   }

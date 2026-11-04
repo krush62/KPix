@@ -611,6 +611,27 @@ KPixOverlay getThreeButtonDialog({
   );
 }
 
+/// An overlay asking what to do with a file whose project name is taken: open
+/// the existing project, import the file as a copy, or neither. The barrier
+/// ignores taps; Escape cancels.
+KPixOverlay getProjectNameConflictDialog({
+  required final Function() onOpenExisting,
+  required final Function() onImportCopy,
+  required final Function() onCancel,
+  required final LocalizedMessageFn message,
+})
+{
+  return _messageDialog(
+    message: message,
+    onEscape: onCancel,
+    actions: <_DialogAction>[
+      _DialogAction(icon: TablerIcons.folder_open, onPressed: onOpenExisting, tooltip: (final AppLocalizations l10n) => l10n.openExistingProject),
+      _DialogAction(icon: TablerIcons.copy_plus, onPressed: onImportCopy, tooltip: (final AppLocalizations l10n) => l10n.importAsCopy),
+      _DialogAction(icon: TablerIcons.ban, onPressed: onCancel, tooltip: (final AppLocalizations l10n) => l10n.cancel),
+    ],
+  );
+}
+
 /// An overlay holding a dialog with a yes and a no button.
 ///
 /// [message] is shown above the buttons. Tapping the barrier calls [onNo] when

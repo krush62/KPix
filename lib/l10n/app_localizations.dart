@@ -254,6 +254,24 @@ abstract class AppLocalizations {
   /// **'A project with the same name already exists!'**
   String get projectWithSameNameExists;
 
+  /// open file
+  ///
+  /// In en, this message translates to:
+  /// **'A project named \"{name}\" already exists. Open that project or import the file as a copy?'**
+  String projectNameTaken(String name);
+
+  /// No description provided for @openExistingProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the existing project'**
+  String get openExistingProject;
+
+  /// No description provided for @importAsCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Import as a copy'**
+  String get importAsCopy;
+
   /// No description provided for @pleaseSelectAKPixFile.
   ///
   /// In en, this message translates to:

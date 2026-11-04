@@ -27,6 +27,15 @@
   "projectImportSuccessful": "Project imported successfully!",
   "couldNotOpenFile": "Could not open file!",
   "projectWithSameNameExists": "A project with the same name already exists!",
+  "projectNameTaken": "A project named \"{name}\" already exists. Open that project or import the file as a copy?",
+  "@projectNameTaken": {
+    "description": "open file",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "openExistingProject": "Open the existing project",
+  "importAsCopy": "Import as a copy",
   "pleaseSelectAKPixFile": "Please select a KPix file!",
   "couldNotReadProjectDir": "Could not read the project directory!",
   "noFilesFound": "No files found!",

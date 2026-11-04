@@ -60,39 +60,62 @@ class ProjectRecovery
   }
 }
 
-/// The project to open at start up. [importResult] is null when nothing was
-/// imported: for a recovery file or a project of the projects directory.
+/// A project to open: recovered at start up or requested from outside.
+/// [importResult] is null when nothing was imported: for a recovery file or a
+/// project of the projects directory. [requestedPath] is the file asked for.
 class InitialProject
 {
   final String? path;
   final bool fromRecovery;
   final ProjectImportResult? importResult;
+  final String? requestedPath;
 
-  const InitialProject({required this.path, required this.fromRecovery, this.importResult});
+  const InitialProject({required this.path, required this.fromRecovery, this.importResult, this.requestedPath});
 }
 
-/// Finds the project to open at start up. A recovery file wins; otherwise the
-/// file from [requestedPath], which is only asked for then, gets imported.
-Future<InitialProject> findInitialProject({required final Future<String?> Function() requestedPath}) async
+/// The unsaved work a session left behind in the recovery directory, if any.
+Future<InitialProject?> findRecoveredProject() async
 {
   final String? recoveryFile = await getRecoveryFile();
-  if (recoveryFile != null)
-  {
-    return InitialProject(path: recoveryFile, fromRecovery: true);
-  }
-
-  return importRequestedProject(path: await requestedPath());
+  return recoveryFile == null ? null : InitialProject(path: recoveryFile, fromRecovery: true);
 }
 
-/// Imports [path] into the projects directory and points at the project there,
-/// which may have existed before. Recovery files are not looked at.
-Future<InitialProject> importRequestedProject({required final String? path}) async
+/// Imports [path] into the projects directory and points at the project there.
+/// A taken name is reported as [ProjectImportResult.projectAlreadyExists],
+/// pointing at the existing project, unless [asCopy] imports the file under
+/// the first free `_n` name. Recovery files are not looked at.
+Future<InitialProject> importRequestedProject({required final String? path, final bool asCopy = false}) async
 {
-  final File expectedFile = File(p.join(GetIt.I.get<AppPaths>().projectsDir, extractFilenameFromPath(path: path)));
+  final String projectsDir = GetIt.I.get<AppPaths>().projectsDir;
+  final File expectedFile = File(p.join(projectsDir, extractFilenameFromPath(path: path)));
   //importing a project of the projects directory would only report it as a duplicate
-  final bool isProject = path != null && path.endsWith(fileExtensionKpix) && p.equals(path, expectedFile.path);
-  final ProjectImportResult? importResult = isProject ? null : await importProject(path: path);
-  return InitialProject(path: await expectedFile.exists() ? expectedFile.path : null, fromRecovery: false, importResult: importResult);
+  if (path != null && path.endsWith(fileExtensionKpix) && p.equals(path, expectedFile.path))
+  {
+    return InitialProject(path: await expectedFile.exists() ? expectedFile.path : null, fromRecovery: false, requestedPath: path);
+  }
+  final String? copyName = asCopy && path != null ? await _freeProjectFileName(path: path) : null;
+  final ProjectImportResult importResult = await importProject(path: path, targetFileName: copyName);
+  final String? projectPath = switch (importResult)
+  {
+    ProjectImportResult.success => p.join(projectsDir, copyName ?? extractFilenameFromPath(path: path)),
+    ProjectImportResult.projectAlreadyExists => expectedFile.path,
+    _ => null,
+  };
+  return InitialProject(path: projectPath, fromRecovery: false, importResult: importResult, requestedPath: path);
+}
+
+/// The file name of [path] with the first `_n` suffix free in the projects directory.
+Future<String> _freeProjectFileName({required final String path}) async
+{
+  final String baseName = extractFilenameFromPath(path: path, keepExtension: false);
+  for (int i = 1; ; i++)
+  {
+    final String candidate = "${baseName}_$i.$fileExtensionKpix";
+    if (!await File(p.join(GetIt.I.get<AppPaths>().projectsDir, candidate)).exists())
+    {
+      return candidate;
+    }
+  }
 }
 
 /// Loads [project] into the session; returns null if nothing was loaded.

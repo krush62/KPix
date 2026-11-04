@@ -74,8 +74,6 @@ void _recoveryTest(final String description, final Future<void> Function(Project
   });
 }
 
-Future<String?> _noRequest() async => null;
-
 void main()
 {
   group("internal directories", ()
@@ -253,32 +251,28 @@ void main()
 
   group("start up", ()
   {
-    _recoveryTest("a recovery file wins and the requested file is not even asked for", (final ProjectSession projectSession) async
+    _recoveryTest("unsaved work in the recovery directory is found", (final ProjectSession projectSession) async
     {
       await _unsavedWork(projectSession: projectSession);
       await ProjectRecovery().update(mayWrite: true);
-      bool asked = false;
 
-      final InitialProject initial = await findInitialProject(requestedPath: () async
-      {
-        asked = true;
-        return "somewhere/else.kpix";
-      },);
+      final InitialProject? recovered = await findRecoveredProject();
 
-      expect(asked, isFalse);
-      expect(initial.fromRecovery, isTrue);
-      expect(initial.path, p.join(_recoverDir.path, "$recoverFileName.$fileExtensionKpix"));
-      expect(initial.importResult, isNull);
+      expect(recovered!.fromRecovery, isTrue);
+      expect(recovered.path, p.join(_recoverDir.path, "$recoverFileName.$fileExtensionKpix"));
+      expect(recovered.importResult, isNull);
     });
 
     _recoveryTest("nothing to open without a recovery file or a request", (final ProjectSession projectSession) async
     {
-      final InitialProject initial = await findInitialProject(requestedPath: _noRequest);
+      expect(await findRecoveredProject(), isNull);
 
-      expect(initial.path, isNull);
-      expect(initial.fromRecovery, isFalse);
-      expect(initial.importResult, ProjectImportResult.cancelled);
-      expect(await openInitialProject(project: initial), isNull);
+      final InitialProject requested = await importRequestedProject(path: null);
+
+      expect(requested.path, isNull);
+      expect(requested.fromRecovery, isFalse);
+      expect(requested.importResult, ProjectImportResult.cancelled);
+      expect(await openInitialProject(project: requested), isNull);
     });
 
     _recoveryTest("a requested file is imported and opened from the projects directory", (final ProjectSession projectSession) async
@@ -286,23 +280,50 @@ void main()
       await _unsavedWork(projectSession: projectSession);
       final File requested = File(p.join(GetIt.I.get<AppPaths>().exportDir, "shared.kpix"))..writeAsBytesSync(await projectBytes());
 
-      final InitialProject initial = await findInitialProject(requestedPath: () async => requested.path);
+      final InitialProject initial = await importRequestedProject(path: requested.path);
 
       expect(initial.importResult, ProjectImportResult.success);
       expect(initial.fromRecovery, isFalse);
       expect(initial.path, p.join(GetIt.I.get<AppPaths>().projectsDir, "shared.kpix"));
+      expect(initial.requestedPath, requested.path);
       expect(File(initial.path!).existsSync(), isTrue);
     });
 
-    _recoveryTest("a requested file already in the projects directory opens that project", (final ProjectSession projectSession) async
+    _recoveryTest("a requested file with a taken name points at the existing project", (final ProjectSession projectSession) async
     {
       final File requested = File(p.join(GetIt.I.get<AppPaths>().exportDir, "shared.kpix"))..writeAsBytesSync(await projectBytes());
       final File existing = File(p.join(GetIt.I.get<AppPaths>().projectsDir, "shared.kpix"))..writeAsBytesSync(await projectBytes());
 
-      final InitialProject initial = await findInitialProject(requestedPath: () async => requested.path);
+      final InitialProject initial = await importRequestedProject(path: requested.path);
 
       expect(initial.importResult, ProjectImportResult.projectAlreadyExists);
       expect(initial.path, existing.path);
+      expect(initial.requestedPath, requested.path, reason: "kept for importing it as a copy");
+    });
+
+    _recoveryTest("a requested file imported as a copy gets the first free name", (final ProjectSession projectSession) async
+    {
+      final String projectsDir = GetIt.I.get<AppPaths>().projectsDir;
+      final File requested = File(p.join(GetIt.I.get<AppPaths>().exportDir, "shared.kpix"))..writeAsBytesSync(await projectBytes());
+      File(p.join(projectsDir, "shared.kpix")).writeAsBytesSync(await projectBytes());
+      File(p.join(projectsDir, "shared_1.kpix")).writeAsBytesSync(await projectBytes());
+
+      final InitialProject copy = await importRequestedProject(path: requested.path, asCopy: true);
+
+      expect(copy.importResult, ProjectImportResult.success);
+      expect(copy.path, p.join(projectsDir, "shared_2.kpix"));
+      expect(File(copy.path!).existsSync(), isTrue);
+    });
+
+    _recoveryTest("a damaged requested file opens nothing, not even the project with its name", (final ProjectSession projectSession) async
+    {
+      final File requested = File(p.join(GetIt.I.get<AppPaths>().exportDir, "shared.kpix"))..writeAsBytesSync(<int>[1, 2, 3, 4, 5, 6, 7, 8]);
+      File(p.join(GetIt.I.get<AppPaths>().projectsDir, "shared.kpix")).writeAsBytesSync(await projectBytes());
+
+      final InitialProject initial = await importRequestedProject(path: requested.path);
+
+      expect(initial.importResult, ProjectImportResult.couldNotOpenFile);
+      expect(initial.path, isNull);
     });
 
     _recoveryTest("a requested project of the projects directory opens without an import", (final ProjectSession projectSession) async
@@ -331,7 +352,7 @@ void main()
 
     _recoveryTest("a requested file of another type opens nothing", (final ProjectSession projectSession) async
     {
-      final InitialProject initial = await findInitialProject(requestedPath: () async => "folder/picture.png");
+      final InitialProject initial = await importRequestedProject(path: "folder/picture.png");
 
       expect(initial.importResult, ProjectImportResult.notAKPixFile);
       expect(initial.path, isNull);
@@ -344,7 +365,7 @@ void main()
       projectSession.init(dimensions: CoordinateSetI(x: 3, y: 3));
       await settle();
 
-      final ProjectLoadResult? result = await openInitialProject(project: await findInitialProject(requestedPath: _noRequest));
+      final ProjectLoadResult? result = await openInitialProject(project: (await findRecoveredProject())!);
       await settle();
 
       expect(result!.restore, HistoryRestoreResult.success);
@@ -361,7 +382,7 @@ void main()
       projectSession.init(dimensions: CoordinateSetI(x: 3, y: 3));
       await settle();
 
-      await openInitialProject(project: await findInitialProject(requestedPath: _noRequest));
+      await openInitialProject(project: (await findRecoveredProject())!);
       await settle();
 
       expect(projectSession.projectName.value, "my drawing");
@@ -375,7 +396,7 @@ void main()
       projectSession.init(dimensions: CoordinateSetI(x: 3, y: 3));
       await settle();
 
-      final ProjectLoadResult? result = await openInitialProject(project: await findInitialProject(requestedPath: () async => requested.path));
+      final ProjectLoadResult? result = await openInitialProject(project: await importRequestedProject(path: requested.path));
       await settle();
 
       expect(result!.restore, HistoryRestoreResult.success);
@@ -389,7 +410,7 @@ void main()
       File(p.join(_recoverDir.path, "$recoverFileName.$fileExtensionKpix")).writeAsBytesSync(<int>[1, 2, 3, 4, 5, 6, 7, 8]);
       projectSession.projectName.value = "current";
 
-      final ProjectLoadResult? result = await openInitialProject(project: await findInitialProject(requestedPath: _noRequest));
+      final ProjectLoadResult? result = await openInitialProject(project: (await findRecoveredProject())!);
 
       expect(result, isNull);
       expect(projectSession.projectName.value, "current");

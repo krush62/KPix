@@ -247,7 +247,9 @@ Future<bool> deleteProject({required final String fullProjectPath}) async
   }
 }
 
-Future<ProjectImportResult> importProject({required final String? path}) async
+/// Copies the KPix file at [path] into the projects directory, under
+/// [targetFileName] when given, else under its own name.
+Future<ProjectImportResult> importProject({required final String? path, final String? targetFileName}) async
 {
   ProjectImportResult result = ProjectImportResult.cancelled;
   final Logger logger = GetIt.I.get<Logger>();
@@ -267,7 +269,7 @@ Future<ProjectImportResult> importProject({required final String? path}) async
         );
         if (loadFileSet.historyState != null && loadFileSet.path != null)
         {
-          final String fileName = extractFilenameFromPath(path: loadFileSet.path);
+          final String fileName = targetFileName ?? extractFilenameFromPath(path: loadFileSet.path);
           final String projectPath = p.join(GetIt.I.get<AppPaths>().projectsDir, fileName);
           if (!File(projectPath).existsSync())
           {

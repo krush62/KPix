@@ -90,6 +90,17 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ein Projekt mit demselben Namen existiert bereits!';
 
   @override
+  String projectNameTaken(String name) {
+    return 'Ein Projekt namens \"$name\" existiert bereits. Dieses Projekt öffnen oder die Datei als Kopie importieren?';
+  }
+
+  @override
+  String get openExistingProject => 'Vorhandenes Projekt öffnen';
+
+  @override
+  String get importAsCopy => 'Als Kopie importieren';
+
+  @override
   String get pleaseSelectAKPixFile => 'Bitte eine KPix-Datei auswählen!';
 
   @override

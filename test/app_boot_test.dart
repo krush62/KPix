@@ -313,6 +313,64 @@ void main()
       await _closeApp(tester);
     });
 
+    testWidgets("asks about a requested file once the recovered work is back", (final WidgetTester tester) async
+    {
+      final File project = await _createProject(tester);
+      final List<int> bytes = (await tester.runAsync(project.readAsBytes))!;
+      await _bootApp(tester, prepare: (final String internalDir)
+      {
+        final Directory recovery = Directory(p.join(internalDir, recoverSubDirName))..createSync();
+        File(p.join(recovery.path, "work.$fileExtensionKpix")).writeAsBytesSync(bytes);
+        cmdLineArgs = <String>[project.path];
+      },);
+
+      await _waitForBoot(tester, until: () => find.text(testL10n.unsavedChangesSaveFirst).evaluate().isNotEmpty);
+      final ProjectSession session = GetIt.I.get<ProjectSession>();
+      expect(session.projectName.value, "work", reason: "the recovered work is open behind the question");
+
+      await tapTooltip(tester, testL10n.no);
+      await _waitForBoot(tester, until: () => session.projectName.value == "project");
+
+      expect(session.hasChanges.value, isFalse);
+      await tester.runAsync(settle);
+      await _closeApp(tester);
+    });
+
+    testWidgets("asks what to do with a file whose project name is taken", (final WidgetTester tester) async
+    {
+      final File project = await _createProject(tester);
+      final List<int> bytes = (await tester.runAsync(project.readAsBytes))!;
+      await _bootApp(tester, prepare: (final String internalDir)
+      {
+        final Directory projects = Directory(p.join(internalDir, projectsSubDirName))..createSync();
+        File(p.join(projects.path, "project.$fileExtensionKpix")).writeAsBytesSync(bytes);
+      },);
+      await _waitForBoot(tester, until: () => find.byType(NewProjectWidget).evaluate().isNotEmpty);
+      final ProjectSession session = GetIt.I.get<ProjectSession>();
+      final String question = testL10n.projectNameTaken("project");
+
+      await _handOver(tester, path: project.path);
+      await _waitForBoot(tester, until: () => find.text(question).evaluate().isNotEmpty);
+      await tapTooltip(tester, testL10n.cancel);
+      expect(find.text(question), findsNothing);
+      expect(find.byType(NewProjectWidget), findsOneWidget, reason: "cancel opens nothing");
+
+      await _handOver(tester, path: project.path);
+      await _waitForBoot(tester, until: () => find.text(question).evaluate().isNotEmpty);
+      await tapTooltip(tester, testL10n.openExistingProject);
+      await _waitForBoot(tester, until: () => session.projectName.value == "project");
+      expect(find.text(testL10n.projectWithSameNameExists), findsNothing);
+
+      await _handOver(tester, path: project.path);
+      await _waitForBoot(tester, until: () => find.text(question).evaluate().isNotEmpty);
+      await tapTooltip(tester, testL10n.importAsCopy);
+      await _waitForBoot(tester, until: () => session.projectName.value == "project_1");
+      expect(await tester.runAsync(() => File(p.join(GetIt.I.get<AppPaths>().projectsDir, "project_1.$fileExtensionKpix")).exists()), isTrue);
+
+      await tester.runAsync(settle);
+      await _closeApp(tester);
+    });
+
     testWidgets("brings back what it recovered and says so", (final WidgetTester tester) async
     {
       final File project = await _createProject(tester);

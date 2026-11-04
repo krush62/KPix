@@ -240,6 +240,8 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   KPixOverlay? _saveNewWarningDialog;
   KPixOverlay? _saveBeforeOpenWarningDialog;
   String? _handedOverPath;
+  KPixOverlay? _nameConflictDialog;
+  InitialProject? _nameConflict;
   Timer? _recoverTimer;
   late AppLifecycleState _lastAppLifeCycleState;
   final ProjectRecovery _projectRecovery = ProjectRecovery();
@@ -443,6 +445,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       }
       GetIt.I.get<ProjectSession>().hasProjectNotifier.addListener(_hasProjectChanged);
 
+      String? requestedPath;
       if (!kIsWeb)
       {
         logger.i("Creating internal directories if needed.");
@@ -460,7 +463,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
           }
         }
 
-        await _handleInitialFile();
+        requestedPath = await _handleInitialFile();
 
         if (projectDirResult.useCustom && !projectDirResult.customValid)
         {
@@ -498,6 +501,10 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         //calls sent before this point wait in the channel buffer
         _sharedDataChannel.setMethodCallHandler(_platformCallReceived);
         filesDroppedCallback = _filesDropped;
+        if (requestedPath != null)
+        {
+          _fileHandedOver(path: requestedPath);
+        }
       }
       logger.i("Application initialized. Version: $versionString");
 
@@ -562,13 +569,23 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     }
   }
 
-  Future<void> _handleInitialFile() async
+  /// Brings back unsaved work and returns the file asked for at start up, which
+  /// is handed over once the application is up, so that unsaved work and a
+  /// taken project name are asked about there.
+  Future<String?> _handleInitialFile() async
   {
-    final InitialProject initialProject = await findInitialProject(requestedPath: _requestedFilePath);
-    if (!await _openProject(project: initialProject))
+    final InitialProject? recovered = await findRecoveredProject();
+    if (recovered != null)
+    {
+      await _openProject(project: recovered);
+    }
+    final String? requestedPath = await _requestedFilePath();
+    if (requestedPath == null || requestedPath.isEmpty)
     {
       _hasProjectChanged();
+      return null;
     }
+    return requestedPath;
   }
 
   /// Reports how importing [project] went and loads it; returns whether it was loaded.
@@ -665,10 +682,52 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     _saveBeforeOpenWarningDialog?.hide();
     final String? path = _handedOverPath;
     _handedOverPath = null;
-    if (path != null)
+    if (path == null)
     {
-      await _openProject(project: await importRequestedProject(path: path));
+      return;
     }
+    final InitialProject project = await importRequestedProject(path: path);
+    if (project.importResult == ProjectImportResult.projectAlreadyExists && mounted)
+    {
+      _nameConflict = project;
+      _nameConflictDialog?.show(context: context);
+    }
+    else
+    {
+      await _openOrStartNew(project: project);
+    }
+  }
+
+  /// Loads [project]; without a project to work on, the new project dialog follows.
+  Future<void> _openOrStartNew({required final InitialProject project}) async
+  {
+    if (!await _openProject(project: project))
+    {
+      _hasProjectChanged();
+    }
+  }
+
+  void _openExistingProject()
+  {
+    _nameConflictDialog?.hide();
+    final String? existingPath = _nameConflict?.path;
+    _nameConflict = null;
+    unawaited(_openOrStartNew(project: InitialProject(path: existingPath, fromRecovery: false)));
+  }
+
+  void _importAsCopy()
+  {
+    _nameConflictDialog?.hide();
+    final String? requestedPath = _nameConflict?.requestedPath;
+    _nameConflict = null;
+    unawaited(importRequestedProject(path: requestedPath, asCopy: true).then((final InitialProject project) => _openOrStartNew(project: project)));
+  }
+
+  void _nameConflictCancel()
+  {
+    _nameConflictDialog?.hide();
+    _nameConflict = null;
+    _hasProjectChanged();
   }
 
   void _hasProjectChanged()
@@ -807,6 +866,13 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       onCancel: _saveBeforeOpenWarningCancel,
       outsideCancelable: false,
       message: (final AppLocalizations l10n) => l10n.unsavedChangesSaveFirst,
+    );
+
+    _nameConflictDialog ??= getProjectNameConflictDialog(
+      onOpenExisting: _openExistingProject,
+      onImportCopy: _importAsCopy,
+      onCancel: _nameConflictCancel,
+      message: (final AppLocalizations l10n) => l10n.projectNameTaken(extractFilenameFromPath(path: _nameConflict?.path, keepExtension: false)),
     );
 
     return ValueListenableBuilder<bool>(

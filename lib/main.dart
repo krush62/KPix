@@ -72,9 +72,35 @@ import 'package:window_manager/window_manager.dart';
 const Size defaultDesktopSize = Size(1600, 900);
 /// Minimum screen resolution size a device needs to have.
 const Size minimumApplicationSize = Size(1200, 600);
+// Pref key for window Pid
+const String _mainWindowPidKey = 'mainWindowPid';
+// Pref key for window Id
+const String _mainWindowIdKey = 'mainWindowId';
 
 /// Command line arguments.
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
+
+Future<Window?> _findMainWindow() async
+{
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  // Hot restart: same process, so the stored window id is still valid
+  if (prefs.getInt(_mainWindowPidKey) == pid)
+  {
+    final int? id = prefs.getInt(_mainWindowIdKey);
+    final Window? window = id != null ? WindowManager.instance.get(id) : null;
+    if (window != null) return window;
+  }
+
+  // Fresh start: the focused window is ours
+  final Window? window = WindowManager.instance.getCurrent();
+  if (window != null)
+  {
+    await prefs.setInt(_mainWindowPidKey, pid);
+    await prefs.setInt(_mainWindowIdKey, window.id);
+  }
+  return window;
+}
 
 Future<void> main(final List<String> args) async
 {
@@ -91,15 +117,17 @@ Future<void> main(final List<String> args) async
   //built once: the app rebuilds when either the theme or the language changes
   final Listenable appSettings = Listenable.merge(<Listenable>[themeSettings, languageSettings]);
   if (isDesktop()) {
-    final Window window = WindowManager.instance.getCurrent()!;
-    window.title = "KPix";
-    window.minimumSize = defaultDesktopSize.toNative();
-    window.setSize(defaultDesktopSize.toNative(), false);
-    window.center();
-    window.titleBarStyle = TitleBarStyle.hidden;
-    window.maximize();
-    window.show();
-    window.focus();
+    final Window? window = await _findMainWindow();
+    if (window != null)
+    {
+      GetIt.I.registerSingleton<Window>(window);
+      window.title = "KPix";
+      window.minimumSize = defaultDesktopSize.toNative();
+      window.center();
+      window.titleBarStyle = TitleBarStyle.hidden;
+      window.maximize();
+      window.show();
+    }
   }
   else
   {

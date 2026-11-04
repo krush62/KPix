@@ -17,13 +17,14 @@
  */
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:window_manager/window_manager.dart'
     show
     DragToMoveArea,
     ListenerId,
     Window,
     WindowEvent,
-    WindowManager,
+    //WindowManager,
     WindowMaximizedEvent,
     WindowResizedEvent,
     WindowRestoredEvent;
@@ -31,7 +32,7 @@ import 'package:window_manager/window_manager.dart'
 /// Size of a caption button (matches the Windows caption button size).
 const Size windowButtonSize = Size(46.0, 32.0);
 
-Window? get _currentWindow => WindowManager.instance.getCurrent();
+Window? get _currentWindow => GetIt.I.isRegistered<Window>() ? GetIt.I.get<Window>() : null;
 
 /// Drop-in replacement for bitsdojo's WindowButtonColors (same field names).
 class WindowButtonColors
@@ -165,16 +166,7 @@ class _MaximizeWindowButtonState extends State<MaximizeWindowButton>
 
   void _toggle()
   {
-    final Window? window = _window;
-    if (window == null) return;
-    if (window.isMaximized)
-    {
-      window.restore();
-    }
-    else
-    {
-      window.maximize();
-    }
+    _window?.performTitleBarDoubleClick();
   }
 
   @override

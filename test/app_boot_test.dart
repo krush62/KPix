@@ -16,9 +16,6 @@
 
 import 'dart:io';
 
-
-// ignore: depend_on_referenced_packages
-import 'package:bitsdojo_window_platform_interface/bitsdojo_window_platform_interface.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -97,7 +94,6 @@ Future<Directory> _bootApp(final WidgetTester tester, {final void Function(Strin
     //what it cached belongs to the fake time of the test before
     rootBundle.clear();
     PathProviderPlatform.instance = _FakePaths(root: root.path);
-    BitsdojoWindowPlatform.instance = _FakeWindowPlatform();
     PackageInfo.setMockInitialValues(appName: "KPix", packageName: "kpix", version: "1.0.0", buildNumber: "1", buildSignature: "");
     SharedPreferences.setMockInitialValues(<String, Object>{});
     await GetIt.I.reset();
@@ -469,29 +465,4 @@ Future<File> _createProject(final WidgetTester tester) async
     }
   });
   return file;
-}
-
-/// The title bar of the real window needs the native side of the plugin.
-class _FakeWindowPlatform extends BitsdojoWindowPlatform with MockPlatformInterfaceMixin
-{
-  @override
-  DesktopWindow get appWindow => _FakeWindow();
-}
-
-class _FakeWindow implements DesktopWindow
-{
-  @override
-  double get titleBarHeight => 32;
-
-  @override
-  Size get titleBarButtonSize => const Size(46, 32);
-
-  @override
-  double get borderSize => 0;
-
-  @override
-  bool get isMaximized => false;
-
-  @override
-  dynamic noSuchMethod(final Invocation invocation) => super.noSuchMethod(invocation);
 }

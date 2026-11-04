@@ -84,18 +84,9 @@ bool matches(vec4 pa, vec4 pb, float m, float r)
 #define P(m, r) matches(pa, pb, float(m), float(r))
 
 /* We always calculate the top left quarter. [dir] flips the neighbours for the other quarters, [p] is the mirrored position in the pixel. */
-vec4 scale(vec2 texel, vec2 dir, vec2 p)
+vec4 scale(vec4 w0, vec4 w1, vec4 w2, vec4 w3, vec4 w4, vec4 w5, vec4 w6, vec4 w7, vec4 w8,
+           vec4 x0, vec4 x1, vec4 x2, vec4 x3, vec4 x4, vec4 x5, vec4 x6, vec2 p)
 {
-    vec4 w0 = tap(texel + vec2(-1.0, -1.0) * dir);
-    vec4 w1 = tap(texel + vec2(0.0, -1.0) * dir);
-    vec4 w2 = tap(texel + vec2(1.0, -1.0) * dir);
-    vec4 w3 = tap(texel + vec2(-1.0, 0.0) * dir);
-    vec4 w4 = tap(texel + vec2(0.0, 0.0) * dir);
-    vec4 w5 = tap(texel + vec2(1.0, 0.0) * dir);
-    vec4 w6 = tap(texel + vec2(-1.0, 1.0) * dir);
-    vec4 w7 = tap(texel + vec2(0.0, 1.0) * dir);
-    vec4 w8 = tap(texel + vec2(1.0, 1.0) * dir);
-
     // bit i of the HQx pattern is component i % 4 of pa (i < 4) or pb
     vec4 pa = vec4(is_different(w0, w4), is_different(w1, w4), is_different(w2, w4), is_different(w3, w4));
     vec4 pb = vec4(is_different(w5, w4), is_different(w6, w4), is_different(w7, w4), is_different(w8, w4));
@@ -254,14 +245,6 @@ vec4 scale(vec2 texel, vec2 dir, vec2 p)
         return w4;
 
     /* We need more samples to "solve" this diagonal */
-    vec4 x0 = tap(texel + vec2(-2.0, -2.0) * dir);
-    vec4 x1 = tap(texel + vec2(-1.0, -2.0) * dir);
-    vec4 x2 = tap(texel + vec2(0.0, -2.0) * dir);
-    vec4 x3 = tap(texel + vec2(1.0, -2.0) * dir);
-    vec4 x4 = tap(texel + vec2(-2.0, -1.0) * dir);
-    vec4 x5 = tap(texel + vec2(-2.0, 0.0) * dir);
-    vec4 x6 = tap(texel + vec2(-2.0, 1.0) * dir);
-
     float extra = float(is_different(x0, w4)) + float(is_different(x1, w4)) + float(is_different(x2, w4)) + float(is_different(x3, w4))
                 + float(is_different(x4, w4)) + float(is_different(x5, w4)) + float(is_different(x6, w4));
     float diagonal_bias = dot(pa, vec4(1.0)) + dot(pb, vec4(1.0)) + extra - 7.0;
@@ -292,5 +275,23 @@ void main()
         dir.y = -1.0;
         p.y = 1.0 - p.y;
     }
-    fragColor = scale(texel, dir, p);
+    // every tap up front: behind the early returns of scale(), Impeller's GLES output puts them in a loop
+    // that ANGLE takes seconds to compile
+    vec4 w0 = tap(texel + vec2(-1.0, -1.0) * dir);
+    vec4 w1 = tap(texel + vec2(0.0, -1.0) * dir);
+    vec4 w2 = tap(texel + vec2(1.0, -1.0) * dir);
+    vec4 w3 = tap(texel + vec2(-1.0, 0.0) * dir);
+    vec4 w4 = tap(texel + vec2(0.0, 0.0) * dir);
+    vec4 w5 = tap(texel + vec2(1.0, 0.0) * dir);
+    vec4 w6 = tap(texel + vec2(-1.0, 1.0) * dir);
+    vec4 w7 = tap(texel + vec2(0.0, 1.0) * dir);
+    vec4 w8 = tap(texel + vec2(1.0, 1.0) * dir);
+    vec4 x0 = tap(texel + vec2(-2.0, -2.0) * dir);
+    vec4 x1 = tap(texel + vec2(-1.0, -2.0) * dir);
+    vec4 x2 = tap(texel + vec2(0.0, -2.0) * dir);
+    vec4 x3 = tap(texel + vec2(1.0, -2.0) * dir);
+    vec4 x4 = tap(texel + vec2(-2.0, -1.0) * dir);
+    vec4 x5 = tap(texel + vec2(-2.0, 0.0) * dir);
+    vec4 x6 = tap(texel + vec2(-2.0, 1.0) * dir);
+    fragColor = scale(w0, w1, w2, w3, w4, w5, w6, w7, w8, x0, x1, x2, x3, x4, x5, x6, p);
 }

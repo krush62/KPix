@@ -1,9 +1,8 @@
 import 'dart:collection';
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
-// ignore: implementation_imports
-import 'package:file_picker/src/platform/file_picker_platform_interface.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -48,33 +47,13 @@ import 'package:kpix/widgets/palette/palette_adjustment_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 import 'package:kpix/widgets/tools/shader_widget.dart';
 import 'package:kpix/widgets/tools/tools_widget.dart';
+import 'package:path/path.dart' as p;
 import 'package:toastification/toastification.dart';
 
+import 'support/project_files.dart';
 import 'support/selection_harness.dart';
 
 Timeline get _timeline => GetIt.I.get<DocumentState>().timeline;
-
-class _FakePicker extends FilePickerPlatform
-{
-  final FilePickerResult result;
-  _FakePicker(this.result);
-
-  @override
-  Future<FilePickerResult?> pickFiles({
-    final String? dialogTitle,
-    final String? initialDirectory,
-    final FileType type = FileType.any,
-    final List<String>? allowedExtensions,
-    final Function(FilePickerStatus)? onFileLoading,
-    final int compressionQuality = 0,
-    final bool allowMultiple = false,
-    final bool withData = false,
-    final bool withReadStream = false,
-    final bool lockParentWindow = false,
-    final bool readSequential = false,
-    final bool cancelUploadOnWindowBlur = true,
-  }) async => result;
-}
 
 Future<void> _settle(final WidgetTester tester) async
 {
@@ -336,7 +315,7 @@ void main()
         png = (await picture.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
       });
       final FilePickerPlatform realPicker = FilePickerPlatform.instance;
-      FilePickerPlatform.instance = _FakePicker(FilePickerResult(<PlatformFile>[PlatformFile(name: "picture.png", size: png.length, bytes: png)]));
+      FilePickerPlatform.instance = FakeFilePicker(file: FakePickedFile(File(p.join(createTestPaths().exportDir, "picture.png"))..writeAsBytesSync(png)));
       await tester.tap(find.byTooltip(AppLocalizations.of(tester.element(find.byType(ImportWidget)))!.chooseImage));
       for (int i = 0; i < 8; i++)
       {

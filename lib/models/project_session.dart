@@ -18,6 +18,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -101,7 +102,7 @@ class ProjectSession
 
   String getTitle()
   {
-    return "KPix ${projectName.value ?? ""}${hasChanges.value ? "*" : ""}";
+    return "$windowTitle ${projectName.value ?? ""}${hasChanges.value ? "*" : ""}";
   }
 
   Future<ProjectLoadResult> restoreFromFile({required final LoadFileSet loadFileSet, final bool setHasChanges = false}) async

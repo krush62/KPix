@@ -28,110 +28,113 @@ out vec4 fragColor;
 
 const int MAX_PALETTE = 16;
 
-// palette entry [i] of palette [p] (1-based), 8-bit values
+// palette entry [i] of palette [p] (1-based), 8-bit values; assignments instead of early returns,
+// which compile slowly on Impeller (see crt.frag)
 vec3 paletteColor(int p, int i)
 {
+    vec3 c = vec3(0.0);
     if (p == 1)   // CGA
     {
-        if (i == 0) return vec3(0.0, 0.0, 0.0) / 255.0;   // #000000
-        if (i == 1) return vec3(85.0, 255.0, 255.0) / 255.0;   // #55FFFF
-        if (i == 2) return vec3(255.0, 85.0, 255.0) / 255.0;   // #FF55FF
-        if (i == 3) return vec3(255.0, 255.0, 255.0) / 255.0;   // #FFFFFF
+        if (i == 0) c = vec3(0.0, 0.0, 0.0) / 255.0;   // #000000
+        if (i == 1) c = vec3(85.0, 255.0, 255.0) / 255.0;   // #55FFFF
+        if (i == 2) c = vec3(255.0, 85.0, 255.0) / 255.0;   // #FF55FF
+        if (i == 3) c = vec3(255.0, 255.0, 255.0) / 255.0;   // #FFFFFF
     }
     if (p == 2)   // EGA
     {
-        if (i == 0) return vec3(0.0, 0.0, 0.0) / 255.0;   // #000000
-        if (i == 1) return vec3(0.0, 0.0, 170.0) / 255.0;   // #0000AA
-        if (i == 2) return vec3(0.0, 170.0, 0.0) / 255.0;   // #00AA00
-        if (i == 3) return vec3(0.0, 170.0, 170.0) / 255.0;   // #00AAAA
-        if (i == 4) return vec3(170.0, 0.0, 0.0) / 255.0;   // #AA0000
-        if (i == 5) return vec3(170.0, 0.0, 170.0) / 255.0;   // #AA00AA
-        if (i == 6) return vec3(170.0, 85.0, 0.0) / 255.0;   // #AA5500
-        if (i == 7) return vec3(170.0, 170.0, 170.0) / 255.0;   // #AAAAAA
-        if (i == 8) return vec3(85.0, 85.0, 85.0) / 255.0;   // #555555
-        if (i == 9) return vec3(85.0, 85.0, 255.0) / 255.0;   // #5555FF
-        if (i == 10) return vec3(85.0, 255.0, 85.0) / 255.0;   // #55FF55
-        if (i == 11) return vec3(85.0, 255.0, 255.0) / 255.0;   // #55FFFF
-        if (i == 12) return vec3(255.0, 85.0, 85.0) / 255.0;   // #FF5555
-        if (i == 13) return vec3(255.0, 85.0, 255.0) / 255.0;   // #FF55FF
-        if (i == 14) return vec3(255.0, 255.0, 85.0) / 255.0;   // #FFFF55
-        if (i == 15) return vec3(255.0, 255.0, 255.0) / 255.0;   // #FFFFFF
+        if (i == 0) c = vec3(0.0, 0.0, 0.0) / 255.0;   // #000000
+        if (i == 1) c = vec3(0.0, 0.0, 170.0) / 255.0;   // #0000AA
+        if (i == 2) c = vec3(0.0, 170.0, 0.0) / 255.0;   // #00AA00
+        if (i == 3) c = vec3(0.0, 170.0, 170.0) / 255.0;   // #00AAAA
+        if (i == 4) c = vec3(170.0, 0.0, 0.0) / 255.0;   // #AA0000
+        if (i == 5) c = vec3(170.0, 0.0, 170.0) / 255.0;   // #AA00AA
+        if (i == 6) c = vec3(170.0, 85.0, 0.0) / 255.0;   // #AA5500
+        if (i == 7) c = vec3(170.0, 170.0, 170.0) / 255.0;   // #AAAAAA
+        if (i == 8) c = vec3(85.0, 85.0, 85.0) / 255.0;   // #555555
+        if (i == 9) c = vec3(85.0, 85.0, 255.0) / 255.0;   // #5555FF
+        if (i == 10) c = vec3(85.0, 255.0, 85.0) / 255.0;   // #55FF55
+        if (i == 11) c = vec3(85.0, 255.0, 255.0) / 255.0;   // #55FFFF
+        if (i == 12) c = vec3(255.0, 85.0, 85.0) / 255.0;   // #FF5555
+        if (i == 13) c = vec3(255.0, 85.0, 255.0) / 255.0;   // #FF55FF
+        if (i == 14) c = vec3(255.0, 255.0, 85.0) / 255.0;   // #FFFF55
+        if (i == 15) c = vec3(255.0, 255.0, 255.0) / 255.0;   // #FFFFFF
     }
     if (p == 3)   // PICO-8
     {
-        if (i == 0) return vec3(0.0, 0.0, 0.0) / 255.0;   // #000000
-        if (i == 1) return vec3(29.0, 43.0, 83.0) / 255.0;   // #1D2B53
-        if (i == 2) return vec3(126.0, 37.0, 83.0) / 255.0;   // #7E2553
-        if (i == 3) return vec3(0.0, 135.0, 81.0) / 255.0;   // #008751
-        if (i == 4) return vec3(171.0, 82.0, 54.0) / 255.0;   // #AB5236
-        if (i == 5) return vec3(95.0, 87.0, 79.0) / 255.0;   // #5F574F
-        if (i == 6) return vec3(194.0, 195.0, 199.0) / 255.0;   // #C2C3C7
-        if (i == 7) return vec3(255.0, 241.0, 232.0) / 255.0;   // #FFF1E8
-        if (i == 8) return vec3(255.0, 0.0, 77.0) / 255.0;   // #FF004D
-        if (i == 9) return vec3(255.0, 163.0, 0.0) / 255.0;   // #FFA300
-        if (i == 10) return vec3(255.0, 236.0, 39.0) / 255.0;   // #FFEC27
-        if (i == 11) return vec3(0.0, 228.0, 54.0) / 255.0;   // #00E436
-        if (i == 12) return vec3(41.0, 173.0, 255.0) / 255.0;   // #29ADFF
-        if (i == 13) return vec3(131.0, 118.0, 156.0) / 255.0;   // #83769C
-        if (i == 14) return vec3(255.0, 119.0, 168.0) / 255.0;   // #FF77A8
-        if (i == 15) return vec3(255.0, 204.0, 170.0) / 255.0;   // #FFCCAA
+        if (i == 0) c = vec3(0.0, 0.0, 0.0) / 255.0;   // #000000
+        if (i == 1) c = vec3(29.0, 43.0, 83.0) / 255.0;   // #1D2B53
+        if (i == 2) c = vec3(126.0, 37.0, 83.0) / 255.0;   // #7E2553
+        if (i == 3) c = vec3(0.0, 135.0, 81.0) / 255.0;   // #008751
+        if (i == 4) c = vec3(171.0, 82.0, 54.0) / 255.0;   // #AB5236
+        if (i == 5) c = vec3(95.0, 87.0, 79.0) / 255.0;   // #5F574F
+        if (i == 6) c = vec3(194.0, 195.0, 199.0) / 255.0;   // #C2C3C7
+        if (i == 7) c = vec3(255.0, 241.0, 232.0) / 255.0;   // #FFF1E8
+        if (i == 8) c = vec3(255.0, 0.0, 77.0) / 255.0;   // #FF004D
+        if (i == 9) c = vec3(255.0, 163.0, 0.0) / 255.0;   // #FFA300
+        if (i == 10) c = vec3(255.0, 236.0, 39.0) / 255.0;   // #FFEC27
+        if (i == 11) c = vec3(0.0, 228.0, 54.0) / 255.0;   // #00E436
+        if (i == 12) c = vec3(41.0, 173.0, 255.0) / 255.0;   // #29ADFF
+        if (i == 13) c = vec3(131.0, 118.0, 156.0) / 255.0;   // #83769C
+        if (i == 14) c = vec3(255.0, 119.0, 168.0) / 255.0;   // #FF77A8
+        if (i == 15) c = vec3(255.0, 204.0, 170.0) / 255.0;   // #FFCCAA
     }
     if (p == 4)   // Game Boy
     {
-        if (i == 0) return vec3(15.0, 56.0, 15.0) / 255.0;   // #0F380F
-        if (i == 1) return vec3(48.0, 98.0, 48.0) / 255.0;   // #306230
-        if (i == 2) return vec3(139.0, 172.0, 15.0) / 255.0;   // #8BAC0F
-        if (i == 3) return vec3(155.0, 188.0, 15.0) / 255.0;   // #9BBC0F
+        if (i == 0) c = vec3(15.0, 56.0, 15.0) / 255.0;   // #0F380F
+        if (i == 1) c = vec3(48.0, 98.0, 48.0) / 255.0;   // #306230
+        if (i == 2) c = vec3(139.0, 172.0, 15.0) / 255.0;   // #8BAC0F
+        if (i == 3) c = vec3(155.0, 188.0, 15.0) / 255.0;   // #9BBC0F
     }
     if (p == 5)   // C64
     {
-        if (i == 0) return vec3(0.0, 0.0, 0.0) / 255.0;   // #000000
-        if (i == 1) return vec3(255.0, 255.0, 255.0) / 255.0;   // #FFFFFF
-        if (i == 2) return vec3(104.0, 55.0, 43.0) / 255.0;   // #68372B
-        if (i == 3) return vec3(112.0, 164.0, 178.0) / 255.0;   // #70A4B2
-        if (i == 4) return vec3(111.0, 61.0, 134.0) / 255.0;   // #6F3D86
-        if (i == 5) return vec3(88.0, 141.0, 67.0) / 255.0;   // #588D43
-        if (i == 6) return vec3(53.0, 40.0, 121.0) / 255.0;   // #352879
-        if (i == 7) return vec3(184.0, 199.0, 111.0) / 255.0;   // #B8C76F
-        if (i == 8) return vec3(111.0, 79.0, 37.0) / 255.0;   // #6F4F25
-        if (i == 9) return vec3(67.0, 57.0, 0.0) / 255.0;   // #433900
-        if (i == 10) return vec3(154.0, 103.0, 89.0) / 255.0;   // #9A6759
-        if (i == 11) return vec3(68.0, 68.0, 68.0) / 255.0;   // #444444
-        if (i == 12) return vec3(108.0, 108.0, 108.0) / 255.0;   // #6C6C6C
-        if (i == 13) return vec3(154.0, 210.0, 132.0) / 255.0;   // #9AD284
-        if (i == 14) return vec3(108.0, 94.0, 181.0) / 255.0;   // #6C5EB5
-        if (i == 15) return vec3(149.0, 149.0, 149.0) / 255.0;   // #959595
+        if (i == 0) c = vec3(0.0, 0.0, 0.0) / 255.0;   // #000000
+        if (i == 1) c = vec3(255.0, 255.0, 255.0) / 255.0;   // #FFFFFF
+        if (i == 2) c = vec3(104.0, 55.0, 43.0) / 255.0;   // #68372B
+        if (i == 3) c = vec3(112.0, 164.0, 178.0) / 255.0;   // #70A4B2
+        if (i == 4) c = vec3(111.0, 61.0, 134.0) / 255.0;   // #6F3D86
+        if (i == 5) c = vec3(88.0, 141.0, 67.0) / 255.0;   // #588D43
+        if (i == 6) c = vec3(53.0, 40.0, 121.0) / 255.0;   // #352879
+        if (i == 7) c = vec3(184.0, 199.0, 111.0) / 255.0;   // #B8C76F
+        if (i == 8) c = vec3(111.0, 79.0, 37.0) / 255.0;   // #6F4F25
+        if (i == 9) c = vec3(67.0, 57.0, 0.0) / 255.0;   // #433900
+        if (i == 10) c = vec3(154.0, 103.0, 89.0) / 255.0;   // #9A6759
+        if (i == 11) c = vec3(68.0, 68.0, 68.0) / 255.0;   // #444444
+        if (i == 12) c = vec3(108.0, 108.0, 108.0) / 255.0;   // #6C6C6C
+        if (i == 13) c = vec3(154.0, 210.0, 132.0) / 255.0;   // #9AD284
+        if (i == 14) c = vec3(108.0, 94.0, 181.0) / 255.0;   // #6C5EB5
+        if (i == 15) c = vec3(149.0, 149.0, 149.0) / 255.0;   // #959595
     }
     if (p == 6)   // ZX Spectrum
     {
-        if (i == 0) return vec3(0.0, 0.0, 0.0) / 255.0;   // #000000
-        if (i == 1) return vec3(0.0, 0.0, 215.0) / 255.0;   // #0000D7
-        if (i == 2) return vec3(215.0, 0.0, 0.0) / 255.0;   // #D70000
-        if (i == 3) return vec3(215.0, 0.0, 215.0) / 255.0;   // #D700D7
-        if (i == 4) return vec3(0.0, 215.0, 0.0) / 255.0;   // #00D700
-        if (i == 5) return vec3(0.0, 215.0, 215.0) / 255.0;   // #00D7D7
-        if (i == 6) return vec3(215.0, 215.0, 0.0) / 255.0;   // #D7D700
-        if (i == 7) return vec3(215.0, 215.0, 215.0) / 255.0;   // #D7D7D7
-        if (i == 8) return vec3(0.0, 0.0, 255.0) / 255.0;   // #0000FF
-        if (i == 9) return vec3(255.0, 0.0, 0.0) / 255.0;   // #FF0000
-        if (i == 10) return vec3(255.0, 0.0, 255.0) / 255.0;   // #FF00FF
-        if (i == 11) return vec3(0.0, 255.0, 0.0) / 255.0;   // #00FF00
-        if (i == 12) return vec3(0.0, 255.0, 255.0) / 255.0;   // #00FFFF
-        if (i == 13) return vec3(255.0, 255.0, 0.0) / 255.0;   // #FFFF00
-        if (i == 14) return vec3(255.0, 255.0, 255.0) / 255.0;   // #FFFFFF
+        if (i == 0) c = vec3(0.0, 0.0, 0.0) / 255.0;   // #000000
+        if (i == 1) c = vec3(0.0, 0.0, 215.0) / 255.0;   // #0000D7
+        if (i == 2) c = vec3(215.0, 0.0, 0.0) / 255.0;   // #D70000
+        if (i == 3) c = vec3(215.0, 0.0, 215.0) / 255.0;   // #D700D7
+        if (i == 4) c = vec3(0.0, 215.0, 0.0) / 255.0;   // #00D700
+        if (i == 5) c = vec3(0.0, 215.0, 215.0) / 255.0;   // #00D7D7
+        if (i == 6) c = vec3(215.0, 215.0, 0.0) / 255.0;   // #D7D700
+        if (i == 7) c = vec3(215.0, 215.0, 215.0) / 255.0;   // #D7D7D7
+        if (i == 8) c = vec3(0.0, 0.0, 255.0) / 255.0;   // #0000FF
+        if (i == 9) c = vec3(255.0, 0.0, 0.0) / 255.0;   // #FF0000
+        if (i == 10) c = vec3(255.0, 0.0, 255.0) / 255.0;   // #FF00FF
+        if (i == 11) c = vec3(0.0, 255.0, 0.0) / 255.0;   // #00FF00
+        if (i == 12) c = vec3(0.0, 255.0, 255.0) / 255.0;   // #00FFFF
+        if (i == 13) c = vec3(255.0, 255.0, 0.0) / 255.0;   // #FFFF00
+        if (i == 14) c = vec3(255.0, 255.0, 255.0) / 255.0;   // #FFFFFF
     }
-    return vec3(0.0);
+    return c;
 }
 
 int paletteSize(int p)
 {
-    if (p == 1) return 4;
-    if (p == 2) return 16;
-    if (p == 3) return 16;
-    if (p == 4) return 4;
-    if (p == 5) return 16;
-    if (p == 6) return 15;
-    return 0;
+    int s = 0;
+    if (p == 1) s = 4;
+    if (p == 2) s = 16;
+    if (p == 3) s = 16;
+    if (p == 4) s = 4;
+    if (p == 5) s = 16;
+    if (p == 6) s = 15;
+    return s;
 }
 
 vec3 srgbToLinear(vec3 c)
@@ -180,36 +183,36 @@ vec3 adjust(vec3 c)
 vec3 reduceColors(vec3 c)
 {
     float depth = clamp(floor(uColorDepth + 0.5), 1.0, 8.0);
-    if (depth >= 8.0)
+    vec3 r = c;
+    if (depth < 8.0)
     {
-        return c;
+        float levels = pow(2.0, depth) - 1.0;
+        r = floor(c * levels + 0.5) / levels;
     }
-    float levels = pow(2.0, depth) - 1.0;
-    return floor(c * levels + 0.5) / levels;
+    return r;
 }
 
 vec3 mapToPalette(vec3 c)
 {
     int p = int(floor(uPalette + 0.5));
     int size = paletteSize(p);
-    if (size == 0)
-    {
-        return c;
-    }
-    vec3 lab = toOklab(c);
     vec3 best = c;
-    float bestDistance = 1e10;
-    for (int i = 0; i < MAX_PALETTE; i++)
+    if (size != 0)
     {
-        if (i < size)
+        vec3 lab = toOklab(c);
+        float bestDistance = 1e10;
+        for (int i = 0; i < MAX_PALETTE; i++)
         {
-            vec3 candidate = paletteColor(p, i);
-            vec3 d = toOklab(candidate) - lab;
-            float distance = dot(d, d);
-            if (distance < bestDistance)
+            if (i < size)
             {
-                bestDistance = distance;
-                best = candidate;
+                vec3 candidate = paletteColor(p, i);
+                vec3 d = toOklab(candidate) - lab;
+                float distance = dot(d, d);
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    best = candidate;
+                }
             }
         }
     }

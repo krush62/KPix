@@ -53,17 +53,14 @@ float noise(vec2 p)
   return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 
-// straight color and alpha of a source pixel; nothing outside the picture
+// straight color and alpha of a source pixel; nothing outside the picture (no early returns, see crt.frag)
 vec4 sourcePixel(vec2 texel)
 {
-  if (texel.x < 0.0 || texel.y < 0.0 || texel.x >= uSourceSize.x || texel.y >= uSourceSize.y)
-  {
-    return vec4(0.0);
-  }
   vec2 uv = (texel + 0.5) / uSourceSize;
   uv.y = mix(uv.y, 1.0 - uv.y, uFlipY);
   vec4 src = texture(uSource, uv);
-  return vec4(src.a > 0.0 ? src.rgb / src.a : vec3(0.0), src.a);
+  bool outside = texel.x < 0.0 || texel.y < 0.0 || texel.x >= uSourceSize.x || texel.y >= uSourceSize.y;
+  return outside ? vec4(0.0) : vec4(src.a > 0.0 ? src.rgb / src.a : vec3(0.0), src.a);
 }
 
 // the colors of a Game Boy Advance panel: muted and shifted primaries, white stays white
@@ -71,13 +68,14 @@ vec4 sourcePixel(vec2 texel)
 vec3 panelColors(vec3 rgb)
 {
   float amount = clamp(uPanelColors, 0.0, 1.0);
-  if (amount <= 0.0)
+  vec3 result = rgb;
+  if (!(amount <= 0.0))
   {
-    return rgb;
+    vec3 lin = pow(clamp(rgb, 0.0, 1.0), vec3(GAMMA));
+    vec3 panel = mat3(0.905, 0.10, 0.1575, 0.195, 0.65, 0.1425, -0.10, 0.25, 0.70) * lin * 0.91;
+    result = pow(clamp(mix(lin, panel, amount), 0.0, 1.0), vec3(1.0 / GAMMA));
   }
-  vec3 lin = pow(clamp(rgb, 0.0, 1.0), vec3(GAMMA));
-  vec3 panel = mat3(0.905, 0.10, 0.1575, 0.195, 0.65, 0.1425, -0.10, 0.25, 0.70) * lin * 0.91;
-  return pow(clamp(mix(lin, panel, amount), 0.0, 1.0), vec3(1.0 / GAMMA));
+  return result;
 }
 
 // the light a cell lets through, linear and weighted by its coverage
@@ -90,15 +88,20 @@ vec3 cellLight(vec4 cell)
 float gridCoverage(float c, float size, float lead, float trail, float softPx)
 {
   float dist = min(c - lead, (size - trail) - c);
+  float result;
   if (dist < 0.0)
   {
-    return 1.0;
+    result = 1.0;
   }
-  if (softPx < 0.001)
+  else if (softPx < 0.001)
   {
-    return 0.0;
+    result = 0.0;
   }
-  return 1.0 - smoothstep(0.0, softPx, dist);
+  else
+  {
+    result = 1.0 - smoothstep(0.0, softPx, dist);
+  }
+  return result;
 }
 
 // multiply below 50% grid gray, screen above; 50% leaves the pixel unchanged
@@ -133,14 +136,15 @@ float pixelShadow(vec2 pos)
 float backlight(vec2 pos)
 {
   float amount = clamp(uUnevenness, 0.0, 1.0);
-  if (amount <= 0.0)
+  float result = 1.0;
+  if (!(amount <= 0.0))
   {
-    return 1.0;
+    vec2 uv = pos / (uSourceSize * uScale);
+    float clouds = 0.6 * noise(uv * 3.0 + 11.0) + 0.4 * noise(uv * 7.0 + 23.0) - 0.5;
+    float edge = exp(-(1.0 - uv.y) * 10.0);
+    result = 1.0 + amount * (0.35 * clouds + 0.25 * edge - 0.12);
   }
-  vec2 uv = pos / (uSourceSize * uScale);
-  float clouds = 0.6 * noise(uv * 3.0 + 11.0) + 0.4 * noise(uv * 7.0 + 23.0) - 0.5;
-  float edge = exp(-(1.0 - uv.y) * 10.0);
-  return 1.0 + amount * (0.35 * clouds + 0.25 * edge - 0.12);
+  return result;
 }
 
 // the light of the cells around [pos] (output pixels), spread by the diffuser

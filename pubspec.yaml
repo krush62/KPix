@@ -19,7 +19,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 0.9.9
 
 environment:
-  sdk: ">=3.3.4 <4.0.0"
+  sdk: ">=3.10.0 <4.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -29,10 +29,9 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   archive: ^4.0.4
-  bitsdojo_window: ^0.1.6
-  device_info_plus: ^12.4.0
-  file_picker: ^11.0.2
-  file_saver: ^0.4.0
+  device_info_plus: ^13.3.0
+  file_picker: ^13.3.2
+  file_saver: ^0.7.0
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -44,7 +43,7 @@ dependencies:
   image: ^4.9.1
   intl: any
   logger: ^2.6.2
-  package_info_plus: ^9.0.0
+  package_info_plus: ^10.2.2
   path: ^1.9.1
   path_provider: ^2.1.5
   shared_preferences: ^2.3.3
@@ -52,6 +51,7 @@ dependencies:
   url_launcher: ^6.3.1
   uuid: ^4.5.1
   version: ^3.0.2
+  window_manager: ^0.6.0
 
 dev_dependencies:
   # The "flutter_lints" package below contains a set of recommended lints to

@@ -17,7 +17,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -104,11 +103,6 @@ Future<void> _close(final WidgetTester tester) async
   await tester.pump();
 }
 
-FilePickerResult _picked({required final File file})
-{
-  return FilePickerResult(<PlatformFile>[PlatformFile(name: p.basename(file.path), path: file.path, size: file.lengthSync())]);
-}
-
 Future<Uint8List> _validPalette() async
 {
   return createPaletteKPalData(rampList: <KPalRampData>[KPalRampData(uuid: "ramp", settings: KPalRampSettings())]);
@@ -120,7 +114,7 @@ void main()
   {
     await _pumpManager(tester);
     final File source = File(p.join(GetIt.I.get<AppPaths>().exportDir, "picked.$fileExtensionKpal"))..writeAsBytesSync((await tester.runAsync(_validPalette))!);
-    installFakeFilePicker(result: _picked(file: source));
+    installFakeFilePicker(file: FakePickedFile(source));
 
     await tester.tap(find.byTooltip(_l10n(tester).importPalette));
     await _pumpUntil(tester, condition: () => _listed(tester).contains("picked"), what: "the palette to be listed");
@@ -133,7 +127,7 @@ void main()
   {
     await _pumpManager(tester);
     final File source = File(p.join(GetIt.I.get<AppPaths>().exportDir, "broken.$fileExtensionKpal"))..writeAsBytesSync(<int>[2, 1, 0]);
-    installFakeFilePicker(result: _picked(file: source));
+    installFakeFilePicker(file: FakePickedFile(source));
     final List<String> before = _listed(tester);
 
     await tester.tap(find.byTooltip(_l10n(tester).importPalette));
@@ -150,7 +144,7 @@ void main()
     final List<int> bytes = (await tester.runAsync(_validPalette))!;
     final File source = File(p.join(GetIt.I.get<AppPaths>().exportDir, "taken.$fileExtensionKpal"))..writeAsBytesSync(bytes);
     File(p.join(GetIt.I.get<AppPaths>().internalDir, palettesSubDirName, "taken.$fileExtensionKpal")).writeAsBytesSync(bytes);
-    installFakeFilePicker(result: _picked(file: source));
+    installFakeFilePicker(file: FakePickedFile(source));
 
     await tester.tap(find.byTooltip(_l10n(tester).importPalette));
     await _pumpUntil(tester, condition: () => find.text(_l10n(tester).paletteWithSameNameExists).evaluate().isNotEmpty, what: "the message");
@@ -162,7 +156,7 @@ void main()
   {
     await _pumpManager(tester);
     final File source = File(p.join(GetIt.I.get<AppPaths>().exportDir, "picture.png"))..writeAsBytesSync(<int>[1]);
-    installFakeFilePicker(result: _picked(file: source));
+    installFakeFilePicker(file: FakePickedFile(source));
 
     await tester.tap(find.byTooltip(_l10n(tester).importPalette));
     await _pumpUntil(tester, condition: () => find.text(_l10n(tester).pleaseSelectAKPalFile).evaluate().isNotEmpty, what: "the message");
@@ -173,7 +167,7 @@ void main()
   testWidgets("cancelling the dialog reports nothing", (final WidgetTester tester) async
   {
     await _pumpManager(tester);
-    final FakeFilePicker picker = installFakeFilePicker(result: null);
+    final FakeFilePicker picker = installFakeFilePicker(file: null);
     final List<String> before = _listed(tester);
 
     await tester.tap(find.byTooltip(_l10n(tester).importPalette));

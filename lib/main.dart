@@ -17,7 +17,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,6 +26,7 @@ import 'package:kpix/app_services.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/infra/stylus_bridge.dart';
+import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/kpix_language.dart';
 import 'package:kpix/kpix_logger.dart';
 import 'package:kpix/kpix_theme.dart';
@@ -61,21 +61,27 @@ import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/project_action_messages.dart';
 import 'package:kpix/widgets/timeline/timeline_widget.dart';
+import 'package:kpix/window_buttons.dart';
 import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:version/version.dart';
+import 'package:window_manager/window_manager.dart';
 
 /// Default size of the desktop application.
 const Size defaultDesktopSize = Size(1600, 900);
 /// Minimum screen resolution size a device needs to have.
 const Size minimumApplicationSize = Size(1200, 600);
+// Pref key for window Pid
+const String _mainWindowPidKey = 'mainWindowPid';
+// Pref key for window Id
+const String _mainWindowIdKey = 'mainWindowId';
 
 /// Command line arguments.
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
 
-void main(final List<String> args)
+Future<void> main(final List<String> args) async
 {
   final KPixLogger logger = KPixLogger();
   GetIt.I.registerSingleton<Logger>(logger);
@@ -89,36 +95,57 @@ void main(final List<String> args)
   GetIt.I.registerSingleton<StylusBridge>(StylusBridge());
   //built once: the app rebuilds when either the theme or the language changes
   final Listenable appSettings = Listenable.merge(<Listenable>[themeSettings, languageSettings]);
+  if (isDesktop()) {
+    final Window? window = await _findMainWindow();
+    if (window != null)
+    {
+      GetIt.I.registerSingleton<Window>(window);
+      window.title = windowTitle;
+      window.minimumSize = defaultDesktopSize.toNative();
+      window.center();
+      window.titleBarStyle = TitleBarStyle.hidden;
+      window.maximize();
+      window.show();
+    }
+  }
+  else
+  {
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  }
+
   runApp(
     ValueListenableBuilder<Map<SingleActivator, VoidCallback>>(
       valueListenable: hotkeyManager.callbackMapNotifier,
       builder: (final BuildContext context, final Map<SingleActivator, VoidCallback> callbacks, final Widget? child) {
-        return CallbackShortcuts(
-          bindings: callbacks,
-          child: KeyboardListener(
-            focusNode: focusNode,
-            autofocus: true,
-            onKeyEvent: hotkeyManager.handleRawKeyboardEvent,
-            child: Listener(
-              onPointerDown: hotkeyManager.handleMouseEvent,
-              child: AnimatedBuilder(
-                animation: appSettings,
-                builder: (final BuildContext context, final Widget? child)
-                {
-                  return getToastificationWrapper(
-                    child: MaterialApp(
-                      debugShowCheckedModeBanner: false,
-                      localizationsDelegates: const <LocalizationsDelegate<dynamic>>[AppLocalizations.delegate, ...flutter_localizations.GlobalMaterialLocalizations.delegates],
-                      supportedLocales: AppLocalizations.supportedLocales,
-                      //null follows the system language
-                      locale: languageSettings.locale,
-                      home: const KPixApp(),
-                      theme: monochromeTheme,
-                      darkTheme: monochromeThemeDark,
-                      themeMode: themeSettings.themeMode,
-                    ),
-                  );
-                },
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: CallbackShortcuts(
+            bindings: callbacks,
+            child: KeyboardListener(
+              focusNode: focusNode,
+              autofocus: true,
+              onKeyEvent: hotkeyManager.handleRawKeyboardEvent,
+              child: Listener(
+                onPointerDown: hotkeyManager.handleMouseEvent,
+                child: AnimatedBuilder(
+                  animation: appSettings,
+                  builder: (final BuildContext context, final Widget? child)
+                  {
+                    return getToastificationWrapper(
+                      child: MaterialApp(
+                        debugShowCheckedModeBanner: false,
+                        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[AppLocalizations.delegate, ...flutter_localizations.GlobalMaterialLocalizations.delegates],
+                        supportedLocales: AppLocalizations.supportedLocales,
+                        //null follows the system language
+                        locale: languageSettings.locale,
+                        home: const KPixApp(),
+                        theme: monochromeTheme,
+                        darkTheme: monochromeThemeDark,
+                        themeMode: themeSettings.themeMode,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -126,18 +153,48 @@ void main(final List<String> args)
       },
     ),
   );
+}
 
-  if (isDesktop()) {
-    doWhenWindowReady(() {
-      appWindow.minSize = defaultDesktopSize;
-      appWindow.size = defaultDesktopSize;
-      appWindow.alignment = Alignment.center;
-      appWindow.title = "KPix";
-      appWindow.maximize();
-      appWindow.show();
-    });
-  } else {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+Future<Window?> _findMainWindow() async
+{
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  // Hot restart: same process, so the stored window id is still valid
+  if (prefs.getInt(_mainWindowPidKey) == pid)
+  {
+    final int? id = prefs.getInt(_mainWindowIdKey);
+    final Window? window = id != null ? WindowManager.instance.get(id) : null;
+    if (window != null && window.title != null && window.title!.startsWith(windowTitle))
+    {
+      return window;
+    }
+  }
+
+  // Fresh start: the focused window is ours
+  final Window? window = WindowManager.instance.getCurrent();
+  if (window != null && window.title != null && window.title!.startsWith(windowTitle))
+  {
+    await prefs.setInt(_mainWindowPidKey, pid);
+    await prefs.setInt(_mainWindowIdKey, window.id);
+  }
+  return window;
+}
+
+Future<void> _clearWindowIds() async
+{
+  if (isDesktop())
+  {
+    final Logger logger = GetIt.I.get<Logger>();
+    try
+    {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_mainWindowPidKey);
+      await prefs.remove(_mainWindowIdKey);
+    }
+    catch (e, s)
+    {
+      logger.w("Error clearing recovery directory.", error: e, stackTrace: s);
+    }
   }
 }
 
@@ -172,6 +229,18 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       if (!kIsWeb)
       {
         _recoverTimer = Timer.periodic(const Duration(minutes: _MainLayoutOptions.recoverCheckIntervalMinutes), (final Timer _) {_recoverCheck();});
+      }
+      if (isDesktop() && GetIt.I.isRegistered<Window>())
+      {
+        final Window window = GetIt.I.get<Window>();
+        window.addListener((final WindowEvent ev)
+        {
+          if (ev is WindowCloseRequestedEvent)
+          {
+            ev.request.cancel();
+            _closePressed(); // ends in exitApplication() → exit()
+          }
+        });
       }
     },);
 
@@ -248,15 +317,18 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   /// Exits the application and clears the recovery directory.
   void exitApplication({final int exitCode = 0})
   {
-    clearRecoverDir().then((final void value)
+    clearRecoverDir().whenComplete(()
     {
-      if (Platform.isAndroid)
+      if (!kIsWeb && Platform.isAndroid)
       {
         SystemNavigator.pop();
       }
       else
       {
-        exit(exitCode);
+        _clearWindowIds().whenComplete(()
+        {
+            exit(exitCode);
+        });
       }
     },);
   }
@@ -712,7 +784,8 @@ class MainWidget extends StatelessWidget
                         child: Stack(
                           alignment: Alignment.centerLeft,
                           children: <Widget>[
-                            WindowTitleBarBox(child: MoveWindow()),
+                            //WindowTitleBarBox(child: MoveWindow()),
+                            const WindowDragArea(),
                             Padding(
                               padding: const EdgeInsets.all(_MainLayoutOptions.titleBarPadding),
                               child: ListenableBuilder(

@@ -21,29 +21,27 @@ class MainActivity: FlutterActivity() {
     private val CHANNEL = "app.channel.shared.data"
     private val STYLUS_CHANNEL = "app.channel.stylus"
     private var stylusChannel: MethodChannel? = null
+    private var sharedDataChannel: MethodChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
-        val intent = intent
-        val action = intent.action
-        val type = intent.type
-        val scheme = intent.scheme
+        sharedFilePath = sharedFilePathOf(intent)
+    }
 
-        if (Intent.ACTION_VIEW == action && type != null && scheme != null)
-        {
-            if ("file" == scheme || "content" == scheme)
-            {
-                println("KPRIX: HANDLE INTENT")
-                handleSendFile(intent)
-            }
-        }
+    //launchMode singleTask: a file opened from another app while running arrives here instead of in a second instance
+    override fun onNewIntent(intent: Intent)
+    {
+        super.onNewIntent(intent)
+        sharedFilePathOf(intent)?.let { sharedDataChannel?.invokeMethod("openFile", it) }
     }
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine)
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+        val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        sharedDataChannel = channel
+        channel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "getSharedFile" -> {
                     result.success(sharedFilePath)
@@ -101,11 +99,12 @@ class MainActivity: FlutterActivity() {
         }
     }
 
-    private fun handleSendFile(intent: Intent) {
-        val fileUri: Uri? = intent.data
-        if (fileUri != null) {
-            val file = File(fileUri.path ?: "")
-            sharedFilePath = file.absolutePath
+    private fun sharedFilePathOf(intent: Intent): String? {
+        val scheme = intent.scheme
+        if (Intent.ACTION_VIEW != intent.action || intent.type == null || ("file" != scheme && "content" != scheme)) {
+            return null
         }
+        val fileUri: Uri = intent.data ?: return null
+        return File(fileUri.path ?: "").absolutePath
     }
 }

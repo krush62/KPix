@@ -77,6 +77,8 @@ const Size minimumApplicationSize = Size(1200, 600);
 const String _mainWindowPidKey = 'mainWindowPid';
 // Pref key for window Id
 const String _mainWindowIdKey = 'mainWindowId';
+// The platform runners also hand over the file of a second launch on it ('openFile')
+const MethodChannel _sharedDataChannel = MethodChannel('app.channel.shared.data');
 
 /// Command line arguments.
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
@@ -214,6 +216,8 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   KPixOverlay? _closeWarningDialog;
   late KPixOverlay _newProjectDialog;
   KPixOverlay? _saveNewWarningDialog;
+  KPixOverlay? _saveBeforeOpenWarningDialog;
+  String? _handedOverPath;
   Timer? _recoverTimer;
   late AppLifecycleState _lastAppLifeCycleState;
   final ProjectRecovery _projectRecovery = ProjectRecovery();
@@ -250,6 +254,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   void dispose()
   {
     WidgetsBinding.instance.removeObserver(this);
+    _sharedDataChannel.setMethodCallHandler(null);
     //the timer is only started for non-web builds and only once the preferences
     //have been initialized, so it can still be null here
     _recoverTimer?.cancel();
@@ -465,6 +470,11 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       }
       final String versionString = GetIt.I.get<PackageInfo>().version;
       initialized.value = true;
+      if (!kIsWeb)
+      {
+        //calls sent before this point wait in the channel buffer
+        _sharedDataChannel.setMethodCallHandler(_platformCallReceived);
+      }
       logger.i("Application initialized. Version: $versionString");
 
 
@@ -531,30 +541,37 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   Future<void> _handleInitialFile() async
   {
     final InitialProject initialProject = await findInitialProject(requestedPath: _requestedFilePath);
-    final ProjectImportResult? importResult = initialProject.importResult;
+    if (!await _openProject(project: initialProject))
+    {
+      _hasProjectChanged();
+    }
+  }
+
+  /// Reports how importing [project] went and loads it; returns whether it was loaded.
+  Future<bool> _openProject({required final InitialProject project}) async
+  {
+    final ProjectImportResult? importResult = project.importResult;
     if (importResult != null && mounted && context.mounted)
     {
       showMessageForProjectImport(result: importResult, l10n: AppLocalizations.of(context)!);
     }
 
-    final ProjectLoadResult? loadResult = await openInitialProject(project: initialProject);
-    if (loadResult != null)
+    final ProjectLoadResult? loadResult = await openInitialProject(project: project);
+    if (loadResult == null)
     {
-      GetIt.I.get<ProjectSession>().hasProjectNotifier.value = true;
-      _newProjectDialog.hide();
-      if (mounted)
+      return false;
+    }
+    GetIt.I.get<ProjectSession>().hasProjectNotifier.value = true;
+    _newProjectDialog.hide();
+    if (mounted)
+    {
+      showMessagesForProjectLoad(result: loadResult, l10n: AppLocalizations.of(context)!);
+      if (project.fromRecovery)
       {
-        showMessagesForProjectLoad(result: loadResult, l10n: AppLocalizations.of(context)!);
-        if (initialProject.fromRecovery)
-        {
-          showMessage(text: AppLocalizations.of(context)!.workRecovered, toastType: ToastType.info);
-        }
+        showMessage(text: AppLocalizations.of(context)!.workRecovered, toastType: ToastType.info);
       }
     }
-    else
-    {
-      _hasProjectChanged();
-    }
+    return true;
   }
 
   Future<String?> _requestedFilePath() async
@@ -565,10 +582,55 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     }
     if (!kIsWeb && Platform.isAndroid)
     {
-      const MethodChannel channel = MethodChannel('app.channel.shared.data');
-      return channel.invokeMethod<String>('getSharedFile');
+      return _sharedDataChannel.invokeMethod<String>('getSharedFile');
     }
     return null;
+  }
+
+  Future<void> _platformCallReceived(final MethodCall call) async
+  {
+    final Object? path = call.arguments;
+    if (call.method == 'openFile' && path is String)
+    {
+      _fileHandedOver(path: path);
+    }
+  }
+
+  /// A second launch handed [path] over instead of running alongside.
+  void _fileHandedOver({required final String path})
+  {
+    GetIt.I.get<Logger>().i("Opening a file handed over by another launch: $path");
+    _handedOverPath = path;
+    if (GetIt.I.get<ProjectSession>().hasChanges.value)
+    {
+      _saveBeforeOpenWarningDialog?.show(context: context);
+    }
+    else
+    {
+      _openHandedOverFile();
+    }
+  }
+
+  void _saveBeforeOpenWarningYes()
+  {
+    saveFileCallback?.call(callback: _openHandedOverFile);
+  }
+
+  void _saveBeforeOpenWarningCancel()
+  {
+    _saveBeforeOpenWarningDialog?.hide();
+    _handedOverPath = null;
+  }
+
+  Future<void> _openHandedOverFile() async
+  {
+    _saveBeforeOpenWarningDialog?.hide();
+    final String? path = _handedOverPath;
+    _handedOverPath = null;
+    if (path != null)
+    {
+      await _openProject(project: await importRequestedProject(path: path));
+    }
   }
 
   void _hasProjectChanged()
@@ -699,6 +761,14 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       onCancel: _saveNewWarningCancel,
       outsideCancelable: false,
       message: (final AppLocalizations l10n) => l10n.thereAreUnsavedChanges,
+    );
+
+    _saveBeforeOpenWarningDialog ??= getThreeButtonDialog(
+      onYes: _saveBeforeOpenWarningYes,
+      onNo: _openHandedOverFile,
+      onCancel: _saveBeforeOpenWarningCancel,
+      outsideCancelable: false,
+      message: (final AppLocalizations l10n) => l10n.unsavedChangesSaveFirst,
     );
 
     return ValueListenableBuilder<bool>(

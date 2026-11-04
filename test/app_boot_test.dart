@@ -121,6 +121,16 @@ Future<void> _waitForBoot(final WidgetTester tester, {required final bool Functi
   await settleUi(tester);
 }
 
+/// What the platform runners send when a second launch hands its file over.
+Future<void> _handOver(final WidgetTester tester, {required final String path}) async
+{
+  await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
+    'app.channel.shared.data',
+    const StandardMethodCodec().encodeMethodCall(MethodCall('openFile', path)),
+    (final ByteData? _) {},
+  );
+}
+
 Future<void> _closeApp(final WidgetTester tester) async
 {
   await tester.pumpWidget(const SizedBox.shrink());
@@ -235,6 +245,51 @@ void main()
 
       expect(find.byType(NewProjectWidget), findsNothing);
       expect(GetIt.I.get<DocumentState>().timeline.frames.value, isNotEmpty);
+      await _closeApp(tester);
+    });
+
+    testWidgets("opens a file that a second launch hands over", (final WidgetTester tester) async
+    {
+      final File project = await _createProject(tester);
+      await _bootApp(tester);
+      await _waitForBoot(tester, until: () => find.byType(NewProjectWidget).evaluate().isNotEmpty);
+
+      await _handOver(tester, path: project.path);
+      await _waitForBoot(tester, until: () => GetIt.I.get<ProjectSession>().hasProject && find.byType(CanvasWidget).evaluate().isNotEmpty);
+      await tester.runAsync(settle);
+
+      expect(find.byType(NewProjectWidget), findsNothing);
+      expect(GetIt.I.get<ProjectSession>().projectName.value, "project");
+      await _closeApp(tester);
+    });
+
+    testWidgets("asks before a handed over file replaces unsaved changes", (final WidgetTester tester) async
+    {
+      final File project = await _createProject(tester);
+      await _bootApp(tester);
+      await _waitForBoot(tester, until: () => find.byType(NewProjectWidget).evaluate().isNotEmpty);
+      await tester.tap(find.byTooltip(testL10n.createProject));
+      await settleUi(tester);
+      await tester.runAsync(settle);
+      final ProjectSession session = GetIt.I.get<ProjectSession>();
+      session.hasChanges.value = true;
+
+      await _handOver(tester, path: project.path);
+      await settleUi(tester);
+      expect(find.text(testL10n.unsavedChangesSaveFirst), findsOneWidget);
+
+      await tapTooltip(tester, testL10n.cancel);
+      expect(find.text(testL10n.unsavedChangesSaveFirst), findsNothing);
+      expect(session.projectName.value, isNull, reason: "cancel stays with the project");
+
+      await _handOver(tester, path: project.path);
+      await settleUi(tester);
+      await tapTooltip(tester, testL10n.no);
+      await _waitForBoot(tester, until: () => session.projectName.value == "project");
+
+      expect(find.text(testL10n.unsavedChangesSaveFirst), findsNothing);
+      expect(session.hasChanges.value, isFalse);
+      await tester.runAsync(settle);
       await _closeApp(tester);
     });
 

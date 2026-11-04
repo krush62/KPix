@@ -36,10 +36,11 @@
         android:label="KPix"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+        <!-- singleTask: files opened from other apps go to the running instance instead of starting a second one -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:screenOrientation="landscape"

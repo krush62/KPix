@@ -9,6 +9,8 @@
 struct _MyApplication {
   GtkApplication parent_instance;
   char** dart_entrypoint_arguments;
+  // Passes files of a second launch on to Dart ('openFile').
+  FlMethodChannel* shared_data_channel;
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
@@ -16,6 +18,14 @@ G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
+  // Activated again by a second launch over D-Bus: reuse the existing window.
+  GtkWindow* existing_window =
+      gtk_application_get_active_window(GTK_APPLICATION(application));
+  if (existing_window != nullptr) {
+    gtk_window_present(existing_window);
+    return;
+  }
+
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
@@ -58,7 +68,25 @@ static void my_application_activate(GApplication* application) {
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
+  g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
+  self->shared_data_channel = fl_method_channel_new(
+      fl_engine_get_binary_messenger(fl_view_get_engine(view)),
+      "app.channel.shared.data", FL_METHOD_CODEC(codec));
+
   gtk_widget_grab_focus(GTK_WIDGET(view));
+}
+
+// Implements GApplication::open, called with the file of a second launch.
+static void my_application_open(GApplication* application, GFile** files,
+                                gint n_files, const gchar* hint) {
+  MyApplication* self = MY_APPLICATION(application);
+  my_application_activate(application);
+  g_autofree gchar* path = n_files > 0 ? g_file_get_path(files[0]) : nullptr;
+  if (path != nullptr && self->shared_data_channel != nullptr) {
+    g_autoptr(FlValue) args = fl_value_new_string(path);
+    fl_method_channel_invoke_method(self->shared_data_channel, "openFile", args,
+                                    nullptr, nullptr, nullptr);
+  }
 }
 
 // Implements GApplication::local_command_line.
@@ -74,7 +102,15 @@ static gboolean my_application_local_command_line(GApplication* application, gch
      return TRUE;
   }
 
-  g_application_activate(application);
+  if (g_application_get_is_remote(application) &&
+      self->dart_entrypoint_arguments[0] != nullptr) {
+    // Resolved here, as the running instance has a working directory of its own.
+    g_autoptr(GFile) file =
+        g_file_new_for_commandline_arg(self->dart_entrypoint_arguments[0]);
+    g_application_open(application, &file, 1, "");
+  } else {
+    g_application_activate(application);
+  }
   *exit_status = 0;
 
   return TRUE;
@@ -102,11 +138,13 @@ static void my_application_shutdown(GApplication* application) {
 static void my_application_dispose(GObject* object) {
   MyApplication* self = MY_APPLICATION(object);
   g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
+  g_clear_object(&self->shared_data_channel);
   G_OBJECT_CLASS(my_application_parent_class)->dispose(object);
 }
 
 static void my_application_class_init(MyApplicationClass* klass) {
   G_APPLICATION_CLASS(klass)->activate = my_application_activate;
+  G_APPLICATION_CLASS(klass)->open = my_application_open;
   G_APPLICATION_CLASS(klass)->local_command_line = my_application_local_command_line;
   G_APPLICATION_CLASS(klass)->startup = my_application_startup;
   G_APPLICATION_CLASS(klass)->shutdown = my_application_shutdown;
@@ -116,8 +154,10 @@ static void my_application_class_init(MyApplicationClass* klass) {
 static void my_application_init(MyApplication* self) {}
 
 MyApplication* my_application_new() {
+  // Unique (no G_APPLICATION_NON_UNIQUE): registering finds a running instance
+  // and becomes remote, so a second launch only activates or opens over D-Bus.
   return MY_APPLICATION(g_object_new(my_application_get_type(),
                                      "application-id", APPLICATION_ID,
-                                     "flags", G_APPLICATION_NON_UNIQUE,
+                                     "flags", G_APPLICATION_HANDLES_OPEN,
                                      nullptr));
 }

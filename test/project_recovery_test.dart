@@ -305,6 +305,30 @@ void main()
       expect(initial.path, existing.path);
     });
 
+    _recoveryTest("a requested project of the projects directory opens without an import", (final ProjectSession projectSession) async
+    {
+      final File existing = File(p.join(GetIt.I.get<AppPaths>().projectsDir, "shared.kpix"))..writeAsBytesSync(await projectBytes());
+
+      final InitialProject initial = await importRequestedProject(path: existing.path);
+
+      expect(initial.importResult, isNull, reason: "not reported as a duplicate of itself");
+      expect(initial.fromRecovery, isFalse);
+      expect(initial.path, existing.path);
+    });
+
+    _recoveryTest("a file handed over while running is imported, recovery file or not", (final ProjectSession projectSession) async
+    {
+      await _unsavedWork(projectSession: projectSession);
+      await ProjectRecovery().update(mayWrite: true);
+      final File requested = File(p.join(GetIt.I.get<AppPaths>().exportDir, "shared.kpix"))..writeAsBytesSync(await projectBytes());
+
+      final InitialProject initial = await importRequestedProject(path: requested.path);
+
+      expect(initial.fromRecovery, isFalse);
+      expect(initial.importResult, ProjectImportResult.success);
+      expect(initial.path, p.join(GetIt.I.get<AppPaths>().projectsDir, "shared.kpix"));
+    });
+
     _recoveryTest("a requested file of another type opens nothing", (final ProjectSession projectSession) async
     {
       final InitialProject initial = await findInitialProject(requestedPath: () async => "folder/picture.png");

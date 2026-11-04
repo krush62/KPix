@@ -60,8 +60,8 @@ class ProjectRecovery
   }
 }
 
-/// The project to open at start up. [importResult] is null for a recovery file,
-/// which is not imported.
+/// The project to open at start up. [importResult] is null when nothing was
+/// imported: for a recovery file or a project of the projects directory.
 class InitialProject
 {
   final String? path;
@@ -81,9 +81,17 @@ Future<InitialProject> findInitialProject({required final Future<String?> Functi
     return InitialProject(path: recoveryFile, fromRecovery: true);
   }
 
-  final String? path = await requestedPath();
-  final ProjectImportResult importResult = await importProject(path: path);
+  return importRequestedProject(path: await requestedPath());
+}
+
+/// Imports [path] into the projects directory and points at the project there,
+/// which may have existed before. Recovery files are not looked at.
+Future<InitialProject> importRequestedProject({required final String? path}) async
+{
   final File expectedFile = File(p.join(GetIt.I.get<AppPaths>().projectsDir, extractFilenameFromPath(path: path)));
+  //importing a project of the projects directory would only report it as a duplicate
+  final bool isProject = path != null && path.endsWith(fileExtensionKpix) && p.equals(path, expectedFile.path);
+  final ProjectImportResult? importResult = isProject ? null : await importProject(path: path);
   return InitialProject(path: await expectedFile.exists() ? expectedFile.path : null, fromRecovery: false, importResult: importResult);
 }
 

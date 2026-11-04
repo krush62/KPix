@@ -25,6 +25,9 @@ class Win32Window {
         : width(width), height(height) {}
   };
 
+  // Unique to KPix, so a second instance can find the running one's window.
+  static constexpr wchar_t kWindowClassName[] = L"KPIX_RUNNER_WIN32_WINDOW";
+
   Win32Window();
   virtual ~Win32Window();
 

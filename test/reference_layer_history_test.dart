@@ -16,8 +16,8 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
-import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/history/history_manager.dart';
@@ -36,9 +36,10 @@ void main()
 
   LayerCollection layerList() => GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList;
 
-  ReferenceLayerState addReferenceLayer()
+  Future<ReferenceLayerState> addReferenceLayer() async
   {
-    return GetIt.I.get<LayerManager>().addNewLayer(layerType: LayerKind.reference, select: true).$2! as ReferenceLayerState;
+    final ReferenceImage image = await loadedReferenceImage(width: canvasSize.x, height: canvasSize.y);
+    return GetIt.I.get<LayerManager>().addReferenceLayerWithImage(image: image, select: true).$2!;
   }
 
   Future<void> undo() async
@@ -55,26 +56,28 @@ void main()
   {
     await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async
     {
-      final ReferenceLayerState reference = addReferenceLayer();
+      final ReferenceLayerState reference = await addReferenceLayer();
       final int position = layerList().getLayerPosition(state: reference)!;
+      final double startX = reference.offsetX;
+      final double startY = reference.offsetY;
       final int defaultZoom = reference.zoomSliderValue;
 
-      reference.offsetXNotifier.value = 5;
-      reference.offsetYNotifier.value = -3;
+      reference.offsetXNotifier.value = startX + 5;
+      reference.offsetYNotifier.value = startY - 3;
       reference.setZoomSliderValue(newVal: defaultZoom + 100);
       GetIt.I.get<LayerManager>().commitReferenceLayerChange(layer: reference);
       expect(GetIt.I.get<HistoryManager>().getCurrentIdentifier(), HistoryStateTypeIdentifier.layerSettingsChange);
 
       await undo();
       final ReferenceLayerState undone = layerList().getLayer(index: position) as ReferenceLayerState;
-      expect(undone.offsetX, 0);
-      expect(undone.offsetY, 0);
+      expect(undone.offsetX, startX);
+      expect(undone.offsetY, startY);
       expect(undone.zoomSliderValue, defaultZoom);
 
       await redo();
       final ReferenceLayerState redone = layerList().getLayer(index: position) as ReferenceLayerState;
-      expect(redone.offsetX, 5);
-      expect(redone.offsetY, -3);
+      expect(redone.offsetX, startX + 5);
+      expect(redone.offsetY, startY - 3);
       expect(redone.zoomSliderValue, defaultZoom + 100);
     },);
   });
@@ -84,13 +87,13 @@ void main()
     await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async
     {
       final HistoryManager history = GetIt.I.get<HistoryManager>();
-      final ReferenceLayerState reference = addReferenceLayer();
+      final ReferenceLayerState reference = await addReferenceLayer();
       final int position = layerList().getLayerPosition(state: reference)!;
 
       GetIt.I.get<LayerManager>().commitReferenceLayerChange(layer: reference);
       expect(history.getCurrentIdentifier(), HistoryStateTypeIdentifier.layerNewReference);
 
-      reference.offsetXNotifier.value = 5;
+      reference.offsetXNotifier.value = reference.offsetX + 5;
       GetIt.I.get<LayerManager>().commitReferenceLayerChange(layer: reference);
       await undo();
 
@@ -106,16 +109,17 @@ void main()
     await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async
     {
       final LayerManager layers = GetIt.I.get<LayerManager>();
-      final ReferenceLayerState first = addReferenceLayer();
-      final ReferenceLayerState second = addReferenceLayer();
+      final ReferenceLayerState first = await addReferenceLayer();
+      final ReferenceLayerState second = await addReferenceLayer();
       final int firstPosition = layerList().getLayerPosition(state: first)!;
+      final double firstStartX = first.offsetX;
 
-      first.offsetXNotifier.value = 5;
+      first.offsetXNotifier.value = firstStartX + 5;
       layers.commitReferenceLayerChange(layer: first);
       //enough steps on the second layer to push the first step into the compressed part
       for (int i = 1; i <= 20; i++)
       {
-        second.offsetXNotifier.value = i.toDouble();
+        second.offsetXNotifier.value = second.offsetX + 1;
         layers.commitReferenceLayerChange(layer: second);
       }
 
@@ -125,7 +129,7 @@ void main()
         await undo();
       }
       final ReferenceLayerState restoredFirst = layerList().getLayer(index: firstPosition) as ReferenceLayerState;
-      expect(restoredFirst.offsetX, 0, reason: "the change of the first layer must not be merged away");
+      expect(restoredFirst.offsetX, firstStartX, reason: "the change of the first layer must not be merged away");
     },);
   });
 }

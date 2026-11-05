@@ -177,9 +177,12 @@ void _inputTest(final String description, final Future<void> Function(WidgetTest
   });
 }
 
-ReferenceLayerState _addReferenceLayer()
+/// Image-less reference layers file no history steps, so this one gets an image.
+Future<ReferenceLayerState> _addReferenceLayer(final WidgetTester tester) async
 {
-  return _layers.addNewLayer(layerType: LayerKind.reference, select: true, addToHistoryStack: false).$2! as ReferenceLayerState;
+  final ReferenceLayerState reference = _layers.addNewLayer(layerType: LayerKind.reference, select: true, addToHistoryStack: false).$2! as ReferenceLayerState;
+  reference.imageNotifier.value = await tester.runAsync(loadedReferenceImage);
+  return reference;
 }
 
 Future<void> _undoStep(final WidgetTester tester) async
@@ -718,7 +721,7 @@ void main()
 
       _inputTest("zooms a reference layer, as one undo step", (final WidgetTester tester, final CanvasController controller) async
       {
-        final ReferenceLayerState reference = _addReferenceLayer();
+        final ReferenceLayerState reference = await _addReferenceLayer(tester);
         await tester.runAsync(settle);
         _history.addState(identifier: HistoryStateTypeIdentifier.generic);
         final int slider = reference.zoomSliderValue;
@@ -1339,7 +1342,7 @@ void main()
     {
       _inputTest("zooms it and files that once the wheel rests", (final WidgetTester tester, final CanvasController controller) async
       {
-        final ReferenceLayerState reference = _addReferenceLayer();
+        final ReferenceLayerState reference = await _addReferenceLayer(tester);
         await tester.runAsync(settle);
         _history.addState(identifier: HistoryStateTypeIdentifier.generic);
         final int slider = reference.zoomSliderValue;
@@ -1361,7 +1364,7 @@ void main()
 
       _inputTest("files a change right before undoing it", (final WidgetTester tester, final CanvasController controller) async
       {
-        final ReferenceLayerState reference = _addReferenceLayer();
+        final ReferenceLayerState reference = await _addReferenceLayer(tester);
         await tester.runAsync(settle);
         _history.addState(identifier: HistoryStateTypeIdentifier.generic);
         final int slider = reference.zoomSliderValue;
@@ -1376,13 +1379,13 @@ void main()
 
       _inputTest("files the change of the last layer when it goes on with another", (final WidgetTester tester, final CanvasController controller) async
       {
-        final ReferenceLayerState first = _addReferenceLayer();
+        final ReferenceLayerState first = await _addReferenceLayer(tester);
         await tester.runAsync(settle);
         _history.addState(identifier: HistoryStateTypeIdentifier.generic);
         _hotkeys.controlNotifier.value = true;
         controller.pointerSignal(ev: _scroll(dy: -20));
 
-        final ReferenceLayerState second = _addReferenceLayer();
+        final ReferenceLayerState second = await _addReferenceLayer(tester);
         await tester.runAsync(settle);
         expect(_timeline.getCurrentLayer(), same(second), reason: "setup");
         expect(first.isDisposed, isFalse);
@@ -1508,7 +1511,7 @@ void main()
   {
     _inputTest("moves it with the pointer, as one undo step", (final WidgetTester tester, final CanvasController controller) async
     {
-      final ReferenceLayerState reference = _addReferenceLayer();
+      final ReferenceLayerState reference = await _addReferenceLayer(tester);
       await tester.runAsync(settle);
       _history.addState(identifier: HistoryStateTypeIdentifier.generic);
       final double x = reference.offsetXNotifier.value;
@@ -1533,7 +1536,7 @@ void main()
 
     _inputTest("adds no undo step without moving it", (final WidgetTester tester, final CanvasController controller) async
     {
-      _addReferenceLayer();
+      await _addReferenceLayer(tester);
       await tester.runAsync(settle);
       _history.addState(identifier: HistoryStateTypeIdentifier.generic);
       final HistoryState? before = _history.getCurrentState();
@@ -1545,7 +1548,7 @@ void main()
 
     _inputTest("does not jump when pressed at the same spot after zooming", (final WidgetTester tester, final CanvasController controller) async
     {
-      final ReferenceLayerState reference = _addReferenceLayer();
+      final ReferenceLayerState reference = await _addReferenceLayer(tester);
       await tester.runAsync(settle);
       final double x = reference.offsetXNotifier.value;
       final Offset spot = _at(controller: controller, x: 5, y: 5);
@@ -1560,7 +1563,7 @@ void main()
 
     _inputTest("does not jump after a second drag from the same spot", (final WidgetTester tester, final CanvasController controller) async
     {
-      final ReferenceLayerState reference = _addReferenceLayer();
+      final ReferenceLayerState reference = await _addReferenceLayer(tester);
       await tester.runAsync(settle);
       final double x = reference.offsetXNotifier.value;
       final Offset spot = _at(controller: controller, x: 5, y: 5);

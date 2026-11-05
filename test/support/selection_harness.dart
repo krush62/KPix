@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -106,6 +108,17 @@ Future<void> settle({final int maxTicks = 60}) async
       return;
     }
   }
+}
+
+/// A plain image known to the [ReferenceImageManager], so history restores find it again.
+///
+/// Reference layers without an image file no history steps. Needs real async.
+Future<ReferenceImage> loadedReferenceImage({final int width = 4, final int height = 4}) async
+{
+  final ui.PictureRecorder recorder = ui.PictureRecorder();
+  Canvas(recorder).drawRect(Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()), Paint()..color = const Color(0xFFCC3333));
+  final ui.Image picture = await recorder.endRecording().toImage(width, height);
+  return GetIt.I.get<ReferenceImageManager>().addLoadedImage(img: picture, path: "reference_${width}x$height.png");
 }
 
 /// The drawing layer at [index] of the currently selected frame.

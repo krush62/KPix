@@ -5,7 +5,9 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.OpenableColumns
 import android.provider.Settings
+import android.util.Log
 import android.view.MotionEvent
 import androidx.annotation.NonNull
 import io.flutter.plugin.common.MethodChannel
@@ -14,26 +16,32 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugins.GeneratedPluginRegistrant
 import android.net.Uri
 import java.io.File
+import java.util.concurrent.Executors
 
 class MainActivity: FlutterActivity() {
 
-    private var sharedFilePath: String? = null
+    private var sharedFileUri: Uri? = null
     private val CHANNEL = "app.channel.shared.data"
     private val STYLUS_CHANNEL = "app.channel.stylus"
     private var stylusChannel: MethodChannel? = null
     private var sharedDataChannel: MethodChannel? = null
+    private val fileCopier = Executors.newSingleThreadExecutor()
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
-        sharedFilePath = sharedFilePathOf(intent)
+        //a restored activity or a launch from Recents carries the intent of an already opened file
+        if (savedInstanceState == null && (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) == 0)
+        {
+            sharedFileUri = viewedUriOf(intent)
+        }
     }
 
     //launchMode singleTask: a file opened from another app while running arrives here instead of in a second instance
     override fun onNewIntent(intent: Intent)
     {
         super.onNewIntent(intent)
-        sharedFilePathOf(intent)?.let { sharedDataChannel?.invokeMethod("openFile", it) }
+        viewedUriOf(intent)?.let { uri -> resolveFile(uri) { path -> path?.let { sharedDataChannel?.invokeMethod("openFile", it) } } }
     }
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
@@ -44,8 +52,9 @@ class MainActivity: FlutterActivity() {
         channel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "getSharedFile" -> {
-                    result.success(sharedFilePath)
-                    sharedFilePath = null
+                    val uri = sharedFileUri
+                    sharedFileUri = null
+                    if (uri == null) result.success(null) else resolveFile(uri) { result.success(it) }
                 }
                 "hasAllFilesAccess" -> {
                     result.success(hasAllFilesAccess())
@@ -99,12 +108,52 @@ class MainActivity: FlutterActivity() {
         }
     }
 
-    private fun sharedFilePathOf(intent: Intent): String? {
-        val scheme = intent.scheme
-        if (Intent.ACTION_VIEW != intent.action || intent.type == null || ("file" != scheme && "content" != scheme)) {
+    private fun viewedUriOf(intent: Intent): Uri?
+    {
+        val uri = intent.data
+        return if (Intent.ACTION_VIEW == intent.action && (uri?.scheme == "file" || uri?.scheme == "content")) uri else null
+    }
+
+    //a content URI has no file path: its file is copied to the cache under its own name, which the import keeps
+    private fun resolveFile(uri: Uri, onResolved: (String?) -> Unit)
+    {
+        if (uri.scheme == "file")
+        {
+            onResolved(uri.path)
+            return
+        }
+        fileCopier.execute {
+            val path = try {
+                copyToCache(uri)
+            } catch (e: Exception) {
+                Log.w("KPix", "Could not read the opened file $uri", e)
+                null
+            }
+            runOnUiThread { onResolved(path) }
+        }
+    }
+
+    private fun copyToCache(uri: Uri): String?
+    {
+        val name = File(displayNameOf(uri) ?: uri.lastPathSegment ?: return null).name
+        if (name.isBlank() || name == "." || name == "..")
+        {
             return null
         }
-        val fileUri: Uri = intent.data ?: return null
-        return File(fileUri.path ?: "").absolutePath
+        val dir = File(cacheDir, "opened_files")
+        dir.deleteRecursively()
+        dir.mkdirs()
+        val target = File(dir, name)
+        val input = contentResolver.openInputStream(uri) ?: return null
+        input.use { source -> target.outputStream().use { source.copyTo(it) } }
+        return target.absolutePath
+    }
+
+    private fun displayNameOf(uri: Uri): String? = try {
+        contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst() && !cursor.isNull(0)) cursor.getString(0) else null
+        }
+    } catch (e: Exception) {
+        null
     }
 }

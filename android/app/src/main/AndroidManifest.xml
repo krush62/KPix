@@ -72,6 +72,7 @@
                 <data android:scheme="content" />
                 <data android:mimeType="application/vnd.kpix" />
             </intent-filter>
+            <!-- File managers send content:// URIs with a guessed MIME type (or none), so .kpix is matched by path -->
             <intent-filter
                 android:icon="@mipmap/launcher_icon"
                 android:label="KPix"
@@ -82,13 +83,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <data android:scheme="file" />
+                <data android:scheme="content" />
                 <data android:host="*" />
 
-                <!--
-                     Work around Android's ugly primitive PatternMatcher
-                     implementation that can't cope with finding a . early in
-                     the path unless it's explicitly matched.
-                -->
+                <!-- pathSuffix needs Android 12; older versions use the patterns, one per dot count, as PatternMatcher's .* stops at the first dot -->
+                <data android:pathSuffix=".kpix" />
                 <data android:pathPattern=".*\\.kpix" />
                 <data android:pathPattern=".*\\..*\\.kpix" />
                 <data android:pathPattern=".*\\..*\\..*\\.kpix" />
@@ -108,14 +107,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <data android:scheme="file" />
+                <data android:scheme="content" />
                 <data android:host="*" />
                 <data android:mimeType="*/*" />
 
-                <!--
-                     Work around Android's ugly primitive PatternMatcher
-                     implementation that can't cope with finding a . early in
-                     the path unless it's explicitly matched.
-                -->
+                <data android:pathSuffix=".kpix" />
                 <data android:pathPattern=".*\\.kpix" />
                 <data android:pathPattern=".*\\..*\\.kpix" />
                 <data android:pathPattern=".*\\..*\\..*\\.kpix" />

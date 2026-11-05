@@ -3,6 +3,10 @@ name: KPix Manual Build
 on:
   workflow_dispatch:
     inputs:
+      run_tests:
+        description: "Run unit tests"
+        type: boolean
+        default: true
       build_android_apk:
         description: "Build Android APK"
         type: boolean
@@ -75,8 +79,10 @@ jobs:
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
 
+  # A skipped test job skips its dependents, so the build jobs check needs.test.result themselves.
   test:
     name: Run Unit Tests
+    if: ${{ inputs.run_tests }}
     runs-on: windows-2022
     steps:
       - name: Checkout
@@ -97,7 +103,7 @@ jobs:
         run: flutter test --concurrency=1
 
   android:
-    if: ${{ inputs.build_android_apk || inputs.build_android_aab }}
+    if: ${{ !cancelled() && needs.setup.result == 'success' && (needs.test.result == 'success' || needs.test.result == 'skipped') && (inputs.build_android_apk || inputs.build_android_aab) }}
     needs: [ setup, test ]
     runs-on: ubuntu-latest
     outputs:
@@ -223,7 +229,7 @@ jobs:
 
 
   desktop:
-    if: ${{ inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage || inputs.build_linux_flatpak }}
+    if: ${{ !cancelled() && needs.setup.result == 'success' && (needs.test.result == 'success' || needs.test.result == 'skipped') && (inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage || inputs.build_linux_flatpak) }}
     needs: [ setup, test ]
     outputs:
       has_artifact: ${{ steps.upload_success.outputs.has_artifact }}
@@ -557,7 +563,7 @@ jobs:
 
 
   web:
-    if: ${{ inputs.build_web }}
+    if: ${{ !cancelled() && needs.setup.result == 'success' && (needs.test.result == 'success' || needs.test.result == 'skipped') && inputs.build_web }}
     needs: [ setup, test ]
     outputs:
       has_artifact: ${{ steps.upload_success.outputs.has_artifact }}
@@ -599,7 +605,7 @@ jobs:
 
 
   macos:
-    if: ${{ inputs.build_macos_dmg }}
+    if: ${{ !cancelled() && needs.setup.result == 'success' && (needs.test.result == 'success' || needs.test.result == 'skipped') && inputs.build_macos_dmg }}
     needs: [ setup, test ]
     outputs:
       has_artifact: ${{ steps.upload_success.outputs.has_artifact }}

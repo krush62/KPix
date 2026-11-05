@@ -147,7 +147,7 @@ ThemeData _buildTheme({required final ColorSet colors})
 
     tooltipTheme: TooltipThemeData(
       padding: const EdgeInsetsGeometry.all(6),
-      waitDuration: const Duration(milliseconds: 750),
+      waitDuration: const Duration(milliseconds: 500),
       showDuration: const Duration(seconds: 5),
       decoration: BoxDecoration(
         boxShadow: <BoxShadow>[

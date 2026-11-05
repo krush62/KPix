@@ -98,7 +98,7 @@ class SprayCanPainter extends IToolPainter
             {
               //shading steps add up per pixel, so the whole spray goes in at once
               final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _allPaintPositions, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
-              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
+              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions, canvasSize: drawParams.canvasSize);
               _drawingPixels.clear();
             }
 

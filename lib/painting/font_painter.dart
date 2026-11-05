@@ -144,7 +144,7 @@ class FontPainter extends IToolPainter
             }
             else if (rasterLayer is ShadingLayerState)
             {
-              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
+              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions, canvasSize: drawParams.canvasSize);
             }
           }
           _down = false;
@@ -182,11 +182,14 @@ class FontPainter extends IToolPainter
 
     void _dumpDrawing({required final DrawingParameters drawParams, required final CoordinateColorMap drawingPixels})
     {
-      final RasterableLayerState? layer = drawParams.currentRasterLayer;
-      if (layer is DrawingLayerState)
+      if (drawingPixels.isNotEmpty)
       {
-        commitPixels(layer: layer, pixels: drawingPixels);
-        hasHistoryData = true;
+        final RasterableLayerState? layer = drawParams.currentRasterLayer;
+        if (layer is DrawingLayerState)
+        {
+          commitPixels(layer: layer, pixels: drawingPixels);
+          hasHistoryData = true;
+        }
       }
     }
 

@@ -195,14 +195,17 @@ class LinePainter extends IToolPainter
           if (rasterLayer is DrawingLayerState)
           {
             final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: paletteState.selectedColor!, selection: documentState.selectionState, shaderOptions: shaderOptions);
-            commitPixels(layer: rasterLayer, pixels: drawingPixels);
+            if (drawingPixels.isNotEmpty)
+            {
+              commitPixels(layer: rasterLayer, pixels: drawingPixels);
+              hasHistoryData = true;
+            }
           }
           else if (rasterLayer is ShadingLayerState)
           {
-            dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
+            dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions, canvasSize: drawParams.canvasSize);
           }
 
-          hasHistoryData = true;
           reset();
           _waitingForRasterization = true;
           _dumpLayer = rasterLayer;

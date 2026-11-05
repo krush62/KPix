@@ -720,29 +720,35 @@ abstract class IToolPainter
     resetContentRaster(currentLayer: shadingLayer);
   }
 
-  void dumpShading({required final ShadingLayerState shadingLayer, required final Set<CoordinateSetI> coordinates, required final ShaderOptions shaderOptions})
+  void dumpShading({required final ShadingLayerState shadingLayer, required final Set<CoordinateSetI> coordinates, required final ShaderOptions shaderOptions, required final CoordinateSetI canvasSize})
   {
     final List<CoordinateSetI> removeCoords = <CoordinateSetI>[];
     final HashMap<CoordinateSetI, int> changeCoords = HashMap<CoordinateSetI, int>();
     for (final CoordinateSetI coord in coordinates)
     {
-      final int currentShift = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
-      final int targetShift = (shadingLayer.hasCoord(coord: coord) ? shadingLayer.getRawValueAt(coord: coord)! + currentShift : currentShift).clamp(-shadingLayer.settings.shadingStepsMinus.value, shadingLayer.settings.shadingStepsPlus.value);
-      if (targetShift == 0)
+      if (canvasSize.contains(coord: coord))
       {
-        removeCoords.add(coord);
-      }
-      else
-      {
-        changeCoords[coord] = targetShift;
+        final int currentShift = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
+        final int targetShift = (shadingLayer.hasCoord(coord: coord) ? shadingLayer.getRawValueAt(coord: coord)! + currentShift : currentShift).clamp(-shadingLayer.settings.shadingStepsMinus.value, shadingLayer.settings.shadingStepsPlus.value);
+        if (targetShift == 0)
+        {
+          removeCoords.add(coord);
+        }
+        else
+        {
+          changeCoords[coord] = targetShift;
+        }
       }
     }
     shadingLayer.removeCoords(coords: removeCoords);
     shadingLayer.addCoords(coords: changeCoords);
 
-
-    hasHistoryData = true;
-    resetContentRaster(currentLayer: shadingLayer);
+    final int affectedPixels = removeCoords.length + changeCoords.length;
+    if (affectedPixels > 0)
+    {
+      hasHistoryData = true;
+      resetContentRaster(currentLayer: shadingLayer);
+    }
   }
 
   ui.Path getPathFromList({required final List<MapEntry<int, int>> pointList, required final CoordinateSetD offsetPos, required final double scaling})

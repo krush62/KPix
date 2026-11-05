@@ -198,7 +198,7 @@ class ShapePainter extends IToolPainter
           }
           else if (rasterLayer is ShadingLayerState)
           {
-            dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
+            dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions, canvasSize: drawParams.canvasSize);
             _drawingPixels.clear();
           }
         }

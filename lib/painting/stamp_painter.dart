@@ -204,8 +204,11 @@ class StampPainter extends IToolPainter
   void _dump({required final CoordinateSetI canvasSize, required final DrawingLayerState drawingLayer, required final HashMap<CoordinateSetI, int> stampData})
   {
     final CoordinateColorMap drawingPixels = getStampPixelsToDraw(canvasSize: canvasSize, currentLayer: drawingLayer, stampData: stampData, selection: documentState.selectionState, shaderOptions: shaderOptions, selectedColor: paletteState.selectedColor!);
-    commitPixels(layer: drawingLayer, pixels: drawingPixels);
-    hasHistoryData = true;
+    if (drawingPixels.isNotEmpty)
+    {
+      commitPixels(layer: drawingLayer, pixels: drawingPixels);
+      hasHistoryData = true;
+    }
   }
 
   @override

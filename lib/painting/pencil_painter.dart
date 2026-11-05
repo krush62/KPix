@@ -198,7 +198,7 @@ class PencilPainter extends IToolPainter
               //shading steps add up per pixel, so the whole stroke goes in at once
               final Set<CoordinateSetI> paintPoints = getStampedContentPoints(shape: _options.shape.value, size: _options.size.value, positions: _allPaintPositions);
               final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: paintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
-              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
+              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions, canvasSize: drawParams.canvasSize);
                _drawingPixels.clear();
                _cursorContentDirty = true;
             }
@@ -220,7 +220,7 @@ class PencilPainter extends IToolPainter
             }
             else if (rasterLayer is ShadingLayerState)
             {
-              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
+              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions, canvasSize: drawParams.canvasSize);
               _drawingPixels.clear();
               _cursorContentDirty = true;
             }
@@ -288,10 +288,10 @@ class PencilPainter extends IToolPainter
     if (_drawingPixels.isNotEmpty)
     {
       commitPixels(layer: currentLayer, pixels: _drawingPixels);
+      hasHistoryData = true;
+      _cursorContentDirty = true;
+      resetContentRaster(currentLayer: currentLayer);
     }
-    hasHistoryData = true;
-    _cursorContentDirty = true;
-    resetContentRaster(currentLayer: currentLayer);
   }
 
 

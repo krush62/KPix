@@ -19,7 +19,7 @@ import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/util/messages.dart';
 
-String _getMessageForHistoryState({
+String getMessageForHistoryState({
   required final HistoryStateTypeIdentifier id,
   required final AppLocalizations l10n,
 }) => switch (id) {
@@ -97,7 +97,7 @@ void showMessageForHistoryResult({required final HistoryRestoreResult result, re
 /// restore has finished.
 void showMessagesForUndo({required final HistoryStep step, required final AppLocalizations l10n})
 {
-  final String message = _getMessageForHistoryState(id: step.identifier, l10n: l10n);
+  final String message = getMessageForHistoryState(id: step.identifier, l10n: l10n);
   showMessage(text: l10n.undoStep(message), toastType: ToastType.undo);
   step.restore.then((final HistoryRestoreResult result) => showMessageForHistoryResult(result: result, l10n: l10n));
 }
@@ -106,7 +106,7 @@ void showMessagesForUndo({required final HistoryStep step, required final AppLoc
 /// restore has finished.
 void showMessagesForRedo({required final HistoryStep step, required final AppLocalizations l10n})
 {
-  final String message = _getMessageForHistoryState(id: step.identifier, l10n: l10n);
+  final String message = getMessageForHistoryState(id: step.identifier, l10n: l10n);
   showMessage(text: l10n.redoStep(message), toastType: ToastType.redo);
   step.restore.then((final HistoryRestoreResult result) => showMessageForHistoryResult(result: result, l10n: l10n));
 }

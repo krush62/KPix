@@ -30,6 +30,7 @@ import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/export_types.dart';
 import 'package:kpix/models/file_callbacks.dart';
 import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state.dart';
 import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/layer_manager.dart';
@@ -719,11 +720,20 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   child: ValueListenableBuilder<bool>(
                     valueListenable: _historyManager.hasUndo,
                     builder: (final BuildContext context, final bool hasUndo, final Widget? child) {
-                      return IconButton.outlined(
-                        tooltip: l10n.undo + _hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo, context: context),
-                        icon: const Icon(TablerIcons.arrow_back_up),
-                        onPressed: hasUndo ? _undoPressed : null,
+                      return ListenableBuilder(
+                        listenable: _historyManager.changeNotifier,
+                          builder: (final BuildContext context, final Widget? child)
+                          {
+                            final HistoryState? currentState = _historyManager.getCurrentState();
+                            final String undoStepDesc = hasUndo && currentState != null ? "\n${getMessageForHistoryState(id: currentState.type.identifier, l10n: l10n)}" : "";
+                            return IconButton.outlined(
+                              tooltip: l10n.undo + undoStepDesc + _hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo, context: context),
+                              icon: const Icon(TablerIcons.arrow_back_up),
+                              onPressed: hasUndo ? _undoPressed : null,
+                            );
+                          },
                       );
+
                     },
                   ),
                 ),
@@ -734,10 +744,18 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   child: ValueListenableBuilder<bool>(
                     valueListenable: _historyManager.hasRedo,
                     builder: (final BuildContext context, final bool hasRedo, final Widget? child) {
-                      return IconButton.outlined(
-                        tooltip: l10n.redo + _hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo, context: context),
-                        icon: const Icon(TablerIcons.arrow_forward_up),
-                        onPressed: hasRedo ? _redoPressed : null,
+                      return ListenableBuilder(
+                        listenable: _historyManager.changeNotifier,
+                        builder: (final BuildContext context, final Widget? child)
+                        {
+                          final HistoryState? nextState = _historyManager.getNextState();
+                          final String redoStepDesc = hasRedo && nextState != null ? "\n${getMessageForHistoryState(id: nextState.type.identifier, l10n: l10n)}" : "";
+                          return IconButton.outlined(
+                            tooltip: l10n.redo + redoStepDesc + _hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo, context: context),
+                            icon: const Icon(TablerIcons.arrow_forward_up),
+                            onPressed: hasRedo ? _redoPressed : null,
+                          );
+                        }
                       );
                     },
                   ),

@@ -26,11 +26,17 @@ import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:logger/logger.dart';
 
+class HistoryChangeNotifier extends ChangeNotifier {
+  void notify() {
+    notifyListeners();
+  }
+}
 
 class HistoryManager
 {
   final ValueNotifier<bool> hasUndo = ValueNotifier<bool>(false);
   final ValueNotifier<bool> hasRedo = ValueNotifier<bool>(false);
+  final HistoryChangeNotifier changeNotifier = HistoryChangeNotifier();
   final int _minEntries = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.min;
   int _maxEntries;
   int _curPos = -1;
@@ -165,10 +171,20 @@ class HistoryManager
     return null;
   }
 
+  HistoryState? getNextState()
+  {
+    if (_curPos < _states.length - 1)
+    {
+      return _states[_curPos + 1];
+    }
+    return null;
+  }
+
   void _updateNotifiers()
   {
     hasUndo.value = _curPos > 0;
     hasRedo.value = _curPos < _states.length - 1;
+    changeNotifier.notify();
   }
 
   bool _canMerge({required final HistoryState older, required final HistoryState newer})

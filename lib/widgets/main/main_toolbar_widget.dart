@@ -48,9 +48,9 @@ import 'package:kpix/widgets/tools/tools_widget.dart';
 abstract final class _MainToolbarWidgetOptions {
   //static const int paletteFlex = 2;
   //static const int toolSettingsFlex = 1;
-  //static const double dividerHeight = 2.0;
-  //static const double dividerPadding = 8.0;
-  static const int toolHeight = 300;
+  static const double dividerHeight = 2.0;
+  static const double dividerPadding = 2.0;
+  static const int toolHeight = 310;
 }
 
 
@@ -69,12 +69,6 @@ class MainToolbarWidget extends StatelessWidget
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           ExcludeFocus(
-            child: ShaderWidget(
-              titleStyle: Theme.of(context).textTheme.titleMedium,
-              labelStyle: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
-          ExcludeFocus(
             child: ValueListenableBuilder<bool>(
               valueListenable: GetIt.I.get<ProjectSession>().hasProjectNotifier,
               builder: (final BuildContext context, final bool hasProject, final Widget? child)
@@ -82,6 +76,17 @@ class MainToolbarWidget extends StatelessWidget
                 return hasProject? const PaletteWidget() : Expanded(child: Container(color: Theme.of(context).primaryColorDark));
               },
             ),
+          ),
+          ExcludeFocus(
+            child: ShaderWidget(
+              titleStyle: Theme.of(context).textTheme.titleMedium,
+              labelStyle: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+          Divider(
+            height: _MainToolbarWidgetOptions.dividerPadding,
+            thickness: _MainToolbarWidgetOptions.dividerHeight,
+            color: Theme.of(context).primaryColorDark,
           ),
           ListenableBuilder(
             listenable: GetIt.I.get<DocumentState>().timeline.layerChangeNotifier,

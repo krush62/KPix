@@ -30,7 +30,7 @@ abstract final class _ToolsWidgetOptions
   static const double padding = 8.0;
   //static const double buttonSize = 48.0;
   //static const int colCount = 6;
-  static const double iconSize = 22.0;
+  static const double iconSize = 24.0;
 }
 
 class SegmentButtonData
@@ -97,7 +97,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
     }
   }
 
-  SegmentedButton<ToolType> _createSegmentedRow({required final List<SegmentButtonData> buttonDataList, required final bool isShadingLayer, required final ToolType currentTool})
+  SegmentedButton<ToolType> _createSegmentedRow({required final List<SegmentButtonData> buttonDataList, required final bool isShadingLayer, required final ToolType currentTool, required final bool isTop})
   {
     final List<ButtonSegment<ToolType>> segments = <ButtonSegment<ToolType>>[];
     for (final SegmentButtonData buttonData in buttonDataList)
@@ -116,9 +116,27 @@ class _ToolsWidgetState extends State<ToolsWidget>
       segments.add(segment);
     }
 
+    final ButtonStyle? segmentedStyle = SegmentedButtonTheme.of(context).style;
+    final OutlinedBorder? themedShape = segmentedStyle?.shape?.resolve(<WidgetState>{});
+
+    final OutlinedBorder? shape = switch (themedShape) {
+      final RoundedRectangleBorder border => border.copyWith(
+        borderRadius: border.borderRadius
+            .resolve(Directionality.of(context))
+            .copyWith(
+          bottomLeft: isTop ? Radius.zero : null,
+          bottomRight: isTop ? Radius.zero : null,
+          topLeft: isTop ? null : Radius.zero,
+          topRight: isTop ? null : Radius.zero,
+        ),
+      ),
+      _ => themedShape,
+    };
+
     return SegmentedButton<ToolType>(
-        style: const ButtonStyle(
+        style:  ButtonStyle(
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: WidgetStatePropertyAll<OutlinedBorder?>(shape)
         ),
         selected: <ToolType>{currentTool},
         emptySelectionAllowed: true,
@@ -144,16 +162,17 @@ class _ToolsWidgetState extends State<ToolsWidget>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-
               _createSegmentedRow(
-                  buttonDataList: toolDataRow1,
-                  isShadingLayer: isShadingLayer,
-                  currentTool: tool,
+                buttonDataList: toolDataRow1,
+                isShadingLayer: isShadingLayer,
+                currentTool: tool,
+                isTop: true
               ),
               _createSegmentedRow(
                 buttonDataList: toolDataRow2,
                 isShadingLayer: isShadingLayer,
                 currentTool: tool,
+                isTop: false,
               ),
             ],
           );

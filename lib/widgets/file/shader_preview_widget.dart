@@ -604,9 +604,14 @@ class _ShaderPreviewPainter extends CustomPainter
     final double scale = zoom / pixelRatio;
     final Offset origin = originPhysical() / pixelRatio;
     final Rect outputRect = origin & (outputSize * scale);
+    final Rect visibleRect = outputRect.intersect(Offset.zero & size);
+    if (visibleRect.width <= 0 || visibleRect.height <= 0)
+    {
+      return;
+    }
 
     const double cell = ShaderPreviewWidgetOptions.checkerboardCellSize;
-    canvas.drawRect(outputRect, Paint()
+    canvas.drawRect(visibleRect, Paint()
       ..shader = ImageShader(checkerboard, TileMode.repeated, TileMode.repeated, (Matrix4.diagonal3Values(cell, cell, 1)..setTranslationRaw(origin.dx, origin.dy, 0)).storage, filterQuality: FilterQuality.none,),
     );
 
@@ -614,11 +619,12 @@ class _ShaderPreviewPainter extends CustomPainter
     if (showOriginal.value && original != null)
     {
       //plain pixel scaling, the export without the shader; blocks of a physical pixel or more stay sharp
-      canvas.drawImageRect(
-        original,
-        Rect.fromLTWH(0, 0, original.width.toDouble(), original.height.toDouble()),
-        outputRect,
-        Paint()..filterQuality = zoom * scaling >= 1.0 ? FilterQuality.none : FilterQuality.medium,
+      _drawVisible(
+        canvas: canvas,
+        image: original,
+        target: outputRect,
+        visible: visibleRect,
+        paint: Paint()..filterQuality = zoom * scaling >= 1.0 ? FilterQuality.none : FilterQuality.medium,
       );
       return;
     }
@@ -632,14 +638,39 @@ class _ShaderPreviewPainter extends CustomPainter
       final Rect target = Rect.fromLTWH(origin.dx + region.x * regionScale, origin.dy + region.y * regionScale, region.width * regionScale, region.height * regionScale);
       canvas.save();
       canvas.clipRect(outputRect);
-      canvas.drawImageRect(
-        current.image,
-        Rect.fromLTWH(0, 0, current.image.width.toDouble(), current.image.height.toDouble()),
-        target,
-        Paint()..filterQuality = zoom >= 1.0 ? FilterQuality.none : FilterQuality.medium,
+      _drawVisible(
+        canvas: canvas,
+        image: current.image,
+        target: target,
+        visible: visibleRect,
+        paint: Paint()..filterQuality = zoom >= 1.0 ? FilterQuality.none : FilterQuality.medium,
       );
       canvas.restore();
     }
+  }
+
+  /// Draws [image] stretched over [target], but only the part of it in [visible]:
+  /// Impeller slows down a lot when zoomed in and the drawn image is far larger than the screen.
+  void _drawVisible({required final Canvas canvas, required final ui.Image image, required final Rect target, required final Rect visible, required final Paint paint})
+  {
+    final Rect part = target.intersect(visible);
+    if (part.width <= 0 || part.height <= 0)
+    {
+      return;
+    }
+    final double scaleX = target.width / image.width;
+    final double scaleY = target.height / image.height;
+    //a pixel more on each side keeps the filtering at the edges of the view as it was
+    final double left = max(0, ((part.left - target.left) / scaleX).floorToDouble() - 1);
+    final double top = max(0, ((part.top - target.top) / scaleY).floorToDouble() - 1);
+    final double right = min(image.width.toDouble(), ((part.right - target.left) / scaleX).ceilToDouble() + 1);
+    final double bottom = min(image.height.toDouble(), ((part.bottom - target.top) / scaleY).ceilToDouble() + 1);
+    canvas.drawImageRect(
+      image,
+      Rect.fromLTRB(left, top, right, bottom),
+      Rect.fromLTRB(target.left + left * scaleX, target.top + top * scaleY, target.left + right * scaleX, target.top + bottom * scaleY),
+      paint,
+    );
   }
 
   @override

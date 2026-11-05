@@ -265,6 +265,10 @@ class LayerManager
     {
       return;
     }
+    if (layer.image == null)
+    {
+      return;
+    }
     final LinkedHashSet<LayerState> liveLayers = LinkedHashSet<LayerState>();
     for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
     {

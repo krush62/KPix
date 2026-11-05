@@ -101,6 +101,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importAsCopy => 'Import as a copy';
 
   @override
+  String droppedImageQuestion(String name) {
+    return 'Add \"$name\" as a reference layer or import it as a new project?';
+  }
+
+  @override
+  String get addAsReferenceLayer => 'Add as a reference layer';
+
+  @override
+  String get importAsNewProject => 'Import as a new project';
+
+  @override
+  String droppedFileNotSupported(String formats) {
+    return 'Only KPix projects and images ($formats) can be opened!';
+  }
+
+  @override
   String get pleaseSelectAKPixFile => 'Please select a KPix file!';
 
   @override

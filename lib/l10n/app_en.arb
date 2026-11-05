@@ -36,6 +36,22 @@
   },
   "openExistingProject": "Open the existing project",
   "importAsCopy": "Import as a copy",
+  "droppedImageQuestion": "Add \"{name}\" as a reference layer or import it as a new project?",
+  "@droppedImageQuestion": {
+    "description": "image dropped on the window",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "addAsReferenceLayer": "Add as a reference layer",
+  "importAsNewProject": "Import as a new project",
+  "droppedFileNotSupported": "Only KPix projects and images ({formats}) can be opened!",
+  "@droppedFileNotSupported": {
+    "description": "unsupported file dropped on the window",
+    "placeholders": {
+      "formats": {"type": "String"}
+    }
+  },
   "pleaseSelectAKPixFile": "Please select a KPix file!",
   "couldNotReadProjectDir": "Could not read the project directory!",
   "noFilesFound": "No files found!",

@@ -95,6 +95,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   /// without loading anything.
   Function()? _pendingLoadCallback;
   KPixOverlay? _importDialog;
+  String? _importPath;
   KPixOverlay? _importLoadingDialog;
   KPixOverlay? _exportLoadingDialog;
   KPixOverlay? _openLoadingDialog;
@@ -149,6 +150,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
     saveFileCallback = _saveFile;
     openFileCallback = _loadFile;
+    importImageCallback = _importFile;
 
   }
 
@@ -257,8 +259,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
   }
 
-  void _importFile()
+  void _importFile({final String? path})
   {
+    _importPath = path;
     if (_projectSession.hasChanges.value)
     {
       _saveImportWarningDialog?.show(context: context);
@@ -282,7 +285,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   void _saveBeforeImportFinished()
   {
     _closeAllMenus();
-    _importDialog?.show(context: context);
+    //built per opening, like the save as dialog, so it can start with the chosen image
+    _importDialog = getImportDialog(
+      onDismiss: _closeAllMenus,
+      onAcceptImage: _importImage,
+      initialPath: _importPath,
+    );
+    _importPath = null;
+    _importDialog!.show(context: context);
   }
 
   void _saveLoadWarningYes()
@@ -585,12 +595,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   Widget build(final BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
 
-    _importDialog ??= getImportDialog(
-      onDismiss: _closeAllMenus,
-      onAcceptImage: ({required final ImportData importData}) {
-        _importImage(importData: importData);
-      },
-    );
     _preferencesDialog ??= getPreferencesDialog(
       onDismiss: _reloadPreferences,
       onAccept: _savePreferencesPressed,

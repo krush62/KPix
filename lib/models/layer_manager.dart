@@ -18,6 +18,7 @@ import 'dart:collection';
 
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -102,6 +103,22 @@ class LayerManager
       }
     }
     return tuple;
+  }
+
+  /// Adds a reference layer showing [image] fitted into the canvas, as one history step.
+  (LayerActionResult, ReferenceLayerState?) addReferenceLayerWithImage({required final ReferenceImage image, final bool select = false})
+  {
+    final (LayerActionResult, LayerState?) result = addNewLayer(layerType: LayerKind.reference, addToHistoryStack: false, select: select);
+    final LayerState? layer = result.$2;
+    if (layer is! ReferenceLayerState)
+    {
+      return (result.$1, null);
+    }
+    layer.imageNotifier.value = image;
+    layer.thumbnail.value = image.image;
+    layer.fitInto(canvasSize: GetIt.I.get<CanvasState>().canvasSize);
+    GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerNewReference);
+    return (result.$1, layer);
   }
 
   void moveUpLayer({required final LayerState? layerState})

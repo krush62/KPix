@@ -22,3 +22,5 @@
 /// import the entry point to reach them.
 Function({Function()? callback})? saveFileCallback;
 Function({Function()? callback})? openFileCallback;
+/// Opens the import dialog with the image at path already chosen.
+Function({String? path})? importImageCallback;

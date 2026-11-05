@@ -632,6 +632,28 @@ KPixOverlay getProjectNameConflictDialog({
   );
 }
 
+/// An overlay asking what to do with an image dropped on the window: add it as
+/// a reference layer, import it as a new project, or neither. Tapping the
+/// barrier and Escape cancel.
+KPixOverlay getDroppedImageDialog({
+  required final Function() onReferenceLayer,
+  required final Function() onImport,
+  required final Function() onCancel,
+  required final LocalizedMessageFn message,
+})
+{
+  return _messageDialog(
+    message: message,
+    onBarrierDismiss: onCancel,
+    onEscape: onCancel,
+    actions: <_DialogAction>[
+      _DialogAction(icon: TablerIcons.photo, onPressed: onReferenceLayer, tooltip: (final AppLocalizations l10n) => l10n.addAsReferenceLayer),
+      _DialogAction(icon: TablerIcons.file_import, onPressed: onImport, tooltip: (final AppLocalizations l10n) => l10n.importAsNewProject),
+      _DialogAction(icon: TablerIcons.ban, onPressed: onCancel, tooltip: (final AppLocalizations l10n) => l10n.cancel),
+    ],
+  );
+}
+
 /// An overlay holding a dialog with a yes and a no button.
 ///
 /// [message] is shown above the buttons. Tapping the barrier calls [onNo] when
@@ -733,10 +755,12 @@ KPixOverlay getShaderExportDialog({required final Function() onDismiss, required
 }
 
 
-/// An overlay holding the dialog for importing an image.
+/// An overlay holding the dialog for importing an image, which starts out with
+/// the image at [initialPath] chosen when one is given.
 KPixOverlay getImportDialog({
   required final Function() onDismiss,
   required final ImportImageFn onAcceptImage,
+  final String? initialPath,
 })
 {
   final GlobalKey<ImportWidgetState> importKey = GlobalKey<ImportWidgetState>();
@@ -745,7 +769,7 @@ KPixOverlay getImportDialog({
     onEscape: onDismiss,
     onEnter: () => importKey.currentState?.accept(),
     content: (final BuildContext context) => Center(
-      child: ImportWidget(key: importKey, dismiss: onDismiss, import: onAcceptImage,),
+      child: ImportWidget(key: importKey, dismiss: onDismiss, import: onAcceptImage, initialPath: initialPath,),
     ),
   );
 }

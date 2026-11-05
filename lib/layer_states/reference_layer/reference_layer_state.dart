@@ -27,6 +27,7 @@ import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history/history_ramp_data.dart';
 import 'package:kpix/models/history/history_reference_layer.dart';
 import 'package:kpix/models/view_state.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 
 class ReferenceLayerState extends LayerState
 {
@@ -152,6 +153,51 @@ class ReferenceLayerState extends LayerState
   void setZoomSliderFromZoomFactor({required final double factor})
   {
     setZoomSliderValue(newVal: (pow(factor, 1.0 / ReferenceLayerConstraints.zoomCurveExponent) * ReferenceLayerConstraints.zoomDefault).round());
+  }
+
+  /// Scales the image to the width of [canvasSize] and centers it vertically.
+  void fitHorizontal({required final CoordinateSetI canvasSize})
+  {
+    final ReferenceImage? refImage = image;
+    if (refImage != null)
+    {
+      final double targetZoom = canvasSize.x.toDouble() / (refImage.image.width.toDouble() * aspectRatioFactorX);
+      setZoomSliderFromZoomFactor(factor: targetZoom);
+      offsetXNotifier.value = 0;
+      offsetYNotifier.value = (canvasSize.y - (refImage.image.height.toDouble() * targetZoom * aspectRatioFactorY)) / 2.0;
+    }
+  }
+
+  /// Scales the image to the height of [canvasSize] and centers it horizontally.
+  void fitVertical({required final CoordinateSetI canvasSize})
+  {
+    final ReferenceImage? refImage = image;
+    if (refImage != null)
+    {
+      final double targetZoom = canvasSize.y.toDouble() / (refImage.image.height.toDouble() * aspectRatioFactorY);
+      setZoomSliderFromZoomFactor(factor: targetZoom);
+      offsetYNotifier.value = 0;
+      offsetXNotifier.value = (canvasSize.x - (refImage.image.width.toDouble() * targetZoom * aspectRatioFactorX)) / 2.0;
+    }
+  }
+
+  /// Scales the whole image into [canvasSize], centered along the side with room left.
+  void fitInto({required final CoordinateSetI canvasSize})
+  {
+    final ReferenceImage? refImage = image;
+    if (refImage != null)
+    {
+      final double zoomX = canvasSize.x.toDouble() / (refImage.image.width.toDouble() * aspectRatioFactorX);
+      final double zoomY = canvasSize.y.toDouble() / (refImage.image.height.toDouble() * aspectRatioFactorY);
+      if (zoomX < zoomY)
+      {
+        fitHorizontal(canvasSize: canvasSize);
+      }
+      else
+      {
+        fitVertical(canvasSize: canvasSize);
+      }
+    }
   }
 
   void setZoomSliderValue({required final int newVal})

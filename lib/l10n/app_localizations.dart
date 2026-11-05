@@ -272,6 +272,30 @@ abstract class AppLocalizations {
   /// **'Import as a copy'**
   String get importAsCopy;
 
+  /// image dropped on the window
+  ///
+  /// In en, this message translates to:
+  /// **'Add \"{name}\" as a reference layer or import it as a new project?'**
+  String droppedImageQuestion(String name);
+
+  /// No description provided for @addAsReferenceLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add as a reference layer'**
+  String get addAsReferenceLayer;
+
+  /// No description provided for @importAsNewProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Import as a new project'**
+  String get importAsNewProject;
+
+  /// unsupported file dropped on the window
+  ///
+  /// In en, this message translates to:
+  /// **'Only KPix projects and images ({formats}) can be opened!'**
+  String droppedFileNotSupported(String formats);
+
   /// No description provided for @pleaseSelectAKPixFile.
   ///
   /// In en, this message translates to:

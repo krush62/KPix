@@ -31,6 +31,8 @@ import 'package:kpix/kpix_language.dart';
 import 'package:kpix/kpix_logger.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/l10n/app_localizations.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
+import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/project_manager.dart';
@@ -41,6 +43,7 @@ import 'package:kpix/models/file_callbacks.dart';
 import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/io_types.dart';
+import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/symmetry_state.dart';
 import 'package:kpix/models/update_state.dart';
@@ -55,6 +58,7 @@ import 'package:kpix/util/messages.dart';
 import 'package:kpix/util/project_recovery.dart';
 import 'package:kpix/widgets/canvas/canvas_widget.dart';
 import 'package:kpix/widgets/controls/kpix_splitter.dart';
+import 'package:kpix/widgets/layer_action_messages.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/main/right_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
@@ -242,6 +246,8 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   String? _handedOverPath;
   KPixOverlay? _nameConflictDialog;
   InitialProject? _nameConflict;
+  KPixOverlay? _droppedImageDialog;
+  String? _droppedImagePath;
   Timer? _recoverTimer;
   late AppLifecycleState _lastAppLifeCycleState;
   final ProjectRecovery _projectRecovery = ProjectRecovery();
@@ -637,18 +643,81 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     }
   }
 
-  /// The first KPix file among [paths] opens like one a second launch hands over.
+  /// The first KPix file among [paths] opens like one a second launch hands
+  /// over; without one, the first image is taken.
   void _filesDropped(final List<String> paths)
   {
     final String? path = paths.where((final String candidate) => candidate.endsWith(fileExtensionKpix)).firstOrNull;
+    final String? imagePath = paths.where((final String candidate) => imageExtensions.contains(p.extension(candidate).replaceFirst(".", "").toLowerCase())).firstOrNull;
     if (path != null)
     {
       _fileHandedOver(path: path);
     }
+    else if (imagePath != null)
+    {
+      _imageDropped(path: imagePath);
+    }
     else if (paths.isNotEmpty && mounted)
     {
-      showMessage(text: AppLocalizations.of(context)!.pleaseSelectAKPixFile, toastType: ToastType.warning);
+      final String formats = imageExtensions.map((final String extension) => extension.toUpperCase()).join(", ");
+      showMessage(text: AppLocalizations.of(context)!.droppedFileNotSupported(formats), toastType: ToastType.warning);
     }
+  }
+
+  /// Without a project there is nothing to add a reference layer to, so the image goes straight to the import.
+  void _imageDropped({required final String path})
+  {
+    if (GetIt.I.get<ProjectSession>().hasProject)
+    {
+      _droppedImagePath = path;
+      _droppedImageDialog?.show(context: context);
+    }
+    else
+    {
+      importImageCallback?.call(path: path);
+    }
+  }
+
+  String? _takeDroppedImage()
+  {
+    _droppedImageDialog?.hide();
+    final String? path = _droppedImagePath;
+    _droppedImagePath = null;
+    return path;
+  }
+
+  void _droppedImageAsReference()
+  {
+    final String? path = _takeDroppedImage();
+    if (path != null)
+    {
+      unawaited(_addReferenceLayer(path: path));
+    }
+  }
+
+  void _droppedImageImport()
+  {
+    final String? path = _takeDroppedImage();
+    if (path != null)
+    {
+      importImageCallback?.call(path: path);
+    }
+  }
+
+  Future<void> _addReferenceLayer({required final String path}) async
+  {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final ReferenceImage? image = await GetIt.I.get<ReferenceImageManager>().loadImageFile(path: path);
+    if (image == null)
+    {
+      showMessage(text: l10n.couldNotLoadImageFrom(path), toastType: ToastType.error);
+      return;
+    }
+    final (LayerActionResult, ReferenceLayerState?) result = GetIt.I.get<LayerManager>().addReferenceLayerWithImage(
+      image: image,
+      select: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.selectLayerAfterInsert.value,
+    );
+    showMessageForResult(result: result.$1, l10n: l10n);
   }
 
   /// [path] was handed over by a second launch or dropped on the window.
@@ -735,6 +804,11 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     if (!GetIt.I.get<ProjectSession>().hasProject)
     {
       _newFile();
+    }
+    else
+    {
+      //an image dropped on the new project dialog is imported above it
+      _newProjectDialog.hide();
     }
   }
 
@@ -873,6 +947,13 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       onImportCopy: _importAsCopy,
       onCancel: _nameConflictCancel,
       message: (final AppLocalizations l10n) => l10n.projectNameTaken(extractFilenameFromPath(path: _nameConflict?.path, keepExtension: false)),
+    );
+
+    _droppedImageDialog ??= getDroppedImageDialog(
+      onReferenceLayer: _droppedImageAsReference,
+      onImport: _droppedImageImport,
+      onCancel: () => _takeDroppedImage(),
+      message: (final AppLocalizations l10n) => l10n.droppedImageQuestion(extractFilenameFromPath(path: _droppedImagePath)),
     );
 
     return ValueListenableBuilder<bool>(

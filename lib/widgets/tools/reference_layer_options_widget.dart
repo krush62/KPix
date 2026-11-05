@@ -85,17 +85,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
           final ReferenceImage? oldImage = widget.referenceState.imageNotifier.value;
           widget.referenceState.imageNotifier.value = img;
           widget.referenceState.thumbnail.value = img.image;
-          final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
-          final double targetZoomX = canvasSize.x.toDouble() / (widget.referenceState.image!.image.width.toDouble() * widget.referenceState.aspectRatioFactorX);
-          final double targetZoomY = canvasSize.y.toDouble() / (widget.referenceState.image!.image.height.toDouble() * widget.referenceState.aspectRatioFactorY);
-          if (targetZoomX < targetZoomY)
-          {
-            _fitHorizontal();
-          }
-          else
-          {
-            _fitVertical();
-          }
+          widget.referenceState.fitInto(canvasSize: GetIt.I.get<CanvasState>().canvasSize);
           if (oldImage != null) {
             GetIt.I.get<ReferenceImageManager>().removeImage(refImage: oldImage);
           }
@@ -116,26 +106,12 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
 
   void _fitHorizontal()
   {
-    if (widget.referenceState.image != null)
-    {
-      final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
-      final double targetZoom = canvasSize.x.toDouble() / (widget.referenceState.image!.image.width.toDouble() * widget.referenceState.aspectRatioFactorX);
-      widget.referenceState.setZoomSliderFromZoomFactor(factor: targetZoom);
-      widget.referenceState.offsetXNotifier.value = 0;
-      widget.referenceState.offsetYNotifier.value = (canvasSize.y - (widget.referenceState.image!.image.height.toDouble() * targetZoom * widget.referenceState.aspectRatioFactorY)) / 2.0;
-    }
+    widget.referenceState.fitHorizontal(canvasSize: GetIt.I.get<CanvasState>().canvasSize);
   }
 
   void _fitVertical()
   {
-    if (widget.referenceState.image != null)
-    {
-      final CoordinateSetI canvasSize = GetIt.I.get<CanvasState>().canvasSize;
-      final double targetZoom = canvasSize.y.toDouble() / (widget.referenceState.image!.image.height.toDouble() * widget.referenceState.aspectRatioFactorY);
-      widget.referenceState.setZoomSliderFromZoomFactor(factor: targetZoom);
-      widget.referenceState.offsetYNotifier.value = 0;
-      widget.referenceState.offsetXNotifier.value = (canvasSize.x - (widget.referenceState.image!.image.width.toDouble() * targetZoom * widget.referenceState.aspectRatioFactorX)) / 2.0;
-    }
+    widget.referenceState.fitVertical(canvasSize: GetIt.I.get<CanvasState>().canvasSize);
   }
 
   void _fill()

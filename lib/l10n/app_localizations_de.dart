@@ -101,6 +101,22 @@ class AppLocalizationsDe extends AppLocalizations {
   String get importAsCopy => 'Als Kopie importieren';
 
   @override
+  String droppedImageQuestion(String name) {
+    return '\"$name\" als Referenzebene hinzufügen oder als neues Projekt importieren?';
+  }
+
+  @override
+  String get addAsReferenceLayer => 'Als Referenzebene hinzufügen';
+
+  @override
+  String get importAsNewProject => 'Als neues Projekt importieren';
+
+  @override
+  String droppedFileNotSupported(String formats) {
+    return 'Nur KPix-Projekte und Bilder ($formats) können geöffnet werden!';
+  }
+
+  @override
   String get pleaseSelectAKPixFile => 'Bitte eine KPix-Datei auswählen!';
 
   @override

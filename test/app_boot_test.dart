@@ -15,20 +15,28 @@
  */
 
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:image/image.dart' as img;
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/infra/stylus_bridge.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/models/app_paths.dart';
+import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/file_callbacks.dart';
 import 'package:kpix/models/file_constants.dart';
+import 'package:kpix/models/history/history_manager.dart';
+import 'package:kpix/models/history/history_state_type.dart';
+import 'package:kpix/models/history_controller.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/project_session.dart';
 import 'package:kpix/models/status_bar_state.dart';
@@ -38,6 +46,7 @@ import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_widget.dart';
+import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/file/new_project_widget.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/main/right_bar_widget.dart';
@@ -102,6 +111,7 @@ Future<Directory> _bootApp(final WidgetTester tester, {final void Function(Strin
     GetIt.I.registerSingleton<StylusBridge>(StylusBridge());
     saveFileCallback = null;
     openFileCallback = null;
+    importImageCallback = null;
     filesDroppedCallback = null;
     cmdLineArgs = <String>[];
     prepare?.call(internalDir);
@@ -304,9 +314,9 @@ void main()
       await _bootApp(tester);
       await _waitForBoot(tester, until: () => find.byType(NewProjectWidget).evaluate().isNotEmpty);
 
-      filesDroppedCallback!(<String>["somewhere/picture.png"]);
+      filesDroppedCallback!(<String>["somewhere/notes.txt"]);
       await settleUi(tester);
-      expect(find.text(testL10n.pleaseSelectAKPixFile), findsOneWidget);
+      expect(find.text(testL10n.droppedFileNotSupported("PNG, JPG, JPEG, GIF, WEBP")), findsOneWidget);
       expect(find.byType(NewProjectWidget), findsOneWidget, reason: "nothing to open");
 
       filesDroppedCallback!(<String>["somewhere/picture.png", project.path]);
@@ -314,6 +324,72 @@ void main()
       await tester.runAsync(settle);
 
       expect(find.byType(NewProjectWidget), findsNothing);
+      expect(find.byType(ImportWidget), findsNothing, reason: "the project goes before the image");
+      await _closeApp(tester);
+    });
+
+    testWidgets("asks what to do with an image dropped on a project", (final WidgetTester tester) async
+    {
+      final String picture = await _createPicture(tester);
+      await _bootApp(tester);
+      await _waitForBoot(tester, until: () => find.byType(NewProjectWidget).evaluate().isNotEmpty);
+      await tester.tap(find.byTooltip(testL10n.createProject));
+      await settleUi(tester);
+      await tester.runAsync(settle);
+      LayerCollection layers() => GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList;
+      final int layerCount = layers().length;
+      final String question = testL10n.droppedImageQuestion("picture.png");
+
+      filesDroppedCallback!(<String>[picture.toUpperCase()]);
+      await settleUi(tester);
+      expect(find.text(testL10n.droppedImageQuestion("PICTURE.PNG")), findsOneWidget, reason: "extensions in capitals are images too");
+      await tapTooltip(tester, testL10n.cancel);
+      expect(layers().length, layerCount, reason: "cancel adds nothing");
+
+      filesDroppedCallback!(<String>[picture]);
+      await settleUi(tester);
+      await tapTooltip(tester, testL10n.addAsReferenceLayer);
+      await _waitForBoot(tester, until: () => layers().length == layerCount + 1);
+      final ReferenceLayerState reference = layers().getAllLayers().whereType<ReferenceLayerState>().single;
+      expect(reference.image?.path, File(picture).absolute.path);
+      final CoordinateSetI canvas = GetIt.I.get<CanvasState>().canvasSize;
+      final double zoom = min(canvas.x / 32, canvas.y / 16);
+      expect(reference.offsetX, closeTo((canvas.x - 32 * zoom) / 2, 0.001), reason: "fitted into the canvas");
+      expect(reference.offsetY, closeTo((canvas.y - 16 * zoom) / 2, 0.001), reason: "fitted into the canvas");
+      expect(GetIt.I.get<HistoryManager>().getCurrentState()?.type.identifier, HistoryStateTypeIdentifier.layerNewReference);
+      GetIt.I.get<HistoryController>().undoPressed();
+      await _waitForBoot(tester, until: () => layers().length == layerCount);
+
+      GetIt.I.get<ProjectSession>().hasChanges.value = true;
+      filesDroppedCallback!(<String>[picture]);
+      await settleUi(tester);
+      await tapTooltip(tester, testL10n.importAsNewProject);
+      expect(find.text(question), findsNothing);
+      expect(find.text(testL10n.thereAreUnsavedChanges), findsOneWidget, reason: "the import replaces the project");
+      await tapTooltip(tester, testL10n.no);
+      await _waitForBoot(tester, until: () => find.descendant(of: find.byType(ImportWidget), matching: find.text("picture.png")).evaluate().isNotEmpty);
+
+      await tester.runAsync(settle);
+      await _closeApp(tester);
+    });
+
+    testWidgets("imports an image dropped on the new project screen", (final WidgetTester tester) async
+    {
+      final String picture = await _createPicture(tester, extension: "webp");
+      await _bootApp(tester);
+      await _waitForBoot(tester, until: () => find.byType(NewProjectWidget).evaluate().isNotEmpty);
+
+      filesDroppedCallback!(<String>[picture]);
+      //the name only shows once the image was decoded
+      await _waitForBoot(tester, until: () => find.descendant(of: find.byType(ImportWidget), matching: find.text("picture.webp")).evaluate().isNotEmpty);
+      expect(find.text(testL10n.droppedImageQuestion("picture.webp")), findsNothing, reason: "there is no project to add a reference layer to");
+
+      await tester.tap(find.descendant(of: find.byType(ImportWidget), matching: find.byTooltip(testL10n.importImage)));
+      await _waitForBoot(tester, until: () => find.byType(ImportWidget).evaluate().isEmpty && find.byType(CanvasWidget).evaluate().isNotEmpty);
+
+      expect(find.byType(NewProjectWidget), findsNothing);
+      expect(GetIt.I.get<CanvasState>().canvasSize, CoordinateSetI(x: 32, y: 16));
+      await tester.runAsync(settle);
       await _closeApp(tester);
     });
 
@@ -570,6 +646,27 @@ class _BrokenPaths extends PathProviderPlatform with MockPlatformInterfaceMixin
 
   @override
   Future<String?> getDownloadsPath() async => null;
+}
+
+/// A single colored png or webp on disk, 32 by 16 pixels.
+Future<String> _createPicture(final WidgetTester tester, {final String extension = "png"}) async
+{
+  final Directory directory = (await tester.runAsync(() => Directory.systemTemp.createTemp("kpix_boot_picture")))!;
+  addTearDown(()
+  {
+    try
+    {
+      directory.deleteSync(recursive: true);
+    }
+    catch (_)
+    {
+      //the operating system may still hold a file for a moment
+    }
+  });
+  final File file = File(p.join(directory.path, "picture.$extension"));
+  final img.Image picture = img.fill(img.Image(width: 32, height: 16), color: img.ColorRgb8(51, 85, 170));
+  await tester.runAsync(() => file.writeAsBytes(extension == "webp" ? img.encodeWebP(picture) : img.encodePng(picture)));
+  return file.path;
 }
 
 /// A project on disk, written by the application itself.

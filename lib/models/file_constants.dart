@@ -31,5 +31,5 @@ const String stampsSubDirName = "stamps";
 const String projectsSubDirName = "projects";
 const String recoverSubDirName = "recover";
 const String thumbnailExtension = "png";
-const List<String> imageExtensions = <String>["png", "jpg", "jpeg", "gif"];
+const List<String> imageExtensions = <String>["png", "jpg", "jpeg", "gif", "webp"];
 const String recoverFileName = "___recover___";

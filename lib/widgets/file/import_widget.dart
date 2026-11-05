@@ -36,7 +36,8 @@ class ImportWidget extends StatefulWidget
 {
   final Function() dismiss;
   final ImportImageFn import;
-  const ImportWidget({super.key, required this.dismiss, required this.import});
+  final String? initialPath;
+  const ImportWidget({super.key, required this.dismiss, required this.import, this.initialPath});
 
   @override
   State<ImportWidget> createState() => ImportWidgetState();
@@ -75,6 +76,18 @@ class ImportWidgetState extends State<ImportWidget>
     super.initState();
     _maxRampsNotifier = ValueNotifier<int>(KPalConstraints.rampCountDefault);
     _maxColorsPerRampNotifier = ValueNotifier<int>(KPalConstraints.colorCountDefault);
+    final String? initialPath = widget.initialPath;
+    if (initialPath != null)
+    {
+      //the loading dialog needs the overlay, which is still building here
+      WidgetsBinding.instance.addPostFrameCallback((final Duration _)
+      {
+        if (mounted)
+        {
+          _prepareImageData(loadData: (initialPath, null), l10n: AppLocalizations.of(context)!);
+        }
+      });
+    }
   }
 
   void _chooseImagePressed({required final AppLocalizations l10n})

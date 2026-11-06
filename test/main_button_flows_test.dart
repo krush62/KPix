@@ -668,7 +668,7 @@ void main()
         includeReference: false,
         maxClusters: KPalConstraints.maxClusters,
         createNewPalette: true,
-        scaledImage: image,
+        scale: 1,
       ),);
       await tester.pump();
     }

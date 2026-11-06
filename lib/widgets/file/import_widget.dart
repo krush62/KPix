@@ -192,38 +192,8 @@ class ImportWidgetState extends State<ImportWidget>
   {
     if (_fileNameNotifier.value != null && _imageNotifier.value != null) //should never happen
     {
-      _scaleDownImage(image: _imageNotifier.value!, scale: _scaleDownNotifier.value).then((final ui.Image scaledImg)
-      {
-        final ImportData data = ImportData(image: _imageNotifier.value!, scaledImage: scaledImg, filePath: _fileNameNotifier.value!, includeReference: _includeReferenceNotifier.value, maxColors: _maxColorsPerRampNotifier.value, maxRamps: _maxRampsNotifier.value, maxClusters: KPalConstraints.maxClusters, createNewPalette: _createNewPaletteNotifier.value);
-        widget.import(importData: data);
-      });
-
-    }
-  }
-
-  Future<ui.Image> _scaleDownImage({required final ui.Image image, required final int scale}) async
-  {
-    if (scale == 1)
-    {
-      return image;
-    }
-    else
-    {
-      final int newWidth = image.width ~/ scale;
-      final int newHeight = image.height ~/ scale;
-
-      final ui.PictureRecorder recorder = ui.PictureRecorder();
-      final Canvas canvas = Canvas(recorder);
-
-      final Paint paint = Paint();
-      final Rect srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
-      final Rect dstRect = Rect.fromLTWH(0, 0, newWidth.toDouble(), newHeight.toDouble());
-
-      canvas.drawImageRect(image, srcRect, dstRect, paint);
-
-      final ui.Picture picture = recorder.endRecording();
-      final ui.Image scaledImage = await picture.toImage(newWidth, newHeight);
-      return scaledImage;
+      final ImportData data = ImportData(image: _imageNotifier.value!, scale: _scaleDownNotifier.value, filePath: _fileNameNotifier.value!, includeReference: _includeReferenceNotifier.value, maxColors: _maxColorsPerRampNotifier.value, maxRamps: _maxRampsNotifier.value, maxClusters: KPalConstraints.maxClusters, createNewPalette: _createNewPaletteNotifier.value);
+      widget.import(importData: data);
     }
   }
 

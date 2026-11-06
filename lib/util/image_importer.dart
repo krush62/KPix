@@ -15,6 +15,7 @@
  */
 
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -37,22 +38,29 @@ import 'package:uuid/uuid.dart';
 
 /// Turns an external image into a palette and a drawing layer.
 ///
-/// The two expensive steps - finding the color ramps and matching every pixel
-/// against them - run on a background isolate, so the UI keeps painting its
+/// The expensive steps - scaling down, finding the color ramps and matching every
+/// pixel against them - run on a background isolate, so the UI keeps painting its
 /// loading dialog while they do. Everything that touches dart:ui, the ramps or
 /// the service locator stays here, and only plain numbers cross over.
 Future<ImportResult> import({required final ImportData importData, required final List<KPalRampData> currentRamps}) async
 {
-  final ByteData? imageData = await importData.scaledImage.toByteData();
+  //the default premultiplied format would darken every soft edge
+  final ByteData? imageData = await importData.image.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
   if (imageData == null)
   {
     return ImportResult(result: ImageImportResult.conversionFailed);
   }
   else
   {
-    final Uint8List imgBytes = imageData.buffer.asUint8List(imageData.offsetInBytes, imageData.lengthInBytes);
-    final int width = importData.scaledImage.width;
-    final int height = importData.scaledImage.height;
+    final Uint8List fullBytes = imageData.buffer.asUint8List(imageData.offsetInBytes, imageData.lengthInBytes);
+    final int fullWidth = importData.image.width;
+    final int fullHeight = importData.image.height;
+    final int width = fullWidth ~/ importData.scale;
+    final int height = fullHeight ~/ importData.scale;
+    final Uint8List imgBytes = (width == fullWidth && height == fullHeight) ? fullBytes : await runOffThread<Uint8List>(
+      debugLabel: "image-import-scale",
+      work: () => scaleDownRgba(bytes: fullBytes, width: fullWidth, height: fullHeight, newWidth: width, newHeight: height),
+    );
 
     DrawingLayerState drawingLayer;
     List<KPalRampData> ramps = <KPalRampData>[];
@@ -60,13 +68,13 @@ Future<ImportResult> import({required final ImportData importData, required fina
     {
       final int maxRamps = importData.maxRamps;
       final int maxColors = importData.maxColors;
-      final List<KPalRampSettings> colorRamps = await runOffThread<List<KPalRampSettings>>(
+      final List<ExtractedRamp> colorRamps = await runOffThread<List<ExtractedRamp>>(
         debugLabel: "image-import-palette",
         work: () => extractColorRamps(imgBytes: imgBytes, maxRamps: maxRamps, maxColors: maxColors),
       );
-      for (final KPalRampSettings colorRamp in colorRamps)
+      for (final ExtractedRamp colorRamp in colorRamps)
       {
-        ramps.add(KPalRampData(uuid: const Uuid().v1(), settings: colorRamp));
+        ramps.add(KPalRampData(uuid: const Uuid().v1(), settings: colorRamp.settings, historyShifts: colorRamp.shifts));
       }
 
       drawingLayer = await _createDrawingLayer(imgBytes: imgBytes, width: width, height: height, ramps: ramps);
@@ -94,8 +102,8 @@ Future<ImportResult> import({required final ImportData importData, required fina
     if (importData.includeReference)
     {
       referenceLayer = await _getReferenceLayer(img: importData.image, imgPath: importData.filePath);
-      final double targetZoomHeight = importData.scaledImage.height.toDouble() / (importData.image.height.toDouble());
-      final double targetZoomWidth = importData.scaledImage.width.toDouble() / (importData.image.width.toDouble());
+      final double targetZoomHeight = height.toDouble() / fullHeight.toDouble();
+      final double targetZoomWidth = width.toDouble() / fullWidth.toDouble();
       referenceLayer.setZoomSliderFromZoomFactor(factor: (targetZoomWidth + targetZoomHeight) / 2.0);
     }
 
@@ -104,6 +112,46 @@ Future<ImportResult> import({required final ImportData importData, required fina
 
   }
 
+}
+
+/// Averages the source pixels that land on each target pixel, weighted by alpha so transparent pixels add no color.
+Uint8List scaleDownRgba({required final Uint8List bytes, required final int width, required final int height, required final int newWidth, required final int newHeight})
+{
+  final Uint8List out = Uint8List(newWidth * newHeight * 4);
+  for (int y = 0; y < newHeight; y++)
+  {
+    final int y0 = y * height ~/ newHeight;
+    final int y1 = max(y0 + 1, (y + 1) * height ~/ newHeight);
+    for (int x = 0; x < newWidth; x++)
+    {
+      final int x0 = x * width ~/ newWidth;
+      final int x1 = max(x0 + 1, (x + 1) * width ~/ newWidth);
+      int r = 0;
+      int g = 0;
+      int b = 0;
+      int a = 0;
+      for (int sy = y0; sy < y1; sy++)
+      {
+        for (int i = (sy * width + x0) * 4, end = (sy * width + x1) * 4; i < end; i += 4)
+        {
+          final int alpha = bytes[i + 3];
+          r += bytes[i] * alpha;
+          g += bytes[i + 1] * alpha;
+          b += bytes[i + 2] * alpha;
+          a += alpha;
+        }
+      }
+      final int o = (y * newWidth + x) * 4;
+      if (a > 0)
+      {
+        out[o] = (r / a).round();
+        out[o + 1] = (g / a).round();
+        out[o + 2] = (b / a).round();
+      }
+      out[o + 3] = (a / ((x1 - x0) * (y1 - y0))).round();
+    }
+  }
+  return out;
 }
 
 Future<void> _removeUnusedRamps({required final List<KPalRampData> ramps, required final Set<ColorReference> references}) async

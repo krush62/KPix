@@ -74,7 +74,7 @@ ImportData _importData({required final ui.Image image, required final bool creat
     includeReference: false,
     maxClusters: KPalConstraints.maxClusters,
     createNewPalette: createNewPalette,
-    scaledImage: image,
+    scale: 1,
   );
 }
 

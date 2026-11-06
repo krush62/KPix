@@ -100,9 +100,11 @@ class ImportData
   final bool includeReference;
   final bool createNewPalette;
   final ui.Image image;
-  final ui.Image scaledImage;
+  /// The image is scaled down by this factor before import, 1 for none.
+  final int scale;
   final String filePath;
-  const ImportData({required this.filePath, required this.maxRamps, required this.maxColors, required this.image, required this.includeReference, required this.maxClusters, required this.createNewPalette, required this.scaledImage});
+  const ImportData({required this.filePath, required this.maxRamps, required this.maxColors, required this.image, required this.includeReference, required this.maxClusters, required this.createNewPalette, required this.scale}) :
+        assert(scale >= 1, "the scale factor has to be at least 1, not $scale");
 }
 
 /// Screen for importing raster images into the application.

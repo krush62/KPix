@@ -30,6 +30,5 @@ abstract final class LayerWidgetOptions
   static const double dragFeedbackSize = 64.0;
   static const double dragTargetHeight = 64.0;
   static const int dragTargetShowDuration = 100;
-  static const int thumbUpdateTimerMsec = 20;
   static const int addButtonSize = 32;
 }

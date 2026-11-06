@@ -20,7 +20,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
-import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history/history_ramp_data.dart';
 import 'package:kpix/util/helpers/image_helper.dart';
@@ -94,6 +93,8 @@ const Duration rasterSettleTimeout = Duration(seconds: 10);
 /// every path that queues work goes through it, so it is also the wake up.
 class RasterScheduler
 {
+  static const Duration _pollInterval = Duration(milliseconds: 20);
+
   final Set<LayerState> _layers = <LayerState>{};
   Timer? _timer;
 
@@ -119,10 +120,7 @@ class RasterScheduler
   /// Starts polling if it is not already running.
   void wake()
   {
-    _timer ??= Timer.periodic(
-      const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec),
-      _tick,
-    );
+    _timer ??= Timer.periodic(_pollInterval, _tick);
   }
 
   void _stop()

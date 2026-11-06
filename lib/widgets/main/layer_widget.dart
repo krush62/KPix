@@ -25,12 +25,12 @@ import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
-import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/widgets/layer_action_messages.dart';
+import 'package:kpix/widgets/main/layer_widget_options.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 

@@ -324,6 +324,7 @@ jobs:
           OUTPUT_DIR="${APPIMAGE_OUTPUT_DIR}"
           APPDIR_PATH="KPix.AppDir"
           ICON_PATH="imgs/kpix_icon.png"
+          METAINFO_PATH="release_tools/flatpak/de.krush62.kpix.metainfo.xml"
           APPRUN_FILE="$OUTPUT_DIR/$APPDIR_PATH/AppRun"
           DESKTOP_FILE="$OUTPUT_DIR/$APPDIR_PATH/KPix.desktop"
           OUTPUT_FILE_NAME="${APPIMAGE_PREFIX}-${VERSION}-x86_64.AppImage"
@@ -347,6 +348,15 @@ jobs:
 
           echo "Copying icon"
           cp "$ICON_PATH" "$OUTPUT_DIR/$APPDIR_PATH/kpix.png"
+          
+          echo "Copying AppStream metadata"
+          echo "Copying AppStream metadata"
+          mkdir -p "$OUTPUT_DIR/$APPDIR_PATH/usr/share/metainfo"
+          sed \
+          -e "s/@VERSION@/${VERSION}/g" \
+          -e "s/@DATE@/$(date +%Y-%m-%d)/g" \
+          "$METAINFO_PATH" \
+          > "$OUTPUT_DIR/$APPDIR_PATH/usr/share/metainfo/de.krush62.kpix.metainfo.xml"
 
           echo "Creating AppRun"
           cat > "$APPRUN_FILE" << 'EOF'

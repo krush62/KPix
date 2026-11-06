@@ -356,11 +356,16 @@ jobs:
           echo "Copying desktop entry"
           mkdir -p "$OUTPUT_DIR/$APPDIR_PATH/usr/share/applications"
           cp "$DESKTOP_SOURCE" "$DESKTOP_FILE"
-          cp "$DESKTOP_SOURCE"             "$OUTPUT_DIR/$APPDIR_PATH/usr/share/applications/${APP_ID}.desktop"
+          cp "$DESKTOP_SOURCE" \
+          "$OUTPUT_DIR/$APPDIR_PATH/usr/share/applications/${APP_ID}.desktop"
 
           echo "Copying AppStream metadata"
           mkdir -p "$OUTPUT_DIR/$APPDIR_PATH/usr/share/metainfo"
-          sed             -e "s/@VERSION@/${VERSION}/g"             -e "s/@DATE@/$(date +%Y-%m-%d)/g"             "$METAINFO_SOURCE"             > "$OUTPUT_DIR/$APPDIR_PATH/usr/share/metainfo/${APP_ID}.metainfo.xml"
+          sed \
+          -e "s/@VERSION@/${VERSION}/g" \
+          -e "s/@DATE@/$(date +%Y-%m-%d)/g" \
+          "$METAINFO_SOURCE" \
+          > "$OUTPUT_DIR/$APPDIR_PATH/usr/share/metainfo/${APP_ID}.appdata.xml"
 
           echo "Creating AppRun"
           cat > "$APPRUN_FILE" << 'EOF'
@@ -371,7 +376,9 @@ jobs:
           chmod +x "$APPRUN_FILE"
 
           echo "Creating AppImage package"
-          "$OUTPUT_DIR/$APPIMAGE_EXEC"             "$OUTPUT_DIR/$APPDIR_PATH"             "$OUTPUT_DIR/$OUTPUT_FILE_NAME"
+          "$OUTPUT_DIR/$APPIMAGE_EXEC" \
+          "$OUTPUT_DIR/$APPDIR_PATH" \
+          "$OUTPUT_DIR/$OUTPUT_FILE_NAME"
 
           echo "Cleaning up temporary files"
           rm -rf "$OUTPUT_DIR/$APPDIR_PATH"

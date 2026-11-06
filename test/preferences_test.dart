@@ -270,6 +270,39 @@ void main()
     });
   });
 
+  group("the reset buttons", ()
+  {
+    for (final PreferenceSectionType section in <PreferenceSectionType>[PreferenceSectionType.gui, PreferenceSectionType.behavior, PreferenceSectionType.controlsStylus, PreferenceSectionType.controlsTouch])
+    {
+      projectWidgetTest("bring the ${section.name} sliders back to their defaults", _preferences, (final WidgetTester tester) async
+      {
+        await _openSection(tester, section);
+        final Finder sliders = find.byType(KPixSlider);
+        final Finder resets = find.byTooltip(testL10n.resetValue);
+        final int count = sliders.evaluate().length;
+        expect(resets, findsNWidgets(count));
+
+        for (int i = 0; i < count; i++)
+        {
+          IconButton reset() => tester.widget<IconButton>(find.ancestor(of: resets.at(i), matching: find.byType(IconButton)));
+          final KPixSlider slider = tester.widget<KPixSlider>(sliders.at(i));
+          final double initial = slider.value;
+          expect(reset().onPressed, isNull);
+
+          slider.onChanged!(initial == slider.max ? slider.min : slider.max);
+          await tester.pump();
+          expect(reset().onPressed, isNotNull);
+
+          await tester.ensureVisible(resets.at(i));
+          await tester.tap(resets.at(i));
+          await tester.pump();
+          expect(tester.widget<KPixSlider>(sliders.at(i)).value, initial);
+          expect(reset().onPressed, isNull);
+        }
+      });
+    }
+  });
+
   group("the desktop section", ()
   {
     projectWidgetTest("hands the cursor type on", _preferences, (final WidgetTester tester) async

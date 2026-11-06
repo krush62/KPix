@@ -271,14 +271,15 @@ class PreferenceManager
     return _doubleMap[prefName]?.value ?? 0.0;
   }
 
+  // Limits are fixed; 8a09051c stored the touch zoom step as its max, so stored limits can't be trusted.
   RangedPref<int> _rangedI({required final PreferenceInt value, required final PreferenceInt min, required final PreferenceInt max})
   {
-    return RangedPref<int>(value: _getValueI(value), min: _getValueI(min), max: _getValueI(max));
+    return RangedPref<int>(value: _getValueI(value), min: min.defaultValue, max: max.defaultValue);
   }
 
   RangedPref<double> _rangedD({required final PreferenceDouble value, required final PreferenceDouble min, required final PreferenceDouble max})
   {
-    return RangedPref<double>(value: _getValueD(value), min: _getValueD(min), max: _getValueD(max));
+    return RangedPref<double>(value: _getValueD(value), min: min.defaultValue, max: max.defaultValue);
   }
 
   int _getValueI(final PreferenceInt prefName)

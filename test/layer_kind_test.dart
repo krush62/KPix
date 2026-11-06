@@ -57,49 +57,47 @@ void main()
   });
 
   group("the ranged preferences of the manager", () {
-    test("each read their own value and limits", () async {
-      //every preference gets numbers of its own, since many of the defaults are the same
+    test("each read their own value, but take their limits from the defaults", () async {
+      //every preference gets a value of its own, since many of the defaults are the same;
+      //the stored limits narrow the range around it, like the stale touch zoom max that 8a09051c stored
       final Map<String, Object> stored = <String, Object>{};
-      void storeInt(final int base, final PreferenceInt value, final PreferenceInt min, final PreferenceInt max)
+      final List<void Function(PreferenceManager prefs)> checks = <void Function(PreferenceManager prefs)>[];
+      void rangedInt(final int value, final PreferenceInt pref, final PreferenceInt min, final PreferenceInt max, final RangedPref<int> Function(PreferenceManager prefs) of)
       {
-        stored[min.name] = base;
-        stored[value.name] = base + 1;
-        stored[max.name] = base + 2;
+        stored[min.name] = value - 1;
+        stored[pref.name] = value;
+        stored[max.name] = value + 1;
+        checks.add((final PreferenceManager prefs) {
+          expect(<int>[of(prefs).min, of(prefs).value, of(prefs).max], <int>[min.defaultValue, value, max.defaultValue]);
+          expect(pref.defaultValue, inInclusiveRange(min.defaultValue, max.defaultValue));
+        });
       }
-      void storeDouble(final double base, final PreferenceDouble value, final PreferenceDouble min, final PreferenceDouble max)
+      void rangedDouble(final double value, final PreferenceDouble pref, final PreferenceDouble min, final PreferenceDouble max, final RangedPref<double> Function(PreferenceManager prefs) of)
       {
-        stored[min.name] = base;
-        stored[value.name] = base + 1;
-        stored[max.name] = base + 2;
-      }
-      void expectInt(final RangedPref<int> pref, final int base)
-      {
-        expect(<int>[pref.min, pref.value, pref.max], <int>[base, base + 1, base + 2]);
-      }
-      void expectDouble(final RangedPref<double> pref, final double base)
-      {
-        expect(<double>[pref.min, pref.value, pref.max], <double>[base, base + 1, base + 2]);
+        stored[min.name] = value - 1;
+        stored[pref.name] = value;
+        stored[max.name] = value + 1;
+        checks.add((final PreferenceManager prefs) {
+          expect(<double>[of(prefs).min, of(prefs).value, of(prefs).max], <double>[min.defaultValue, value, max.defaultValue]);
+          expect(pref.defaultValue, inInclusiveRange(min.defaultValue, max.defaultValue));
+        });
       }
 
-      storeInt(100, PreferenceInt.HistoryOptions_Steps, PreferenceInt.HistoryOptions_StepsMin, PreferenceInt.HistoryOptions_StepsMax);
-      storeInt(200, PreferenceInt.StylusOptions_LongPressDelay, PreferenceInt.StylusOptions_LongPressDelayMin, PreferenceInt.StylusOptions_LongPressDelayMax);
-      storeInt(300, PreferenceInt.StylusOptions_PickMaxDuration, PreferenceInt.StylusOptions_PickMaxDurationMin, PreferenceInt.StylusOptions_PickMaxDurationMax);
-      storeInt(400, PreferenceInt.TouchOptions_SingleTouchDelay, PreferenceInt.TouchOptions_SingleTouchDelayMin, PreferenceInt.TouchOptions_SingleTouchDelayMax);
-      storeDouble(10.0, PreferenceDouble.StylusOptions_LongPressCancelDistance, PreferenceDouble.StylusOptions_LongPressCancelDistanceMin, PreferenceDouble.StylusOptions_LongPressCancelDistanceMax);
-      storeDouble(20.0, PreferenceDouble.StylusOptions_ZoomStepDistance, PreferenceDouble.StylusOptions_ZoomStepDistanceMin, PreferenceDouble.StylusOptions_ZoomStepDistanceMax);
-      storeDouble(30.0, PreferenceDouble.StylusOptions_SizeStepDistance, PreferenceDouble.StylusOptions_SizeStepDistanceMin, PreferenceDouble.StylusOptions_SizeStepDistanceMax);
-      storeDouble(40.0, PreferenceDouble.TouchOptions_ZoomStepDistance, PreferenceDouble.TouchOptions_ZoomStepDistanceMin, PreferenceDouble.TouchOptions_ZoomStepDistanceMax);
+      rangedInt(101, PreferenceInt.HistoryOptions_Steps, PreferenceInt.HistoryOptions_StepsMin, PreferenceInt.HistoryOptions_StepsMax, (final PreferenceManager p) => p.behaviorPreferenceContent.undoSteps);
+      rangedInt(201, PreferenceInt.StylusOptions_LongPressDelay, PreferenceInt.StylusOptions_LongPressDelayMin, PreferenceInt.StylusOptions_LongPressDelayMax, (final PreferenceManager p) => p.stylusPreferenceContent.stylusLongPressDelay);
+      rangedInt(301, PreferenceInt.StylusOptions_PickMaxDuration, PreferenceInt.StylusOptions_PickMaxDurationMin, PreferenceInt.StylusOptions_PickMaxDurationMax, (final PreferenceManager p) => p.stylusPreferenceContent.stylusPickMaxDuration);
+      rangedInt(41, PreferenceInt.TouchOptions_SingleTouchDelay, PreferenceInt.TouchOptions_SingleTouchDelayMin, PreferenceInt.TouchOptions_SingleTouchDelayMax, (final PreferenceManager p) => p.touchPreferenceContent.singleTouchDelay);
+      rangedDouble(11.0, PreferenceDouble.StylusOptions_LongPressCancelDistance, PreferenceDouble.StylusOptions_LongPressCancelDistanceMin, PreferenceDouble.StylusOptions_LongPressCancelDistanceMax, (final PreferenceManager p) => p.stylusPreferenceContent.stylusLongPressCancelDistance);
+      rangedDouble(21.0, PreferenceDouble.StylusOptions_ZoomStepDistance, PreferenceDouble.StylusOptions_ZoomStepDistanceMin, PreferenceDouble.StylusOptions_ZoomStepDistanceMax, (final PreferenceManager p) => p.stylusPreferenceContent.stylusZoomStepDistance);
+      rangedDouble(31.0, PreferenceDouble.StylusOptions_SizeStepDistance, PreferenceDouble.StylusOptions_SizeStepDistanceMin, PreferenceDouble.StylusOptions_SizeStepDistanceMax, (final PreferenceManager p) => p.stylusPreferenceContent.stylusSizeStepDistance);
+      rangedDouble(41.0, PreferenceDouble.TouchOptions_ZoomStepDistance, PreferenceDouble.TouchOptions_ZoomStepDistanceMin, PreferenceDouble.TouchOptions_ZoomStepDistanceMax, (final PreferenceManager p) => p.touchPreferenceContent.zoomStepDistance);
       SharedPreferences.setMockInitialValues(stored);
 
       final PreferenceManager prefs = PreferenceManager(await SharedPreferences.getInstance());
-      expectInt(prefs.behaviorPreferenceContent.undoSteps, 100);
-      expectInt(prefs.stylusPreferenceContent.stylusLongPressDelay, 200);
-      expectInt(prefs.stylusPreferenceContent.stylusPickMaxDuration, 300);
-      expectInt(prefs.touchPreferenceContent.singleTouchDelay, 400);
-      expectDouble(prefs.stylusPreferenceContent.stylusLongPressCancelDistance, 10.0);
-      expectDouble(prefs.stylusPreferenceContent.stylusZoomStepDistance, 20.0);
-      expectDouble(prefs.stylusPreferenceContent.stylusSizeStepDistance, 30.0);
-      expectDouble(prefs.touchPreferenceContent.zoomStepDistance, 40.0);
+      for (final void Function(PreferenceManager prefs) check in checks)
+      {
+        check(prefs);
+      }
     });
   });
 }

@@ -634,7 +634,7 @@
 
   "timeThatNeedsToBeHeldDown": "Time that needs to be held down for a long press.",
   "longPressDelay": "Long Press Delay",
-  "distanceThatMustBeMoved": "Distance that must be moved during a long press to cancel it.",
+  "distanceThatMustBeMoved": "Distance that must be moved with the button held before it pans, zooms or changes the tool size. Shorter moves still count as a tap.",
   "longPressCancelDistance": "Long Press Cancel Distance",
   "distanceThatNeedsToBeMovedVertically": "Distance that needs to be moved vertically to zoom in or out.",
   "zoomStepDistance": "Zoom Step Distance",

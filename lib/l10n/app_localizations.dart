@@ -2813,7 +2813,7 @@ abstract class AppLocalizations {
   /// No description provided for @distanceThatMustBeMoved.
   ///
   /// In en, this message translates to:
-  /// **'Distance that must be moved during a long press to cancel it.'**
+  /// **'Distance that must be moved with the button held before it pans, zooms or changes the tool size. Shorter moves still count as a tap.'**
   String get distanceThatMustBeMoved;
 
   /// No description provided for @longPressCancelDistance.

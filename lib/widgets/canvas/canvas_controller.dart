@@ -664,19 +664,24 @@ class CanvasController
 
   /// Moving with the stylus button held down long: up and down zoom, left and
   /// right change the tool size (or the zoom of a reference layer).
+  ///
+  /// Nothing happens within the cancel distance of where the button went down,
+  /// so a wobbling tap still picks; steps are counted from its edge.
   void _stylusLongMove({required final Offset cursorOffset})
   {
-    final double yOffset = _secondaryStartLoc.dy - cursorOffset.dy;
-    final double xOffset = _secondaryStartLoc.dx - cursorOffset.dx;
-    final int zoomSteps = (yOffset / _stylusPrefs.stylusZoomStepDistance.value).round();
-    final int toolSizeSteps = (xOffset / _stylusPrefs.stylusSizeStepDistance.value).round();
+    final Offset moved = _secondaryStartLoc - cursorOffset;
+    final double deadZone = _stylusPrefs.stylusLongPressCancelDistance.value;
     if (!_stylusLongMoveVertical.value && !_stylusLongMoveHorizontal.value)
     {
-      if (zoomSteps != 0)
+      if (moved.distance <= deadZone)
+      {
+        return;
+      }
+      if (moved.dy.abs() >= moved.dx.abs())
       {
         _stylusLongMoveVertical.value = true;
       }
-      else if (toolSizeSteps != 0)
+      else
       {
         _stylusLongMoveHorizontal.value = true;
       }
@@ -685,6 +690,7 @@ class CanvasController
     final LayerState? currentLayer = _documentState.timeline.getCurrentLayer();
     if (_stylusLongMoveHorizontal.value)
     {
+      final int toolSizeSteps = (_beyondDeadZone(offset: moved.dx, deadZone: deadZone) / _stylusPrefs.stylusSizeStepDistance.value).round();
       if (currentLayer is RasterableLayerState)
       {
         _toolState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
@@ -697,8 +703,16 @@ class CanvasController
 
     if (_stylusLongMoveVertical.value)
     {
-      viewport.zoomAround(focus: cursorOffset, zoom: () => _viewState.setZoomLevelByDistance(startZoomLevel: _stylusZoomStartLevel, steps: zoomSteps));
+      final int zoomSteps = (_beyondDeadZone(offset: moved.dy, deadZone: deadZone) / _stylusPrefs.stylusZoomStepDistance.value).round();
+      //no steps has to bring back the start level, which setZoomLevelByDistance ignores
+      viewport.zoomAround(focus: cursorOffset, zoom: () => _viewState.setZoomLevel(val: _stylusZoomStartLevel + zoomSteps));
     }
+  }
+
+  static double _beyondDeadZone({required final double offset, required final double deadZone})
+  {
+    final double beyond = offset.abs() - deadZone;
+    return beyond > 0.0 ? offset.sign * beyond : 0.0;
   }
 
   void _checkSelectedToolData()

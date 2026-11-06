@@ -1469,7 +1469,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get distanceThatMustBeMoved =>
-      'Bewegungsdistanz zum Abbrechen eines \"Langen Drucks\"';
+      'Bewegungsdistanz mit gedrückter Taste, ab der verschoben, gezoomt oder die Werkzeuggröße verändert wird. Kürzere Bewegungen zählen noch als Tippen.';
 
   @override
   String get longPressCancelDistance => 'Abbruchdistanz für \"Langen Druck\"';

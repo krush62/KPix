@@ -1448,7 +1448,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get distanceThatMustBeMoved =>
-      'Distance that must be moved during a long press to cancel it.';
+      'Distance that must be moved with the button held before it pans, zooms or changes the tool size. Shorter moves still count as a tap.';
 
   @override
   String get longPressCancelDistance => 'Long Press Cancel Distance';

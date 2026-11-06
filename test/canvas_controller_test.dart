@@ -654,14 +654,18 @@ void main()
         final int zoom = _view.zoomFactor;
 
         controller.pointerHover(details: _hover(at: position - const Offset(0, 30), kind: stylus, button: true));
-        expect(_view.zoomFactor, zoom + 3);
+        expect(_view.zoomFactor, zoom + 2);
 
         controller.pointerHover(details: _hover(at: position + const Offset(0, 20), kind: stylus, button: true));
-        expect(_view.zoomFactor, zoom - 2);
+        expect(_view.zoomFactor, zoom - 1);
 
+        controller.pointerHover(details: _hover(at: position + const Offset(0, 5), kind: stylus, button: true));
+        expect(_view.zoomFactor, zoom, reason: "back within the cancel distance");
+
+        controller.pointerHover(details: _hover(at: position + const Offset(0, 20), kind: stylus, button: true));
         controller.pointerHover(details: _hover(at: position, kind: stylus));
         controller.pointerHover(details: _hover(at: position - const Offset(0, 50), kind: stylus));
-        expect(_view.zoomFactor, zoom - 2, reason: "over with the button released");
+        expect(_view.zoomFactor, zoom - 1, reason: "over with the button released");
         await tester.pump(const Duration(milliseconds: 200));
       });
 
@@ -672,13 +676,49 @@ void main()
         const Offset position = Offset(400, 300);
         await _holdStylusButton(tester: tester, controller: controller, at: position);
 
-        controller.pointerHover(details: _hover(at: position + const Offset(10, 0), kind: stylus, button: true));
+        controller.pointerHover(details: _hover(at: position + const Offset(20, 0), kind: stylus, button: true));
         expect(_tools.getCurrentToolSize(), 7);
 
-        controller.pointerHover(details: _hover(at: position - const Offset(10, 0), kind: stylus, button: true));
+        controller.pointerHover(details: _hover(at: position - const Offset(20, 0), kind: stylus, button: true));
         expect(_tools.getCurrentToolSize(), 3);
 
         controller.pointerHover(details: _hover(at: position, kind: stylus));
+        await tester.pump(const Duration(milliseconds: 200));
+      });
+
+      _inputTest("counts the steps from the edge of the cancel distance", (final WidgetTester tester, final CanvasController controller) async
+      {
+        const Offset position = Offset(400, 300);
+        await _holdStylusButton(tester: tester, controller: controller, at: position);
+        final int zoom = _view.zoomFactor;
+
+        controller.pointerHover(details: _hover(at: position - const Offset(0, 12), kind: stylus, button: true));
+        expect(_view.zoomFactor, zoom);
+
+        controller.pointerHover(details: _hover(at: position - const Offset(0, 24), kind: stylus, button: true));
+        expect(_view.zoomFactor, zoom + 1);
+
+        controller.pointerHover(details: _hover(at: position, kind: stylus));
+        await tester.pump(const Duration(milliseconds: 200));
+      });
+
+      _inputTest("still picks after a wobble within the cancel distance", (final WidgetTester tester, final CanvasController controller) async
+      {
+        _tools.setToolSelection(tool: ToolType.pencil);
+        _tools.setToolSize(0, 5);
+        final ColorReference? expected = _drawing.getDataEntry(coord: CoordinateSetI(x: 13, y: 7));
+        final Offset position = _at(controller: controller, x: 13, y: 7);
+        await _holdStylusButton(tester: tester, controller: controller, at: position);
+        final int zoom = _view.zoomFactor;
+
+        controller.pointerHover(details: _hover(at: position + const Offset(6, 0), kind: stylus, button: true));
+        controller.pointerHover(details: _hover(at: position - const Offset(0, 8), kind: stylus, button: true));
+        controller.pointerHover(details: _hover(at: position + const Offset(-5, 5), kind: stylus, button: true));
+        controller.pointerHover(details: _hover(at: position, kind: stylus));
+
+        expect(_palette.selectedColor, expected);
+        expect(_view.zoomFactor, zoom);
+        expect(_tools.getCurrentToolSize(), 5);
         await tester.pump(const Duration(milliseconds: 200));
       });
 
@@ -694,7 +734,7 @@ void main()
         controller.pointerHover(details: _hover(at: position - const Offset(40, 30), kind: stylus, button: true));
 
         expect(_tools.getCurrentToolSize(), 5);
-        expect(_view.zoomFactor, zoom + 3);
+        expect(_view.zoomFactor, zoom + 2);
 
         controller.pointerHover(details: _hover(at: position, kind: stylus));
         await tester.pump(const Duration(milliseconds: 200));
@@ -711,7 +751,7 @@ void main()
           const Offset position = Offset(400, 300);
           await _holdStylusButton(tester: tester, controller: controller, at: position);
 
-          controller.pointerHover(details: _hover(at: position + const Offset(10, 0), kind: stylus, button: true));
+          controller.pointerHover(details: _hover(at: position + const Offset(20, 0), kind: stylus, button: true));
 
           expect(_tools.getCurrentToolSize(), 7);
           controller.pointerHover(details: _hover(at: position, kind: stylus));
@@ -728,11 +768,11 @@ void main()
         const Offset position = Offset(400, 300);
         await _holdStylusButton(tester: tester, controller: controller, at: position);
 
-        controller.pointerHover(details: _hover(at: position + const Offset(10, 0), kind: stylus, button: true));
+        controller.pointerHover(details: _hover(at: position + const Offset(20, 0), kind: stylus, button: true));
         expect(reference.zoomSliderValue, slider + 2);
         expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.generic, reason: "not before it is released");
 
-        controller.pointerHover(details: _hover(at: position + const Offset(10, 0), kind: stylus));
+        controller.pointerHover(details: _hover(at: position + const Offset(20, 0), kind: stylus));
         expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.layerSettingsChange);
         await tester.pump(const Duration(milliseconds: 200));
       });
@@ -785,7 +825,7 @@ void main()
         await _holdStylusButton(tester: tester, controller: controller, at: position, milliseconds: 80);
         controller.pointerHover(details: _hover(at: position - const Offset(0, 30), kind: stylus, button: true));
 
-        expect(_view.zoomFactor, zoom + 3);
+        expect(_view.zoomFactor, zoom + 2);
         controller.pointerHover(details: _hover(at: position, kind: stylus));
         await tester.pump(const Duration(milliseconds: 200));
       });

@@ -508,7 +508,7 @@
 
   "timeThatNeedsToBeHeldDown": "Zeit die die Taste des Stylus gedrückt werden muss für einen \"Langen Druck\"",
   "longPressDelay": "Verzögerung für \"Langen Druck\"",
-  "distanceThatMustBeMoved": "Bewegungsdistanz zum Abbrechen eines \"Langen Drucks\"",
+  "distanceThatMustBeMoved": "Bewegungsdistanz mit gedrückter Taste, ab der verschoben, gezoomt oder die Werkzeuggröße verändert wird. Kürzere Bewegungen zählen noch als Tippen.",
   "longPressCancelDistance": "Abbruchdistanz für \"Langen Druck\"",
   "distanceThatNeedsToBeMovedVertically": "Vertikale Distanz um die Zoomstufe zu verändern.",
   "zoomStepDistance": "Bewegungsdistanz für Zoomstufe",

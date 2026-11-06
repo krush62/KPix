@@ -90,7 +90,25 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
 {
   static const double _maxWidth = 960;
   static const double _maxHeight = 640;
+  static const double _scrollbarGap = 16;
   final ValueNotifier<PreferenceSectionType> _prefSection = ValueNotifier<PreferenceSectionType>(PreferenceSectionType.gui);
+
+  Widget _section({required final PreferenceSectionType pref})
+  {
+    switch(pref)
+    {
+      case PreferenceSectionType.gui:
+        return GuiPreferences(prefs: GetIt.I.get<PreferenceManager>().guiPreferenceContent);
+      case PreferenceSectionType.behavior:
+        return BehaviorPreferences(prefs: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent);
+      case PreferenceSectionType.controlsStylus:
+        return StylusPreferences(prefs: GetIt.I.get<PreferenceManager>().stylusPreferenceContent);
+      case PreferenceSectionType.controlsTouch:
+        return TouchPreferences(prefs: GetIt.I.get<PreferenceManager>().touchPreferenceContent);
+      case PreferenceSectionType.controlsPC:
+        return DesktopPreferences(prefs: GetIt.I.get<PreferenceManager>().desktopPreferenceContent);
+    }
+  }
 
   ButtonSegment<PreferenceSectionType> _createSegment({required final PreferenceSectionType section, required final AppLocalizations l10n})
   {
@@ -148,21 +166,12 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
             child: ValueListenableBuilder<PreferenceSectionType>(
               valueListenable: _prefSection,
               builder: (final BuildContext context, final PreferenceSectionType pref, final Widget? child) {
-                switch(pref)
-                {
-                  case PreferenceSectionType.gui:
-                    return GuiPreferences(prefs: GetIt.I.get<PreferenceManager>().guiPreferenceContent);
-                  case PreferenceSectionType.behavior:
-                    return BehaviorPreferences(prefs: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent);
-                  case PreferenceSectionType.controlsStylus:
-                    return StylusPreferences(prefs: GetIt.I.get<PreferenceManager>().stylusPreferenceContent);
-                  case PreferenceSectionType.controlsTouch:
-                    return TouchPreferences(prefs: GetIt.I.get<PreferenceManager>().touchPreferenceContent);
-                  case PreferenceSectionType.controlsPC:
-                    return DesktopPreferences(prefs: GetIt.I.get<PreferenceManager>().desktopPreferenceContent);
-                  //default:
-                    //return const Placeholder();
-                }
+                return SingleChildScrollView(
+                  key: ValueKey<PreferenceSectionType>(pref),
+                  // Keeps the reset buttons clear of the desktop scrollbar.
+                  padding: const EdgeInsets.only(right: _scrollbarGap),
+                  child: _section(pref: pref),
+                );
               },
             ),
           ),

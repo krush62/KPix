@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/l10n/app_localizations.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_paths.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/app_directories.dart';
@@ -83,8 +84,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
   @override
   Widget build(final BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
-    return SingleChildScrollView(
-      child: Column(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -92,7 +92,9 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
             text: l10n.undoSteps,
             minVal: widget.prefs.undoSteps.min.toDouble(),
             maxVal: widget.prefs.undoSteps.max.toDouble(),
+            divisions: (widget.prefs.undoSteps.max - widget.prefs.undoSteps.min) ~/ 5,
             notifier: widget.prefs.undoSteps,
+            defaultValue: PreferenceInt.HistoryOptions_Steps.defaultValue,
         ),
         /*Row(
           mainAxisSize: MainAxisSize.min,
@@ -137,6 +139,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
                     minVal: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
                     maxVal: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
                     notifier: widget.prefs.shadingStepsMinus,
+                    defaultValue: PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken.defaultValue,
                     textStyle:  Theme.of(context).textTheme.labelMedium,
                   ),
                   PrefSliderRow<int>(
@@ -144,6 +147,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
                     minVal: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
                     maxVal: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
                     notifier: widget.prefs.shadingStepsPlus,
+                    defaultValue: PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten.defaultValue,
                     textStyle:  Theme.of(context).textTheme.labelMedium,
                   ),
                 ],
@@ -156,6 +160,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
             minVal: widget.prefs.frameConstraints.minFps.toDouble(),
             maxVal: widget.prefs.frameConstraints.maxFps.toDouble(),
             notifier: widget.prefs.fps,
+            defaultValue: PreferenceInt.FrameConstraints_DefaultFps.defaultValue,
         ),
        PrefSwitchRow(
            label: l10n.showReferenceLayersOutsideOfCanvas,
@@ -244,7 +249,6 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences>
             ],
           ),
       ],
-      ),
     );
   }
 }

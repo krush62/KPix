@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/l10n/app_localizations.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/preferences/preference_gui.dart';
 
@@ -45,7 +46,10 @@ class _StylusPreferencesState extends State<StylusPreferences>
             text: l10n.longPressDelay,
             minVal: widget.prefs.stylusLongPressDelay.min.toDouble(),
             maxVal: widget.prefs.stylusLongPressDelay.max.toDouble(),
+            divisions: (widget.prefs.stylusLongPressDelay.max - widget.prefs.stylusLongPressDelay.min) ~/ 25,
             notifier: widget.prefs.stylusLongPressDelay,
+            defaultValue: PreferenceInt.StylusOptions_LongPressDelay.defaultValue,
+            labelBuilder: (final int value) => "${value}ms",
           ),
         ),
         Tooltip(
@@ -53,6 +57,7 @@ class _StylusPreferencesState extends State<StylusPreferences>
           child: PrefSliderRow<double>(
             text: l10n.longPressCancelDistance,
             notifier: widget.prefs.stylusLongPressCancelDistance,
+            defaultValue: PreferenceDouble.StylusOptions_LongPressCancelDistance.defaultValue,
             minVal: widget.prefs.stylusLongPressCancelDistance.min,
             maxVal: widget.prefs.stylusLongPressCancelDistance.max,
             divisions: (widget.prefs.stylusLongPressCancelDistance.max - widget.prefs.stylusLongPressCancelDistance.min).round(),
@@ -64,6 +69,7 @@ class _StylusPreferencesState extends State<StylusPreferences>
           child: PrefSliderRow<double>(
             text: l10n.zoomStepDistance,
             notifier: widget.prefs.stylusZoomStepDistance,
+            defaultValue: PreferenceDouble.StylusOptions_ZoomStepDistance.defaultValue,
             minVal: widget.prefs.stylusZoomStepDistance.min,
             maxVal: widget.prefs.stylusZoomStepDistance.max,
             divisions: (widget.prefs.stylusZoomStepDistance.max - widget.prefs.stylusZoomStepDistance.min).round(),
@@ -75,6 +81,7 @@ class _StylusPreferencesState extends State<StylusPreferences>
           child: PrefSliderRow<double>(
             text: l10n.toolSizeStepDistance,
             notifier: widget.prefs.stylusSizeStepDistance,
+            defaultValue: PreferenceDouble.StylusOptions_SizeStepDistance.defaultValue,
             minVal: widget.prefs.stylusSizeStepDistance.min,
             maxVal: widget.prefs.stylusSizeStepDistance.max,
             divisions: (widget.prefs.stylusSizeStepDistance.max - widget.prefs.stylusSizeStepDistance.min).round(),
@@ -87,7 +94,10 @@ class _StylusPreferencesState extends State<StylusPreferences>
             text: l10n.colorPickTimeout,
             minVal: widget.prefs.stylusPickMaxDuration.min.toDouble(),
             maxVal: widget.prefs.stylusPickMaxDuration.max.toDouble(),
+            divisions: (widget.prefs.stylusPickMaxDuration.max - widget.prefs.stylusPickMaxDuration.min) ~/ 25,
             notifier: widget.prefs.stylusPickMaxDuration,
+            defaultValue: PreferenceInt.StylusOptions_PickMaxDuration.defaultValue,
+            labelBuilder: (final int value) => "${value}ms",
           ),
         ),
       ],

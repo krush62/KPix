@@ -15,9 +15,39 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/widgets/controls/kpix_dropdown.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
+/// The reset button next to a preference slider, styled like the ones in the shader export.
+class _PrefResetButton extends StatelessWidget
+{
+  static const double size = 32.0;
+  static const double padding = 8.0;
+  final VoidCallback? onPressed;
+  const _PrefResetButton({required this.onPressed});
+
+  @override
+  Widget build(final BuildContext context)
+  {
+    return Padding(
+      padding: const EdgeInsets.only(left: padding),
+      child: IconButton.outlined(
+        tooltip: AppLocalizations.of(context)!.resetValue,
+        icon: const Icon(TablerIcons.refresh),
+        onPressed: onPressed,
+        style: IconButton.styleFrom(
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          minimumSize: const Size(size, size),
+          maximumSize: const Size(size, size),
+          iconSize: size - padding,
+          padding: EdgeInsets.zero,
+        ),
+      ),
+    );
+  }
+}
 
 class PrefSliderRow<E extends num> extends StatelessWidget
 {
@@ -25,6 +55,7 @@ class PrefSliderRow<E extends num> extends StatelessWidget
     super.key,
     required this.text,
     required this.notifier,
+    required this.defaultValue,
     this.labelBuilder,
     this.textStyle,
     this.minVal = 0.0,
@@ -39,6 +70,7 @@ class PrefSliderRow<E extends num> extends StatelessWidget
   final double maxVal;
   final int? divisions;
   final ValueNotifier<E> notifier;
+  final E defaultValue;
 
   @override
   Widget build(final BuildContext context)
@@ -54,14 +86,23 @@ class PrefSliderRow<E extends num> extends StatelessWidget
             valueListenable: notifier,
             builder: (final BuildContext context, final E val, final Widget? child)
             {
-              return KPixSlider(
-                value: val.toDouble(),
-                min: minVal,
-                max: maxVal,
-                divisions: divisions,
-                label: (labelBuilder ?? (final E v) => v.toString())(val),
-                onChanged: (final double newVal) => notifier.value = (E == int ? newVal.round() : newVal) as E,
-                textStyle: Theme.of(context).textTheme.bodyLarge!,
+              // Discrete double sliders can land a rounding error away from the default.
+              final bool isDefault = (val - defaultValue).abs() < 1e-9;
+              return Row(
+                children: <Widget>[
+                  Expanded(
+                    child: KPixSlider(
+                      value: val.toDouble(),
+                      min: minVal,
+                      max: maxVal,
+                      divisions: divisions,
+                      label: (labelBuilder ?? (final E v) => v.toString())(val),
+                      onChanged: (final double newVal) => notifier.value = (E == int ? newVal.round() : newVal) as E,
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
+                    ),
+                  ),
+                  _PrefResetButton(onPressed: isDefault ? null : () {notifier.value = defaultValue;}),
+                ],
               );
             },
           ),
@@ -78,6 +119,7 @@ class PrefSliderRowIndexed extends StatelessWidget
     required this.text,
     required this.notifier,
     required this.valueList,
+    required this.defaultIndex,
     this.sliderLabel,
     this.textStyle,
     this.divisions,
@@ -89,6 +131,7 @@ class PrefSliderRowIndexed extends StatelessWidget
   final int? divisions;
   final ValueNotifier<int> notifier;
   final List<int> valueList;
+  final int defaultIndex;
 
   @override
   Widget build(final BuildContext context)
@@ -105,13 +148,20 @@ class PrefSliderRowIndexed extends StatelessWidget
             valueListenable: notifier,
             builder: (final BuildContext context, final int index, final Widget? child)
             {
-              return KPixSlider(
-                value: index.toDouble(),
-                max: valueList.length.toDouble() - 1.0,
-                divisions: divisions,
-                label: valueList[index].toString(),
-                onChanged: (final double newVal) => notifier.value = newVal.round(),
-                textStyle: Theme.of(context).textTheme.bodyLarge!,
+              return Row(
+                children: <Widget>[
+                  Expanded(
+                    child: KPixSlider(
+                      value: index.toDouble(),
+                      max: valueList.length.toDouble() - 1.0,
+                      divisions: divisions,
+                      label: valueList[index].toString(),
+                      onChanged: (final double newVal) => notifier.value = newVal.round(),
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
+                    ),
+                  ),
+                  _PrefResetButton(onPressed: index == defaultIndex ? null : () {notifier.value = defaultIndex;}),
+                ],
               );
             },
           ),

@@ -34,6 +34,7 @@ modules:
       - ln -s /app/kpix/kpix /app/bin/kpix
       - install -Dm644 kpix_icon.png /app/share/icons/hicolor/512x512/apps/de.krush62.kpix.png
       - install -Dm644 de.krush62.kpix.desktop /app/share/applications/de.krush62.kpix.desktop
+      - install -Dm644 de.krush62.kpix.xml /app/share/mime/packages/de.krush62.kpix.xml
       - install -Dm644 de.krush62.kpix.metainfo.xml /app/share/metainfo/de.krush62.kpix.metainfo.xml
     sources:
       - type: dir
@@ -43,5 +44,7 @@ modules:
         path: ../../imgs/kpix_icon.png
       - type: file
         path: de.krush62.kpix.desktop
+      - type: file
+        path: de.krush62.kpix.xml
       - type: file
         path: de.krush62.kpix.metainfo.xml

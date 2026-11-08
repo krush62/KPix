@@ -1,8 +1,6 @@
 package de.krush62.kpix
 import android.content.Context
-import android.content.Intent
 import android.media.MediaScannerConnection
-import android.net.Uri
 import android.util.Log
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -41,13 +39,8 @@ class MediaScanner : FlutterPlugin, MethodCallHandler {
             if (path == null)
                 throw NullPointerException()
             val file = File(path)
-            if (android.os.Build.VERSION.SDK_INT >= 29) {
-                MediaScannerConnection.scanFile(context, arrayOf(file.toString()),
-                    arrayOf(file.name), null)
-
-            } else {
-                //context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)))
-            }
+            //null MIME types: the scanner takes them from the file extensions
+            MediaScannerConnection.scanFile(context, arrayOf(file.toString()), null, null)
             Log.d("Media Scanner", "Success show image $path in Gallery")
             "Success show image $path in Gallery"
         } catch (e: Exception) {

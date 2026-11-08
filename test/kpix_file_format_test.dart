@@ -29,8 +29,10 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/constraints/grid_layer_constraints.dart';
 import 'package:kpix/models/constraints/kpal_constraints.dart';
+import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/file_constants.dart';
 import 'package:kpix/models/history/history_drawing_layer.dart';
+import 'package:kpix/models/history/history_frame.dart';
 import 'package:kpix/models/history/history_grid_layer.dart';
 import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history/history_shading_layer.dart';
@@ -40,6 +42,7 @@ import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/project_session.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
@@ -83,6 +86,21 @@ int _firstLayerOffset()
   //canvas size and layer count
   return offset + 6;
 }
+
+/// Where the timeline, the last record, starts in the uncompressed body.
+int _timelineOffset({required final Uint8List body})
+{
+  int frameBytes = 0;
+  for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
+  {
+    //fps, layer count and an index per layer
+    frameBytes += 3 + 2 * frame.layerList.length;
+  }
+  //frame count, loop start and loop end
+  return body.length - 6 - frameBytes;
+}
+
+List<String> _warningsOf({required final LoadFileSet loaded}) => loaded.status.split("\n").where((final String line) => line.isNotEmpty).toList();
 
 /// The raw pixel values of every drawing, shading and dither layer, top to bottom.
 List<Map<CoordinateSetI, int>> _pixelsOf({required final HistoryState state})
@@ -287,6 +305,67 @@ void main()
 
       expect(loaded.historyState, isNull);
       expect(loaded.status, "Invalid outer stroke style for layer 0: 55");
+    },);
+  });
+
+  testWidgets("frame rates and loop markers out of range fall back with a warning", (final WidgetTester tester) async
+  {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async
+    {
+      final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
+      timeline.addNewFrameRight();
+      timeline.addNewFrameRight();
+      //a rate other than the default, so the fallback shows
+      timeline.setFrameTimingAll(fps: 20);
+      await settle();
+
+      final Uint8List file = (await createKPixData()).buffer.asUint8List();
+      final Uint8List body = _bodyOf(file: file);
+      final int start = _timelineOffset(body: body);
+      final ByteData data = ByteData.sublistView(body);
+      expect(data.getUint16(start), 3, reason: "setup: frame count");
+      final int secondFps = start + 6 + 3 + 2 * timeline.frames.value.first.layerList.length;
+      expect(body[secondFps], 20, reason: "setup: fps of the second frame");
+      data.setUint16(start + 2, 7);
+      data.setUint16(start + 4, 9);
+      body[secondFps] = 0;
+
+      final LoadFileSet loaded = await _load(bytes: _withBody(file: file, body: body));
+
+      expect(loaded.historyState, isNotNull, reason: loaded.status);
+      expect(_warningsOf(loaded: loaded), <String>[
+        "Loop start is out of range: 7",
+        "Loop end is out of range: 9",
+        "Frame rate is out of range for frame 1: 0",
+      ],);
+      expect(loaded.historyState!.timeline.loopStart, 0);
+      expect(loaded.historyState!.timeline.loopEnd, 2);
+      expect(loaded.historyState!.timeline.frames.map((final HistoryFrame frame) => frame.fps).toList(),
+          <int>[20, GetIt.I.get<PreferenceManager>().frameConstraints.defaultFps, 20],);
+    },);
+  });
+
+  testWidgets("a file without a frame or with an empty frame is refused", (final WidgetTester tester) async
+  {
+    await withProject(tester: tester, canvasSize: canvasSize, body: (final ProjectSession projectSession) async
+    {
+      final Uint8List file = (await createKPixData()).buffer.asUint8List();
+      final Uint8List body = _bodyOf(file: file);
+      final int start = _timelineOffset(body: body);
+      expect(ByteData.sublistView(body).getUint16(start), 1, reason: "setup: frame count");
+
+      final Uint8List noFrame = Uint8List.fromList(body.sublist(0, start + 6));
+      ByteData.sublistView(noFrame).setUint16(start, 0);
+      final LoadFileSet noFrameLoaded = await _load(bytes: _withBody(file: file, body: noFrame));
+      expect(noFrameLoaded.historyState, isNull);
+      expect(noFrameLoaded.status, "No frame found");
+
+      final Uint8List emptyFrame = Uint8List.fromList(body);
+      //behind the frame's fps
+      ByteData.sublistView(emptyFrame).setUint16(start + 7, 0);
+      final LoadFileSet emptyFrameLoaded = await _load(bytes: _withBody(file: file, body: emptyFrame));
+      expect(emptyFrameLoaded.historyState, isNull);
+      expect(emptyFrameLoaded.status, "No layer found in frame 0");
     },);
   });
 }

@@ -156,7 +156,7 @@ List<String> patternOf({required final Iterable<CoordinateSetI> coords, required
   return <String>[
     for (int y = 0; y < size.y; y++)
       <String>[
-        for (int x = 0; x < size.x; x++) set.contains(CoordinateSetI(x: x, y: y)) ? "#" : ".",
+        for (int x = 0; x < size.x; x++) if (set.contains(CoordinateSetI(x: x, y: y))) "#" else ".",
       ].join(),
   ];
 }

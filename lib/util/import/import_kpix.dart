@@ -800,15 +800,35 @@ class _KPixParser
     //not hold a full frame (256 layers), a full timeline or a layer past the 256th
     final int Function() readTimelineValue = version >= 5 ? reader.getUint16 : reader.getUint8;
     final int framesCount = readTimelineValue();
-    final int startFrame = readTimelineValue();
-    final int endFrame = readTimelineValue();
+    if (framesCount < 1) throw const _ImportRejected("No frame found");
+    final int startFrame = guard.ranged(
+      value: readTimelineValue(),
+      min: 0,
+      max: framesCount - 1,
+      fallback: 0,
+      label: "Loop start is out of range",
+    );
+    final int endFrame = guard.ranged(
+      value: readTimelineValue(),
+      min: startFrame,
+      max: framesCount - 1,
+      fallback: framesCount - 1,
+      label: "Loop end is out of range",
+    );
 
     final List<HistoryFrame> frames = <HistoryFrame>[];
     for (int i = 0; i < framesCount; i++)
     {
       final LinkedHashSet<int> indices = LinkedHashSet<int>();
-      final int fps = reader.getUint8();
+      final int fps = guard.ranged(
+        value: reader.getUint8(),
+        min: frameConstraints.minFps,
+        max: frameConstraints.maxFps,
+        fallback: frameConstraints.defaultFps,
+        label: "Frame rate is out of range for frame $i",
+      );
       final int layerCount = readTimelineValue();
+      if (layerCount < 1) throw _ImportRejected("No layer found in frame $i");
       for (int j = 0; j < layerCount; j++)
       {
         final int layerIndex = readTimelineValue();

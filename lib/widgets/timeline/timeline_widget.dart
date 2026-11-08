@@ -459,7 +459,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
       final double scrollPosition = (_horizontalScrollController.position.maxScrollExtent * scrollFactor).clamp(0, _horizontalScrollController.position.maxScrollExtent);
       _horizontalScrollController.animateTo(
         scrollPosition,
-        duration: (widget.timeline.selectedFrameIndex == 0) ? const Duration(milliseconds: _scrollTimeMs) : Duration(milliseconds: widget.timeline.frames.value[widget.timeline.selectedFrameIndex].fps.value),
+        duration: (widget.timeline.selectedFrameIndex == 0) ? const Duration(milliseconds: _scrollTimeMs) : Duration(milliseconds: widget.timeline.frames.value[widget.timeline.selectedFrameIndex].frameTime),
         curve: Curves.linear,
       );
     }

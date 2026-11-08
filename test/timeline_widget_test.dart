@@ -21,6 +21,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/frame_blending_options.dart';
 import 'package:kpix/models/layer_manager.dart';
@@ -310,6 +311,76 @@ void main()
       await tester.tap(pause.last);
       await _settleDown(tester);
       expect(_timeline.isPlaying.value, isFalse);
+      await _close(tester);
+    });
+  });
+
+  group("playback", () {
+    testWidgets("a restart before the frame time ran out does not speed it up", (final WidgetTester tester) async {
+      await _pumpTimeline(tester, frameCount: 4);
+      final int frameTime = _timeline.selectedFrame!.frameTime;
+      int changes = 0;
+      void count() => changes++;
+      _timeline.selectedFrameIndexNotifier.addListener(count);
+
+      _timeline.togglePlaying();
+      await tester.pump(Duration(milliseconds: frameTime ~/ 2));
+      _timeline.togglePlaying();
+      _timeline.togglePlaying();
+      changes = 0;
+      await tester.pump(Duration(milliseconds: frameTime * 8 + frameTime ~/ 2));
+      expect(changes, 8, reason: "one frame per frame time");
+
+      _timeline.selectedFrameIndexNotifier.removeListener(count);
+      await _close(tester);
+    });
+
+    testWidgets("starting outside the loop section starts at its first frame", (final WidgetTester tester) async {
+      await _pumpTimeline(tester, frameCount: 4);
+      _timeline.setLoopStartMarker(index: 1);
+      _timeline.setLoopEndMarker(index: 2);
+      final int frameTime = _timeline.selectedFrame!.frameTime;
+
+      _timeline.selectFrameByIndex(index: 3);
+      _timeline.togglePlaying();
+      expect(_timeline.selectedFrameIndex, 1);
+      final List<int> shown = <int>[];
+      for (int i = 0; i < 3; i++)
+      {
+        await tester.pump(Duration(milliseconds: frameTime));
+        shown.add(_timeline.selectedFrameIndex);
+      }
+      expect(shown, <int>[2, 1, 2]);
+      _timeline.togglePlaying();
+      await _settleDown(tester);
+
+      _timeline.selectFrameByIndex(index: 0);
+      _timeline.togglePlaying();
+      expect(_timeline.selectedFrameIndex, 1);
+      _timeline.togglePlaying();
+      await _settleDown(tester);
+
+      _timeline.selectFrameByIndex(index: 2);
+      _timeline.togglePlaying();
+      expect(_timeline.selectedFrameIndex, 2, reason: "inside the section it goes on from the current frame");
+      await _close(tester);
+    });
+
+    testWidgets("the frames scroll along over a frame's time", (final WidgetTester tester) async {
+      const int frameCount = 30;
+      await _pumpTimeline(tester, frameCount: frameCount);
+      _timeline.setFrameTimingAll(fps: GetIt.I.get<PreferenceManager>().frameConstraints.minFps);
+      await tester.pump();
+      final ScrollController controller = tester.widget<SingleChildScrollView>(find.byWidgetPredicate((final Widget w) => w is SingleChildScrollView && w.scrollDirection == Axis.horizontal)).controller!;
+      expect(controller.position.maxScrollExtent, greaterThan(0), reason: "setup: the frames overflow");
+      final int frameTime = _timeline.selectedFrame!.frameTime;
+
+      _timeline.togglePlaying();
+      await tester.pump(Duration(milliseconds: frameTime));
+      expect(_timeline.selectedFrameIndex, 1, reason: "setup");
+      await tester.pump(Duration(milliseconds: frameTime ~/ 2));
+      expect(controller.offset, greaterThan(0));
+      expect(controller.offset, lessThan(controller.position.maxScrollExtent / frameCount), reason: "half a frame time in, the scroll is still on its way");
       await _close(tester);
     });
   });

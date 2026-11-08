@@ -75,6 +75,7 @@ class Timeline
   final ValueNotifier<int> loopStartIndex;
   final ValueNotifier<int> loopEndIndex;
   final LayerChangeNotifier layerChangeNotifier = LayerChangeNotifier();
+  int _playRun = 0;
 
   Timeline({required final int selectedFrameIndex, required final List<Frame> frames, required final int loopStartIndex, required final int loopEndIndex})
   : frames = ValueNotifier<List<Frame>>(frames),
@@ -260,15 +261,23 @@ class Timeline
 
   Future<void> _play({required final int startIndex}) async
   {
-    if (selectedFrame != null)
+    //a restart before the last delay ran out must not leave that loop running too
+    final int run = ++_playRun;
+    if (selectedFrameIndex < startIndex || selectedFrameIndex > loopEndIndex.value)
     {
-      while(isPlaying.value)
+      selectFrameByIndex(index: startIndex);
+    }
+    while (isPlaying.value && run == _playRun)
+    {
+      final Frame? frame = selectedFrame;
+      if (frame == null)
       {
-        await Future<void>.delayed(Duration(milliseconds: selectedFrame!.frameTime));
-        if (isPlaying.value)
-        {
-          selectNextFrame();
-        }
+        return;
+      }
+      await Future<void>.delayed(Duration(milliseconds: frame.frameTime));
+      if (isPlaying.value && run == _playRun)
+      {
+        selectNextFrame();
       }
     }
   }

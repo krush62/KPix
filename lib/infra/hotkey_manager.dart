@@ -242,19 +242,20 @@ class HotkeyManager
       return;
     }
 
-    if (evt != null && (evt is KeyUpEvent || evt is KeyDownEvent))
+    if (evt != null)
     {
+      final bool isPressed = evt is! KeyUpEvent;
       if (evt.logicalKey == LogicalKeyboardKey.shiftLeft || evt.logicalKey == LogicalKeyboardKey.shiftRight || evt.logicalKey == LogicalKeyboardKey.shift)
       {
-        _shiftIsPressed.value = evt is KeyDownEvent;
+        _shiftIsPressed.value = isPressed;
       }
       else if (evt.logicalKey == LogicalKeyboardKey.controlLeft || evt.logicalKey == LogicalKeyboardKey.controlRight || evt.logicalKey == LogicalKeyboardKey.control)
       {
-        _controlIsPressed.value = evt is KeyDownEvent;
+        _controlIsPressed.value = isPressed;
       }
       else if (evt.logicalKey == LogicalKeyboardKey.altLeft || evt.logicalKey == LogicalKeyboardKey.altRight || evt.logicalKey == LogicalKeyboardKey.alt)
       {
-        _altIsPressed.value = evt is KeyDownEvent;
+        _altIsPressed.value = isPressed;
       }
 
       //ARROW KEY AND TAB HANDLING
@@ -528,7 +529,8 @@ class HotkeyManager
   {
     _shiftIsPressed.value = HardwareKeyboard.instance.isShiftPressed;
     _controlIsPressed.value = HardwareKeyboard.instance.isControlPressed;
-    _altIsPressed.value = HardwareKeyboard.instance.isAltPressed;
+    //Windows keeps Alt pressed after Alt+Tab until the next key event; a held Alt returns with its key repeat
+    _altIsPressed.value = false;
   }
 
   void nullifyModifierKeys()

@@ -150,6 +150,42 @@ void main()
 
       expect(manager.shiftIsPressed, isFalse);
     });
+
+    testWidgets("alt is not read back when the suppression ends", (final WidgetTester tester) async {
+      final HotkeyManager manager = HotkeyManager();
+      await _pumpHost(tester, manager);
+
+      //Alt+Tab: the release goes to the other window, so the keyboard state keeps alt pressed
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.altLeft);
+      expect(manager.altIsPressed, isTrue);
+      manager.nullifyModifierKeys();
+
+      //back in the app, a popup is opened and closed with the mouse
+      final KPixOverlay popup = _visibleOverlay();
+      manager.deactivateCallbacks(source: popup);
+      popup.isVisible = false;
+      manager.activateCallbacks(source: popup);
+      expect(HardwareKeyboard.instance.isAltPressed, isTrue);
+      expect(manager.altIsPressed, isFalse);
+
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.altLeft);
+    });
+
+    testWidgets("a held alt comes back with its key repeat", (final WidgetTester tester) async {
+      final HotkeyManager manager = HotkeyManager();
+      await _pumpHost(tester, manager);
+      await _focusTextField(tester, manager);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.altLeft);
+      await _unfocusTextField(tester, manager);
+      expect(manager.altIsPressed, isFalse);
+
+      await tester.sendKeyRepeatEvent(LogicalKeyboardKey.altLeft);
+      expect(manager.altIsPressed, isTrue);
+
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.altLeft);
+      expect(manager.altIsPressed, isFalse);
+    });
   });
 
   group("callback suppression", ()

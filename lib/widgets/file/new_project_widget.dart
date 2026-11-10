@@ -164,7 +164,11 @@ class NewProjectWidgetState extends State<NewProjectWidget>
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         Expanded(
-          child: Text(title, style: Theme.of(context).textTheme.titleSmall),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(title, style: Theme.of(context).textTheme.titleSmall),
+          ),
         ),
         Expanded(
           flex: 4,

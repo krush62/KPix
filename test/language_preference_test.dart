@@ -68,6 +68,8 @@ void main()
 
     expect(labels["en"], "English");
     expect(labels["de"], "Deutsch");
+    expect(labels["es"], "Español");
+    expect(labels["fr"], "Français");
     //only the system entry follows the current language
     expect(labels[systemLanguageCode], lookupAppLocalizations(const Locale("de")).languageSystem);
   });
@@ -76,7 +78,7 @@ void main()
   {
     final LanguageNotifier notifier = LanguageNotifier();
 
-    notifier.languageCode = "fr";
+    notifier.languageCode = "xx";
     expect(notifier.languageCode, systemLanguageCode);
     expect(notifier.locale, isNull);
 

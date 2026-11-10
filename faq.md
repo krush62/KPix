@@ -20,7 +20,7 @@ KPix is open source and is natively supported on various platforms like Android 
 No, KPix does not collect any data. Even more: The only time the application accesses the internet is when it checks for an update (Desktop versions only).
 
 ## Does KPix support different languages?
-Starting from version 0.9.9 support for different languages other than English is available. German is the first translation.
+Starting from version 0.9.9 support for different languages other than English is available. Available translations are German, French and Spanish.
 
 ## Why are there limits to the canvas size, color count, layer count and frame count?
 These limits might seem arbitrary but are based on the file format and performance considerations, but nothing is carved in stone.

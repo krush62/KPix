@@ -74,6 +74,8 @@ bool isSupportedLanguage({required final String languageCode})
 const Map<String, String> _languageNames = <String, String>{
   "de": "Deutsch",
   "en": "English",
+  "es": "Español",
+  "fr": "Français",
 };
 
 /// The languages to choose from, the system option first.

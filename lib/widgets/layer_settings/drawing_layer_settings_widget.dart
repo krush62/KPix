@@ -53,6 +53,8 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   static const double _styleRowHeight = 80.0;
   static const double _colorButtonHeight = 48.0;
   static const double _shadowRowHeight = 32.0;
+  static const int _shadowLabelFlex = 3;
+  static const int _shadowControlFlex = 4;
   static const double _colorButtonRadius = 4.0;
 
   late KPixOverlay _colorPickDialog;
@@ -595,9 +597,9 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Expanded(child: Text(l10n.darkenBrightenBreak)),
+                            Expanded(flex: _shadowLabelFlex, child: Text(l10n.darkenBrightenBreak)),
                             Expanded(
-                              flex: 2,
+                              flex: _shadowControlFlex,
                               child: _indexedSlider(
                                 notifier: _settings.dropShadowDarkenBrighten,
                                 values: _darkenBrightenValues,
@@ -613,9 +615,9 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                         height: _shadowRowHeight,
                         child: Row(
                           children: <Widget>[
-                            Expanded(child: Text(l10n.color)),
+                            Expanded(flex: _shadowLabelFlex, child: Text(l10n.color)),
                             Expanded(
-                              flex: 2,
+                              flex: _shadowControlFlex,
                               child: _colorButton(
                                 dialogTitle: l10n.selectDropShadowColor.toUpperCase(),
                                 notifier: _settings.dropShadowColorReference,
@@ -654,9 +656,9 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        Expanded(child: Text(label)),
+        Expanded(flex: _shadowLabelFlex, child: Text(label)),
         Expanded(
-          flex: 2,
+          flex: _shadowControlFlex,
           child: KPixSlider(
             value: value.toDouble(),
             min: _settings.constraints.dropShadowOffsetMin.toDouble(),

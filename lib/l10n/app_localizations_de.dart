@@ -958,7 +958,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get addNewLayerDot => 'Neue Ebene hinzufügen...';
 
   @override
-  String get layerSettings => 'Ebeneneinstellungen';
+  String get layerSettings => 'Ebenen-\neinstellungen';
 
   @override
   String get symmetryOptions => 'Symmetrieoptionen';

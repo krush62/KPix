@@ -1966,7 +1966,11 @@ void main()
           theme: monochromeTheme,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const Material(child: CanvasWidget()),
+          //like the undo and redo buttons, which rebuild with every history step
+          home: Material(child: Stack(fit: StackFit.expand, children: <Widget>[
+            const CanvasWidget(),
+            ListenableBuilder(listenable: _history.changeNotifier, builder: (final BuildContext context, final Widget? child) => const SizedBox.shrink()),
+          ],),),
         ),),);
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 20));
@@ -2006,6 +2010,29 @@ void main()
       expect(_drawing.getDataEntry(coord: CoordinateSetI(x: 11, y: 8)), color);
       await tester.pump(const Duration(milliseconds: 300));
       expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.toolPen);
+    });
+
+    widgetTest("ends a selection move without rebuilding widgets during paint", (final WidgetTester tester) async
+    {
+      _selection.newSelectionFromShape(start: CoordinateSetI(x: 10, y: 8), end: CoordinateSetI(x: 11, y: 9), selectShape: SelectShape.rectangle);
+      _tools.setToolSelection(tool: ToolType.select);
+      final TestGesture mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: screenPos(pixel: CoordinateSetI(x: 10, y: 8)));
+      await tester.pump();
+
+      await mouse.down(screenPos(pixel: CoordinateSetI(x: 10, y: 8)));
+      await tester.pump();
+      await mouse.moveTo(screenPos(pixel: CoordinateSetI(x: 13, y: 8)));
+      await tester.pump();
+      await mouse.up();
+      await tester.pump();
+      await mouse.removePointer();
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.selectionMove);
+      expect(_selection.selection.contains(coord: CoordinateSetI(x: 13, y: 8)), isTrue);
+      await tester.runAsync(settle);
     });
 
     widgetTest("ends a stroke that is cancelled", (final WidgetTester tester) async

@@ -17,6 +17,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -148,7 +149,7 @@ class SelectionPainter extends IToolPainter
           if (movementStarted)
           {
             movementStarted = false;
-            documentState.selectionState.finishMovement();
+            _finishMovement();
           }
           if (polygonDown)
           {
@@ -193,6 +194,19 @@ class SelectionPainter extends IToolPainter
 
         }
       }
+    }
+  }
+
+  //the history step rebuilds widgets, which must not happen while painting
+  void _finishMovement()
+  {
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks)
+    {
+      SchedulerBinding.instance.addPostFrameCallback((final Duration _) => documentState.selectionState.finishMovement());
+    }
+    else
+    {
+      documentState.selectionState.finishMovement();
     }
   }
 

@@ -34,6 +34,7 @@ Future<Uint8List?> getPalettePngData({required final List<KPalRampData> ramps}) 
   final ui. Image img = await c.future;
 
   final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
+  img.dispose();
 
   return pngBytes!.buffer.asUint8List();
 }

@@ -28,6 +28,7 @@ import 'package:kpix/models/constraints/canvas_size_constraints.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/image_helper.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
@@ -76,7 +77,15 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     _height.value = _canvasState.canvasSize.y;
     _setSize();
     final Frame frame = _documentState.timeline.selectedFrame!;
-    getImageFromLayers(canvasSize: _canvasState.canvasSize, layerCollection: frame.layerList, selection: _documentState.selectionState.selection, frame: frame).then((final ui.Image img){_image.value = img;});
+    getImageFromLayers(canvasSize: _canvasState.canvasSize, layerCollection: frame.layerList, selection: _documentState.selectionState.selection, frame: frame).then((final ui.Image img)
+    {
+      if (!mounted)
+      {
+        img.dispose();
+        return;
+      }
+      _image.value = img;
+    });
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeWidthTextFocus).addListener(_widthFocusChanged);
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeHeightTextFocus).addListener(_heightFocusChanged);
     _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeOffsetXTextFocus).addListener(_offsetXFocusChanged);
@@ -94,6 +103,11 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     _textControllerHeight.dispose();
     _textControllerOffsetX.dispose();
     _textControllerOffsetY.dispose();
+    final ui.Image? image = _image.value;
+    if (image != null)
+    {
+      disposeAfterFrame(images: <ui.Image>[image]);
+    }
   }
 
   void _widthFocusChanged()

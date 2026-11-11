@@ -108,5 +108,13 @@ Future<ui.Image> getImageFromLayers({
       }
     }
   }
-  return recorder.endRecording().toImage(canvasSize.x * scalingFactor, canvasSize.y * scalingFactor);
+  final ui.Picture picture = recorder.endRecording();
+  try
+  {
+    return await picture.toImage(canvasSize.x * scalingFactor, canvasSize.y * scalingFactor);
+  }
+  finally
+  {
+    picture.dispose();
+  }
 }

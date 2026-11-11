@@ -19,6 +19,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
+import 'package:kpix/util/helpers/image_helper.dart';
 
 class ReferenceImage
 {
@@ -32,12 +33,17 @@ class ReferenceImageManager
 {
   final List<ReferenceImage> _images = <ReferenceImage>[];
 
+  /// Takes ownership of [img]: it is released if an image for [path] is cached already.
   Future<ReferenceImage> addLoadedImage({required final ui.Image img, required final String path}) async
   {
     final String absolutePath = kIsWeb ? path : File(path).absolute.path;
     final List<ReferenceImage> duplicateImages = _images.where((final ReferenceImage i) => i.path == absolutePath).toList();
     if (duplicateImages.isNotEmpty)
     {
+      if (!identical(duplicateImages[0].image, img))
+      {
+        disposeAfterFrame(images: <ui.Image>[img]);
+      }
       return duplicateImages[0];
     }
     else
@@ -92,4 +98,18 @@ class ReferenceImageManager
   {
     _images.remove(refImage);
   }
+
+  /// Releases every cached image whose path is not in [inUse].
+  void releaseUnused({required final Set<String> inUse})
+  {
+    final List<ReferenceImage> unused = _images.where((final ReferenceImage i) => !inUse.contains(i.path)).toList();
+    if (unused.isEmpty)
+    {
+      return;
+    }
+    _images.removeWhere(unused.contains);
+    disposeAfterFrame(images: unused.map((final ReferenceImage i) => i.image));
+  }
+
+  bool get isEmpty => _images.isEmpty;
 }

@@ -38,14 +38,26 @@ Future<Uint8List?> exportPNG({required final ImageExportData exportData, require
   }
   );
   final ui.Image img = await c.future;
-
-  final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
-
-  return pngBytes!.buffer.asUint8List();
+  try
+  {
+    final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
+    return pngBytes!.buffer.asUint8List();
+  }
+  finally
+  {
+    img.dispose();
+  }
 }
 
 Future<ByteData> _getImageData({required final CoordinateSetI canvasSize, required final LayerCollection layerList, required final SelectionList selection, required final int scaling}) async
 {
   final ui.Image i = await getImageFromLayers(canvasSize: canvasSize, layerCollection: layerList, selection: selection, scalingFactor: scaling);
-  return (await i.toByteData())!;
+  try
+  {
+    return (await i.toByteData())!;
+  }
+  finally
+  {
+    i.dispose();
+  }
 }

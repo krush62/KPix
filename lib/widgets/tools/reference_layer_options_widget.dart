@@ -82,13 +82,10 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
         _loadingDialog.hide();
         if (img != null)
         {
-          final ReferenceImage? oldImage = widget.referenceState.imageNotifier.value;
           widget.referenceState.imageNotifier.value = img;
           widget.referenceState.thumbnail.value = img.image;
           widget.referenceState.fitInto(canvasSize: GetIt.I.get<CanvasState>().canvasSize);
-          if (oldImage != null) {
-            GetIt.I.get<ReferenceImageManager>().removeImage(refImage: oldImage);
-          }
+          //the old image stays cached for undo; the history sweep releases it
           GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerChangeReferenceImage, originLayer: GetIt.I.get<DocumentState>().timeline.getCurrentLayer());
         }
         else

@@ -95,7 +95,7 @@ class KPixPainter extends CustomPainter
   late int _latestContrast = 50;
   late CoordinateSetI _latestCanvasSize = CoordinateSetI.zero();
   IToolPainter? toolPainter;
-  late ui.Image _checkerboardImage;
+  ui.Image? _checkerboardImage;
   ui.Image? _backupImage;
   bool _isDisposed = false;
   final ImageRetirer _imageRetirer = ImageRetirer();
@@ -1133,8 +1133,7 @@ class KPixPainter extends CustomPainter
     final ui.Canvas canvas = ui.Canvas(recorder);
 
     if (_latestCanvasSize.x == 0 || _latestCanvasSize.y == 0 || _latestRasterSize == 0) {
-      final ui.Picture picture = recorder.endRecording();
-      _checkerboardImage = picture.toImageSync(_latestCanvasSize.x, _latestCanvasSize.y);
+      _setCheckerboard(picture: recorder.endRecording());
       return;
     }
 
@@ -1143,8 +1142,7 @@ class KPixPainter extends CustomPainter
     final int totalCells = numCols * numRows;
 
     if (totalCells == 0) {
-      final ui.Picture picture = recorder.endRecording();
-      _checkerboardImage = picture.toImageSync(_latestCanvasSize.x, _latestCanvasSize.y);
+      _setCheckerboard(picture: recorder.endRecording());
       return;
     }
 
@@ -1234,14 +1232,29 @@ class KPixPainter extends CustomPainter
       canvas.drawVertices(vertices, ui.BlendMode.src, verticesPaint);
     }
 
-    final ui.Picture picture = recorder.endRecording();
+    _setCheckerboard(picture: recorder.endRecording());
+  }
+
+  void _setCheckerboard({required final ui.Picture picture})
+  {
+    final ui.Image? previous = _checkerboardImage;
     _checkerboardImage = picture.toImageSync(_latestCanvasSize.x, _latestCanvasSize.y);
+    picture.dispose();
+    if (previous != null)
+    {
+      _imageRetirer.retire(image: previous);
+    }
   }
 
 
 
   void _drawCheckerboard({required final DrawingParameters drawParams})
   {
+    final ui.Image? checkerboard = _checkerboardImage;
+    if (checkerboard == null)
+    {
+      return;
+    }
     final double effPxSize = drawParams.pixelSize.toDouble() / _viewState.devicePixelRatio;
     final CoordinateSetD effCanvasSize = CoordinateSetD(
       x: drawParams.scaledCanvasSize.x / _viewState.devicePixelRatio,
@@ -1250,7 +1263,7 @@ class KPixPainter extends CustomPainter
     paintImage(
         canvas: drawParams.canvas,
         rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy, effCanvasSize.x, effCanvasSize.y),
-        image: _checkerboardImage,
+        image: checkerboard,
         scale: 1.0 / effPxSize,
         fit: BoxFit.none,
         alignment: Alignment.topLeft,
@@ -1318,6 +1331,12 @@ class KPixPainter extends CustomPainter
     if (backup != null)
     {
       _imageRetirer.retire(image: backup);
+    }
+    final ui.Image? checkerboard = _checkerboardImage;
+    _checkerboardImage = null;
+    if (checkerboard != null)
+    {
+      _imageRetirer.retire(image: checkerboard);
     }
   }
 

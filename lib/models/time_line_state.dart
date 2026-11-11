@@ -114,10 +114,12 @@ class Timeline
 
   void setData({required final int selectedFrameIndex, required final List<Frame> frames, required final int loopStartIndex, required final int loopEndIndex})
   {
+    final List<Frame> previousFrames = this.frames.value;
     this.frames.value = frames;
     this.loopStartIndex.value = loopStartIndex;
     this.loopEndIndex.value = loopEndIndex;
     _selectedFrameIndex.value = selectedFrameIndex;
+    _releaseDroppedFrames(previousFrames: previousFrames);
   }
 
   void init()
@@ -128,10 +130,28 @@ class Timeline
     f.layerList.addNewDrawingLayer(canvasSize: GetIt.I.get<CanvasState>().canvasSize, ramps: GetIt.I.get<PaletteState>().colorRamps);
     f.fps.value = constraints.defaultFps;
     frameList.add(f);
+    final List<Frame> previousFrames = frames.value;
     frames.value = frameList;
     loopStartIndex.value = 0;
     loopEndIndex.value = frames.value.length - 1;
     selectFrameByIndex(index: 0);
+    _releaseDroppedFrames(previousFrames: previousFrames);
+  }
+
+  /// Clears the collections of [previousFrames] that are no longer in the timeline.
+  ///
+  /// Clearing disposes their layers unless a remaining frame still links them;
+  /// undisposed layers stay registered with the raster scheduler forever.
+  void _releaseDroppedFrames({required final List<Frame> previousFrames})
+  {
+    final Set<LayerCollection> remaining = frames.value.map((final Frame f) => f.layerList).toSet();
+    for (final Frame frame in previousFrames)
+    {
+      if (!remaining.contains(frame.layerList))
+      {
+        frame.layerList.clear(notify: false);
+      }
+    }
   }
 
   int get selectedFrameIndex => _selectedFrameIndex.value;
@@ -443,6 +463,7 @@ class Timeline
 
   void deleteFrame()
   {
+    final List<Frame> previousFrames = frames.value;
     final List<Frame> newFrames = <Frame>[];
     newFrames.addAll(frames.value);
     newFrames.removeAt(selectedFrameIndex);
@@ -467,6 +488,7 @@ class Timeline
     }
 
     frames.value = newFrames;
+    _releaseDroppedFrames(previousFrames: previousFrames);
 
     GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.timelineFrameDelete);
   }

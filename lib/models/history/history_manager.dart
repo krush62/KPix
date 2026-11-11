@@ -18,12 +18,17 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/reference_image_manager.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/document_state.dart';
+import 'package:kpix/models/history/history_layer.dart';
+import 'package:kpix/models/history/history_reference_layer.dart';
 import 'package:kpix/models/history/history_state.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/project_session.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:logger/logger.dart';
 
 class HistoryChangeNotifier extends ChangeNotifier {
@@ -90,6 +95,38 @@ class HistoryManager
     }
     _maxEntries = maxEntries;
     _updateNotifiers();
+    _releaseUnusedReferenceImages();
+  }
+
+  /// Drops cached reference images that neither the document nor any undo step uses.
+  void _releaseUnusedReferenceImages()
+  {
+    if (!GetIt.I.isRegistered<ReferenceImageManager>() || GetIt.I.get<ReferenceImageManager>().isEmpty)
+    {
+      return;
+    }
+    final Set<String> inUse = <String>{};
+    for (final HistoryState state in _states)
+    {
+      for (final HistoryLayer layer in state.timeline.allLayers)
+      {
+        if (layer is HistoryReferenceLayer)
+        {
+          inUse.add(layer.path);
+        }
+      }
+    }
+    for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
+    {
+      for (final LayerState layer in frame.layerList.getAllLayers())
+      {
+        if (layer is ReferenceLayerState && layer.image != null)
+        {
+          inUse.add(layer.image!.path);
+        }
+      }
+    }
+    GetIt.I.get<ReferenceImageManager>().releaseUnused(inUse: inUse);
   }
 
   void _removeFutureEntries()
@@ -127,6 +164,7 @@ class HistoryManager
 
         _compressHistory();
         _updateNotifiers();
+        _releaseUnusedReferenceImages();
       }
       catch (e, s)
       {

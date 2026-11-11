@@ -31,6 +31,7 @@ import 'package:kpix/models/io_types.dart';
 import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/image_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:kpix/util/palette_extraction.dart';
@@ -42,10 +43,31 @@ import 'package:uuid/uuid.dart';
 /// pixel against them - run on a background isolate, so the UI keeps painting its
 /// loading dialog while they do. Everything that touches dart:ui, the ramps or
 /// the service locator stays here, and only plain numbers cross over.
+///
+/// Takes ownership of `importData.image` once its pixels are read: it moves into
+/// the reference layer or is released.
 Future<ImportResult> import({required final ImportData importData, required final List<KPalRampData> currentRamps}) async
 {
   //the default premultiplied format would darken every soft edge
   final ByteData? imageData = await importData.image.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
+  bool imageHandedOver = false;
+  try
+  {
+    final ImportResult result = await _import(importData: importData, imageData: imageData, currentRamps: currentRamps);
+    imageHandedOver = result.data?.referenceLayer != null;
+    return result;
+  }
+  finally
+  {
+    if (!imageHandedOver)
+    {
+      disposeAfterFrame(images: <ui.Image>[importData.image]);
+    }
+  }
+}
+
+Future<ImportResult> _import({required final ImportData importData, required final ByteData? imageData, required final List<KPalRampData> currentRamps}) async
+{
   if (imageData == null)
   {
     return ImportResult(result: ImageImportResult.conversionFailed);

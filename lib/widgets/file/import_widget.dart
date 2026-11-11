@@ -25,6 +25,7 @@ import 'package:kpix/models/io_types.dart';
 import 'package:kpix/util/file_pickers.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
+import 'package:kpix/util/helpers/image_helper.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -52,6 +53,7 @@ class ImportWidgetState extends State<ImportWidget>
   final ValueNotifier<bool> _createNewPaletteNotifier = ValueNotifier<bool>(true);
   final ValueNotifier<String> _messageNotifier = ValueNotifier<String>("");
   final ValueNotifier<ui.Image?> _imageNotifier = ValueNotifier<ui.Image?>(null);
+  bool _imageHandedOver = false;
   final ValueNotifier<int> _scaleDownNotifier = ValueNotifier<int>(1);
   final KPixOverlay _loadingDialog = getLoadingDialog(message: (final AppLocalizations l10n) => l10n.openingImageDot);
   static const int _maximumScale = 16;
@@ -68,6 +70,11 @@ class ImportWidgetState extends State<ImportWidget>
     _fileNameNotifier.dispose();
     _includeReferenceNotifier.dispose();
     _messageNotifier.dispose();
+    final ui.Image? image = _imageNotifier.value;
+    if (image != null && !_imageHandedOver)
+    {
+      disposeAfterFrame(images: <ui.Image>[image]);
+    }
   }
 
   @override
@@ -111,17 +118,19 @@ class ImportWidgetState extends State<ImportWidget>
         _loadingDialog.hide();
         if (!mounted)
         {
+          img?.dispose();
           return;
         }
         if (img != null)
         {
           if ((img.width ~/ _maximumScale) > CanvasSizeConstraints.sizeMax || (img.height ~/ _maximumScale) > CanvasSizeConstraints.sizeMax || img.width < CanvasSizeConstraints.sizeMin || img.height < CanvasSizeConstraints.sizeMin)
           {
+            img.dispose();
             _currentMinScale = 1;
             _currentMaxScale = 1;
             _scaleDownNotifier.value = 1;
             _fileNameNotifier.value = null;
-            _imageNotifier.value = null;
+            _setImage(image: null);
             _messageNotifier.value = l10n.imageDimensionsExceed(CanvasSizeConstraints.sizeMax * _maximumScale, CanvasSizeConstraints.sizeMax * _maximumScale);
           }
           else
@@ -149,7 +158,7 @@ class ImportWidgetState extends State<ImportWidget>
             _currentMaxScale = maxScale ?? 1;
             _scaleDownNotifier.value = _currentMinScale;
             _messageNotifier.value = "";
-            _imageNotifier.value = img;
+            _setImage(image: img);
             _fileNameNotifier.value = loadData.$1;
           }
         }
@@ -159,7 +168,7 @@ class ImportWidgetState extends State<ImportWidget>
           _currentMaxScale = 1;
           _scaleDownNotifier.value = 1;
           _messageNotifier.value = l10n.couldNotDecodeImage;
-          _imageNotifier.value = null;
+          _setImage(image: null);
           _fileNameNotifier.value = null;
         }
       },)
@@ -174,7 +183,7 @@ class ImportWidgetState extends State<ImportWidget>
       _currentMaxScale = 1;
       _scaleDownNotifier.value = 1;
       _messageNotifier.value = l10n.couldNotLoadFile;
-      _imageNotifier.value = null;
+      _setImage(image: null);
       _fileNameNotifier.value = null;
     }
   }
@@ -188,10 +197,24 @@ class ImportWidgetState extends State<ImportWidget>
     }
   }
 
+  /// Shows [image] in place of the current one, which is released unless the import took it.
+  void _setImage({required final ui.Image? image})
+  {
+    final ui.Image? previous = _imageNotifier.value;
+    _imageNotifier.value = image;
+    if (previous != null && !identical(previous, image) && !_imageHandedOver)
+    {
+      disposeAfterFrame(images: <ui.Image>[previous]);
+    }
+    _imageHandedOver = false;
+  }
+
   void _loadImage()
   {
     if (_fileNameNotifier.value != null && _imageNotifier.value != null) //should never happen
     {
+      //the import owns the image from here on
+      _imageHandedOver = true;
       final ImportData data = ImportData(image: _imageNotifier.value!, scale: _scaleDownNotifier.value, filePath: _fileNameNotifier.value!, includeReference: _includeReferenceNotifier.value, maxColors: _maxColorsPerRampNotifier.value, maxRamps: _maxRampsNotifier.value, maxClusters: KPalConstraints.maxClusters, createNewPalette: _createNewPaletteNotifier.value);
       widget.import(importData: data);
     }

@@ -700,7 +700,7 @@ void main()
       expect(find.text(testL10n.imageImportSuccessful), findsOneWidget);
       expect(GetIt.I.get<CanvasState>().canvasSize, CoordinateSetI(x: 4, y: 4));
       await tester.runAsync(settle);
-      image.dispose();
+      expect(image.debugDisposed, isTrue, reason: "the import owns the image and releases it");
     });
 
     _flowTest("says so when it fails", (final WidgetTester tester) async

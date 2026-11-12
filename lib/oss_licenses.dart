@@ -23,6 +23,7 @@ const allDependencies = <Package>[
   _collection,
   _cross_file,
   _crypto,
+  _cupertino_ui,
   _dbus,
   _device_info_plus,
   _device_info_plus_platform_interface,
@@ -52,10 +53,12 @@ const allDependencies = <Package>[
   _jni,
   _jni_flutter,
   _jni_util,
+  _listen,
   _logger,
   _logging,
   _markdown,
   _material_color_utilities,
+  _material_ui,
   _meta,
   _native_toolchain_c,
   _nativeapi,
@@ -127,6 +130,7 @@ const dependencies = <Package>[
   _image,
   _intl,
   _logger,
+  _material_ui,
   _nativeapi_flutter,
   _package_info_plus,
   _path,
@@ -141,6 +145,9 @@ const dependencies = <Package>[
 
 /// Direct `dev_dependencies`.
 const devDependencies = <Package>[
+  _cross_file,
+  _path_provider_platform_interface,
+  _plugin_platform_interface,
   _yaml
 ];
 
@@ -195,14 +202,14 @@ class PackageRef {
   Package resolve() => allDependencies.firstWhere((d) => d.name == name);
 }
 
-/// android_file_picker 2.1.3
+/// android_file_picker 2.1.5
 const _android_file_picker = Package(
     name: 'android_file_picker',
     description: 'Android implementation of the file_picker plugin, supporting file picking, saving, and Storage Access Framework (SAF) URI grants.',
     homepage: 'https://github.com/vicajilau/flutter_file_picker/tree/main/packages/file_picker_android',
     repository: 'https://github.com/vicajilau/flutter_file_picker/tree/main/packages/file_picker_android',
     authors: [],
-    version: '2.1.3',
+    version: '2.1.5',
     spdxIdentifiers: ['MIT'],
     isMarkdown: false,
     isSdk: false,
@@ -605,14 +612,14 @@ const _clock = Package(
    limitations under the License.''',
   );
 
-/// cnativeapi 0.5.8
+/// cnativeapi 0.6.0
 const _cnativeapi = Package(
     name: 'cnativeapi',
     description: 'Raw Dart FFI bindings to the nativeapi C API. The native library is built from source by a build hook.',
     homepage: 'https://github.com/libnativeapi/nativeapi',
     repository: 'https://github.com/libnativeapi/nativeapi/tree/main/bindings/dart/cnativeapi',
     authors: [],
-    version: '0.5.8',
+    version: '0.6.0',
     spdxIdentifiers: ['MIT'],
     isMarkdown: false,
     isSdk: false,
@@ -641,13 +648,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.''',
   );
 
-/// code_assets 2.1.0
+/// code_assets 2.2.0
 const _code_assets = Package(
     name: 'code_assets',
     description: 'This library contains the hook protocol specification for bundling native code with Dart packages.',
     repository: 'https://github.com/dart-lang/native/tree/main/pkgs/code_assets',
     authors: [],
-    version: '2.1.0',
+    version: '2.2.0',
     spdxIdentifiers: ['BSD-3-Clause'],
     isMarkdown: false,
     isSdk: false,
@@ -801,6 +808,45 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
+  );
+
+/// cupertino_ui 1.1.6
+const _cupertino_ui = Package(
+    name: 'cupertino_ui',
+    description: 'The official Flutter Cupertino Design Library, implementing the iOS design system.',
+    repository: 'https://github.com/flutter/packages/tree/main/packages/cupertino_ui',
+    authors: [],
+    version: '1.1.6',
+    spdxIdentifiers: ['BSD-3-Clause'],
+    isMarkdown: false,
+    isSdk: false,
+    dependencies: [PackageRef('collection'), PackageRef('flutter'), PackageRef('flutter_localizations'), PackageRef('intl')],
+    devDependencies: [PackageRef('clock'), PackageRef('material_ui'), PackageRef('path')],
+    license: '''Copyright 2013 The Flutter Authors
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following
+      disclaimer in the documentation and/or other materials provided
+      with the distribution.
+    * Neither the name of Google Inc. nor the names of its
+      contributors may be used to endorse or promote products derived
+      from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
   );
 
 /// dbus 0.8.0
@@ -1433,14 +1479,14 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
   );
 
-/// file_picker 13.3.2
+/// file_picker 13.3.3
 const _file_picker = Package(
     name: 'file_picker',
     description: 'A package that allows you to use a native file explorer to pick single or multiple absolute file paths, with extension filtering support.',
     homepage: 'https://github.com/vicajilau/flutter_file_picker',
     repository: 'https://github.com/vicajilau/flutter_file_picker/tree/main/packages/file_picker',
     authors: [],
-    version: '13.3.2',
+    version: '13.3.3',
     spdxIdentifiers: ['MIT'],
     isMarkdown: false,
     isSdk: false,
@@ -1469,14 +1515,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.''',
   );
 
-/// file_picker_darwin 2.4.2
+/// file_picker_darwin 2.5.1
 const _file_picker_darwin = Package(
     name: 'file_picker_darwin',
     description: 'Darwin (iOS and macOS) implementation of the file_picker plugin, supporting native file picking, saving, and directory selection.',
     homepage: 'https://github.com/vicajilau/flutter_file_picker/tree/main/packages/file_picker_darwin',
     repository: 'https://github.com/vicajilau/flutter_file_picker/tree/main/packages/file_picker_darwin',
     authors: [],
-    version: '2.4.2',
+    version: '2.5.1',
     spdxIdentifiers: ['MIT'],
     isMarkdown: false,
     isSdk: false,
@@ -1505,14 +1551,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.''',
   );
 
-/// file_picker_linux 2.0.3
+/// file_picker_linux 2.0.4
 const _file_picker_linux = Package(
     name: 'file_picker_linux',
     description: 'Linux implementation of the file_picker plugin using GTK3 and XDG Desktop Portals for native file and directory picking.',
     homepage: 'https://github.com/vicajilau/flutter_file_picker/tree/main/packages/file_picker_linux',
     repository: 'https://github.com/vicajilau/flutter_file_picker/tree/main/packages/file_picker_linux',
     authors: [],
-    version: '2.0.3',
+    version: '2.0.4',
     spdxIdentifiers: ['MIT'],
     isMarkdown: false,
     isSdk: false,
@@ -1577,14 +1623,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.''',
   );
 
-/// file_picker_web 4.2.0
+/// file_picker_web 4.2.1
 const _file_picker_web = Package(
     name: 'file_picker_web',
     description: 'Web platform implementation of the file_picker plugin, providing browser file selection, file streaming, and file loading.',
     homepage: 'https://github.com/vicajilau/flutter_file_picker/tree/main/packages/file_picker_web',
     repository: 'https://github.com/vicajilau/flutter_file_picker/tree/main/packages/file_picker_web',
     authors: [],
-    version: '4.2.0',
+    version: '4.2.1',
     spdxIdentifiers: ['MIT'],
     isMarkdown: false,
     isSdk: false,
@@ -1698,17 +1744,17 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
   );
 
-/// flutter 3.47.9
+/// flutter 3.50.0
 const _flutter = Package(
     name: 'flutter',
     description: 'A framework for writing Flutter applications',
     homepage: 'https://flutter.dev',
     authors: [],
-    version: '3.47.9',
+    version: '3.50.0',
     spdxIdentifiers: ['BSD-3-Clause'],
     isMarkdown: false,
     isSdk: true,
-    dependencies: [PackageRef('characters'), PackageRef('collection'), PackageRef('material_color_utilities'), PackageRef('meta'), PackageRef('vector_math')],
+    dependencies: [PackageRef('characters'), PackageRef('collection'), PackageRef('listen'), PackageRef('material_color_utilities'), PackageRef('meta'), PackageRef('vector_math')],
     devDependencies: [PackageRef('flutter_localizations'), PackageRef('web'), PackageRef('clock'), PackageRef('file'), PackageRef('path'), PackageRef('platform')],
     license: '''Copyright 2014 The Flutter Authors. All rights reserved.
 
@@ -2237,6 +2283,45 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
   );
 
+/// listen 1.0.1
+const _listen = Package(
+    name: 'listen',
+    description: 'A package to notify state changes to interested listeners in pure Dart.',
+    repository: 'https://github.com/flutter/core-packages/tree/main/packages/listen',
+    authors: [],
+    version: '1.0.1',
+    spdxIdentifiers: ['BSD-3-Clause'],
+    isMarkdown: false,
+    isSdk: false,
+    dependencies: [PackageRef('meta')],
+    devDependencies: [],
+    license: '''Copyright 2013 The Flutter Authors
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following
+      disclaimer in the documentation and/or other materials provided
+      with the distribution.
+    * Neither the name of Google Inc. nor the names of its
+      contributors may be used to endorse or promote products derived
+      from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
+  );
+
 /// logger 2.8.0
 const _logger = Package(
     name: 'logger',
@@ -2571,6 +2656,45 @@ const _material_color_utilities = Package(
    limitations under the License.''',
   );
 
+/// material_ui 1.11.0
+const _material_ui = Package(
+    name: 'material_ui',
+    description: "The official Flutter Material UI Library, implementing Google's Material Design design system.",
+    repository: 'https://github.com/flutter/packages/tree/main/packages/material_ui',
+    authors: [],
+    version: '1.11.0',
+    spdxIdentifiers: ['BSD-3-Clause'],
+    isMarkdown: false,
+    isSdk: false,
+    dependencies: [PackageRef('collection'), PackageRef('cupertino_ui'), PackageRef('flutter'), PackageRef('flutter_localizations'), PackageRef('intl'), PackageRef('material_color_utilities'), PackageRef('vector_math')],
+    devDependencies: [PackageRef('args'), PackageRef('file'), PackageRef('meta'), PackageRef('path'), PackageRef('platform')],
+    license: '''Copyright 2013 The Flutter Authors
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following
+      disclaimer in the documentation and/or other materials provided
+      with the distribution.
+    * Neither the name of Google Inc. nor the names of its
+      contributors may be used to endorse or promote products derived
+      from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
+  );
+
 /// meta 1.19.0
 const _meta = Package(
     name: 'meta',
@@ -2612,13 +2736,13 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
   );
 
-/// native_toolchain_c 0.19.5
+/// native_toolchain_c 0.19.6
 const _native_toolchain_c = Package(
     name: 'native_toolchain_c',
     description: 'A library to invoke the native C compiler installed on the host machine.',
     repository: 'https://github.com/dart-lang/native/tree/main/pkgs/native_toolchain_c',
     authors: [],
-    version: '0.19.5',
+    version: '0.19.6',
     spdxIdentifiers: ['BSD-3-Clause'],
     isMarkdown: false,
     isSdk: false,
@@ -2653,14 +2777,14 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
   );
 
-/// nativeapi 0.5.8
+/// nativeapi 0.6.0
 const _nativeapi = Package(
     name: 'nativeapi',
     description: 'Dart bindings for nativeapi - providing seamless, unified access to native system APIs.',
     homepage: 'https://github.com/libnativeapi/nativeapi',
     repository: 'https://github.com/libnativeapi/nativeapi/tree/main/bindings/dart/nativeapi',
     authors: [],
-    version: '0.5.8',
+    version: '0.6.0',
     spdxIdentifiers: ['MIT'],
     isMarkdown: false,
     isSdk: false,
@@ -2689,14 +2813,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.''',
   );
 
-/// nativeapi_flutter 0.5.8
+/// nativeapi_flutter 0.6.0
 const _nativeapi_flutter = Package(
     name: 'nativeapi_flutter',
     description: 'Flutter integration for nativeapi: widgets, dart:ui conversions and the multi-window bridge on top of package:nativeapi.',
     homepage: 'https://github.com/libnativeapi/nativeapi',
     repository: 'https://github.com/libnativeapi/nativeapi/tree/main/bindings/dart/nativeapi_flutter',
     authors: [],
-    version: '0.5.8',
+    version: '0.6.0',
     spdxIdentifiers: ['MIT'],
     isMarkdown: false,
     isSdk: false,
@@ -2725,13 +2849,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.''',
   );
 
-/// objective_c 9.6.2
+/// objective_c 9.6.4
 const _objective_c = Package(
     name: 'objective_c',
     description: 'A library to access Objective C from Flutter that acts as a support library for package:ffigen.',
     repository: 'https://github.com/dart-lang/native/tree/main/pkgs/objective_c',
     authors: [],
-    version: '9.6.2',
+    version: '9.6.4',
     spdxIdentifiers: ['BSD-3-Clause'],
     isMarkdown: false,
     isSdk: false,
@@ -2766,17 +2890,17 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
   );
 
-/// package_config 2.2.0
+/// package_config 3.0.0
 const _package_config = Package(
     name: 'package_config',
     description: 'Support for reading and writing Dart Package Configuration files.',
     repository: 'https://github.com/dart-lang/tools/tree/main/pkgs/package_config',
     authors: [],
-    version: '2.2.0',
+    version: '3.0.0',
     spdxIdentifiers: ['BSD-3-Clause'],
     isMarkdown: false,
     isSdk: false,
-    dependencies: [PackageRef('path')],
+    dependencies: [PackageRef('meta')],
     devDependencies: [],
     license: '''Copyright 2019, the Dart project authors.
 
@@ -3526,13 +3650,13 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
   );
 
-/// shared_preferences_android 2.5.4
+/// shared_preferences_android 2.5.5
 const _shared_preferences_android = Package(
     name: 'shared_preferences_android',
     description: 'Android implementation of the shared_preferences plugin',
     repository: 'https://github.com/flutter/packages/tree/main/packages/shared_preferences/shared_preferences_android',
     authors: [],
-    version: '2.5.4',
+    version: '2.5.5',
     spdxIdentifiers: ['BSD-3-Clause'],
     isMarkdown: false,
     isSdk: false,
@@ -3565,13 +3689,13 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
   );
 
-/// shared_preferences_foundation 2.6.1
+/// shared_preferences_foundation 2.6.2
 const _shared_preferences_foundation = Package(
     name: 'shared_preferences_foundation',
     description: 'iOS and macOS implementation of the shared_preferences plugin.',
     repository: 'https://github.com/flutter/packages/tree/main/packages/shared_preferences/shared_preferences_foundation',
     authors: [],
-    version: '2.6.1',
+    version: '2.6.2',
     spdxIdentifiers: ['BSD-3-Clause'],
     isMarkdown: false,
     isSdk: false,
@@ -4504,18 +4628,18 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
   );
 
-/// window_manager 0.6.0
+/// window_manager 0.7.0
 const _window_manager = Package(
     name: 'window_manager',
     description: 'This plugin allows Flutter desktop apps to resizing and repositioning the window.',
     homepage: 'https://leanflutter.dev',
     repository: 'https://github.com/leanflutter/window_manager',
     authors: [],
-    version: '0.6.0',
+    version: '0.7.0',
     spdxIdentifiers: ['MIT'],
     isMarkdown: false,
     isSdk: false,
-    dependencies: [PackageRef('flutter'), PackageRef('nativeapi'), PackageRef('nativeapi_flutter')],
+    dependencies: [PackageRef('flutter'), PackageRef('material_ui'), PackageRef('nativeapi'), PackageRef('nativeapi_flutter')],
     devDependencies: [],
     license: '''MIT License
 
@@ -4540,14 +4664,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.''',
   );
 
-/// windows_file_picker 2.0.1
+/// windows_file_picker 2.0.2
 const _windows_file_picker = Package(
     name: 'windows_file_picker',
     description: 'Windows implementation of the file_picker plugin using Win32 COM APIs for native file and directory picking.',
     homepage: 'https://github.com/vicajilau/flutter_file_picker/tree/main/packages/file_picker_windows',
     repository: 'https://github.com/vicajilau/flutter_file_picker/tree/main/packages/file_picker_windows',
     authors: [],
-    version: '2.0.1',
+    version: '2.0.2',
     spdxIdentifiers: ['MIT'],
     isMarkdown: false,
     isSdk: false,
@@ -4694,8 +4818,8 @@ const _kpix = Package(
     spdxIdentifiers: ['AGPL-3.0'],
     isMarkdown: false,
     isSdk: false,
-    dependencies: [PackageRef('archive'), PackageRef('device_info_plus'), PackageRef('file_picker'), PackageRef('file_saver'), PackageRef('flutter'), PackageRef('flutter_localizations'), PackageRef('flutter_markdown_plus'), PackageRef('flutter_tabler_icons'), PackageRef('get_it'), PackageRef('http'), PackageRef('image'), PackageRef('intl'), PackageRef('logger'), PackageRef('nativeapi_flutter'), PackageRef('package_info_plus'), PackageRef('path'), PackageRef('path_provider'), PackageRef('shared_preferences'), PackageRef('toastification'), PackageRef('url_launcher'), PackageRef('uuid'), PackageRef('version'), PackageRef('window_manager')],
-    devDependencies: [PackageRef('yaml')],
+    dependencies: [PackageRef('archive'), PackageRef('device_info_plus'), PackageRef('file_picker'), PackageRef('file_saver'), PackageRef('flutter'), PackageRef('flutter_localizations'), PackageRef('flutter_markdown_plus'), PackageRef('flutter_tabler_icons'), PackageRef('get_it'), PackageRef('http'), PackageRef('image'), PackageRef('intl'), PackageRef('logger'), PackageRef('material_ui'), PackageRef('nativeapi_flutter'), PackageRef('package_info_plus'), PackageRef('path'), PackageRef('path_provider'), PackageRef('shared_preferences'), PackageRef('toastification'), PackageRef('url_launcher'), PackageRef('uuid'), PackageRef('version'), PackageRef('window_manager')],
+    devDependencies: [PackageRef('cross_file'), PackageRef('path_provider_platform_interface'), PackageRef('plugin_platform_interface'), PackageRef('yaml')],
     license: '''GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 

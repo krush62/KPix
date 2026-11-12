@@ -17,6 +17,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -73,7 +74,7 @@ class _ControlsWidgetState extends State<ControlsWidget>
             child: ValueListenableBuilder<String>(
               valueListenable: _controlsContent,
               builder: (final BuildContext context, final String content, final Widget? child) {
-                return Markdown(data: content);
+                return Markdown(data: content, styleSheet: buildMarkdownStyleSheet(theme: Theme.of(context)));
               },
             ),
           ),

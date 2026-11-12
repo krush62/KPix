@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Notifier for theme change.
@@ -101,6 +102,33 @@ TextTheme _buildTextTheme({required final Color color})
     bodyLarge: style(14, 1.5, 0.15, FontWeight.w400),
     bodyMedium: style(12, 1.5, 0.25, FontWeight.w600),
     bodySmall: style(10, 1.5, 0.4, FontWeight.w600),
+  );
+}
+
+/// Markdown styles from the KPix theme; flutter_markdown_plus only sees the SDK's material Theme, not material_ui's.
+MarkdownStyleSheet buildMarkdownStyleSheet({required final ThemeData theme})
+{
+  final TextTheme text = theme.textTheme;
+  final TextStyle body = text.bodyMedium!;
+  final BoxDecoration blockDecoration = BoxDecoration(color: theme.primaryColorDark, borderRadius: const BorderRadius.all(Radius.circular(2.0)));
+  return MarkdownStyleSheet(
+    p: body,
+    code: body.copyWith(backgroundColor: theme.primaryColorDark, fontFamily: 'monospace', fontSize: body.fontSize! * 0.85),
+    h1: text.headlineSmall,
+    h2: text.titleLarge,
+    h3: text.titleMedium,
+    h4: text.bodyLarge,
+    h5: text.bodyLarge,
+    h6: text.bodyLarge,
+    blockquote: body,
+    img: body,
+    checkbox: body.copyWith(color: theme.primaryColorLight),
+    listBullet: body,
+    tableBody: body,
+    tableBorder: TableBorder.all(color: theme.primaryColorLight),
+    blockquoteDecoration: blockDecoration,
+    codeblockDecoration: blockDecoration,
+    horizontalRuleDecoration: BoxDecoration(border: Border(top: BorderSide(width: 5.0, color: theme.primaryColor))),
   );
 }
 

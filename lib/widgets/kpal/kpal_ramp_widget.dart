@@ -283,6 +283,64 @@ class _KPalRampState extends State<KPalRamp>
     _settingsChanged();
   }
 
+  Widget _createControlRow({
+    required final String label,
+    required final void Function({required double newVal}) changeFunc,
+    final bool showPlusSignForPositive = false,
+    required final double value,
+    required final double defaultValue,
+    required final double minValue,
+    required final double maxValue,
+    final int? divisions,
+    final bool isRainbow = false,
+    final bool showDigits = false,
+  })
+  {
+    return Expanded(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Expanded(
+            flex: _KPalRampWidgetOptions.rowLabelFlex,
+            child: Tooltip(
+              message: AppLocalizations.of(context)!.pressToReset,
+              child: GestureDetector(
+                onTap: ()
+                {
+                  changeFunc(newVal: defaultValue);
+                },
+                child: Text(label),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: _KPalRampWidgetOptions.rowControlFlex,
+            child: KPixSlider(
+              value: value,
+              showPlusSignForPositive: showPlusSignForPositive,
+              min: minValue,
+              max: maxValue,
+              isRainbow: isRainbow,
+              divisions: divisions,
+              onChanged: (final double newVal) {changeFunc(newVal: newVal);},
+              textStyle: Theme.of(context).textTheme.bodyLarge!,
+              label: showDigits ? value.toStringAsFixed(2) : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Divider _createDivider()
+  {
+    return Divider(
+      color: Theme.of(context).primaryColorDark,
+      thickness: _KPalRampWidgetOptions.dividerThickness,
+      height: _KPalRampWidgetOptions.dividerThickness,
+    );
+  }
+
   @override
   Widget build(final BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -327,232 +385,69 @@ class _KPalRampState extends State<KPalRamp>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowLabelFlex,
-                                child: Tooltip(
-                                  message: l10n.pressToReset,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _colorCountSliderChanged(newVal: KPalConstraints.colorCountDefault.toDouble());
-                                    },
-                                    child: Text(l10n.colorCount),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowControlFlex,
-                                child: KPixSlider(
-                                  value: widget.rampData.settings.colorCount.toDouble(),
-                                  min: KPalConstraints.colorCountMin.toDouble(),
-                                  max: KPalConstraints.colorCountMax.toDouble(),
-                                  onChanged: (final double newVal) {_colorCountSliderChanged(newVal: newVal);},
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                ),
-                              ),
-                            ],
-                          ),
+                        _createControlRow(
+                          label: l10n.colorCount,
+                          changeFunc: _colorCountSliderChanged,
+                          value: widget.rampData.settings.colorCount.toDouble(),
+                          defaultValue: KPalConstraints.colorCountDefault.toDouble(),
+                          minValue: KPalConstraints.colorCountMin.toDouble(),
+                          maxValue: KPalConstraints.colorCountMax.toDouble(),
                         ),
-                        Divider(
-                          color: Theme.of(context).primaryColorDark,
-                          thickness: _KPalRampWidgetOptions.dividerThickness,
-                          height: _KPalRampWidgetOptions.dividerThickness,
+                        _createDivider(),
+                        _createControlRow(
+                          label: l10n.baseHue,
+                          changeFunc: _baseHueSliderChanged,
+                          value: widget.rampData.settings.baseHue.toDouble(),
+                          defaultValue: KPalConstraints.baseHueDefault.toDouble(),
+                          minValue: KPalConstraints.baseHueMin.toDouble(),
+                          maxValue: KPalConstraints.baseHueMax.toDouble(),
+                          divisions: KPalConstraints.baseHueMax - KPalConstraints.baseHueMin,
+                          isRainbow: true,
                         ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowLabelFlex,
-                                child: Tooltip(
-                                  message: l10n.pressToReset,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _baseHueSliderChanged(newVal: KPalConstraints.baseHueDefault.toDouble());
-                                    },
-                                    child: Text(l10n.baseHue),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowControlFlex,
-                                child: KPixSlider(
-                                  value: widget.rampData.settings.baseHue.toDouble(),
-                                  min: KPalConstraints.baseHueMin.toDouble(),
-                                  max: KPalConstraints.baseHueMax.toDouble(),
-                                  divisions: KPalConstraints.baseHueMax - KPalConstraints.baseHueMin,
-                                  onChanged: (final double newVal) {_baseHueSliderChanged(newVal: newVal);},
-                                  isRainbow: true,
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-
-                                ),
-                              ),
-                            ],
-                          ),
+                        _createControlRow(
+                          label: l10n.hueShift,
+                          changeFunc: _hueShiftSliderChanged,
+                          value: widget.rampData.settings.hueShift.toDouble(),
+                          defaultValue: KPalConstraints.hueShiftDefault.toDouble(),
+                          minValue: KPalConstraints.hueShiftMin.toDouble(),
+                          maxValue: KPalConstraints.hueShiftMax.toDouble(),
+                          showPlusSignForPositive: true,
                         ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowLabelFlex,
-                                child: Tooltip(
-                                  message: l10n.pressToReset,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _hueShiftSliderChanged(newVal: KPalConstraints.hueShiftDefault.toDouble());
-                                    },
-                                    child: Text(l10n.hueShift),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowControlFlex,
-                                child: KPixSlider(
-                                  value: widget.rampData.settings.hueShift.toDouble(),
-                                  showPlusSignForPositive: true,
-                                  min: KPalConstraints.hueShiftMin.toDouble(),
-                                  max: KPalConstraints.hueShiftMax.toDouble(),
-                                  onChanged: (final double newVal) {_hueShiftSliderChanged(newVal: newVal);},
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                ),
-                              ),
-                            ],
-                          ),
+                        _createControlRow(
+                          label: "↳ ${l10n.exponent}",
+                          changeFunc: _hueShiftExpSliderChanged,
+                          value: widget.rampData.settings.hueShiftExp,
+                          defaultValue: KPalConstraints.hueShiftExpDefault,
+                          minValue: KPalConstraints.hueShiftExpMin,
+                          maxValue: KPalConstraints.hueShiftExpMax,
+                          showDigits: true,
                         ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowLabelFlex,
-                                child: Tooltip(
-                                  message: l10n.pressToReset,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _hueShiftExpSliderChanged(newVal: KPalConstraints.hueShiftExpDefault);
-                                    },
-                                    child: Text("↳ ${l10n.exponent}"),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowControlFlex,
-                                child: KPixSlider(
-                                  value: widget.rampData.settings.hueShiftExp,
-                                  min: KPalConstraints.hueShiftExpMin,
-                                  max: KPalConstraints.hueShiftExpMax,
-                                  onChanged: (final double newVal) {_hueShiftExpSliderChanged(newVal: newVal);},
-                                  label: widget.rampData.settings.hueShiftExp.toStringAsFixed(2),
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                ),
-                              ),
-                            ],
-                          ),
+                        _createDivider(),
+                        _createControlRow(
+                          label: l10n.baseSat,
+                          changeFunc: _baseSatSliderChanged,
+                          value: widget.rampData.settings.baseSat.toDouble(),
+                          defaultValue: KPalConstraints.baseSatDefault.toDouble(),
+                          minValue: KPalConstraints.baseSatMin.toDouble(),
+                          maxValue: KPalConstraints.baseSatMax.toDouble(),
                         ),
-                        Divider(
-                          color: Theme.of(context).primaryColorDark,
-                          thickness: _KPalRampWidgetOptions.dividerThickness,
-                          height: _KPalRampWidgetOptions.dividerThickness,
+                        _createControlRow(
+                          label: l10n.satShift,
+                          changeFunc: _satShiftSliderChanged,
+                          value: widget.rampData.settings.satShift.toDouble(),
+                          defaultValue: KPalConstraints.satShiftDefault.toDouble(),
+                          minValue: KPalConstraints.satShiftMin.toDouble(),
+                          maxValue: KPalConstraints.satShiftMax.toDouble(),
+                          showPlusSignForPositive: true,
                         ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowLabelFlex,
-                                child: Tooltip(
-                                  message: l10n.pressToReset,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _baseSatSliderChanged(newVal: KPalConstraints.baseSatDefault.toDouble());
-                                    },
-                                    child: Text(l10n.baseSat),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowControlFlex,
-                                child: KPixSlider(
-                                  value: widget.rampData.settings.baseSat.toDouble(),
-                                  min: KPalConstraints.baseSatMin.toDouble(),
-                                  max: KPalConstraints.baseSatMax.toDouble(),
-                                  onChanged: (final double newVal) {_baseSatSliderChanged(newVal: newVal);},
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowLabelFlex,
-                                child: Tooltip(
-                                  message: l10n.pressToReset,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _satShiftSliderChanged(newVal: KPalConstraints.satShiftDefault.toDouble());
-                                    },
-                                    child: Text(l10n.satShift),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowControlFlex,
-                                child: KPixSlider(
-                                  value: widget.rampData.settings.satShift.toDouble(),
-                                  min: KPalConstraints.satShiftMin.toDouble(),
-                                  max: KPalConstraints.satShiftMax.toDouble(),
-                                  showPlusSignForPositive: true,
-                                  onChanged: (final double newVal) {_satShiftSliderChanged(newVal: newVal);},
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowLabelFlex,
-                                child: Tooltip(
-                                  message: l10n.pressToReset,
-                                  child: GestureDetector(
-                                      onTap: ()
-                                      {
-                                        _satShiftExpSliderChanged(newVal: KPalConstraints.satShiftExpDefault);
-                                      },
-                                      child: Text("↳ ${l10n.exponent}"),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: _KPalRampWidgetOptions.rowControlFlex,
-                                child: KPixSlider(
-                                  value: widget.rampData.settings.satShiftExp,
-                                  min: KPalConstraints.satShiftExpMin,
-                                  max: KPalConstraints.satShiftExpMax,
-                                  onChanged: (final double newVal) {_satShiftExpSliderChanged(newVal: newVal);},
-                                  label: widget.rampData.settings.satShiftExp.toStringAsFixed(2),
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                ),
-                              ),
-                            ],
-                          ),
+                        _createControlRow(
+                          label: "↳ ${l10n.exponent}",
+                          changeFunc: _satShiftExpSliderChanged,
+                          value: widget.rampData.settings.satShiftExp,
+                          defaultValue: KPalConstraints.satShiftExpDefault,
+                          minValue: KPalConstraints.satShiftExpMin,
+                          maxValue: KPalConstraints.satShiftExpMax,
+                          showDigits: true,
                         ),
                         Expanded(
                           child: Row(
@@ -601,11 +496,7 @@ class _KPalRampState extends State<KPalRamp>
                             ],
                           ),
                         ),
-                        Divider(
-                          color: Theme.of(context).primaryColorDark,
-                          thickness: _KPalRampWidgetOptions.dividerThickness,
-                          height: _KPalRampWidgetOptions.dividerThickness,
-                        ),
+                        _createDivider(),
                         Expanded(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,

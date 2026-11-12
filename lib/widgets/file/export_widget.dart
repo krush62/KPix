@@ -459,6 +459,28 @@ class ExportWidgetState extends State<ExportWidget>
     );
   }
 
+  Text _getTitleForSection({required final AppLocalizations l10n, required final ExportSectionType section})
+  {
+    String title = l10n.export.toUpperCase();
+    if (section == ExportSectionType.image)
+    {
+      title += " ${l10n.image.toUpperCase()}";
+    }
+    else if (section == ExportSectionType.palette)
+    {
+      title += " ${l10n.palette.toUpperCase()}";
+    }
+    else if (section == ExportSectionType.animation)
+    {
+      title += " ${l10n.animation.toUpperCase()}";
+    }
+    else if (section == ExportSectionType.kpix)
+    {
+      title += " ${l10n.kpixProject.toUpperCase()}";
+    }
+    return Text(title, style: Theme.of(context).textTheme.titleLarge);
+  }
+
   @override
   Widget build(final BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -504,26 +526,9 @@ class ExportWidgetState extends State<ExportWidget>
               builder: (final BuildContext context, final ExportSectionType section, final Widget? child)
               {
                 final AppLocalizations l10n = AppLocalizations.of(context)!;
-                String title = l10n.export.toUpperCase();
-                if (section == ExportSectionType.image)
-                {
-                  title += " ${l10n.image.toUpperCase()}";
-                }
-                else if (section == ExportSectionType.palette)
-                {
-                  title += " ${l10n.palette.toUpperCase()}";
-                }
-                else if (section == ExportSectionType.animation)
-                {
-                  title += " ${l10n.animation.toUpperCase()}";
-                }
-                else if (section == ExportSectionType.kpix)
-                {
-                  title += " ${l10n.kpixProject.toUpperCase()}";
-                }
                 return Column(
                   children: <Widget>[
-                    Text(title, style: Theme.of(context).textTheme.titleLarge),
+                    _getTitleForSection(section: section, l10n: l10n),
                     const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
                     _createFormatRow(section: section, l10n: l10n),
                     _createScalingRow(section: section, l10n: l10n),
@@ -562,5 +567,4 @@ class ExportWidgetState extends State<ExportWidget>
       ),
     );
   }
-
 }

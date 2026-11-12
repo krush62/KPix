@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/models/constraints/tool_line_constraints.dart';
@@ -27,6 +26,7 @@ import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 import 'package:kpix/widgets/controls/kpix_dropdown.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'support/widget_harness.dart';
 

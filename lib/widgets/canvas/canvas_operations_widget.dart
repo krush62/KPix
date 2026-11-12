@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -25,6 +24,7 @@ import 'package:kpix/models/document_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/canvas_action_messages.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Layout options for the [CanvasOperationsWidget].
 abstract final class _CanvasOperationsWidgetOptions

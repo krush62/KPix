@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -24,6 +23,7 @@ import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
+import 'package:material_ui/material_ui.dart';
 
 bool isPerspectiveGridType({required final GridType gridType})
 {

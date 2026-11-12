@@ -18,7 +18,6 @@ import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
-import 'package:flutter/material.dart' hide Image;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
@@ -39,6 +38,7 @@ import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:material_ui/material_ui.dart' hide Image;
 
 import 'support/export_fixture.dart';
 import 'support/format_readers.dart';

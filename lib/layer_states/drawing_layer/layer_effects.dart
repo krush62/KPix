@@ -18,12 +18,12 @@ import 'dart:collection';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/pixel_grid.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Receives one effect pixel. A pixel handed over twice keeps the later color.
 typedef EffectPixelSink = void Function(int x, int y, ColorReference color);

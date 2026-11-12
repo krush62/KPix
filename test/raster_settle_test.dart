@@ -14,12 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history/history_ramp_data.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The smallest possible layer, so the settling logic can be exercised without
 /// the service locator that the real layer types need.

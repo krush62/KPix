@@ -14,9 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/layer_settings.dart';
 import 'package:kpix/models/constraints/shading_layer_settings_constraints.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ShadingLayerSettings extends LayerSettings
 {

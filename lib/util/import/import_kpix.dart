@@ -23,7 +23,6 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart' show ZLibDecoder;
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -56,6 +55,7 @@ import 'package:kpix/util/file_byte_reader.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/helpers/pixel_grid.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 
 HashMap<Alignment, bool> _unPackAlignments({required final int byte})

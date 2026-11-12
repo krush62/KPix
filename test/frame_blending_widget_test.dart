@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
@@ -25,6 +24,7 @@ import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
+import 'package:material_ui/material_ui.dart';
 
 //the controls, in the order the dialog shows them
 const int _enabledSwitch = 0;

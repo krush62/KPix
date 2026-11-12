@@ -36,9 +36,9 @@
 
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/helpers/hash_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 const int _fullCircle = 360;
 const int _halfCircle = 180;

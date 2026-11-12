@@ -16,7 +16,6 @@
 
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -26,6 +25,7 @@ import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<ui.Image> getImageFromLayers({
   required final LayerCollection layerCollection,

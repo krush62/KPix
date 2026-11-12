@@ -15,9 +15,10 @@
  */
 
 import 'dart:ui' as ui;
+
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:kpix/models/stamp_manager_data.dart';
+import 'package:material_ui/material_ui.dart';
 
 abstract final class _StampManagerEntryOptions
 {

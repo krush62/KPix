@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
@@ -26,6 +25,7 @@ import 'package:kpix/models/stamp_manager_data.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:material_ui/material_ui.dart';
 
 
 class StampOptions extends IToolOptions

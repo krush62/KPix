@@ -14,10 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The key handling around the app as built in main.dart: the shortcut
 /// callbacks on key down, the [KeyboardListener] for the key up handling.

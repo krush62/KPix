@@ -17,7 +17,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:kpix/models/color_types.dart';
@@ -26,6 +25,7 @@ import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'support/format_readers.dart';
 import 'support/selection_harness.dart';

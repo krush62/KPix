@@ -18,7 +18,6 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -41,6 +40,7 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/image_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:logger/logger.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum LayerActionResult {
   success,

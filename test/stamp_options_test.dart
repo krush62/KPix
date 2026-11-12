@@ -1,7 +1,6 @@
 import 'dart:collection';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -22,6 +21,7 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
 import 'support/selection_harness.dart';

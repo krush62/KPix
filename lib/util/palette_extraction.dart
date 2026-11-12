@@ -18,13 +18,13 @@ import 'dart:collection';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/constraints/kpal_constraints.dart';
 import 'package:kpix/models/history/history_shift_set.dart';
 import 'package:kpix/models/palette_codec.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/pixel_grid.dart';
+import 'package:material_ui/material_ui.dart';
 
 //finds color ramps for an image and matches pixels against a palette; both run on background isolates
 

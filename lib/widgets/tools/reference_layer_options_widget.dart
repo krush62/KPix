@@ -16,7 +16,6 @@
 
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/reference_image_manager.dart';
@@ -36,6 +35,7 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ReferenceLayerOptionsWidget extends StatefulWidget
 {
@@ -90,7 +90,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
         }
         else
         {
-          showMessage(text: l10n.couldNotLoadImageFrom(loadPath), toastType: ToastType.error);
+          showMessage(text: l10n.couldNotLoadImageFrom(location: loadPath), toastType: ToastType.error);
         }
       });
     }
@@ -166,7 +166,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
           SizedBox(
             height: _resetButtonHeight,
             child: IconButton.outlined(
-              tooltip: l10n.resetSetting(name),
+              tooltip: l10n.resetSetting(setting: name),
               onPressed: refImg == null ? null: (){notifier.value = defaultValue; _commitChange();},
               iconSize: _resetIconSize,
               icon: const Icon(TablerIcons.restore,),

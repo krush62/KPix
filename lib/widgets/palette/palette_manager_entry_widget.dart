@@ -15,11 +15,11 @@
  */
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/palette_manager_data.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 abstract final class _PaletteManagerEntryOptions
 {
@@ -112,7 +112,7 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
                 Expanded(
                   child: Center(
                     child: Text(
-                      widget.entryData.rampDataList.length == 1 ? l10n.nColors(colorCount) : l10n.nRampsColors(widget.entryData.rampDataList.length, colorCount),
+                      widget.entryData.rampDataList.length == 1 ? l10n.nColors(amount: colorCount) : l10n.nRampsColors(rampAmount: widget.entryData.rampDataList.length, colorAmount: colorCount),
                       style: Theme.of(context).textTheme.bodySmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
                   ),

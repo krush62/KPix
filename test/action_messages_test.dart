@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -33,6 +32,7 @@ import 'package:kpix/widgets/layer_action_messages.dart';
 import 'package:kpix/widgets/palette_action_messages.dart';
 import 'package:kpix/widgets/project_action_messages.dart';
 import 'package:kpix/widgets/selection_action_messages.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
 final AppLocalizations _l10n = lookupAppLocalizations(const Locale("en"));
@@ -166,8 +166,8 @@ void main()
       show: (final PaletteActionResult result) => showMessageForPaletteResult(result: result, l10n: _l10n),
       table: <PaletteActionResult, _Toast>{
         PaletteActionResult.success: _nothing,
-        PaletteActionResult.rampCountMinReached: (_l10n.needAtLeastColorRamps(KPalConstraints.rampCountMin), ToastType.warning),
-        PaletteActionResult.rampCountMaxReached: (_l10n.notMoreThanColorRampsAllowed(KPalConstraints.rampCountMax), ToastType.warning),
+        PaletteActionResult.rampCountMinReached: (_l10n.needAtLeastColorRamps(count: KPalConstraints.rampCountMin), ToastType.warning),
+        PaletteActionResult.rampCountMaxReached: (_l10n.notMoreThanColorRampsAllowed(count: KPalConstraints.rampCountMax), ToastType.warning),
         PaletteActionResult.loadingFailed: (_l10n.loadingPaletteFailed, ToastType.error),
       },
     );
@@ -217,7 +217,7 @@ void main()
 
   group("saving a file", ()
   {
-    _toastTest(description: "names where it went", show: () => showMessageForFileSaved(displayPath: "some/path", l10n: _l10n), toast: (_l10n.fileSavedAt("some/path"), ToastType.success));
+    _toastTest(description: "names where it went", show: () => showMessageForFileSaved(displayPath: "some/path", l10n: _l10n), toast: (_l10n.fileSavedAt(path: "some/path"), ToastType.success));
     _toastTest(description: "says when it failed", show: () => showMessageForFileSaveFailed(l10n: _l10n), toast: (_l10n.errorSavingProject, ToastType.error));
   });
 
@@ -226,7 +226,7 @@ void main()
     _toastTest(
       description: "reports the file's problem when nothing could be restored",
       show: () => showMessagesForProjectLoad(result: (restore: null, status: "broken file"), l10n: _l10n),
-      toast: (_l10n.loadingFailed("broken file"), ToastType.error),
+      toast: (_l10n.loadingFailed(status: "broken file"), ToastType.error),
     );
     _toastTest(
       description: "reports nothing when all went well",
@@ -250,8 +250,8 @@ void main()
     for (final (ProjectDirectoryMoveError?, String) entry in <(ProjectDirectoryMoveError?, String)>[
       (ProjectDirectoryMoveError.targetNotCreated, _l10n.targetDirCouldNotBeCreated),
       (ProjectDirectoryMoveError.insufficientPermissions, _l10n.insufficientPermissionsForDir),
-      (ProjectDirectoryMoveError.targetFileExists, _l10n.dirAlreadyContainsFile("a.kpix")),
-      (ProjectDirectoryMoveError.moveFailed, _l10n.couldNotMoveFile("a.kpix")),
+      (ProjectDirectoryMoveError.targetFileExists, _l10n.dirAlreadyContainsFile(fileName: "a.kpix")),
+      (ProjectDirectoryMoveError.moveFailed, _l10n.couldNotMoveFile(fileName: "a.kpix")),
       (ProjectDirectoryMoveError.unexpected, _l10n.unexpectedErrorMovingProjectFiles),
       (null, _l10n.unexpectedErrorMovingProjectFiles),
     ])
@@ -275,12 +275,12 @@ void main()
     _toastTest(
       description: "undo names the step",
       show: () => showMessagesForUndo(step: stepFor(identifier: HistoryStateTypeIdentifier.layerMerge), l10n: _l10n),
-      toast: (_l10n.undoStep(_l10n.mergeLayer), ToastType.undo),
+      toast: (_l10n.undoStep(description: _l10n.mergeLayer), ToastType.undo),
     );
     _toastTest(
       description: "redo names the step",
       show: () => showMessagesForRedo(step: stepFor(identifier: HistoryStateTypeIdentifier.toolFill), l10n: _l10n),
-      toast: (_l10n.redoStep(_l10n.fill), ToastType.redo),
+      toast: (_l10n.redoStep(description: _l10n.fill), ToastType.redo),
     );
 
     for (final (String, void Function({required HistoryStep step, required AppLocalizations l10n})) direction in <(String, void Function({required HistoryStep step, required AppLocalizations l10n}))>[
@@ -303,7 +303,7 @@ void main()
     testWidgets("every kind of step has a name of its own", (final WidgetTester tester) async
     {
       await _pumpHost(tester);
-      final String prefix = _l10n.undoStep("");
+      final String prefix = _l10n.undoStep(description: "");
       final Set<String> names = <String>{};
 
       for (final HistoryStateTypeIdentifier identifier in HistoryStateTypeIdentifier.values)

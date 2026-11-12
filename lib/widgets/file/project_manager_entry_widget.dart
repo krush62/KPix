@@ -15,11 +15,12 @@
  */
 
 import 'dart:ui' as ui;
+
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Layout options for [ProjectManagerEntryWidget].
 abstract final class _ProjectManagerEntryOptions

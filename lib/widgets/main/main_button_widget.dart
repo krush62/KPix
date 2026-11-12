@@ -17,7 +17,6 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
@@ -51,6 +50,7 @@ import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/project_action_messages.dart';
 import 'package:logger/logger.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:path/path.dart' as p;
 
 abstract final class _MainButtonWidgetOptions
@@ -195,7 +195,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     if (fileName != null && fileName.isNotEmpty)
     {
-      showMessage(text: l10n.exportedTo(fileName), toastType: ToastType.success);
+      showMessage(text: l10n.exportedTo(path: fileName), toastType: ToastType.success);
       if (!kIsWeb && Platform.isAndroid)
       {
         const MethodChannel channel = MethodChannel('media_scanner');
@@ -439,7 +439,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     {
       if (path != null)
       {
-        showMessage(text: l10n.exportedPaletteTo(path), toastType: ToastType.success);
+        showMessage(text: l10n.exportedPaletteTo(path: path), toastType: ToastType.success);
       }
       else
       {
@@ -514,7 +514,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     if (moveResult.success)
     {
       GetIt.I.get<AppPaths>().projectsDir = targetDir;
-      showMessage(text: l10n.changedProjectDirectoryFiles(targetDir, moveResult.projectCount), toastType: ToastType.info);
+      showMessage(text: l10n.changedProjectDirectoryFiles(directory: targetDir, count: moveResult.projectCount), toastType: ToastType.info);
       await _handleAllFilesAccessPermission(switchedToCustomDir: useCustom);
     }
     else
@@ -527,7 +527,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         behaviorPrefs.customProjectDirectory.value = currentDir;
       }
       late final KPixOverlay errorDialog;
-      errorDialog = getSingleButtonDialog(onAction: () {errorDialog.hide();}, message: (final AppLocalizations l10n) => l10n.projectDirWasNotChanged(getMessageForProjectDirectoryMove(result: moveResult, l10n: l10n)));
+      errorDialog = getSingleButtonDialog(onAction: () {errorDialog.hide();}, message: (final AppLocalizations l10n) => l10n.projectDirWasNotChanged(message: getMessageForProjectDirectoryMove(result: moveResult, l10n: l10n)));
       if (mounted)
       {
         errorDialog.show(context: context);

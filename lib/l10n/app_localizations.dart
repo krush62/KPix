@@ -262,7 +262,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'A project named \"{name}\" already exists. Open that project or import the file as a copy?'**
-  String projectNameTaken(String name);
+  String projectNameTaken({required String name});
 
   /// No description provided for @openExistingProject.
   ///
@@ -280,7 +280,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Add \"{name}\" as a reference layer or import it as a new project?'**
-  String droppedImageQuestion(String name);
+  String droppedImageQuestion({required String name});
 
   /// No description provided for @addAsReferenceLayer.
   ///
@@ -298,7 +298,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Only KPix projects and images ({formats}) can be opened!'**
-  String droppedFileNotSupported(String formats);
+  String droppedFileNotSupported({required String formats});
 
   /// No description provided for @pleaseSelectAKPixFile.
   ///
@@ -460,7 +460,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{value} step} other{{value} steps}}'**
-  String stepCount(int count, String value);
+  String stepCount({required int count, required String value});
 
   /// No description provided for @recursive.
   ///
@@ -706,13 +706,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Need at least 1 color ramp!} other{Need at least {count} color ramps!}}'**
-  String needAtLeastColorRamps(int count);
+  String needAtLeastColorRamps({required int count});
 
   /// No description provided for @notMoreThanColorRampsAllowed.
   ///
   /// In en, this message translates to:
   /// **'Not more than {count} color ramps allowed!'**
-  String notMoreThanColorRampsAllowed(int count);
+  String notMoreThanColorRampsAllowed({required int count});
 
   /// No description provided for @loadingPaletteFailed.
   ///
@@ -724,13 +724,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Undo: {description}'**
-  String undoStep(String description);
+  String undoStep({required String description});
 
   /// No description provided for @redoStep.
   ///
   /// In en, this message translates to:
   /// **'Redo: {description}'**
-  String redoStep(String description);
+  String redoStep({required String description});
 
   /// No description provided for @historyRestoreFailed.
   ///
@@ -742,13 +742,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Loading failed ({status})'**
-  String loadingFailed(String status);
+  String loadingFailed({required String status});
 
   /// No description provided for @fileSavedAt.
   ///
   /// In en, this message translates to:
   /// **'File saved at: {path}'**
-  String fileSavedAt(String path);
+  String fileSavedAt({required String path});
 
   /// No description provided for @imageImportSuccessful.
   ///
@@ -1564,13 +1564,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =0{0 frames} =1{1 frame} other{{count} frames}}'**
-  String nFrames(int count);
+  String nFrames({required int count});
 
   /// No description provided for @frameNumber.
   ///
   /// In en, this message translates to:
   /// **'Frame {number}'**
-  String frameNumber(int number);
+  String frameNumber({required int number});
 
   /// No description provided for @directory.
   ///
@@ -1600,7 +1600,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Image dimensions cannot exceed {width} × {height}!'**
-  String imageDimensionsExceed(int width, int height);
+  String imageDimensionsExceed({required int width, required int height});
 
   /// No description provided for @couldNotDecodeImage.
   ///
@@ -1780,19 +1780,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Do you really want to delete this color ramp?\n{amount} pixel(s) will be deleted'**
-  String deleteColorRampQuestion(int amount);
+  String deleteColorRampQuestion({required int amount});
 
   /// message when deleting ramp
   ///
   /// In en, this message translates to:
   /// **'({amount} of them in the selection)'**
-  String ofThemInSelection(int amount);
+  String ofThemInSelection({required int amount});
 
   /// message when deleting ramp
   ///
   /// In en, this message translates to:
   /// **'{amount} pixel(s) in the clipboard will no longer be pasted'**
-  String pixelsInClipboard(int amount);
+  String pixelsInClipboard({required int amount});
 
   /// No description provided for @shadingRange.
   ///
@@ -2392,7 +2392,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Scaling should be at least {factor}:1 for this shader.'**
-  String shaderMinScaling(int factor);
+  String shaderMinScaling({required int factor});
 
   /// No description provided for @centerHorizontally.
   ///
@@ -2440,13 +2440,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{amount} colors'**
-  String nColors(int amount);
+  String nColors({required int amount});
 
   /// palette manager summary
   ///
   /// In en, this message translates to:
   /// **'{rampAmount} ramps | {colorAmount} colors'**
-  String nRampsColors(int rampAmount, int colorAmount);
+  String nRampsColors({required int rampAmount, required int colorAmount});
 
   /// No description provided for @remapExistingColors.
   ///
@@ -2596,7 +2596,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Palette saved successfully at {path}.'**
-  String paletteSavedAt(String path);
+  String paletteSavedAt({required String path});
 
   /// No description provided for @paletteWithSameNameExists.
   ///
@@ -3172,13 +3172,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Could not load image from {location}.'**
-  String couldNotLoadImageFrom(String location);
+  String couldNotLoadImageFrom({required String location});
 
   /// No description provided for @resetSetting.
   ///
   /// In en, this message translates to:
   /// **'Reset {setting}'**
-  String resetSetting(String setting);
+  String resetSetting({required String setting});
 
   /// No description provided for @noFileLoaded.
   ///
@@ -3376,13 +3376,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'The directory already contains a file named {fileName}!'**
-  String dirAlreadyContainsFile(String fileName);
+  String dirAlreadyContainsFile({required String fileName});
 
   /// project dir change
   ///
   /// In en, this message translates to:
   /// **'Could not move file {fileName}!'**
-  String couldNotMoveFile(String fileName);
+  String couldNotMoveFile({required String fileName});
 
   /// No description provided for @unexpectedErrorMovingProjectFiles.
   ///
@@ -3394,19 +3394,22 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Changed project directory to {directory} (moved {count} project file(s)).'**
-  String changedProjectDirectoryFiles(String directory, int count);
+  String changedProjectDirectoryFiles({
+    required String directory,
+    required int count,
+  });
 
   /// project dir change
   ///
   /// In en, this message translates to:
   /// **'The project directory was not changed!\n{message}'**
-  String projectDirWasNotChanged(String message);
+  String projectDirWasNotChanged({required String message});
 
   /// palette export
   ///
   /// In en, this message translates to:
   /// **'Exported palette to: {path}'**
-  String exportedPaletteTo(String path);
+  String exportedPaletteTo({required String path});
 
   /// No description provided for @errorExportingPaletteFile.
   ///
@@ -3418,7 +3421,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Exported to: {path}'**
-  String exportedTo(String path);
+  String exportedTo({required String path});
 
   /// No description provided for @errorExportingFile.
   ///

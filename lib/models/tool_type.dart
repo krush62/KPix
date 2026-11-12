@@ -16,9 +16,9 @@
  *
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum ToolType
 {

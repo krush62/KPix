@@ -14,10 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/widgets/controls/kpix_dropdown.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ToolSwitchRow extends StatelessWidget
 {

@@ -16,8 +16,8 @@
 
 import 'dart:collection';
 
-import 'package:flutter/material.dart';
 import 'package:kpix/kpix_constants.dart';
+import 'package:material_ui/material_ui.dart';
 
 
 /// A widget for selecting the cardinal and diagonal directions.

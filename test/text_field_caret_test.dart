@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
@@ -36,6 +35,7 @@ import 'package:kpix/widgets/file/new_project_widget.dart';
 import 'package:kpix/widgets/file/save_as_widget.dart';
 import 'package:kpix/widgets/file/shader_export_widget.dart';
 import 'package:kpix/widgets/palette/save_palette_widget.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
 import 'support/selection_harness.dart';

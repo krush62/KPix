@@ -17,9 +17,9 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// What the filter makes of a pixel, as (red, green, blue).
 Future<(int, int, int)> _filtered({required final WidgetTester tester, required final (int, int, int) rgb, required final ColorFilter filter}) async

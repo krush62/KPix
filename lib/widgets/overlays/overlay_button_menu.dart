@@ -16,10 +16,10 @@
 
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:kpix/widgets/main/layer_widget_options.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// One button of an [OverlayButtonMenu].
 class OverlayMenuEntry

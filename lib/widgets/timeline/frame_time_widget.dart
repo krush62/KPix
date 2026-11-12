@@ -16,7 +16,6 @@
  *
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -25,6 +24,7 @@ import 'package:kpix/models/constraints/frame_constraints.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_number_picker_widget.dart';
+import 'package:material_ui/material_ui.dart';
 
 class FrameTimeWidget extends StatefulWidget
 {

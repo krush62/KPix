@@ -16,7 +16,6 @@
 
 import 'dart:collection';
 
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -34,6 +33,7 @@ import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/tool_geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:material_ui/material_ui.dart';
 
 class StampPainter extends IToolPainter
 {

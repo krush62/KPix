@@ -16,7 +16,6 @@
 
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -33,6 +32,7 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/save_palette_widget.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:path/path.dart' as p;
 
 import 'support/project_files.dart';
@@ -227,7 +227,7 @@ void main()
         await tester.pump(const Duration(milliseconds: 300));
 
         expect(_palette.colorRamps, hasLength(KPalConstraints.rampCountMax));
-        expect(find.text(testL10n.notMoreThanColorRampsAllowed(KPalConstraints.rampCountMax)), findsOneWidget);
+        expect(find.text(testL10n.notMoreThanColorRampsAllowed(count: KPalConstraints.rampCountMax)), findsOneWidget);
       });
     });
 

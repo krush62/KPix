@@ -17,7 +17,6 @@
 import 'dart:math';
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -28,6 +27,7 @@ import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/canvas/canvas_controller.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 import 'package:kpix/widgets/canvas/touch_joystick_widget.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Layout options for [CanvasWidget].
 abstract final class _CanvasOptions

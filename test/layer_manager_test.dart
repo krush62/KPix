@@ -16,7 +16,6 @@
 
 import 'dart:collection';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
@@ -40,6 +39,7 @@ import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'support/selection_harness.dart';
 

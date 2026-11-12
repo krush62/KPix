@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
@@ -46,6 +45,7 @@ import 'package:kpix/widgets/palette/palette_adjustment_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/save_palette_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A dismissable layer above the app, such as a popup menu or a dialog.
 ///

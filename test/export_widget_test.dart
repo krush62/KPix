@@ -16,7 +16,6 @@
 
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -31,6 +30,7 @@ import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:path/path.dart' as p;
 import 'package:toastification/toastification.dart';
 
@@ -387,12 +387,12 @@ void main()
       final _Dialog dialog = await _pumpDialog(tester, frameCount: 3, loopEnd: 1);
       final AppLocalizations l10n = _l10n(tester);
       await _enterName(tester, "out");
-      expect(find.textContaining(l10n.nFrames(3)), findsOneWidget);
+      expect(find.textContaining(l10n.nFrames(count: 3)), findsOneWidget);
       await _accept(tester);
       expect(dialog.exports.last.loopOnly, isFalse);
 
       await _tap(tester, find.byType(Switch));
-      expect(find.textContaining(l10n.nFrames(2)), findsOneWidget);
+      expect(find.textContaining(l10n.nFrames(count: 2)), findsOneWidget);
       await _accept(tester);
       expect(dialog.exports.last.loopOnly, isTrue);
       await _close(tester);

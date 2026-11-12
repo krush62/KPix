@@ -17,7 +17,6 @@
 import 'dart:collection';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -33,6 +32,7 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:kpix/util/import/import_kpix.dart';
+import 'package:material_ui/material_ui.dart';
 
 const DrawingLayerSettingsConstraints _drawingConstraints = DrawingLayerSettingsConstraints(
   darkenBrightenMin: -5,

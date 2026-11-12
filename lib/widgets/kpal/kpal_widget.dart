@@ -36,7 +36,6 @@ import 'dart:collection';
 import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_icons.dart';
@@ -61,6 +60,7 @@ import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:material_ui/material_ui.dart';
 
 part 'kpal_color_card_widget.dart';
 part 'kpal_ramp_widget.dart';
@@ -109,15 +109,15 @@ class KPalState extends State<KPal>
 
   String _deleteMessage({required final AppLocalizations l10n, required final RampPixelUsage usage})
   {
-    final StringBuffer message = StringBuffer(l10n.deleteColorRampQuestion(usage.layers + usage.selection));
+    final StringBuffer message = StringBuffer(l10n.deleteColorRampQuestion(amount: usage.layers + usage.selection));
     if (usage.selection > 0)
     {
-      message.write("  ${l10n.ofThemInSelection(usage.selection)}");
+      message.write("  ${l10n.ofThemInSelection(amount: usage.selection)}");
     }
     message.write(".");
     if (usage.clipboard > 0)
     {
-      message.write("\n${l10n.pixelsInClipboard(usage.clipboard)}.");
+      message.write("\n${l10n.pixelsInClipboard(amount: usage.clipboard)}.");
     }
     return message.toString();
   }

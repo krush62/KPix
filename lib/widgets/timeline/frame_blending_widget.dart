@@ -17,7 +17,6 @@
  */
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -26,6 +25,7 @@ import 'package:kpix/models/frame_blending_options.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:material_ui/material_ui.dart';
 
 class FrameBlendingWidget extends StatefulWidget
 {

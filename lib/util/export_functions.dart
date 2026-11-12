@@ -23,7 +23,6 @@ import 'dart:ui' as ui;
 
 import 'package:archive/archive.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
 import 'package:kpix/kpix_constants.dart';
@@ -62,6 +61,8 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:material_ui/material_ui.dart';
+
 
 part 'export/palette/export_palette_adobe.dart';
 part 'export/palette/export_palette_aseprite.dart';

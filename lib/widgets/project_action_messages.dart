@@ -26,7 +26,7 @@ void showMessagesForProjectLoad({required final ProjectLoadResult result, requir
   final HistoryRestoreResult? restore = result.restore;
   if (restore == null)
   {
-    showMessage(text: l10n.loadingFailed(result.status), toastType: ToastType.error);
+    showMessage(text: l10n.loadingFailed(status: result.status), toastType: ToastType.error);
   }
   else
   {
@@ -41,7 +41,7 @@ void showMessagesForProjectLoad({required final ProjectLoadResult result, requir
 
 void showMessageForFileSaved({required final String displayPath, required final AppLocalizations l10n})
 {
-  showMessage(text: l10n.fileSavedAt(displayPath), toastType: ToastType.success);
+  showMessage(text: l10n.fileSavedAt(path: displayPath), toastType: ToastType.success);
 }
 
 void showMessageForFileSaveFailed({required final AppLocalizations l10n})
@@ -91,9 +91,9 @@ String getMessageForProjectDirectoryMove({required final ProjectDirectoryMoveRes
     case ProjectDirectoryMoveError.insufficientPermissions:
       return l10n.insufficientPermissionsForDir;
     case ProjectDirectoryMoveError.targetFileExists:
-      return l10n.dirAlreadyContainsFile(result.fileName);
+      return l10n.dirAlreadyContainsFile(fileName: result.fileName);
     case ProjectDirectoryMoveError.moveFailed:
-      return l10n.couldNotMoveFile(result.fileName);
+      return l10n.couldNotMoveFile(fileName: result.fileName);
     case ProjectDirectoryMoveError.unexpected:
     case null:
       return l10n.unexpectedErrorMovingProjectFiles;

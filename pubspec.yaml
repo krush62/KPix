@@ -34,8 +34,10 @@ dependencies:
   file_saver: ^0.7.0
   flutter:
     sdk: flutter
+
   flutter_localizations:
     sdk: flutter
+
   flutter_markdown_plus: ^1.0.5
   flutter_tabler_icons: ^1.43.0
   get_it: ^9.0.5
@@ -43,7 +45,8 @@ dependencies:
   image: ^4.9.1
   intl: any
   logger: ^2.6.2
-  nativeapi_flutter: ^0.5.8
+  material_ui: any
+  nativeapi_flutter: ^0.6.0
   package_info_plus: ^10.2.2
   path: ^1.9.1
   path_provider: ^2.1.5
@@ -52,24 +55,22 @@ dependencies:
   url_launcher: ^6.3.1
   uuid: ^4.5.1
   version: ^3.0.2
-  window_manager: ^0.6.0
-
+  window_manager: ^0.7.0
 dev_dependencies:
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
+  cross_file: any
   dart_pubspec_licenses: ^3.0.7
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
+
+  path_provider_platform_interface: any
+  plugin_platform_interface: any
   yaml: ^3.1.4
-
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter packages.
 flutter:
   generate: true
   fonts:

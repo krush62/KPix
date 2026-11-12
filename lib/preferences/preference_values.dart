@@ -18,13 +18,13 @@
 
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kpix/kpix_language.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/frame_constraints.dart';
 import 'package:kpix/models/constraints/shading_layer_settings_constraints.dart';
 import 'package:kpix/util/color_names.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A preference with limits of its own: a notifier that starts out within them.
 class RangedPref<T extends num> extends ValueNotifier<T>

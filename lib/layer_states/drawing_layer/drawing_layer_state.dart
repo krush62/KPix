@@ -20,7 +20,6 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
@@ -47,6 +46,7 @@ import 'package:kpix/util/helpers/pixel_grid.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_settings/drawing_layer_settings_widget.dart';
 import 'package:logger/logger.dart';
+import 'package:material_ui/material_ui.dart';
 
 class DrawingLayerState extends RasterableLayerState
 {

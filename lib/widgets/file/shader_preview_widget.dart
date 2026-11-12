@@ -19,7 +19,6 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -27,6 +26,7 @@ import 'package:kpix/models/export_shader.dart';
 import 'package:kpix/util/export_shader_renderer.dart';
 import 'package:kpix/util/helpers/image_helper.dart';
 import 'package:logger/logger.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart' show warningColor;
 
 abstract final class ShaderPreviewWidgetOptions
@@ -447,7 +447,7 @@ class _ShaderPreviewWidgetState extends State<ShaderPreviewWidget>
                 children: <Widget>[
                   const Icon(TablerIcons.exclamation_circle_filled, color: warningColor, size: ShaderPreviewWidgetOptions.hintIconSize),
                   const SizedBox(width: ShaderPreviewWidgetOptions.padding),
-                  Flexible(child: Text(l10n.shaderMinScaling(minScaling), style: Theme.of(context).textTheme.bodyLarge)),
+                  Flexible(child: Text(l10n.shaderMinScaling(factor: minScaling), style: Theme.of(context).textTheme.bodyLarge)),
                 ],
               ),
             ),

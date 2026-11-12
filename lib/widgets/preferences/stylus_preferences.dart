@@ -15,11 +15,11 @@
  */
 
 
-import 'package:flutter/material.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/widgets/preferences/preference_gui.dart';
+import 'package:material_ui/material_ui.dart';
 
 class StylusPreferences extends StatefulWidget
 {

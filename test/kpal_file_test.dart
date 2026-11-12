@@ -17,7 +17,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -35,6 +34,7 @@ import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/export_handler.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/import/import_palette.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:path/path.dart' as p;
 
 import 'support/project_files.dart';

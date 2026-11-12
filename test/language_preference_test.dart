@@ -14,12 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/kpix_language.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/widgets/controls/kpix_dropdown.dart';
 import 'package:kpix/widgets/preferences/preference_gui.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Wraps [home] in an app carrying the localizations, in [locale] when given.
 Widget _app({required final Widget home, final Locale? locale})

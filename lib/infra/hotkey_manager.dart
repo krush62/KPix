@@ -16,10 +16,10 @@
 
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/util/helpers/platform_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum HotkeyAction
 {

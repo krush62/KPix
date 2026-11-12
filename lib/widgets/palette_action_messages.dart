@@ -25,9 +25,9 @@ void showMessageForPaletteResult({required final PaletteActionResult result, req
   switch (result)
   {
     case PaletteActionResult.rampCountMinReached:
-      showMessage(text: l10n.needAtLeastColorRamps(KPalConstraints.rampCountMin), toastType: ToastType.warning);
+      showMessage(text: l10n.needAtLeastColorRamps(count: KPalConstraints.rampCountMin), toastType: ToastType.warning);
     case PaletteActionResult.rampCountMaxReached:
-      showMessage(text: l10n.notMoreThanColorRampsAllowed(KPalConstraints.rampCountMax), toastType: ToastType.warning);
+      showMessage(text: l10n.notMoreThanColorRampsAllowed(count: KPalConstraints.rampCountMax), toastType: ToastType.warning);
     case PaletteActionResult.loadingFailed:
       showMessage(text: l10n.loadingPaletteFailed, toastType: ToastType.error);
     case PaletteActionResult.success:

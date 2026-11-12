@@ -16,7 +16,6 @@
 
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
@@ -30,6 +29,7 @@ import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/tool_geometry_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SelectionPainter extends IToolPainter
 {

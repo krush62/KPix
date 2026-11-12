@@ -17,7 +17,6 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -54,6 +53,7 @@ import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/timeline/timeline_widget.dart';
 import 'package:logger/logger.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 // ignore: depend_on_referenced_packages
@@ -316,7 +316,7 @@ void main()
 
       filesDroppedCallback!(<String>["somewhere/notes.txt"]);
       await settleUi(tester);
-      expect(find.text(testL10n.droppedFileNotSupported("PNG, JPG, JPEG, GIF, WEBP")), findsOneWidget);
+      expect(find.text(testL10n.droppedFileNotSupported(formats: "PNG, JPG, JPEG, GIF, WEBP")), findsOneWidget);
       expect(find.byType(NewProjectWidget), findsOneWidget, reason: "nothing to open");
 
       filesDroppedCallback!(<String>["somewhere/picture.png", project.path]);
@@ -338,11 +338,11 @@ void main()
       await tester.runAsync(settle);
       LayerCollection layers() => GetIt.I.get<DocumentState>().timeline.selectedFrame!.layerList;
       final int layerCount = layers().length;
-      final String question = testL10n.droppedImageQuestion("picture.png");
+      final String question = testL10n.droppedImageQuestion(name: "picture.png");
 
       filesDroppedCallback!(<String>[picture.toUpperCase()]);
       await settleUi(tester);
-      expect(find.text(testL10n.droppedImageQuestion("PICTURE.PNG")), findsOneWidget, reason: "extensions in capitals are images too");
+      expect(find.text(testL10n.droppedImageQuestion(name: "PICTURE.PNG")), findsOneWidget, reason: "extensions in capitals are images too");
       await tapTooltip(tester, testL10n.cancel);
       expect(layers().length, layerCount, reason: "cancel adds nothing");
 
@@ -382,7 +382,7 @@ void main()
       filesDroppedCallback!(<String>[picture]);
       //the name only shows once the image was decoded
       await _waitForBoot(tester, until: () => find.descendant(of: find.byType(ImportWidget), matching: find.text("picture.webp")).evaluate().isNotEmpty);
-      expect(find.text(testL10n.droppedImageQuestion("picture.webp")), findsNothing, reason: "there is no project to add a reference layer to");
+      expect(find.text(testL10n.droppedImageQuestion(name: "picture.webp")), findsNothing, reason: "there is no project to add a reference layer to");
 
       await tester.tap(find.descendant(of: find.byType(ImportWidget), matching: find.byTooltip(testL10n.importImage)));
       await _waitForBoot(tester, until: () => find.byType(ImportWidget).evaluate().isEmpty && find.byType(CanvasWidget).evaluate().isNotEmpty);
@@ -427,7 +427,7 @@ void main()
       },);
       await _waitForBoot(tester, until: () => find.byType(NewProjectWidget).evaluate().isNotEmpty);
       final ProjectSession session = GetIt.I.get<ProjectSession>();
-      final String question = testL10n.projectNameTaken("project");
+      final String question = testL10n.projectNameTaken(name: "project");
 
       await _handOver(tester, path: project.path);
       await _waitForBoot(tester, until: () => find.text(question).evaluate().isNotEmpty);

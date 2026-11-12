@@ -16,7 +16,6 @@
 
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/canvas_size_constraints.dart';
@@ -31,6 +30,8 @@ import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:material_ui/material_ui.dart';
+
 
 /// Data structure for import options used in [ImportWidget].
 class ImportWidget extends StatefulWidget
@@ -131,7 +132,7 @@ class ImportWidgetState extends State<ImportWidget>
             _scaleDownNotifier.value = 1;
             _fileNameNotifier.value = null;
             _setImage(image: null);
-            _messageNotifier.value = l10n.imageDimensionsExceed(CanvasSizeConstraints.sizeMax * _maximumScale, CanvasSizeConstraints.sizeMax * _maximumScale);
+            _messageNotifier.value = l10n.imageDimensionsExceed(width: CanvasSizeConstraints.sizeMax * _maximumScale, height: CanvasSizeConstraints.sizeMax * _maximumScale);
           }
           else
           {

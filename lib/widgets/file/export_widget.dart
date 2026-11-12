@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
@@ -33,6 +32,8 @@ import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/controls/kpix_text_field.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:material_ui/material_ui.dart';
+
 
 /// Supported image export types.
 class ExportWidget extends StatefulWidget
@@ -375,7 +376,7 @@ class ExportWidgetState extends State<ExportWidget>
                   builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
                     final int animationLengthMs = _documentState.timeline.calculateTotalFrameTime(sectionOnly: animationSectionOnly);
                     final int frameCount = animationSectionOnly ? _documentState.timeline.loopEndIndex.value - _documentState.timeline.loopStartIndex.value + 1 : _documentState.timeline.frames.value.length;
-                    final String animationLength = "${l10n.nFrames(frameCount)} (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
+                    final String animationLength = "${l10n.nFrames(count: frameCount)} (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
                     return Text(animationLength, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium);
                   },
                 ),

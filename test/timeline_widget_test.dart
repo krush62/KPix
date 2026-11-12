@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -30,6 +29,7 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/timeline/frame_time_widget.dart';
 import 'package:kpix/widgets/timeline/timeline_widget.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
 import 'support/selection_harness.dart';
@@ -422,11 +422,11 @@ void main()
       _timeline.setLoopEndMarker(index: 1);
       _timeline.selectFrameByIndex(index: 2);
       await tester.pump();
-      expect(find.byTooltip(l10n.frameNumber(4)), findsNothing);
+      expect(find.byTooltip(l10n.frameNumber(number: 4)), findsNothing);
       _timeline.addNewFrameRight();
       await tester.pump();
       expect(_timeline.loopEndIndex.value, 1);
-      expect(find.byTooltip(l10n.frameNumber(4)), findsOneWidget);
+      expect(find.byTooltip(l10n.frameNumber(number: 4)), findsOneWidget);
       await _close(tester);
     });
 

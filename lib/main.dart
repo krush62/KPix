@@ -18,9 +18,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart'  as flutter_localizations;
 import 'package:get_it/get_it.dart';
 import 'package:kpix/app_services.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
@@ -68,6 +66,7 @@ import 'package:kpix/widgets/project_action_messages.dart';
 import 'package:kpix/widgets/timeline/timeline_widget.dart';
 import 'package:kpix/window_buttons.dart';
 import 'package:logger/logger.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:nativeapi_flutter/nativeapi_flutter.dart' show DropRegion, DropRegionDropDetails;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
@@ -146,7 +145,10 @@ Future<void> main(final List<String> args) async
                       return getToastificationWrapper(
                         child: MaterialApp(
                           debugShowCheckedModeBanner: false,
-                          localizationsDelegates: const <LocalizationsDelegate<dynamic>>[AppLocalizations.delegate, ...flutter_localizations.GlobalMaterialLocalizations.delegates],
+                          localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+                            AppLocalizations.delegate,
+                            ...GlobalMaterialLocalizations.delegates,
+                          ],
                           supportedLocales: AppLocalizations.supportedLocales,
                           //null follows the system language
                           locale: languageSettings.locale,
@@ -660,7 +662,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     else if (paths.isNotEmpty && mounted)
     {
       final String formats = imageExtensions.map((final String extension) => extension.toUpperCase()).join(", ");
-      showMessage(text: AppLocalizations.of(context)!.droppedFileNotSupported(formats), toastType: ToastType.warning);
+      showMessage(text: AppLocalizations.of(context)!.droppedFileNotSupported(formats: formats), toastType: ToastType.warning);
     }
   }
 
@@ -710,7 +712,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     final ReferenceImage? image = await GetIt.I.get<ReferenceImageManager>().loadImageFile(path: path);
     if (image == null)
     {
-      showMessage(text: l10n.couldNotLoadImageFrom(path), toastType: ToastType.error);
+      showMessage(text: l10n.couldNotLoadImageFrom(location: path), toastType: ToastType.error);
       return;
     }
     final (LayerActionResult, ReferenceLayerState?) result = GetIt.I.get<LayerManager>().addReferenceLayerWithImage(
@@ -946,14 +948,14 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       onOpenExisting: _openExistingProject,
       onImportCopy: _importAsCopy,
       onCancel: _nameConflictCancel,
-      message: (final AppLocalizations l10n) => l10n.projectNameTaken(extractFilenameFromPath(path: _nameConflict?.path, keepExtension: false)),
+      message: (final AppLocalizations l10n) => l10n.projectNameTaken(name: extractFilenameFromPath(path: _nameConflict?.path, keepExtension: false)),
     );
 
     _droppedImageDialog ??= getDroppedImageDialog(
       onReferenceLayer: _droppedImageAsReference,
       onImport: _droppedImageImport,
       onCancel: () => _takeDroppedImage(),
-      message: (final AppLocalizations l10n) => l10n.droppedImageQuestion(extractFilenameFromPath(path: _droppedImagePath)),
+      message: (final AppLocalizations l10n) => l10n.droppedImageQuestion(name: extractFilenameFromPath(path: _droppedImagePath)),
     );
 
     return ValueListenableBuilder<bool>(

@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 const double _goldenAngle = 137.50776405003785;
 const double _saturation = 0.3;

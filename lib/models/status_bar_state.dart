@@ -16,10 +16,10 @@
 
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:kpix/models/status_bar_data.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 class StatusBarState
 {

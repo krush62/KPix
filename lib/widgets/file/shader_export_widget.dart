@@ -19,7 +19,6 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
@@ -40,6 +39,7 @@ import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/controls/kpix_text_field.dart';
 import 'package:kpix/widgets/file/shader_preview_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:material_ui/material_ui.dart';
 
 abstract final class ShaderExportWidgetOptions
 {

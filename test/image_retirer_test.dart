@@ -1,8 +1,8 @@
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/util/helpers/image_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<ui.Image> _image() async
 {

@@ -15,8 +15,8 @@
  */
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 final List<Color> _rainbowColors = List<Color>.generate(360, (final int hue) => KHSV(h: hue.toDouble(), s: 0.5, v: 0.7).toColor());
 

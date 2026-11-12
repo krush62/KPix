@@ -16,7 +16,6 @@
 
 import 'dart:collection';
 
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_constants.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -29,6 +28,7 @@ import 'package:kpix/models/constraints/drawing_layer_settings_constraints.dart'
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A style that can be offered as one segment of a style selector.
 ///

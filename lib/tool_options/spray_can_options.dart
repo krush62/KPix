@@ -15,11 +15,11 @@
  */
 
 
-import 'package:flutter/material.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/constraints/tool_spraycan_constraints.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SprayCanOptions extends IToolOptions
 {

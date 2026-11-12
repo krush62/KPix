@@ -19,7 +19,6 @@
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
@@ -38,6 +37,7 @@ import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/timeline/frame_time_widget.dart';
 import 'package:kpix/widgets/timeline/timeline_drag_target_widget.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LayerFrameDragData
 {
@@ -323,7 +323,7 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
                   widget.timeline.selectFrameByIndex(index: i);
                 },
                 child: Tooltip(
-                  message: AppLocalizations.of(context)!.frameNumber(i + 1),
+                  message: AppLocalizations.of(context)!.frameNumber(number: i + 1),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: Theme.of(context).primaryColor,

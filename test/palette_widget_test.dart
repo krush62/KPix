@@ -18,7 +18,6 @@ import 'dart:collection';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -48,6 +47,7 @@ import 'package:kpix/widgets/palette/color_ramp_row_widget.dart';
 import 'package:kpix/widgets/palette/palette_adjustment_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'support/widget_harness.dart';
 
@@ -120,7 +120,7 @@ void main()
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.byType(KPal), findsNothing);
-      expect(find.text(testL10n.notMoreThanColorRampsAllowed(KPalConstraints.rampCountMax)), findsOneWidget);
+      expect(find.text(testL10n.notMoreThanColorRampsAllowed(count: KPalConstraints.rampCountMax)), findsOneWidget);
     });
 
     projectWidgetTest("moves a ramp when it is dragged to another place", _column, (final WidgetTester tester) async
@@ -342,7 +342,7 @@ void main()
 
       await tapTooltip(tester, testL10n.delete);
 
-      expect(find.textContaining(testL10n.deleteColorRampQuestion(2)), findsOneWidget);
+      expect(find.textContaining(testL10n.deleteColorRampQuestion(amount: 2)), findsOneWidget);
 
       await tapTooltip(tester, testL10n.no);
       expect(_palette.colorRamps.first, same(ramp), reason: "no deletes nothing");
@@ -376,7 +376,7 @@ void main()
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(_palette.colorRamps, hasLength(1));
-      expect(find.text(testL10n.needAtLeastColorRamps(KPalConstraints.rampCountMin)), findsOneWidget);
+      expect(find.text(testL10n.needAtLeastColorRamps(count: KPalConstraints.rampCountMin)), findsOneWidget);
     });
 
     group("preview", ()

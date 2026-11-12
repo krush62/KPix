@@ -16,7 +16,6 @@
 
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/l10n/app_localizations.dart';
@@ -28,6 +27,7 @@ import 'package:kpix/util/file_pickers.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/messages.dart';
 import 'package:kpix/widgets/preferences/preference_gui.dart';
+import 'package:material_ui/material_ui.dart';
 
 
 

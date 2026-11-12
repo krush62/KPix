@@ -1,6 +1,5 @@
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/reference_image_manager.dart';
@@ -15,6 +14,7 @@ import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
 import 'support/selection_harness.dart';
@@ -187,7 +187,7 @@ void main()
       scene.reference.brightnessNotifier.value = ReferenceLayerConstraints.brightnessMin;
       await scene.settle();
       expect(scene.committed, false);
-      await scene.tester.tap(find.byTooltip(l10n.resetSetting(l10n.brightness)));
+      await scene.tester.tap(find.byTooltip(l10n.resetSetting(setting: l10n.brightness)));
       await scene.settle();
       expect(scene.reference.brightnessNotifier.value, ReferenceLayerConstraints.brightnessDefault);
       expect(scene.committed, true);

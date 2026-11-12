@@ -16,7 +16,6 @@
 
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -26,6 +25,7 @@ import 'package:kpix/models/kpix_painter_options.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// How large a canvas pixel is on screen while a tool is driven.
 const int toolPixelSize = 4;

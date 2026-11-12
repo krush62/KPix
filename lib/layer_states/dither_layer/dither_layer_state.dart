@@ -17,7 +17,6 @@
 
 import 'dart:collection';
 
-import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
@@ -28,6 +27,7 @@ import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history/history_ramp_data.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/layer_settings/shading_layer_settings_widget.dart';
+import 'package:material_ui/material_ui.dart';
 
 class DitherLayerState extends ShadingLayerState
 {

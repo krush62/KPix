@@ -16,10 +16,10 @@
  *
  */
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/preferences/preference_values.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

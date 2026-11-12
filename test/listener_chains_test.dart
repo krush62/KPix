@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -47,6 +46,7 @@ import 'package:kpix/widgets/palette/palette_adjustment_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 import 'package:kpix/widgets/tools/shader_widget.dart';
 import 'package:kpix/widgets/tools/tools_widget.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:path/path.dart' as p;
 import 'package:toastification/toastification.dart';
 
@@ -579,7 +579,7 @@ void main()
     AppLocalizations l10nOf(final WidgetTester tester) => AppLocalizations.of(tester.element(find.byType(DrawingLayerSettingsWidget)))!;
     //both have the same limits, so only their labels tell them apart
     KPixSlider distance(final WidgetTester tester) => sliders(tester).firstWhere((final KPixSlider s) => s.label == "${settings().bevelDistance.value} ${l10nOf(tester).pixelsAbbrev}");
-    KPixSlider strength(final WidgetTester tester) => sliders(tester).firstWhere((final KPixSlider s) => s.label == l10nOf(tester).stepCount(settings().bevelStrength.value.abs(), "${settings().bevelStrength.value}"));
+    KPixSlider strength(final WidgetTester tester) => sliders(tester).firstWhere((final KPixSlider s) => s.label == l10nOf(tester).stepCount(count: settings().bevelStrength.value.abs(), value: "${settings().bevelStrength.value}"));
 
     void bevelTest(final String description, final Future<void> Function(WidgetTester tester, AppLocalizations l10n) body)
     {

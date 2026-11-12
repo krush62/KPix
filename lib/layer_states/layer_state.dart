@@ -16,13 +16,14 @@
 
 import 'dart:async';
 import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
+
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/models/history/history_layer.dart';
 import 'package:kpix/models/history/history_ramp_data.dart';
 import 'package:kpix/util/helpers/image_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum LayerVisibilityState
 {

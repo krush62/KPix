@@ -16,8 +16,8 @@
  *
  */
 
-import 'package:flutter/material.dart';
 import 'package:kpix/models/constraints/frame_blending_constraints.dart';
+import 'package:material_ui/material_ui.dart';
 
 class FrameBlendingOptions
 {

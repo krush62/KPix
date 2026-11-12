@@ -15,7 +15,6 @@
  */
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/infra/hotkey_manager.dart';
@@ -37,6 +36,7 @@ import 'package:kpix/models/tool_type.dart';
 import 'package:kpix/models/view_state.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'support/selection_harness.dart';
 

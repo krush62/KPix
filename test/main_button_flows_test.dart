@@ -17,7 +17,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -52,6 +51,7 @@ import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/file/save_as_widget.dart';
 import 'package:kpix/widgets/file/shader_export_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 
@@ -350,12 +350,12 @@ void main()
 
       await tester.tap(find.byIcon(TablerIcons.arrow_back_up));
       await settleUi(tester);
-      expect(find.text(testL10n.undoStep(testL10n.mergeLayer)), findsOneWidget);
+      expect(find.text(testL10n.undoStep(description: testL10n.mergeLayer)), findsOneWidget);
       expect(redo(tester).onPressed, isNotNull);
 
       await tester.tap(find.byIcon(TablerIcons.arrow_forward_up));
       await settleUi(tester);
-      expect(find.text(testL10n.redoStep(testL10n.mergeLayer)), findsOneWidget);
+      expect(find.text(testL10n.redoStep(description: testL10n.mergeLayer)), findsOneWidget);
     });
 
     _flowTest("are ignored by the hotkeys when there is nothing to do", (final WidgetTester tester) async
@@ -477,7 +477,7 @@ void main()
 
       expect(_paths.projectsDir, custom);
       expect(await tester.runAsync(() => File(p.join(custom, "moved.$fileExtensionKpix")).exists()), isTrue);
-      expect(find.text(testL10n.changedProjectDirectoryFiles(custom, 1)), findsOneWidget);
+      expect(find.text(testL10n.changedProjectDirectoryFiles(directory: custom, count: 1)), findsOneWidget);
     });
 
     _flowTest("stay with the old directory when the move fails, and say why", (final WidgetTester tester) async
@@ -501,7 +501,7 @@ void main()
 
       expect(_paths.projectsDir, before);
       expect(prefs.behaviorPreferenceContent.useCustomProjectDirectory.value, isFalse);
-      expect(find.textContaining(testL10n.dirAlreadyContainsFile("moved.$fileExtensionKpix")), findsOneWidget);
+      expect(find.textContaining(testL10n.dirAlreadyContainsFile(fileName: "moved.$fileExtensionKpix")), findsOneWidget);
     });
   });
 

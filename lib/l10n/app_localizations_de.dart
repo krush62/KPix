@@ -90,7 +90,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ein Projekt mit demselben Namen existiert bereits!';
 
   @override
-  String projectNameTaken(String name) {
+  String projectNameTaken({required String name}) {
     return 'Ein Projekt namens \"$name\" existiert bereits. Dieses Projekt öffnen oder die Datei als Kopie importieren?';
   }
 
@@ -101,7 +101,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get importAsCopy => 'Als Kopie importieren';
 
   @override
-  String droppedImageQuestion(String name) {
+  String droppedImageQuestion({required String name}) {
     return '\"$name\" als Referenzebene hinzufügen oder als neues Projekt importieren?';
   }
 
@@ -112,7 +112,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get importAsNewProject => 'Als neues Projekt importieren';
 
   @override
-  String droppedFileNotSupported(String formats) {
+  String droppedFileNotSupported({required String formats}) {
     return 'Nur KPix-Projekte und Bilder ($formats) können geöffnet werden!';
   }
 
@@ -196,7 +196,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shadowShaded => 'Schattierender Schlagschatten';
 
   @override
-  String stepCount(int count, String value) {
+  String stepCount({required int count, required String value}) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -348,7 +348,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Auf einer gesperrten Ebene kann nicht transformiert werden!';
 
   @override
-  String needAtLeastColorRamps(int count) {
+  String needAtLeastColorRamps({required int count}) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -359,7 +359,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String notMoreThanColorRampsAllowed(int count) {
+  String notMoreThanColorRampsAllowed({required int count}) {
     return 'Es sind nicht mehr als $count Farbrampen erlaubt!';
   }
 
@@ -367,12 +367,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get loadingPaletteFailed => 'Laden der Palette fehlgeschlagen!';
 
   @override
-  String undoStep(String description) {
+  String undoStep({required String description}) {
     return 'Rückgängig: $description';
   }
 
   @override
-  String redoStep(String description) {
+  String redoStep({required String description}) {
     return 'Wiederholen: $description';
   }
 
@@ -381,12 +381,12 @@ class AppLocalizationsDe extends AppLocalizations {
       'Wiederherstellen aus dem Verlauf fehlgeschlagen!';
 
   @override
-  String loadingFailed(String status) {
+  String loadingFailed({required String status}) {
     return 'Laden fehlgeschlagen ($status)';
   }
 
   @override
-  String fileSavedAt(String path) {
+  String fileSavedAt({required String path}) {
     return 'Datei gespeichert unter: $path';
   }
 
@@ -801,7 +801,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get selectionOnly => 'Nur die Auswahl';
 
   @override
-  String nFrames(int count) {
+  String nFrames({required int count}) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -813,7 +813,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String frameNumber(int number) {
+  String frameNumber({required int number}) {
     return 'Frame $number';
   }
 
@@ -830,7 +830,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get exportFile => 'Datei Exportieren';
 
   @override
-  String imageDimensionsExceed(int width, int height) {
+  String imageDimensionsExceed({required int width, required int height}) {
     return 'Bildmaße dürfen $width × $height nicht überschreiten!';
   }
 
@@ -925,17 +925,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get valueRange => 'Helligkeits-\nbereich';
 
   @override
-  String deleteColorRampQuestion(int amount) {
+  String deleteColorRampQuestion({required int amount}) {
     return 'Soll diese Farbrampe wirklich entfernt werden?\n$amount Pixel werden gelöscht';
   }
 
   @override
-  String ofThemInSelection(int amount) {
+  String ofThemInSelection({required int amount}) {
     return '($amount davon in der Auswahl)';
   }
 
   @override
-  String pixelsInClipboard(int amount) {
+  String pixelsInClipboard({required int amount}) {
     return '$amount Pixel in der Zwischenablage sind nicht mehr verfügbar';
   }
 
@@ -1237,7 +1237,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get intensityMode => 'Intensitätsmodus';
 
   @override
-  String shaderMinScaling(int factor) {
+  String shaderMinScaling({required int factor}) {
     return 'Die Skalierung sollte für diesen Shader mindestens $factor:1 betragen.';
   }
 
@@ -1263,12 +1263,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get editColorRamp => 'Farbrampe bearbeiten';
 
   @override
-  String nColors(int amount) {
+  String nColors({required int amount}) {
     return '$amount Farben';
   }
 
   @override
-  String nRampsColors(int rampAmount, int colorAmount) {
+  String nRampsColors({required int rampAmount, required int colorAmount}) {
     return '$rampAmount Rampen | $colorAmount Farben';
   }
 
@@ -1349,7 +1349,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Fehler beim Speichern des Projekts! Die Änderungen wurden nicht gespeichert.';
 
   @override
-  String paletteSavedAt(String path) {
+  String paletteSavedAt({required String path}) {
     return 'Palette erfolgreich gespeichert unter $path.';
   }
 
@@ -1649,12 +1649,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get verPoint => 'Ver Punkt';
 
   @override
-  String couldNotLoadImageFrom(String location) {
+  String couldNotLoadImageFrom({required String location}) {
     return 'Konnte Bild nicht von $location laden.';
   }
 
   @override
-  String resetSetting(String setting) {
+  String resetSetting({required String setting}) {
     return '$setting zurücksetzen';
   }
 
@@ -1765,12 +1765,12 @@ class AppLocalizationsDe extends AppLocalizations {
       'Das Verzeichnis existiert nicht und konnte nicht erstellt werden!';
 
   @override
-  String dirAlreadyContainsFile(String fileName) {
+  String dirAlreadyContainsFile({required String fileName}) {
     return 'Das Verzeichnis enthält bereits eine Datei namens $fileName!';
   }
 
   @override
-  String couldNotMoveFile(String fileName) {
+  String couldNotMoveFile({required String fileName}) {
     return 'Datei $fileName konnte nicht verschoben werden!';
   }
 
@@ -1779,17 +1779,20 @@ class AppLocalizationsDe extends AppLocalizations {
       'Beim Verschieben der Projektdateien ist ein unerwarteter Fehler aufgetreten!';
 
   @override
-  String changedProjectDirectoryFiles(String directory, int count) {
+  String changedProjectDirectoryFiles({
+    required String directory,
+    required int count,
+  }) {
     return 'Projektverzeichnis geändert zu $directory ($count Projektdatei(en) verschoben).';
   }
 
   @override
-  String projectDirWasNotChanged(String message) {
+  String projectDirWasNotChanged({required String message}) {
     return 'Das Projektverzeichnis wurde nicht geändert!\n$message';
   }
 
   @override
-  String exportedPaletteTo(String path) {
+  String exportedPaletteTo({required String path}) {
     return 'Palette exportiert nach: $path';
   }
 
@@ -1797,7 +1800,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get errorExportingPaletteFile => 'Fehler beim Exportieren der Palette';
 
   @override
-  String exportedTo(String path) {
+  String exportedTo({required String path}) {
     return 'Exportiert nach: $path';
   }
 

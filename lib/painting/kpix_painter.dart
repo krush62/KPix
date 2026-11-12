@@ -19,7 +19,6 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_image.dart';
@@ -57,7 +56,7 @@ import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/helpers/image_helper.dart';
 import 'package:kpix/util/helpers/tool_geometry_helper.dart';
-
+import 'package:material_ui/material_ui.dart';
 
 
 

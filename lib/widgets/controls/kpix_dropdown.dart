@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Layout values matching [DropdownButton], so the two cannot drift apart.
 abstract final class _KPixDropdownOptions {

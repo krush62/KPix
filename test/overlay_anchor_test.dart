@@ -15,9 +15,9 @@
  */
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
+import 'package:material_ui/material_ui.dart';
 
 const Offset _anchorPosition = Offset(100.0, 50.0);
 const Size _anchorSize = Size(40.0, 20.0);

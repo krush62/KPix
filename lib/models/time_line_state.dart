@@ -18,7 +18,6 @@
 
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -31,6 +30,7 @@ import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/models/layer_manager.dart';
 import 'package:kpix/models/palette_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:material_ui/material_ui.dart';
 
 class Frame
 {

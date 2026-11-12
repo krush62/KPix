@@ -16,7 +16,6 @@
 
 import 'dart:collection';
 
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
@@ -32,6 +31,7 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:material_ui/material_ui.dart';
 
 class DrawingLayerSettingsWidget extends LayerSettingsWidget
 {
@@ -98,7 +98,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   String _getStepSliderLabel({required final int value, required final AppLocalizations l10n})
   {
     final String prefix = value > 0 ? "+" : "";
-    return l10n.stepCount(value.abs(), "$prefix$value");
+    return l10n.stepCount(count: value.abs(), value: "$prefix$value");
   }
 
 
@@ -511,7 +511,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                           notifier: _settings.bevelStrength,
                           min: _settings.constraints.bevelStrengthMin,
                           max: _settings.constraints.bevelStrengthMax,
-                          label: (final int strength) => l10n.stepCount(strength.abs(), "$strength"),
+                          label: (final int strength) => l10n.stepCount(count: strength.abs(), value: "$strength"),
                         ),
                       ],
                     ),

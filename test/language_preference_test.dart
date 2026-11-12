@@ -25,7 +25,10 @@ import 'package:material_ui/material_ui.dart';
 Widget _app({required final Widget home, final Locale? locale})
 {
   return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+      AppLocalizations.delegate,
+      ...GlobalMaterialLocalizations.delegates,
+    ],
     supportedLocales: AppLocalizations.supportedLocales,
     locale: locale,
     home: Scaffold(body: home),

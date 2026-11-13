@@ -310,30 +310,30 @@ void main()
     {
       _writePalette(name: "made.$fileExtensionKpal", bytes: _kpalFile(ramps: <_Ramp>[
         _Ramp()
-          ..hueShiftExp = KPalConstraints.hueShiftExpMax + fileFloatDelta / 2
-          ..satShiftExp = KPalConstraints.satShiftExpMin - fileFloatDelta / 2,
+          ..hueShiftExp = KPalConstraints.hueShiftExpLimits.max + fileFloatDelta / 2
+          ..satShiftExp = KPalConstraints.satShiftExpLimits.min - fileFloatDelta / 2,
       ],),);
 
       final KPalRampData ramp = (await loadPalettesFromInternal()).single.rampDataList.single;
 
-      expect(ramp.settings.hueShiftExp, KPalConstraints.hueShiftExpMax);
-      expect(ramp.settings.satShiftExp, KPalConstraints.satShiftExpMin);
+      expect(ramp.settings.hueShiftExp, KPalConstraints.hueShiftExpLimits.max);
+      expect(ramp.settings.satShiftExp, KPalConstraints.satShiftExpLimits.min);
     });
 
     for (final (String name, void Function(_Ramp) breakIt) invalid in <(String, void Function(_Ramp))>[
-      ("too few colors", (final _Ramp r) => r.colorCount = KPalConstraints.colorCountMin - 1),
-      ("too many colors", (final _Ramp r) => r.colorCount = KPalConstraints.colorCountMax + 1),
-      ("base hue", (final _Ramp r) => r.baseHue = KPalConstraints.baseHueMax + 1),
-      ("base sat", (final _Ramp r) => r.baseSat = KPalConstraints.baseSatMax + 1),
-      ("hue shift", (final _Ramp r) => r.hueShift = KPalConstraints.hueShiftMax + 1),
-      ("hue shift exponent", (final _Ramp r) => r.hueShiftExp = KPalConstraints.hueShiftExpMax + 1.0),
-      ("sat shift", (final _Ramp r) => r.satShift = KPalConstraints.satShiftMin - 1),
-      ("sat shift exponent", (final _Ramp r) => r.satShiftExp = KPalConstraints.satShiftExpMin - 0.25),
+      ("too few colors", (final _Ramp r) => r.colorCount = KPalConstraints.colorCountLimits.min - 1),
+      ("too many colors", (final _Ramp r) => r.colorCount = KPalConstraints.colorCountLimits.max + 1),
+      ("base hue", (final _Ramp r) => r.baseHue = KPalConstraints.baseHueLimits.max + 1),
+      ("base sat", (final _Ramp r) => r.baseSat = KPalConstraints.baseSatLimits.max + 1),
+      ("hue shift", (final _Ramp r) => r.hueShift = KPalConstraints.hueShiftLimits.max + 1),
+      ("hue shift exponent", (final _Ramp r) => r.hueShiftExp = KPalConstraints.hueShiftExpLimits.max + 1.0),
+      ("sat shift", (final _Ramp r) => r.satShift = KPalConstraints.satShiftLimits.min - 1),
+      ("sat shift exponent", (final _Ramp r) => r.satShiftExp = KPalConstraints.satShiftExpLimits.min - 0.25),
       ("value minimum above maximum", (final _Ramp r) => r..valueMin = 60..valueMax = 40),
       ("value maximum", (final _Ramp r) => r.valueMax = KPalConstraints.valueRangeMax + 1),
-      ("color hue shift", (final _Ramp r) => r.shiftHue = KPalSliderConstraints.maxHue + 1),
-      ("color sat shift", (final _Ramp r) => r.shiftSat = KPalSliderConstraints.minSat - 1),
-      ("color val shift", (final _Ramp r) => r.shiftVal = KPalSliderConstraints.maxVal + 1),
+      ("color hue shift", (final _Ramp r) => r.shiftHue = KPalSliderConstraints.hueLimits.max + 1),
+      ("color sat shift", (final _Ramp r) => r.shiftSat = KPalSliderConstraints.satLimits.min - 1),
+      ("color val shift", (final _Ramp r) => r.shiftVal = KPalSliderConstraints.valLimits.max + 1),
     ])
     {
       _paletteTest("drops a palette with an invalid ${invalid.$1} and keeps the others", () async
@@ -441,7 +441,7 @@ void main()
         final Uint8List whole = _kpalFile(ramps: <_Ramp>[_Ramp()]);
         return Uint8List.sublistView(whole, 0, whole.length ~/ 2);
       }),
-      ("holding an invalid value", () => _kpalFile(ramps: <_Ramp>[_Ramp()..baseHue = KPalConstraints.baseHueMax + 1])),
+      ("holding an invalid value", () => _kpalFile(ramps: <_Ramp>[_Ramp()..baseHue = KPalConstraints.baseHueLimits.max + 1])),
       ("without ramps", () => _kpalFile(ramps: const <_Ramp>[])),
     ])
     {
@@ -511,7 +511,7 @@ void main()
         expect(palette.rampDataList, isNotEmpty, reason: _nameOf(palette));
         for (final KPalRampData ramp in palette.rampDataList)
         {
-          expect(ramp.settings.colorCount, inInclusiveRange(KPalConstraints.colorCountMin, KPalConstraints.colorCountMax), reason: _nameOf(palette));
+          expect(ramp.settings.colorCount, inInclusiveRange(KPalConstraints.colorCountLimits.min, KPalConstraints.colorCountLimits.max), reason: _nameOf(palette));
           expect(ramp.references, hasLength(ramp.settings.colorCount), reason: _nameOf(palette));
         }
       }

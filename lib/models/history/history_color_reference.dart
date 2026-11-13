@@ -26,20 +26,20 @@ class HistoryColorReference
   /// The shared instance for [colorIndex] of the ramp at [rampIndex].
   ///
   /// History snapshots hold one of these per pixel, but the values repeat: ramps
-  /// added by hand stop at [KPalConstraints.rampCountMax], with up to
-  /// [KPalConstraints.colorCountMax] colors each. Pixel data takes them from here
+  /// added by hand stop at the maximum of [KPalConstraints.rampCountLimits], with up to
+  /// the maximum of [KPalConstraints.colorCountLimits] colors each. Pixel data takes them from here
   /// instead of allocating an equal object per pixel. Palettes loaded from files
   /// can hold more ramps; colors beyond that limit get an instance of their own.
   factory HistoryColorReference.of({required final int colorIndex, required final int rampIndex})
   {
-    if (rampIndex < 0 || rampIndex >= KPalConstraints.rampCountMax || colorIndex < 0 || colorIndex >= KPalConstraints.colorCountMax)
+    if (rampIndex < 0 || rampIndex >= KPalConstraints.rampCountLimits.max || colorIndex < 0 || colorIndex >= KPalConstraints.colorCountLimits.max)
     {
       return HistoryColorReference(colorIndex: colorIndex, rampIndex: rampIndex);
     }
-    return _shared[rampIndex * KPalConstraints.colorCountMax + colorIndex] ??= HistoryColorReference(colorIndex: colorIndex, rampIndex: rampIndex);
+    return _shared[rampIndex * KPalConstraints.colorCountLimits.max + colorIndex] ??= HistoryColorReference(colorIndex: colorIndex, rampIndex: rampIndex);
   }
 
-  static final List<HistoryColorReference?> _shared = List<HistoryColorReference?>.filled(KPalConstraints.rampCountMax * KPalConstraints.colorCountMax, null);
+  static final List<HistoryColorReference?> _shared = List<HistoryColorReference?>.filled(KPalConstraints.rampCountLimits.max * KPalConstraints.colorCountLimits.max, null);
 
   @override
   bool operator ==(final Object other) =>

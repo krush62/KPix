@@ -662,8 +662,8 @@ void main()
 
       tester.widget<ImportWidget>(find.byType(ImportWidget)).import(importData: ImportData(
         filePath: "import.png",
-        maxRamps: KPalConstraints.rampCountDefault,
-        maxColors: KPalConstraints.colorCountDefault,
+        maxRamps: KPalConstraints.rampCountLimits.defaultValue,
+        maxColors: KPalConstraints.colorCountLimits.defaultValue,
         image: image,
         includeReference: false,
         maxClusters: KPalConstraints.maxClusters,

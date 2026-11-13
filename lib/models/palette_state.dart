@@ -177,7 +177,7 @@ class PaletteState
 
   PaletteActionResult deleteRamp({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
-    if (colorRamps.length > KPalConstraints.rampCountMin)
+    if (colorRamps.length > KPalConstraints.rampCountLimits.min)
     {
       final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
       rampDataList.remove(ramp);
@@ -245,7 +245,7 @@ class PaletteState
 
   Future<(PaletteActionResult, KPalRampData?)> addNewRamp({final bool addToHistoryStack = true}) async
   {
-    if (colorRamps.length < KPalConstraints.rampCountMax)
+    if (colorRamps.length < KPalConstraints.rampCountLimits.max)
     {
       const Uuid uuid = Uuid();
       final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
@@ -365,7 +365,7 @@ class PaletteState
   {
     if (loadPaletteSet.rampData != null && loadPaletteSet.rampData!.isNotEmpty)
     {
-      if (colorRamps.length + loadPaletteSet.rampData!.length > KPalConstraints.rampCountMax)
+      if (colorRamps.length + loadPaletteSet.rampData!.length > KPalConstraints.rampCountLimits.max)
       {
         return PaletteActionResult.rampCountMaxReached;
       }

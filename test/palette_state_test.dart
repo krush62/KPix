@@ -182,7 +182,7 @@ void main()
     _test("stops at the most ramps a palette may have", (final DrawingLayerState layer) async
     {
       final int rampCount = _palette.colorRamps.length;
-      final int free = KPalConstraints.rampCountMax - rampCount;
+      final int free = KPalConstraints.rampCountLimits.max - rampCount;
       final HistoryState? before = _history.getCurrentState();
 
       expect(_palette.appendPalette(loadPaletteSet: LoadPaletteSet(status: "", rampData: _newRamps(count: free + 1))), PaletteActionResult.rampCountMaxReached);
@@ -193,11 +193,11 @@ void main()
 
     _test("may fill up the palette exactly", (final DrawingLayerState layer) async
     {
-      final int free = KPalConstraints.rampCountMax - _palette.colorRamps.length;
+      final int free = KPalConstraints.rampCountLimits.max - _palette.colorRamps.length;
 
       expect(_palette.appendPalette(loadPaletteSet: LoadPaletteSet(status: "", rampData: _newRamps(count: free))), PaletteActionResult.success);
 
-      expect(_palette.colorRamps, hasLength(KPalConstraints.rampCountMax));
+      expect(_palette.colorRamps, hasLength(KPalConstraints.rampCountLimits.max));
     });
   });
 
@@ -407,26 +407,26 @@ void main()
   {
     _test("stop adding ramps", (final DrawingLayerState layer) async
     {
-      _palette.colorRamps = _newRamps(count: KPalConstraints.rampCountMax);
+      _palette.colorRamps = _newRamps(count: KPalConstraints.rampCountLimits.max);
       final HistoryState? before = _history.getCurrentState();
 
       final (PaletteActionResult, KPalRampData?) result = await _palette.addNewRamp();
 
       expect(result.$1, PaletteActionResult.rampCountMaxReached);
       expect(result.$2, isNull);
-      expect(_palette.colorRamps, hasLength(KPalConstraints.rampCountMax));
+      expect(_palette.colorRamps, hasLength(KPalConstraints.rampCountLimits.max));
       expect(_history.getCurrentState(), same(before));
     });
 
     _test("stop deleting ramps", (final DrawingLayerState layer) async
     {
-      final List<KPalRampData> last = _newRamps(count: KPalConstraints.rampCountMin);
+      final List<KPalRampData> last = _newRamps(count: KPalConstraints.rampCountLimits.min);
       _palette.colorRamps = last;
       final HistoryState? before = _history.getCurrentState();
 
       expect(_palette.deleteRamp(ramp: last.first), PaletteActionResult.rampCountMinReached);
 
-      expect(_palette.colorRamps, hasLength(KPalConstraints.rampCountMin));
+      expect(_palette.colorRamps, hasLength(KPalConstraints.rampCountLimits.min));
       expect(_history.getCurrentState(), same(before));
     });
   });

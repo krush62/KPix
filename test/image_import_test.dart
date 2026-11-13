@@ -68,8 +68,8 @@ ImportData _importData({required final ui.Image image, required final bool creat
 {
   return ImportData(
     filePath: "import.png",
-    maxRamps: KPalConstraints.rampCountDefault,
-    maxColors: KPalConstraints.colorCountDefault,
+    maxRamps: KPalConstraints.rampCountLimits.defaultValue,
+    maxColors: KPalConstraints.colorCountLimits.defaultValue,
     image: image,
     includeReference: false,
     maxClusters: KPalConstraints.maxClusters,
@@ -122,7 +122,7 @@ void main()
 
       final List<KPalRampData> ramps = result.data!.rampDataList;
       expect(ramps, isNotEmpty);
-      expect(ramps.length, lessThanOrEqualTo(KPalConstraints.rampCountDefault));
+      expect(ramps.length, lessThanOrEqualTo(KPalConstraints.rampCountLimits.defaultValue));
       //the unused ramps are dropped, so every ramp that is left has to carry
       //at least one pixel
       final Set<ColorReference> used = result.data!.drawingLayer.usedColors();

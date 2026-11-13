@@ -41,13 +41,13 @@ class KPalRampSettings
 
   KPalRampSettings()
   {
-    colorCount = KPalConstraints.colorCountDefault;
-    baseHue = KPalConstraints.baseHueDefault;
-    baseSat = KPalConstraints.baseSatDefault;
-    hueShift = KPalConstraints.hueShiftDefault;
-    hueShiftExp = KPalConstraints.hueShiftExpDefault;
-    satShift = KPalConstraints.satShiftDefault;
-    satShiftExp = KPalConstraints.satShiftExpDefault;
+    colorCount = KPalConstraints.colorCountLimits.defaultValue;
+    baseHue = KPalConstraints.baseHueLimits.defaultValue;
+    baseSat = KPalConstraints.baseSatLimits.defaultValue;
+    hueShift = KPalConstraints.hueShiftLimits.defaultValue;
+    hueShiftExp = KPalConstraints.hueShiftExpLimits.defaultValue;
+    satShift = KPalConstraints.satShiftLimits.defaultValue;
+    satShiftExp = KPalConstraints.satShiftExpLimits.defaultValue;
     valueRangeMin = KPalConstraints.valueRangeMinDefault;
     valueRangeMax = KPalConstraints.valueRangeMaxDefault;
     satCurve = KPalConstraints.satCurveDefault;
@@ -114,11 +114,11 @@ class KPalRampData
     final List<HistoryShiftSet>? historyShifts,
   })
   {
-    for (int i = 0; i < KPalConstraints.colorCountMax; i++)
+    for (int i = 0; i < KPalConstraints.colorCountLimits.max; i++)
     {
-      final ValueNotifier<int> hueNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? KPalSliderConstraints.defaultHue : historyShifts[i].hueShift);
-      final ValueNotifier<int> satNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? KPalSliderConstraints.defaultSat : historyShifts[i].satShift);
-      final ValueNotifier<int> valNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? KPalSliderConstraints.defaultVal : historyShifts[i].valShift);
+      final ValueNotifier<int> hueNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? KPalSliderConstraints.hueLimits.defaultValue : historyShifts[i].hueShift);
+      final ValueNotifier<int> satNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? KPalSliderConstraints.satLimits.defaultValue : historyShifts[i].satShift);
+      final ValueNotifier<int> valNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? KPalSliderConstraints.valLimits.defaultValue : historyShifts[i].valShift);
       final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: hueNotifier, satShiftNotifier: satNotifier, valShiftNotifier: valNotifier);
       shiftSet.hueShiftNotifier.addListener(_shiftChanged);
       shiftSet.satShiftNotifier.addListener(_shiftChanged);
@@ -339,9 +339,9 @@ class KPalRampData
         shiftSet.valShiftNotifier.removeListener(_shiftChanged);
         if (resetListeners)
         {
-          shiftSet.hueShiftNotifier.value = KPalSliderConstraints.defaultHue;
-          shiftSet.satShiftNotifier.value = KPalSliderConstraints.defaultSat;
-          shiftSet.valShiftNotifier.value = KPalSliderConstraints.defaultVal;
+          shiftSet.hueShiftNotifier.value = KPalSliderConstraints.hueLimits.defaultValue;
+          shiftSet.satShiftNotifier.value = KPalSliderConstraints.satLimits.defaultValue;
+          shiftSet.valShiftNotifier.value = KPalSliderConstraints.valLimits.defaultValue;
         }
         shiftSet.hueShiftNotifier.addListener(_shiftChanged);
         shiftSet.satShiftNotifier.addListener(_shiftChanged);

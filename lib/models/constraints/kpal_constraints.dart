@@ -16,6 +16,10 @@
  *
  */
 
+import 'package:kpix/models/constraints/value_limits.dart';
+
+export 'package:kpix/models/constraints/value_limits.dart';
+
 enum SatCurve
 {
   noFlat(0, 1),
@@ -41,33 +45,13 @@ enum SatCurve
 
 abstract final class KPalConstraints
 {
-  static const int colorCountMin = 3;
-  static const int colorCountDefault = 7;
-  static const int colorCountMax = 15;
-
-  static const int baseHueMin = 0;
-  static const int baseHueDefault = 180;
-  static const int baseHueMax = 360;
-
-  static const int baseSatMin = 0;
-  static const int baseSatDefault = 60;
-  static const int baseSatMax = 100;
-
-  static const int hueShiftMin = -90;
-  static const int hueShiftDefault = -10;
-  static const int hueShiftMax = 90;
-
-  static const double hueShiftExpMin = 0.5;
-  static const double hueShiftExpDefault = 1.0;
-  static const double hueShiftExpMax = 2.0;
-
-  static const int satShiftMin = -25;
-  static const int satShiftDefault = -10;
-  static const int satShiftMax = 25;
-
-  static const double satShiftExpMin = 0.5;
-  static const double satShiftExpDefault = 1.0;
-  static const double satShiftExpMax = 2.0;
+  static const ValueLimits<int> colorCountLimits = ValueLimits<int>(min: 3, defaultValue: 7, max: 15);
+  static const ValueLimits<int> baseHueLimits = ValueLimits<int>(min: 0, defaultValue: 180, max: 360);
+  static const ValueLimits<int> baseSatLimits = ValueLimits<int>(min: 0, defaultValue: 60, max: 100);
+  static const ValueLimits<int> hueShiftLimits = ValueLimits<int>(min: -90, defaultValue: -10, max: 90);
+  static const ValueLimits<double> hueShiftExpLimits = ValueLimits<double>(min: 0.5, defaultValue: 1.0, max: 2.0);
+  static const ValueLimits<int> satShiftLimits = ValueLimits<int>(min: -25, defaultValue: -10, max: 25);
+  static const ValueLimits<double> satShiftExpLimits = ValueLimits<double>(min: 0.5, defaultValue: 1.0, max: 2.0);
 
   static const int valueRangeMin = 0;
   static const int valueRangeMinDefault = 15;
@@ -76,24 +60,14 @@ abstract final class KPalConstraints
 
   static const SatCurve satCurveDefault = SatCurve.noFlat;
 
-  static const int rampCountMin = 1;
-  static const int rampCountDefault = 8;
-  static const int rampCountMax = 64;
+  static const ValueLimits<int> rampCountLimits = ValueLimits<int>(min: 1, defaultValue: 8, max: 64);
 
   static const int maxClusters = 16;
 }
 
 abstract final class KPalSliderConstraints
 {
-  static const int minHue = -50;
-  static const int defaultHue = 0;
-  static const int maxHue = 50;
-
-  static const int minSat = -25;
-  static const int defaultSat = 0;
-  static const int maxSat = 25;
-
-  static const int minVal = -25;
-  static const int defaultVal = 0;
-  static const int maxVal = 25;
+  static const ValueLimits<int> hueLimits = ValueLimits<int>(min: -50, defaultValue: 0, max: 50);
+  static const ValueLimits<int> satLimits = ValueLimits<int>(min: -25, defaultValue: 0, max: 25);
+  static const ValueLimits<int> valLimits = ValueLimits<int>(min: -25, defaultValue: 0, max: 25);
 }

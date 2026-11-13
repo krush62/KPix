@@ -97,6 +97,16 @@ class _ImportGuard
     return value;
   }
 
+  T limited<T extends num>({
+    required final T value,
+    required final ValueLimits<T> limits,
+    required final String label,
+    final T? fallback,
+  })
+  {
+    return ranged(value: value, min: limits.min, max: limits.max, label: label, fallback: fallback ?? limits.min);
+  }
+
   double approx({
     required final double value,
     required final double min,
@@ -288,53 +298,41 @@ class _KPixParser
     final KPalRampSettings kPalRampSettings = KPalRampSettings();
 
     kPalRampSettings.colorCount = reader.getUint8();
-    if (kPalRampSettings.colorCount < KPalConstraints.colorCountMin || kPalRampSettings.colorCount > KPalConstraints.colorCountMax) throw _ImportRejected("Invalid color count in palette $index: ${kPalRampSettings.colorCount}");
+    if (!KPalConstraints.colorCountLimits.contains(kPalRampSettings.colorCount)) throw _ImportRejected("Invalid color count in palette $index: ${kPalRampSettings.colorCount}");
 
-    kPalRampSettings.baseHue = guard.ranged(
+    kPalRampSettings.baseHue = guard.limited(
       value: reader.getInt16(),
-      min: KPalConstraints.baseHueMin,
-      max: KPalConstraints.baseHueMax,
-      fallback: KPalConstraints.baseHueMin,
+      limits: KPalConstraints.baseHueLimits,
       label: "Invalid base hue in ramp $index",
     );
 
-    kPalRampSettings.baseSat = guard.ranged(
+    kPalRampSettings.baseSat = guard.limited(
       value: reader.getUint8(),
-      min: KPalConstraints.baseSatMin,
-      max: KPalConstraints.baseSatMax,
-      fallback: KPalConstraints.baseSatMin,
+      limits: KPalConstraints.baseSatLimits,
       label: "Invalid base sat in ramp $index",
     );
 
-    kPalRampSettings.hueShift = guard.ranged(
+    kPalRampSettings.hueShift = guard.limited(
       value: reader.getInt8(),
-      min: KPalConstraints.hueShiftMin,
-      max: KPalConstraints.hueShiftMax,
-      fallback: KPalConstraints.hueShiftMin,
+      limits: KPalConstraints.hueShiftLimits,
       label: "Invalid hue shift value in ramp $index",
     );
 
-    kPalRampSettings.hueShiftExp = guard.ranged(
+    kPalRampSettings.hueShiftExp = guard.limited(
       value: reader.getUint8().toDouble() / 100.0,
-      min: KPalConstraints.hueShiftExpMin,
-      max: KPalConstraints.hueShiftExpMax,
-      fallback: KPalConstraints.hueShiftExpMin,
+      limits: KPalConstraints.hueShiftExpLimits,
       label: "Invalid hue shift exp in ramp $index",
     );
 
-    kPalRampSettings.satShift = guard.ranged(
+    kPalRampSettings.satShift = guard.limited(
       value: reader.getInt8(),
-      min: KPalConstraints.satShiftMin,
-      max: KPalConstraints.satShiftMax,
-      fallback: KPalConstraints.satShiftMin,
+      limits: KPalConstraints.satShiftLimits,
       label: "Invalid sat shift in ramp $index",
     );
 
-    kPalRampSettings.satShiftExp = guard.ranged(
+    kPalRampSettings.satShiftExp = guard.limited(
       value: reader.getUint8().toDouble() / 100.0,
-      min: KPalConstraints.satShiftExpMin,
-      max: KPalConstraints.satShiftExpMax,
-      fallback: KPalConstraints.satShiftExpMin,
+      limits: KPalConstraints.satShiftExpLimits,
       label: "Invalid sat shift exp in ramp $index",
     );
 
@@ -359,27 +357,24 @@ class _KPixParser
     final List<ShiftSet> shifts = <ShiftSet>[];
     for (int j = 0; j < kPalRampSettings.colorCount; j++)
     {
-      final int hueShift = guard.ranged(
+      final int hueShift = guard.limited(
         value: reader.getInt8(),
-        min: KPalSliderConstraints.minHue,
-        max: KPalSliderConstraints.maxHue,
-        fallback: 0,
+        limits: KPalSliderConstraints.hueLimits,
+        fallback: KPalSliderConstraints.hueLimits.defaultValue,
         label: "Invalid Hue Shift in Ramp $index, color $j",
       );
 
-      final int satShift = guard.ranged(
+      final int satShift = guard.limited(
         value: reader.getInt8(),
-        min: KPalSliderConstraints.minSat,
-        max: KPalSliderConstraints.maxSat,
-        fallback: 0,
+        limits: KPalSliderConstraints.satLimits,
+        fallback: KPalSliderConstraints.satLimits.defaultValue,
         label: "Invalid Sat Shift in Ramp $index, color $j",
       );
 
-      final int valShift = guard.ranged(
+      final int valShift = guard.limited(
         value: reader.getInt8(),
-        min: KPalSliderConstraints.minVal,
-        max: KPalSliderConstraints.maxVal,
-        fallback: 0,
+        limits: KPalSliderConstraints.valLimits,
+        fallback: KPalSliderConstraints.valLimits.defaultValue,
         label: "Invalid Val Shift in Ramp $index, color $j",
       );
       shifts.add(ShiftSet(hueShiftNotifier: ValueNotifier<int>(hueShift), satShiftNotifier: ValueNotifier<int>(satShift), valShiftNotifier: ValueNotifier<int>(valShift)));

@@ -132,16 +132,16 @@ KPalRampSettings adjustRampSettings({
   }
 
   final double saturationFactor = 1.0 + (adjustment.saturation / _percent);
-  adjusted.baseHue = ((balancedHue + adjustment.hueShift) % _fullCircle).round().clamp(KPalConstraints.baseHueMin, KPalConstraints.baseHueMax);
-  adjusted.baseSat = (balancedSat * _percent * saturationFactor).round().clamp(KPalConstraints.baseSatMin, KPalConstraints.baseSatMax);
-  adjusted.satShift = (settings.satShift * saturationFactor).round().clamp(KPalConstraints.satShiftMin, KPalConstraints.satShiftMax);
+  adjusted.baseHue = KPalConstraints.baseHueLimits.clamp(((balancedHue + adjustment.hueShift) % _fullCircle).round());
+  adjusted.baseSat = KPalConstraints.baseSatLimits.clamp((balancedSat * _percent * saturationFactor).round());
+  adjusted.satShift = KPalConstraints.satShiftLimits.clamp((settings.satShift * saturationFactor).round());
 
   final double contrastFactor = 1.0 + (adjustment.contrast / _percent);
   adjusted.valueRangeMin = _adjustValue(value: settings.valueRangeMin, contrastFactor: contrastFactor, brightness: adjustment.brightness);
   adjusted.valueRangeMax = _adjustValue(value: settings.valueRangeMax, contrastFactor: contrastFactor, brightness: adjustment.brightness);
 
   final double spreadFactor = 1.0 + (adjustment.hueSpread / _percent);
-  adjusted.hueShift = (settings.hueShift * spreadFactor).round().clamp(KPalConstraints.hueShiftMin, KPalConstraints.hueShiftMax);
+  adjusted.hueShift = KPalConstraints.hueShiftLimits.clamp((settings.hueShift * spreadFactor).round());
 
   return adjusted;
 }

@@ -367,20 +367,20 @@ void main()
       Finder rowOf(final String label) => find.descendant(of: find.ancestor(of: find.text(label), matching: find.byType(Row)).first, matching: find.byType(KPixSlider));
       final KPixSlider ramps = tester.widget<KPixSlider>(rowOf(l10n.maxColorRamps));
       final KPixSlider colors = tester.widget<KPixSlider>(rowOf(l10n.maxColorsPerRamp));
-      expect(ramps.min, KPalConstraints.rampCountMin.toDouble());
+      expect(ramps.min, KPalConstraints.rampCountLimits.min.toDouble());
       expect(ramps.max, KPalConstraints.maxClusters.toDouble());
-      expect(colors.min, KPalConstraints.colorCountMin.toDouble());
-      expect(colors.max, KPalConstraints.colorCountMax.toDouble());
+      expect(colors.min, KPalConstraints.colorCountLimits.min.toDouble());
+      expect(colors.max, KPalConstraints.colorCountLimits.max.toDouble());
 
-      ramps.onChanged!(KPalConstraints.rampCountMin + 1.6);
+      ramps.onChanged!(KPalConstraints.rampCountLimits.min + 1.6);
       await _settle(tester);
-      expect(tester.widget<KPixSlider>(rowOf(l10n.maxColorRamps)).value, KPalConstraints.rampCountMin + 2.0);
+      expect(tester.widget<KPixSlider>(rowOf(l10n.maxColorRamps)).value, KPalConstraints.rampCountLimits.min + 2.0);
       expect(tester.widget<KPixSlider>(rowOf(l10n.maxColorsPerRamp)).value, colors.value);
 
-      colors.onChanged!(KPalConstraints.colorCountMin + 2.4);
+      colors.onChanged!(KPalConstraints.colorCountLimits.min + 2.4);
       await _settle(tester);
-      expect(tester.widget<KPixSlider>(rowOf(l10n.maxColorsPerRamp)).value, KPalConstraints.colorCountMin + 2.0);
-      expect(tester.widget<KPixSlider>(rowOf(l10n.maxColorRamps)).value, KPalConstraints.rampCountMin + 2.0);
+      expect(tester.widget<KPixSlider>(rowOf(l10n.maxColorsPerRamp)).value, KPalConstraints.colorCountLimits.min + 2.0);
+      expect(tester.widget<KPixSlider>(rowOf(l10n.maxColorRamps)).value, KPalConstraints.rampCountLimits.min + 2.0);
     }, width: 800, height: 700, textScale: 0.5,);
   });
 

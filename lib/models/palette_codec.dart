@@ -41,7 +41,7 @@ class PaletteCodec
   /// The code of an empty pixel.
   static const int transparent = 0;
 
-  /// Code slots per ramp. A power of two above [KPalConstraints.colorCountMax],
+  /// Code slots per ramp. A power of two above the maximum of [KPalConstraints.colorCountLimits],
   /// so that ramp and color index are a shift and a mask apart.
   static const int colorsPerRamp = 16;
   static const int _colorBits = 4;
@@ -49,7 +49,7 @@ class PaletteCodec
 
   /// The most ramps whose codes still fit into 16 bits.
   ///
-  /// Far above [KPalConstraints.rampCountMax], which only limits adding ramps
+  /// Far above the maximum of [KPalConstraints.rampCountLimits], which only limits adding ramps
   /// by hand; palette and project files can bring up to 255.
   static const int maxRamps = 0xFFFF ~/ colorsPerRamp;
 
@@ -58,7 +58,7 @@ class PaletteCodec
 
   PaletteCodec({required final List<KPalRampData> ramps}) :
         assert(ramps.length <= maxRamps, "${ramps.length} ramps do not fit into 16-bit color codes"),
-        assert(KPalConstraints.colorCountMax < colorsPerRamp, "a ramp's colors have to fit into its code slots"),
+        assert(KPalConstraints.colorCountLimits.max < colorsPerRamp, "a ramp's colors have to fit into its code slots"),
         _ramps = List<KPalRampData>.unmodifiable(ramps),
         _rampIndices = HashMap<KPalRampData, int>.identity()
   {

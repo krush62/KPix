@@ -166,8 +166,8 @@ void main()
       show: (final PaletteActionResult result) => showMessageForPaletteResult(result: result, l10n: _l10n),
       table: <PaletteActionResult, _Toast>{
         PaletteActionResult.success: _nothing,
-        PaletteActionResult.rampCountMinReached: (_l10n.needAtLeastColorRamps(count: KPalConstraints.rampCountMin), ToastType.warning),
-        PaletteActionResult.rampCountMaxReached: (_l10n.notMoreThanColorRampsAllowed(count: KPalConstraints.rampCountMax), ToastType.warning),
+        PaletteActionResult.rampCountMinReached: (_l10n.needAtLeastColorRamps(count: KPalConstraints.rampCountLimits.min), ToastType.warning),
+        PaletteActionResult.rampCountMaxReached: (_l10n.notMoreThanColorRampsAllowed(count: KPalConstraints.rampCountLimits.max), ToastType.warning),
         PaletteActionResult.loadingFailed: (_l10n.loadingPaletteFailed, ToastType.error),
       },
     );

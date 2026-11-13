@@ -55,9 +55,9 @@ void main()
     test("keeps every color of the largest palette apart", ()
     {
       final Set<HistoryColorReference> seen = Set<HistoryColorReference>.identity();
-      for (int ramp = 0; ramp < KPalConstraints.rampCountMax; ramp++)
+      for (int ramp = 0; ramp < KPalConstraints.rampCountLimits.max; ramp++)
       {
-        for (int color = 0; color < KPalConstraints.colorCountMax; color++)
+        for (int color = 0; color < KPalConstraints.colorCountLimits.max; color++)
         {
           final HistoryColorReference ref = HistoryColorReference.of(colorIndex: color, rampIndex: ramp);
           expect(ref.rampIndex, ramp);
@@ -65,15 +65,15 @@ void main()
           seen.add(ref);
         }
       }
-      expect(seen.length, KPalConstraints.rampCountMax * KPalConstraints.colorCountMax,
+      expect(seen.length, KPalConstraints.rampCountLimits.max * KPalConstraints.colorCountLimits.max,
           reason: "two colors ending up on the same shared instance would repaint pixels",);
     });
 
     test("still describes a color outside the palette limits", ()
     {
-      final HistoryColorReference outside = HistoryColorReference.of(colorIndex: KPalConstraints.colorCountMax, rampIndex: KPalConstraints.rampCountMax);
-      expect(outside.colorIndex, KPalConstraints.colorCountMax);
-      expect(outside.rampIndex, KPalConstraints.rampCountMax);
+      final HistoryColorReference outside = HistoryColorReference.of(colorIndex: KPalConstraints.colorCountLimits.max, rampIndex: KPalConstraints.rampCountLimits.max);
+      expect(outside.colorIndex, KPalConstraints.colorCountLimits.max);
+      expect(outside.rampIndex, KPalConstraints.rampCountLimits.max);
     });
   });
 

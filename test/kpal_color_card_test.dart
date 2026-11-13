@@ -257,9 +257,9 @@ void main()
 
       final List<ValueNotifier<int>> shifts = <ValueNotifier<int>>[card.shifts.hueShiftNotifier, card.shifts.satShiftNotifier, card.shifts.valShiftNotifier];
       final List<(int, int)> limits = <(int, int)>[
-        (KPalSliderConstraints.minHue, KPalSliderConstraints.maxHue),
-        (KPalSliderConstraints.minSat, KPalSliderConstraints.maxSat),
-        (KPalSliderConstraints.minVal, KPalSliderConstraints.maxVal),
+        (KPalSliderConstraints.hueLimits.min, KPalSliderConstraints.hueLimits.max),
+        (KPalSliderConstraints.satLimits.min, KPalSliderConstraints.satLimits.max),
+        (KPalSliderConstraints.valLimits.min, KPalSliderConstraints.valLimits.max),
       ];
       for (int i = 0; i < 3; i++)
       {

@@ -82,8 +82,8 @@ class ImportWidgetState extends State<ImportWidget>
   void initState()
   {
     super.initState();
-    _maxRampsNotifier = ValueNotifier<int>(KPalConstraints.rampCountDefault);
-    _maxColorsPerRampNotifier = ValueNotifier<int>(KPalConstraints.colorCountDefault);
+    _maxRampsNotifier = ValueNotifier<int>(KPalConstraints.rampCountLimits.defaultValue);
+    _maxColorsPerRampNotifier = ValueNotifier<int>(KPalConstraints.colorCountLimits.defaultValue);
     final String? initialPath = widget.initialPath;
     if (initialPath != null)
     {
@@ -378,14 +378,14 @@ class ImportWidgetState extends State<ImportWidget>
                       _createPaletteLimitRow(
                         label: l10n.maxColorRamps,
                         notifier: _maxRampsNotifier,
-                        min: KPalConstraints.rampCountMin,
+                        min: KPalConstraints.rampCountLimits.min,
                         max: KPalConstraints.maxClusters,
                       ),
                       _createPaletteLimitRow(
                         label: l10n.maxColorsPerRamp,
                         notifier: _maxColorsPerRampNotifier,
-                        min: KPalConstraints.colorCountMin,
-                        max: KPalConstraints.colorCountMax,
+                        min: KPalConstraints.colorCountLimits.min,
+                        max: KPalConstraints.colorCountLimits.max,
                       ),
                       Padding(
                         padding: const EdgeInsets.all(4.0),

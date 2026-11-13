@@ -111,7 +111,7 @@ void main()
     projectWidgetTest("says so when there are too many ramps", _column, (final WidgetTester tester) async
     {
       final List<KPalRampData> ramps = <KPalRampData>[
-        for (int i = 0; i < KPalConstraints.rampCountMax; i++) KPalRampData(uuid: "ramp $i", settings: KPalRampSettings()),
+        for (int i = 0; i < KPalConstraints.rampCountLimits.max; i++) KPalRampData(uuid: "ramp $i", settings: KPalRampSettings()),
       ];
       _palette.colorRamps = ramps;
       await tester.pump();
@@ -120,7 +120,7 @@ void main()
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.byType(KPal), findsNothing);
-      expect(find.text(testL10n.notMoreThanColorRampsAllowed(count: KPalConstraints.rampCountMax)), findsOneWidget);
+      expect(find.text(testL10n.notMoreThanColorRampsAllowed(count: KPalConstraints.rampCountLimits.max)), findsOneWidget);
     });
 
     projectWidgetTest("moves a ramp when it is dragged to another place", _column, (final WidgetTester tester) async
@@ -170,21 +170,21 @@ void main()
       expect(settings.baseHue, 200);
 
       final Color before = ramp.shiftedColors.first.value.color;
-      _slider(tester, 2).onChanged!(KPalConstraints.hueShiftMax.toDouble());
+      _slider(tester, 2).onChanged!(KPalConstraints.hueShiftLimits.max.toDouble());
       await tester.pump();
-      expect(settings.hueShift, KPalConstraints.hueShiftMax);
+      expect(settings.hueShift, KPalConstraints.hueShiftLimits.max);
       expect(ramp.shiftedColors.first.value.color, isNot(before));
 
-      _slider(tester, 3).onChanged!(KPalConstraints.hueShiftExpMax);
+      _slider(tester, 3).onChanged!(KPalConstraints.hueShiftExpLimits.max);
       _slider(tester, 4).onChanged!(50);
-      _slider(tester, 5).onChanged!(KPalConstraints.satShiftMax.toDouble());
-      _slider(tester, 6).onChanged!(KPalConstraints.satShiftExpMax);
+      _slider(tester, 5).onChanged!(KPalConstraints.satShiftLimits.max.toDouble());
+      _slider(tester, 6).onChanged!(KPalConstraints.satShiftExpLimits.max);
       await tester.pump();
 
-      expect(settings.hueShiftExp, KPalConstraints.hueShiftExpMax);
+      expect(settings.hueShiftExp, KPalConstraints.hueShiftExpLimits.max);
       expect(settings.baseSat, 50);
-      expect(settings.satShift, KPalConstraints.satShiftMax);
-      expect(settings.satShiftExp, KPalConstraints.satShiftExpMax);
+      expect(settings.satShift, KPalConstraints.satShiftLimits.max);
+      expect(settings.satShiftExp, KPalConstraints.satShiftExpLimits.max);
       await tapTooltip(tester, testL10n.cancel);
     });
 
@@ -194,12 +194,12 @@ void main()
       final KPalRampData ramp = _palette.colorRamps[0];
       expect(find.byType(KPalColorCardWidget), findsNWidgets(ramp.references.length));
 
-      _slider(tester, 0).onChanged!(KPalConstraints.colorCountMax.toDouble());
+      _slider(tester, 0).onChanged!(KPalConstraints.colorCountLimits.max.toDouble());
       await tester.pump();
       await tester.pump();
 
-      expect(ramp.settings.colorCount, KPalConstraints.colorCountMax);
-      expect(find.byType(KPalColorCardWidget), findsNWidgets(KPalConstraints.colorCountMax));
+      expect(ramp.settings.colorCount, KPalConstraints.colorCountLimits.max);
+      expect(find.byType(KPalColorCardWidget), findsNWidgets(KPalConstraints.colorCountLimits.max));
       await tapTooltip(tester, testL10n.cancel);
     });
 
@@ -241,10 +241,10 @@ void main()
       await _openEditor(tester);
       final KPalRampSettings settings = _palette.colorRamps[0].settings;
 
-      _slider(tester, 1).onChanged!(KPalConstraints.baseHueDefault + 50.0);
-      _slider(tester, 2).onChanged!(KPalConstraints.hueShiftDefault + 2.0);
-      _slider(tester, 4).onChanged!(KPalConstraints.baseSatDefault + 5.0);
-      _slider(tester, 5).onChanged!(KPalConstraints.satShiftDefault + 2.0);
+      _slider(tester, 1).onChanged!(KPalConstraints.baseHueLimits.defaultValue + 50.0);
+      _slider(tester, 2).onChanged!(KPalConstraints.hueShiftLimits.defaultValue + 2.0);
+      _slider(tester, 4).onChanged!(KPalConstraints.baseSatLimits.defaultValue + 5.0);
+      _slider(tester, 5).onChanged!(KPalConstraints.satShiftLimits.defaultValue + 2.0);
       await tester.pump();
 
       for (final String label in <String>[testL10n.baseHue, testL10n.hueShift, testL10n.baseSat, testL10n.satShift, testL10n.valueRange])
@@ -257,15 +257,15 @@ void main()
       await tester.pump();
       await tester.pump();
 
-      expect(settings.baseHue, KPalConstraints.baseHueDefault);
-      expect(settings.hueShift, KPalConstraints.hueShiftDefault);
-      expect(settings.baseSat, KPalConstraints.baseSatDefault);
-      expect(settings.satShift, KPalConstraints.satShiftDefault);
-      expect(settings.hueShiftExp, KPalConstraints.hueShiftExpDefault);
-      expect(settings.satShiftExp, KPalConstraints.satShiftExpDefault);
+      expect(settings.baseHue, KPalConstraints.baseHueLimits.defaultValue);
+      expect(settings.hueShift, KPalConstraints.hueShiftLimits.defaultValue);
+      expect(settings.baseSat, KPalConstraints.baseSatLimits.defaultValue);
+      expect(settings.satShift, KPalConstraints.satShiftLimits.defaultValue);
+      expect(settings.hueShiftExp, KPalConstraints.hueShiftExpLimits.defaultValue);
+      expect(settings.satShiftExp, KPalConstraints.satShiftExpLimits.defaultValue);
       expect(settings.valueRangeMin, KPalConstraints.valueRangeMinDefault);
       expect(settings.valueRangeMax, KPalConstraints.valueRangeMaxDefault);
-      expect(settings.colorCount, KPalConstraints.colorCountDefault);
+      expect(settings.colorCount, KPalConstraints.colorCountLimits.defaultValue);
       await tapTooltip(tester, testL10n.cancel);
     });
 
@@ -376,7 +376,7 @@ void main()
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(_palette.colorRamps, hasLength(1));
-      expect(find.text(testL10n.needAtLeastColorRamps(count: KPalConstraints.rampCountMin)), findsOneWidget);
+      expect(find.text(testL10n.needAtLeastColorRamps(count: KPalConstraints.rampCountLimits.min)), findsOneWidget);
     });
 
     group("preview", ()

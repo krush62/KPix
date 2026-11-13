@@ -179,8 +179,8 @@ void main()
     test("stays inside the ramp constraints", ()
     {
       final KPalRampSettings adjusted = adjustRampSettings(settings: _settings(baseSat: 90, satShift: -20), adjustment: const PaletteAdjustment(saturation: 100.0));
-      expect(adjusted.baseSat, KPalConstraints.baseSatMax);
-      expect(adjusted.satShift, KPalConstraints.satShiftMin);
+      expect(adjusted.baseSat, KPalConstraints.baseSatLimits.max);
+      expect(adjusted.satShift, KPalConstraints.satShiftLimits.min);
     });
   });
 
@@ -204,7 +204,7 @@ void main()
     {
       expect(adjustRampSettings(settings: _settings(hueShift: -20), adjustment: const PaletteAdjustment(hueSpread: 50.0)).hueShift, -30);
       expect(adjustRampSettings(settings: _settings(hueShift: -20), adjustment: const PaletteAdjustment(hueSpread: -100.0)).hueShift, 0);
-      expect(adjustRampSettings(settings: _settings(hueShift: 80), adjustment: const PaletteAdjustment(hueSpread: 100.0)).hueShift, KPalConstraints.hueShiftMax);
+      expect(adjustRampSettings(settings: _settings(hueShift: 80), adjustment: const PaletteAdjustment(hueSpread: 100.0)).hueShift, KPalConstraints.hueShiftLimits.max);
     });
   });
 
@@ -237,8 +237,8 @@ void main()
       for (final KPalRampSettings original in _defaultSettings())
       {
         final KPalRampSettings adjusted = adjustRampSettings(settings: original, adjustment: const PaletteAdjustment(whiteBalance: 100.0, tint: -100.0));
-        expect(adjusted.baseHue, inInclusiveRange(KPalConstraints.baseHueMin, KPalConstraints.baseHueMax));
-        expect(adjusted.baseSat, inInclusiveRange(KPalConstraints.baseSatMin, KPalConstraints.baseSatMax));
+        expect(adjusted.baseHue, inInclusiveRange(KPalConstraints.baseHueLimits.min, KPalConstraints.baseHueLimits.max));
+        expect(adjusted.baseSat, inInclusiveRange(KPalConstraints.baseSatLimits.min, KPalConstraints.baseSatLimits.max));
       }
     });
   });

@@ -19,11 +19,10 @@ part of 'kpal_widget.dart';
 class KPalVerticalSliderWidget extends StatefulWidget
 {
   final String name;
-  final int maxVal;
-  final int minVal;
+  final ValueLimits<int> limits;
   final ValueNotifier<int> valueNotifier;
 
-  const KPalVerticalSliderWidget({super.key, required this.name, required this.minVal, required this.maxVal, required this.valueNotifier});
+  const KPalVerticalSliderWidget({super.key, required this.name, required this.limits, required this.valueNotifier});
 
 
   @override
@@ -62,8 +61,8 @@ class _KPalVerticalSliderWidgetState extends State<KPalVerticalSliderWidget> {
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
                     child: Slider(
                       value: value.toDouble(),
-                      min: widget.minVal.toDouble(),
-                      max: widget.maxVal.toDouble(),
+                      min: widget.limits.min.toDouble(),
+                      max: widget.limits.max.toDouble(),
                       onChanged: (final double newValue) {
                         widget.valueNotifier.value = newValue.round();
                       },

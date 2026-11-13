@@ -117,7 +117,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
     return ListenableBuilder(
       listenable: Listenable.merge(<Listenable>[_shouldShowSliders, shifts.hueShiftNotifier, shifts.satShiftNotifier, shifts.valShiftNotifier]),
       builder: (final BuildContext context, final Widget? child) {
-        final bool editIsVisible = !_shouldShowSliders.value && (shifts.hueShiftNotifier.value != KPalSliderConstraints.defaultHue || shifts.satShiftNotifier.value != KPalSliderConstraints.defaultSat || shifts.valShiftNotifier.value != KPalSliderConstraints.defaultVal);
+        final bool editIsVisible = !_shouldShowSliders.value && (shifts.hueShiftNotifier.value != KPalSliderConstraints.hueLimits.defaultValue || shifts.satShiftNotifier.value != KPalSliderConstraints.satLimits.defaultValue || shifts.valShiftNotifier.value != KPalSliderConstraints.valLimits.defaultValue);
         return AnimatedOpacity(
           duration: const Duration(milliseconds: _KPalColorCardWidgetOptions.editAnimationDuration),
           curve: Curves.easeInOut,
@@ -145,18 +145,18 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     if (_hueSlider == null)
     {
-      _hueSlider = KPalVerticalSliderWidget(name: l10n.hueAbb, minVal: KPalSliderConstraints.minHue, maxVal: KPalSliderConstraints.maxHue, valueNotifier: widget.shiftSet.hueShiftNotifier);
+      _hueSlider = KPalVerticalSliderWidget(name: l10n.hueAbb, limits: KPalSliderConstraints.hueLimits, valueNotifier: widget.shiftSet.hueShiftNotifier);
       _hueSlider!.valueNotifier.addListener(_showSliders);
 
     }
     if (_satSlider == null)
     {
-      _satSlider = KPalVerticalSliderWidget(name: l10n.satAbb, minVal: KPalSliderConstraints.minSat, maxVal: KPalSliderConstraints.maxSat, valueNotifier: widget.shiftSet.satShiftNotifier);
+      _satSlider = KPalVerticalSliderWidget(name: l10n.satAbb, limits: KPalSliderConstraints.satLimits, valueNotifier: widget.shiftSet.satShiftNotifier);
       _satSlider!.valueNotifier.addListener(_showSliders);
     }
     if (_valSlider == null)
     {
-      _valSlider = KPalVerticalSliderWidget(name: l10n.valAbb, minVal: KPalSliderConstraints.minVal, maxVal: KPalSliderConstraints.maxVal, valueNotifier: widget.shiftSet.valShiftNotifier);
+      _valSlider = KPalVerticalSliderWidget(name: l10n.valAbb, limits: KPalSliderConstraints.valLimits, valueNotifier: widget.shiftSet.valShiftNotifier);
       _valSlider!.valueNotifier.addListener(_showSliders);
     }
 

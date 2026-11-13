@@ -48,8 +48,8 @@ Iterable<ColorReference> _allColors({required final List<KPalRampData> ramps}) s
 void main()
 {
   //the smallest, the largest and an ordinary color count
-  final KPalRampData a = _ramp(uuid: "a", colorCount: KPalConstraints.colorCountMin);
-  final KPalRampData b = _ramp(uuid: "b", colorCount: KPalConstraints.colorCountMax);
+  final KPalRampData a = _ramp(uuid: "a", colorCount: KPalConstraints.colorCountLimits.min);
+  final KPalRampData b = _ramp(uuid: "b", colorCount: KPalConstraints.colorCountLimits.max);
   final KPalRampData c = _ramp(uuid: "c", colorCount: 7);
   final PaletteCodec codec = PaletteCodec(ramps: <KPalRampData>[a, b, c]);
 
@@ -91,7 +91,7 @@ void main()
 
     test("the largest possible palette still fits into 16 bits", ()
     {
-      final int highest = PaletteCodec.codeOf(rampIndex: PaletteCodec.maxRamps - 1, colorIndex: KPalConstraints.colorCountMax - 1);
+      final int highest = PaletteCodec.codeOf(rampIndex: PaletteCodec.maxRamps - 1, colorIndex: KPalConstraints.colorCountLimits.max - 1);
       expect(highest, lessThanOrEqualTo(0xFFFF));
       final Uint16List stored = Uint16List(1)..[0] = highest;
       expect(stored[0], highest, reason: "a Uint16List must hold the highest code unchanged");
@@ -102,7 +102,7 @@ void main()
       //project and palette files store the ramp count in one byte
       final List<KPalRampData> many = List<KPalRampData>.generate(255, (final int i) => _ramp(uuid: "r$i", colorCount: 5));
       final PaletteCodec large = PaletteCodec(ramps: many);
-      expect(many.length, greaterThan(KPalConstraints.rampCountMax));
+      expect(many.length, greaterThan(KPalConstraints.rampCountLimits.max));
       for (final ColorReference color in _allColors(ramps: many))
       {
         expect(large.decode(code: large.encode(color: color)), same(color));

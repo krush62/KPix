@@ -525,14 +525,14 @@ KPalRampSettings _fitRampForClusterBins({required final List<_HSVBin> cluster, r
   double endFactor(final double exp) => exp * pow(endSteps, exp).toDouble();
 
   _LinearFit hueFit = _noFit;
-  double hueExp = KPalConstraints.hueShiftExpDefault;
-  for (final double exp in _exponentCandidates(minExp: KPalConstraints.hueShiftExpMin, maxExp: KPalConstraints.hueShiftExpMax))
+  double hueExp = KPalConstraints.hueShiftExpLimits.defaultValue;
+  for (final double exp in _exponentCandidates(minExp: KPalConstraints.hueShiftExpLimits.min, maxExp: KPalConstraints.hueShiftExpLimits.max))
   {
     final _LinearFit fit = _fitLinear(
       f: <double>[for (final double t in positions) _hueShape(t: t, exp: exp)],
       y: hueOffsets,
       w: hueWeights,
-      maxAmplitude: KPalConstraints.hueShiftMax * endFactor(exp),
+      maxAmplitude: KPalConstraints.hueShiftLimits.max * endFactor(exp),
     );
     if (fit.error < hueFit.error)
     {
@@ -542,17 +542,17 @@ KPalRampSettings _fitRampForClusterBins({required final List<_HSVBin> cluster, r
   }
 
   _LinearFit satFit = _noFit;
-  double satExp = KPalConstraints.satShiftExpDefault;
+  double satExp = KPalConstraints.satShiftExpLimits.defaultValue;
   SatCurve satCurve = KPalConstraints.satCurveDefault;
   for (final SatCurve curve in SatCurve.values)
   {
-    for (final double exp in _exponentCandidates(minExp: KPalConstraints.satShiftExpMin, maxExp: KPalConstraints.satShiftExpMax))
+    for (final double exp in _exponentCandidates(minExp: KPalConstraints.satShiftExpLimits.min, maxExp: KPalConstraints.satShiftExpLimits.max))
     {
       final _LinearFit fit = _fitLinear(
         f: <double>[for (final double t in positions) _satShape(t: t, exp: exp, curve: curve)],
         y: sats,
         w: satWeights,
-        maxAmplitude: KPalConstraints.satShiftMax * endFactor(exp),
+        maxAmplitude: KPalConstraints.satShiftLimits.max * endFactor(exp),
       );
       //a curve has to be clearly better to win, so flat data keeps the default curve
       if (fit.error < satFit.error - 1e-9)
@@ -567,10 +567,10 @@ KPalRampSettings _fitRampForClusterBins({required final List<_HSVBin> cluster, r
   return KPalRampSettings.fromValues(
     colorCount: colorCount,
     baseHue: (hueRef + hueFit.offset).round() % _fullCircle,
-    hueShift: (hueFit.amplitude / endFactor(hueExp)).round().clamp(KPalConstraints.hueShiftMin, KPalConstraints.hueShiftMax),
+    hueShift: KPalConstraints.hueShiftLimits.clamp((hueFit.amplitude / endFactor(hueExp)).round()),
     hueShiftExp: hueExp,
-    baseSat: (satFit.error.isFinite ? satFit.offset : KPalConstraints.baseSatDefault.toDouble()).round().clamp(KPalConstraints.baseSatMin, KPalConstraints.baseSatMax),
-    satShift: (satFit.amplitude / endFactor(satExp)).round().clamp(KPalConstraints.satShiftMin, KPalConstraints.satShiftMax),
+    baseSat: KPalConstraints.baseSatLimits.clamp((satFit.error.isFinite ? satFit.offset : KPalConstraints.baseSatLimits.defaultValue.toDouble()).round()),
+    satShift: KPalConstraints.satShiftLimits.clamp((satFit.amplitude / endFactor(satExp)).round()),
     satShiftExp: satExp,
     satCurve: satCurve,
     valueRangeMin: (vMin * 100).clamp(0.0, 100.0).round(),
@@ -634,10 +634,10 @@ void _refineShifts({required final List<KPalRampData> ramps, required final List
       final ShiftSet shift = ramp.shifts[colorIndex];
       if (target.s >= _hueNoiseLimit && target.v >= _hueNoiseLimit)
       {
-        shift.hueShiftNotifier.value = _signedHueDelta(delta: target.h - base.h).round().clamp(KPalSliderConstraints.minHue, KPalSliderConstraints.maxHue);
+        shift.hueShiftNotifier.value = KPalSliderConstraints.hueLimits.clamp(_signedHueDelta(delta: target.h - base.h).round());
       }
-      shift.satShiftNotifier.value = ((target.s - base.s) * 100).round().clamp(KPalSliderConstraints.minSat, KPalSliderConstraints.maxSat);
-      shift.valShiftNotifier.value = ((target.v - base.v) * 100).round().clamp(KPalSliderConstraints.minVal, KPalSliderConstraints.maxVal);
+      shift.satShiftNotifier.value = KPalSliderConstraints.satLimits.clamp(((target.s - base.s) * 100).round());
+      shift.valShiftNotifier.value = KPalSliderConstraints.valLimits.clamp(((target.v - base.v) * 100).round());
     }
   }
 }
@@ -710,7 +710,7 @@ int _fewestColors({required final List<_HSVBin> cluster, required final int maxC
     return _matchError(ramps: ramps, bins: cluster, colors: colors);
   }
   final ({double mean, double p95}) best = errorWith(maxColors);
-  for (int colorCount = KPalConstraints.colorCountMin; colorCount < maxColors; colorCount++)
+  for (int colorCount = KPalConstraints.colorCountLimits.min; colorCount < maxColors; colorCount++)
   {
     if (_closeEnough(error: errorWith(colorCount), best: best)) return colorCount;
   }

@@ -219,15 +219,15 @@ void main()
       await _withManager(tester, (final ValueNotifier<int> dismissed, final AppPaths paths) async
       {
         _palette.colorRamps = <KPalRampData>[
-          for (int i = 0; i < KPalConstraints.rampCountMax; i++) KPalRampData(uuid: "ramp $i", settings: KPalRampSettings()),
+          for (int i = 0; i < KPalConstraints.rampCountLimits.max; i++) KPalRampData(uuid: "ramp $i", settings: KPalRampSettings()),
         ];
         await _selectEntry(tester);
 
         await tapTooltip(tester, testL10n.appendToCurrentPalette);
         await tester.pump(const Duration(milliseconds: 300));
 
-        expect(_palette.colorRamps, hasLength(KPalConstraints.rampCountMax));
-        expect(find.text(testL10n.notMoreThanColorRampsAllowed(count: KPalConstraints.rampCountMax)), findsOneWidget);
+        expect(_palette.colorRamps, hasLength(KPalConstraints.rampCountLimits.max));
+        expect(find.text(testL10n.notMoreThanColorRampsAllowed(count: KPalConstraints.rampCountLimits.max)), findsOneWidget);
       });
     });
 

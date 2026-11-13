@@ -116,7 +116,7 @@ void main()
   {
     final List<KPalRampData> palette = KPalRampData.getDefaultPalette();
     final Uint8List bytes = _imageOf(ramps: palette);
-    final List<KPalRampData> ramps = _rampsOf(extracted: extractColorRamps(imgBytes: bytes, maxRamps: KPalConstraints.rampCountDefault, maxColors: KPalConstraints.colorCountDefault));
+    final List<KPalRampData> ramps = _rampsOf(extracted: extractColorRamps(imgBytes: bytes, maxRamps: KPalConstraints.rampCountLimits.defaultValue, maxColors: KPalConstraints.colorCountLimits.defaultValue));
     //the old fit landed at 7.6 here
     expect(_meanMatchError(bytes: bytes, ramps: ramps), lessThan(1.5));
   });
@@ -150,9 +150,9 @@ void main()
       expect(ramp.shifts.length, ramp.settings.colorCount);
       for (final HistoryShiftSet shift in ramp.shifts)
       {
-        expect(shift.hueShift, inInclusiveRange(KPalSliderConstraints.minHue, KPalSliderConstraints.maxHue));
-        expect(shift.satShift, inInclusiveRange(KPalSliderConstraints.minSat, KPalSliderConstraints.maxSat));
-        expect(shift.valShift, inInclusiveRange(KPalSliderConstraints.minVal, KPalSliderConstraints.maxVal));
+        expect(shift.hueShift, inInclusiveRange(KPalSliderConstraints.hueLimits.min, KPalSliderConstraints.hueLimits.max));
+        expect(shift.satShift, inInclusiveRange(KPalSliderConstraints.satLimits.min, KPalSliderConstraints.satLimits.max));
+        expect(shift.valShift, inInclusiveRange(KPalSliderConstraints.valLimits.min, KPalSliderConstraints.valLimits.max));
       }
     }
   });

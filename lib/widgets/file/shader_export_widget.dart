@@ -385,19 +385,7 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
                                 },
                               ),
                             ),
-                            Expanded(
-                              flex: 2,
-                              child: IconButton.outlined(
-                                tooltip: l10n.changeDirectory,
-                                constraints: const BoxConstraints(),
-                                padding: const EdgeInsets.all(ShaderExportWidgetOptions.padding),
-                                onPressed: _changeDirectoryPressed,
-                                icon: const Icon(
-                                  TablerIcons.folder,
-                                  size: ShaderExportWidgetOptions.iconSize / 2,
-                                ),
-                              ),
-                            ),
+                            DialogActionButton.directory(onPressed: _changeDirectoryPressed, l10n: l10n, flex: 2),
                           ],
                         ),
 
@@ -515,9 +503,8 @@ class ShaderExportWidgetState extends State<ShaderExportWidget>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                DialogActionButton(
-                  tooltip: l10n.cancel,
-                  icon: TablerIcons.x,
+                DialogActionButton.cancel(
+                  l10n: l10n,
                   onPressed: cancel,
                 ),
                 ValueListenableBuilder<FileNameStatus>(

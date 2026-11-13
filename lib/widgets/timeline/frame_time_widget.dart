@@ -24,6 +24,7 @@ import 'package:kpix/models/constraints/frame_constraints.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_number_picker_widget.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:material_ui/material_ui.dart';
 
 class FrameTimeWidget extends StatefulWidget
@@ -103,32 +104,21 @@ class _FrameTimeWidgetState extends State<FrameTimeWidget>
                 const SizedBox(height: _padding,),
                 Row(
                   children: <Widget>[
-                    Expanded(
-                      child: IconButton(
-                        tooltip: l10n.cancel,
-                        onPressed: () {widget.onDismiss?.call();},
-                        icon: const Icon(TablerIcons.x),
-                      ),
+                    DialogActionButton.cancel(
+                      l10n:l10n,
+                      onPressed: () {widget.onDismiss?.call();}
                     ),
-                    const SizedBox(width: _padding,),
-                    Expanded(
-                      child: IconButton(
-                        tooltip: l10n.applyToAllFrames,
-                        onPressed: () {widget.onConfirmAll?.call(value: widget.valueNotifier.value);},
-                        icon: const Icon(TablerIcons.checks,
-                        ),
-                      ),
+                    DialogActionButton(
+                      tooltip: l10n.applyToAllFrames,
+                      icon: TablerIcons.checks,
+                      onPressed: () {widget.onConfirmAll?.call(value: widget.valueNotifier.value);},
                     ),
-                    const SizedBox(width: _padding,),
-                    Expanded(
-                      child: IconButton(
-                        tooltip: l10n.applyToCurrentFrame,
-                        onPressed: () {widget.onConfirmSingle?.call(
-                            frame: widget.frame, value: widget.valueNotifier.value,);
-                          },
-                        icon: const Icon(TablerIcons.check,
-                        ),
-                      ),
+                    DialogActionButton(
+                      tooltip: l10n.applyToCurrentFrame,
+                      icon: TablerIcons.check,
+                      onPressed: () {widget.onConfirmSingle?.call(
+                        frame: widget.frame, value: widget.valueNotifier.value,);
+                      },
                     ),
                   ],
                 ),

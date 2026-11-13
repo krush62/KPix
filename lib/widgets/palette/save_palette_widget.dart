@@ -122,12 +122,9 @@ class SavePaletteWidgetState extends State<SavePaletteWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              DialogActionButton(
-                tooltip: l10n.close,
-                icon: TablerIcons.x,
-                onPressed: () {
-                  widget.dismiss();
-                },
+              DialogActionButton.close(
+                l10n: l10n,
+                onPressed: widget.dismiss,
               ),
               ValueListenableBuilder<FileNameStatus>(
          valueListenable: _fileNameStatus,

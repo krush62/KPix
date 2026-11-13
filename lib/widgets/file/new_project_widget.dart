@@ -387,34 +387,10 @@ class NewProjectWidgetState extends State<NewProjectWidget>
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               if (widget.dismiss != null) ...<Widget>[
-                Expanded(
-                  child: IconButton.outlined(
-                    tooltip: l10n.exitApplication,
-                    icon: const Icon(TablerIcons.power),
-                    onPressed: () {
-                      widget.dismiss!();
-                    },
-                  ),
-                ),
-                const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
+                DialogActionButton(tooltip: l10n.exitApplication, icon: TablerIcons.power, onPressed: widget.dismiss),
               ],
-              Expanded(
-                child: IconButton.outlined(
-                  tooltip: l10n.openProjectManager,
-                  icon: const Icon(TablerIcons.folder_open),
-                  onPressed: () {
-                    widget.open();
-                  },
-                ),
-              ),
-              const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
-              Expanded(
-                child: IconButton.outlined(
-                  tooltip: l10n.createProject,
-                  icon: const Icon(TablerIcons.check),
-                  onPressed: accept,
-                ),
-              ),
+              DialogActionButton(tooltip: l10n.openProjectManager, icon: TablerIcons.folder_open, onPressed: widget.open),
+              DialogActionButton(tooltip: l10n.createProject, icon: TablerIcons.check, onPressed: accept),
             ],
           ),
         ],

@@ -564,9 +564,8 @@ class PaletteAdjustmentWidgetState extends State<PaletteAdjustmentWidget>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                DialogActionButton(
-                  tooltip: l10n.cancel,
-                  icon: TablerIcons.x,
+                DialogActionButton.cancel(
+                  l10n: l10n,
                   onPressed: cancel,
                 ),
                 DialogActionButton(

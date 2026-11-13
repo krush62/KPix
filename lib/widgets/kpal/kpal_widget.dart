@@ -176,17 +176,14 @@ class KPalState extends State<KPal>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                DialogActionButton(
-                  tooltip: l10n.cancel,
-                  icon: TablerIcons.x,
+                DialogActionButton.cancel(
+                  l10n: l10n,
                   onPressed: discardChange,
                 ),
                 DialogActionButton(
                   tooltip: l10n.delete,
                   icon: TablerIcons.trash,
-                  onPressed: () {
-                    _showDeleteDialog();
-                  },
+                  onPressed: _showDeleteDialog,
                 ),
                 DialogActionButton(
                   tooltip: l10n.apply,

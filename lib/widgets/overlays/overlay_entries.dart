@@ -188,24 +188,77 @@ class DialogActionButton extends StatelessWidget
   final IconData icon;
   final double? iconSize;
   final double padding;
+  final int flex;
+  final BoxConstraints? constraints;
   final VoidCallback? onPressed;
+  final double? innerPadding;
 
   const DialogActionButton({
     super.key,
     required this.tooltip,
     required this.icon,
     required this.onPressed,
+    this.constraints,
     this.iconSize,
+    this.innerPadding,
+    this.flex = 1,
     this.padding = OverlayEntryAlertDialogOptions.padding,
   });
 
+  DialogActionButton.cancel({
+    final Key? key,
+    required final VoidCallback? onPressed,
+    required final AppLocalizations l10n,
+    final double? iconSize,
+  }) : this(
+    key: key,
+    onPressed: onPressed,
+    icon: TablerIcons.x,
+    tooltip: l10n.cancel,
+    iconSize: iconSize,
+  );
+
+  DialogActionButton.close({
+    final Key? key,
+    required final VoidCallback? onPressed,
+    required final AppLocalizations l10n,
+  }) : this(
+    key: key,
+    onPressed: onPressed,
+    icon: TablerIcons.x,
+    tooltip: l10n.close,
+  );
+
+  DialogActionButton.directory({
+    final Key? key,
+    required final VoidCallback? onPressed,
+    required final AppLocalizations l10n,
+    final double? innerPadding = OverlayEntryAlertDialogOptions.padding,
+    final String? tooltip,
+    final IconData? icon,
+    final int flex = 1,
+    final double padding = 0.0,
+  }) : this(
+    key: key,
+    onPressed: onPressed,
+    icon: icon ?? TablerIcons.folder,
+    tooltip: tooltip?? l10n.changeDirectory,
+    iconSize: OverlayEntryAlertDialogOptions.iconSize / 2,
+    constraints: const BoxConstraints(),
+    innerPadding: innerPadding,
+    flex: flex,
+    padding: padding,
+  );
   @override
   Widget build(final BuildContext context)
   {
     return Expanded(
+      flex: flex,
       child: Padding(
         padding: EdgeInsets.all(padding),
         child: IconButton.outlined(
+          padding: innerPadding != null ? EdgeInsets.all(innerPadding!) : null,
+          constraints: constraints,
           tooltip: tooltip,
           icon: Icon(icon, size: iconSize),
           onPressed: onPressed,

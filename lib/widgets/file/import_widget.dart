@@ -264,15 +264,15 @@ class ImportWidgetState extends State<ImportWidget>
         maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
         maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Text(l10n.importImage.toUpperCase(), style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
-            Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Text(l10n.importImage.toUpperCase(), style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
+          Padding(
+            padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+            child: Row(
               children: <Widget>[
                 Expanded(
                   flex: 3,
@@ -300,17 +300,11 @@ class ImportWidgetState extends State<ImportWidget>
                               },
                             ),
                           ),
-                          Expanded(
-                            child: IconButton.outlined(
-                              tooltip: l10n.chooseImage,
-                              constraints: const BoxConstraints(),
-                              padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                              onPressed: () {_chooseImagePressed(l10n: l10n);},
-                              icon: const Icon(
-                                TablerIcons.folder_open,
-                                size: OverlayEntryAlertDialogOptions.iconSize / 2,
-                              ),
-                            ),
+                          DialogActionButton.directory(
+                            l10n: l10n,
+                            onPressed: () {_chooseImagePressed(l10n: l10n);},
+                            tooltip: l10n.chooseImage,
+                            icon: TablerIcons.folder_open,
                           ),
                         ],
                       ),
@@ -449,37 +443,26 @@ class ImportWidgetState extends State<ImportWidget>
                 ),
               ],
             ),
-            const SizedBox(height: OverlayEntryAlertDialogOptions.padding * 2,),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(
-                  child: IconButton.outlined(
-                    tooltip: l10n.cancel,
-                    icon: const Icon(TablerIcons.x),
-                    onPressed: () {
-                      widget.dismiss();
-                    },
-                  ),
-                ),
-                const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
-                Expanded(
-                  child: ValueListenableBuilder<String?>(
-                    valueListenable: _fileNameNotifier,
-                    builder: (final BuildContext context, final String? fileNameValue, final Widget? child) {
-                      return IconButton.outlined(
-                        tooltip: l10n.importImage,
-                        icon: const Icon(TablerIcons.check),
-                        onPressed: _fileNameNotifier.value == null ? null : accept,
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              DialogActionButton.cancel(onPressed: widget.dismiss, l10n: l10n),
+              const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
+              ValueListenableBuilder<String?>(
+                valueListenable: _fileNameNotifier,
+                builder: (final BuildContext context, final String? fileNameValue, final Widget? child) {
+                  return DialogActionButton(
+                    tooltip: l10n.importImage,
+                    icon: TablerIcons.check,
+                    onPressed: _fileNameNotifier.value == null ? null : accept,
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

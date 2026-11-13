@@ -402,19 +402,7 @@ class ExportWidgetState extends State<ExportWidget>
             },
           ),
         ),
-        Expanded(
-          flex: 2,
-          child: IconButton.outlined(
-            tooltip: l10n.changeDirectory,
-            constraints: const BoxConstraints(),
-            padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-            onPressed: _changeDirectoryPressed,
-            icon: const Icon(
-                TablerIcons.folder,
-                size: OverlayEntryAlertDialogOptions.iconSize / 2,
-            ),
-          ),
-        ),
+        DialogActionButton.directory(onPressed: _changeDirectoryPressed, l10n: l10n, flex: 2),
       ],
     );
   }
@@ -543,12 +531,9 @@ class ExportWidgetState extends State<ExportWidget>
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                DialogActionButton(
-                  tooltip: l10n.close,
-                  icon: TablerIcons.x,
-                  onPressed: () {
-                    widget.dismiss();
-                  },
+                DialogActionButton.close(
+                  l10n: l10n,
+                  onPressed: widget.dismiss,
                 ),
                 ValueListenableBuilder<FileNameStatus>(
            valueListenable: _fileNameStatus,

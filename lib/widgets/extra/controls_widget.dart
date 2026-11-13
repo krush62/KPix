@@ -16,7 +16,6 @@
 
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
-import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -80,9 +79,8 @@ class _ControlsWidgetState extends State<ControlsWidget>
           ),
           Row(
             children: <Widget>[
-              DialogActionButton(
-                tooltip: l10n.close,
-                icon: TablerIcons.x,
+              DialogActionButton.close(
+                l10n: l10n,
                 onPressed: widget.onDismiss,
               ),
             ],

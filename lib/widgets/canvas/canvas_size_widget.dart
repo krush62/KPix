@@ -492,13 +492,10 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              DialogActionButton(
-                tooltip: l10n.cancel,
-                icon: TablerIcons.x,
+              DialogActionButton.cancel(
+                l10n: l10n,
                 iconSize: OverlayEntryAlertDialogOptions.iconSize,
-                onPressed: () {
-                  widget.dismiss();
-                },
+                onPressed: widget.dismiss,
               ),
               DialogActionButton(
                 tooltip: l10n.apply,

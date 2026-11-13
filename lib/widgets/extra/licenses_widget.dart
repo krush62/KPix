@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/oss_licenses.dart';
 import 'package:kpix/third_party_licenses.dart';
@@ -63,9 +62,8 @@ class LicensesWidget extends StatelessWidget
           ),
           Row(
             children: <Widget>[
-              DialogActionButton(
-                tooltip: l10n.close,
-                icon: TablerIcons.x,
+              DialogActionButton.close(
+                l10n: l10n,
                 onPressed: onDismiss,
               ),
             ],

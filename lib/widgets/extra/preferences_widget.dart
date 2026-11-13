@@ -187,9 +187,8 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              DialogActionButton(
-                tooltip: l10n.cancel,
-                icon: TablerIcons.x,
+              DialogActionButton.cancel(
+                l10n: l10n,
                 onPressed: widget.dismiss,
               ),
               DialogActionButton(

@@ -132,12 +132,9 @@ class SaveAsWidgetState extends State<SaveAsWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              DialogActionButton(
-                tooltip: l10n.cancel,
-                icon: TablerIcons.x,
-                onPressed: () {
-                  widget.dismiss();
-                },
+              DialogActionButton.cancel(
+                l10n: l10n,
+                onPressed: widget.dismiss,
               ),
                 ValueListenableBuilder<FileNameStatus>(
            valueListenable: _fileNameStatus,

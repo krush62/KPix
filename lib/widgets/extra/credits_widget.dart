@@ -16,7 +16,6 @@
 
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
-import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -79,13 +78,10 @@ class _CreditsWidgetState extends State<CreditsWidget>
           ),
           Row(
             children: <Widget>[
-              Expanded(
-                child: IconButton.outlined(
-                  tooltip: l10n.close,
-                  icon: const Icon(TablerIcons.x),
-                  onPressed: _dismissPressed,
-                ),
-              ),
+              DialogActionButton.close(
+                l10n: l10n,
+                onPressed: _dismissPressed,
+              )
             ],
           ),
         ],

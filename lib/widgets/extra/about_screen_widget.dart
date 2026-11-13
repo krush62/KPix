@@ -83,17 +83,6 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
     _controlsScreen.hide();
   }
 
-  Expanded _createButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc})
-  {
-    return Expanded(
-      child: IconButton.outlined(
-        icon: Icon(icon),
-        tooltip: tooltip,
-        onPressed: onPressedFunc,
-      ),
-    );
-  }
-
   /// Launches a URL in the default browser.
   Future<void> launchURL({required final String url}) async
   {
@@ -123,87 +112,80 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
           ),
           Expanded(
             flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.only(left: OverlayEntryAlertDialogOptions.padding),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Text("$windowTitle ${_pInfo.version}", style: Theme.of(context).textTheme.headlineLarge),
-                      const Expanded(child: SizedBox(width: OverlayEntryAlertDialogOptions.padding)),
-                      ValueListenableBuilder<bool>(
-                        valueListenable: GetIt.I.get<UpdateState>().hasUpdateNotifier,
-                        builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Text("$windowTitle ${_pInfo.version}", style: Theme.of(context).textTheme.titleLarge),
+                    const Expanded(child: SizedBox(width: OverlayEntryAlertDialogOptions.padding)),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: GetIt.I.get<UpdateState>().hasUpdateNotifier,
+                      builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
+                      {
+                        final UpdateInfoPackage? updateInfo = GetIt.I.get<UpdateState>().updatePackage;
+                        if (hasUpdate && updateInfo != null)
                         {
-                          final UpdateInfoPackage? updateInfo = GetIt.I.get<UpdateState>().updatePackage;
-                          if (hasUpdate && updateInfo != null)
-                          {
-                            return RichText(
-                              textAlign: TextAlign.right,
-                              text: TextSpan(
-                                text: "${l10n.newVersionAvailable} (${updateInfo.version}).\n",
-                                style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen),
-                                children: <InlineSpan>[
-                                  TextSpan(
-                                    text: l10n.downloadFromGithub,
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () {
-                                        if (GetIt.I.get<UpdateState>().updatePackage != null)
-                                        {
-                                          launchURL(url: updateInfo.url);
-                                        }
-                                      },
-                                    style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen, decoration: TextDecoration.underline, decorationColor: notificationGreen),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-                          else
-                          {
-                            return const SizedBox.shrink();
-                          }
-                        },
+                          return RichText(
+                            textAlign: TextAlign.right,
+                            text: TextSpan(
+                              text: "${l10n.newVersionAvailable} (${updateInfo.version}).\n",
+                              style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen),
+                              children: <InlineSpan>[
+                                TextSpan(
+                                  text: l10n.downloadFromGithub,
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () {
+                                      if (GetIt.I.get<UpdateState>().updatePackage != null)
+                                      {
+                                        launchURL(url: updateInfo.url);
+                                      }
+                                    },
+                                  style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen, decoration: TextDecoration.underline, decorationColor: notificationGreen),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                        else
+                        {
+                          return const SizedBox.shrink();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+
+                Text(l10n.aPixelArtCreationTool, style: Theme.of(context).textTheme.labelMedium),
+                RichText(
+                  textAlign: TextAlign.right,
+                  text: TextSpan(
+                    text: "${l10n.thisIsFreeSoftwareLicensed} ",
+                    style: Theme.of(context).textTheme.labelMedium,
+                    children: <InlineSpan>[
+                      TextSpan(
+                        text: "${l10n.gnuAGPLv3}.",
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                              launchURL(url: "https://www.gnu.org/licenses/agpl-3.0.html");
+                          },
+                        style: Theme.of(context).textTheme.labelMedium!.apply(decoration: TextDecoration.underline, decorationColor: Theme.of(context).primaryColorLight),
                       ),
                     ],
                   ),
-
-                  Text(l10n.aPixelArtCreationTool, style: Theme.of(context).textTheme.labelMedium),
-                  RichText(
-                    textAlign: TextAlign.right,
-                    text: TextSpan(
-                      text: "${l10n.thisIsFreeSoftwareLicensed} ",
-                      style: Theme.of(context).textTheme.labelMedium,
-                      children: <InlineSpan>[
-                        TextSpan(
-                          text: "${l10n.gnuAGPLv3}.",
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                                launchURL(url: "https://www.gnu.org/licenses/agpl-3.0.html");
-                            },
-                          style: Theme.of(context).textTheme.labelMedium!.apply(decoration: TextDecoration.underline, decorationColor: Theme.of(context).primaryColorLight),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: OverlayEntryAlertDialogOptions.padding,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      _createButton(tooltip: l10n.credits, icon: TablerIcons.users, onPressedFunc: _creditsPressed),
-                      const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
-                      _createButton(tooltip: l10n.licenses, icon: TablerIcons.license, onPressedFunc: _licensesPressed),
-                      const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
-                      _createButton(tooltip: l10n.controlsShortcuts, icon: TablerIcons.keyboard, onPressedFunc: _controlsPressed),
-                      const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
-                      _createButton(tooltip: l10n.close, icon: TablerIcons.x, onPressedFunc: _dismissPressed),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    DialogActionButton(tooltip: l10n.credits, icon: TablerIcons.users, onPressed: _creditsPressed),
+                    DialogActionButton(tooltip: l10n.licenses, icon: TablerIcons.license, onPressed: _licensesPressed),
+                    DialogActionButton(tooltip: l10n.controlsShortcuts, icon: TablerIcons.keyboard, onPressed: _controlsPressed),
+                    DialogActionButton.close(l10n: l10n, onPressed: _dismissPressed),
+                  ],
+                ),
+              ],
             ),
           ),
         ],

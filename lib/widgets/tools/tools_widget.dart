@@ -111,7 +111,6 @@ class _ToolsWidgetState extends State<ToolsWidget>
         tooltip: buttonData.toolType.label(AppLocalizations.of(context)!) + buttonData.toolTipExtraText,
         icon: Icon(
           buttonData.toolType.icon,
-          color: shouldBeDisabled ? Theme.of(context).primaryColorDark : null,
           size: _ToolsWidgetOptions.iconSize,
         ),
       );

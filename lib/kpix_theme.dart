@@ -139,9 +139,12 @@ WidgetStateProperty<T> _whenDisabled<T>({required final T disabled, required fin
   return WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? disabled : enabled);
 }
 
-WidgetStateProperty<T> _whenSelected<T>({required final T selected, required final T unselected})
+WidgetStateProperty<T> _whenSelected<T>({required final T selected, required final T unselected, final T? disabled})
 {
-  return WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? selected : unselected);
+  return WidgetStateProperty.resolveWith((final Set<WidgetState> states) {
+    if (disabled != null && states.contains(WidgetState.disabled)) return disabled;
+    return states.contains(WidgetState.selected) ? selected : unselected;
+  });
 }
 
 ThemeData _buildTheme({required final ColorSet colors})
@@ -243,9 +246,9 @@ ThemeData _buildTheme({required final ColorSet colors})
 
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
-        foregroundColor: _whenSelected(selected: colors.normal, unselected: colors.light),
+        foregroundColor: _whenSelected(selected: colors.normal, unselected: colors.light, disabled: colors.dark),
         backgroundColor: _whenSelected(selected: colors.light, unselected: colors.normal),
-        iconColor: _whenSelected(selected: colors.normal, unselected: colors.light),
+        iconColor: _whenSelected(selected: colors.normal, unselected: colors.light, disabled: colors.dark),
         padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.symmetric(horizontal: 2.0)),
         shape: const WidgetStatePropertyAll<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: _borderRadius)),
         side: WidgetStatePropertyAll<BorderSide>(BorderSide(color: colors.light)),

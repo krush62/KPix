@@ -195,7 +195,7 @@ class ExportWidgetState extends State<ExportWidget>
     return ButtonSegment<T>(
       value: value,
       enabled: isEnabled,
-      label: Text(label, style: Theme.of(context).textTheme.bodyMedium!.apply(color: type.value == value ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)),
+      label: Text(label, style: Theme.of(context).textTheme.bodyMedium!.apply(color: type.value == value || !isEnabled ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)),
     );
   }
 

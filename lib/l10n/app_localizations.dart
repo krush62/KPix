@@ -1440,6 +1440,18 @@ abstract class AppLocalizations {
   /// **'GNU AGPLv3'**
   String get gnuAGPLv3;
 
+  /// No description provided for @noWarranty.
+  ///
+  /// In en, this message translates to:
+  /// **'It comes with absolutely no warranty.'**
+  String get noWarranty;
+
+  /// No description provided for @sourceCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Source code:'**
+  String get sourceCode;
+
   /// No description provided for @credits.
   ///
   /// In en, this message translates to:

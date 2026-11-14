@@ -724,6 +724,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gnuAGPLv3 => 'GNU AGPLv3';
 
   @override
+  String get noWarranty => 'It comes with absolutely no warranty.';
+
+  @override
+  String get sourceCode => 'Source code:';
+
+  @override
   String get credits => 'Credits';
 
   @override

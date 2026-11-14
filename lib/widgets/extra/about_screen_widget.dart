@@ -115,6 +115,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
           Expanded(
             child: Image.asset(PreferenceManager.ASSET_ICON),
           ),
+          const SizedBox(width: OverlayEntryAlertDialogOptions.padding,),
           Expanded(
             flex: 3,
             child: Column(

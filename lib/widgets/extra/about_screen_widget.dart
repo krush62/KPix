@@ -1,6 +1,8 @@
 
 /*
  * KPix
+ * Copyright (C) 2023-2026 krush62 (Andreas Kruschinski)
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -41,6 +43,7 @@ class AboutScreenWidget extends StatefulWidget
 
 class _AboutScreenWidgetState extends State<AboutScreenWidget>
 {
+  static const double _height = 210.0;
   final PackageInfo _pInfo = GetIt.I.get<PackageInfo>();
 
   late KPixOverlay _licenseScreen;
@@ -96,11 +99,13 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
   Widget build(final BuildContext context)
   {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final TextStyle textStyle = Theme.of(context).textTheme.labelMedium!;
+    final TextStyle linkStyle = textStyle.apply(decoration: TextDecoration.underline, decorationColor: Theme.of(context).primaryColorLight);
     return KPixAnimationWidget(
       constraints: const BoxConstraints(
-        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minHeight: _height,
         minWidth: OverlayEntryAlertDialogOptions.minWidth,
-        maxHeight: OverlayEntryAlertDialogOptions.minHeight,
+        maxHeight: _height,
         maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
       ),
       child: Row(
@@ -157,20 +162,31 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                   ],
                 ),
 
-                Text(l10n.aPixelArtCreationTool, style: Theme.of(context).textTheme.labelMedium),
+                Text(l10n.aPixelArtCreationTool, style: textStyle),
+                Text("© $firstCopyrightYear–${DateTime.now().year} $copyrightHolder", style: textStyle),
                 RichText(
-                  textAlign: TextAlign.right,
                   text: TextSpan(
                     text: "${l10n.thisIsFreeSoftwareLicensed} ",
-                    style: Theme.of(context).textTheme.labelMedium,
+                    style: textStyle,
                     children: <InlineSpan>[
                       TextSpan(
-                        text: "${l10n.gnuAGPLv3}.",
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                              launchURL(url: "https://www.gnu.org/licenses/agpl-3.0.html");
-                          },
-                        style: Theme.of(context).textTheme.labelMedium!.apply(decoration: TextDecoration.underline, decorationColor: Theme.of(context).primaryColorLight),
+                        text: l10n.gnuAGPLv3,
+                        recognizer: TapGestureRecognizer()..onTap = () => launchURL(url: licenseUrl),
+                        style: linkStyle,
+                      ),
+                      TextSpan(text: ". ${l10n.noWarranty}"),
+                    ],
+                  ),
+                ),
+                RichText(
+                  text: TextSpan(
+                    text: "${l10n.sourceCode} ",
+                    style: textStyle,
+                    children: <InlineSpan>[
+                      TextSpan(
+                        text: sourceCodeUrl.replaceFirst("https://", ""),
+                        recognizer: TapGestureRecognizer()..onTap = () => launchURL(url: sourceCodeUrl),
+                        style: linkStyle,
                       ),
                     ],
                   ),

@@ -26,10 +26,10 @@ Pixelify Sans by Stefie Justprince\
 Tiny Unicode by DuffsDevice\
 Upheaval Pro by Aleksandr Savenkov, based on Upheaval by Brian Kent
 ### Palettes
-Default, Harlem, Sunset and Mononoke by krush62\
+Default, Harlem, Sunset, Mononoke, DMG, NormalMap75 and RGB 62 by krush62\
 Apollo by Adam C. Younis\
 Lospec500 by Foxbutt, Rhoq, Dimi, Skeddles, MiggityMoogity, PureAsbestos, Polyducks, SybilQ, Unsettled, DaaWeed, Moertel, KingW, Glacier, WildLeoKnight and GooGroker\
-Resurrect64 by Kerrie Lake
+Resurrect64 by Kerrie Lake\
 Bastille by Antho24\
 Gothic Bit by HiroHi\
 Citrink by Inkpendude\

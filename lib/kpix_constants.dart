@@ -1,5 +1,7 @@
 /*
  * KPix
+ * Copyright (C) 2023-2026 krush62 (Andreas Kruschinski)
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -38,3 +40,8 @@ abstract final class ToolSettingsWidgetOptions
 
 /// Title of the main window; main also recognizes its native window by it.
 const String windowTitle = 'KPix';
+
+const String copyrightHolder = 'krush62 (Andreas Kruschinski)';
+const int firstCopyrightYear = 2023;
+const String sourceCodeUrl = 'https://github.com/krush62/KPix';
+const String licenseUrl = 'https://www.gnu.org/licenses/agpl-3.0.html';

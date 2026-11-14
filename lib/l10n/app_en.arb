@@ -314,6 +314,8 @@
   "aPixelArtCreationTool": "A Pixel Art Creation Tool",
   "thisIsFreeSoftwareLicensed": "This is free software licensed under",
   "gnuAGPLv3": "GNU AGPLv3",
+  "noWarranty": "It comes with absolutely no warranty.",
+  "sourceCode": "Source code:",
   "credits": "Credits",
   "licenses": "Licenses",
   "controlsShortcuts": "Controls/Shortcuts",

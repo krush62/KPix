@@ -257,6 +257,8 @@
   "aPixelArtCreationTool": "Un outil de création de pixel art",
   "thisIsFreeSoftwareLicensed": "Ceci est un logiciel libre sous licence",
   "gnuAGPLv3": "GNU AGPLv3",
+  "noWarranty": "Il est fourni sans aucune garantie.",
+  "sourceCode": "Code source :",
   "credits": "Crédits",
   "licenses": "Licences",
   "controlsShortcuts": "Commandes/Raccourcis",

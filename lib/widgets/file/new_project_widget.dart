@@ -45,6 +45,8 @@ class NewProjectWidget extends StatefulWidget
 
 class NewProjectWidgetState extends State<NewProjectWidget>
 {
+  //500 px for the content, plus the dialog's padding and border
+  static const double _maxHeight = 500.0 + 2 * (OverlayEntryAlertDialogOptions.padding + OverlayEntryAlertDialogOptions.borderWidth);
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<int> _width = ValueNotifier<int>(64);
   final ValueNotifier<int> _height = ValueNotifier<int>(64);
@@ -220,7 +222,7 @@ class NewProjectWidgetState extends State<NewProjectWidget>
       constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
         minWidth: OverlayEntryAlertDialogOptions.minWidth,
-        maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+        maxHeight: _maxHeight,
         maxWidth: OverlayEntryAlertDialogOptions.maxWidth * 1.2,
       ),
       child: Column(
@@ -387,10 +389,10 @@ class NewProjectWidgetState extends State<NewProjectWidget>
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               if (widget.dismiss != null) ...<Widget>[
-                DialogActionButton(tooltip: l10n.exitApplication, icon: TablerIcons.power, onPressed: widget.dismiss),
+                DialogActionButton(tooltip: l10n.exitApplication, icon: TablerIcons.power, onPressed: widget.dismiss, padding: OverlayEntryAlertDialogOptions.padding / 2),
               ],
-              DialogActionButton(tooltip: l10n.openProjectManager, icon: TablerIcons.folder_open, onPressed: widget.open),
-              DialogActionButton(tooltip: l10n.createProject, icon: TablerIcons.check, onPressed: accept),
+              DialogActionButton(tooltip: l10n.openProjectManager, icon: TablerIcons.folder_open, onPressed: widget.open, padding: OverlayEntryAlertDialogOptions.padding / 2),
+              DialogActionButton(tooltip: l10n.createProject, icon: TablerIcons.check, onPressed: accept, padding: OverlayEntryAlertDialogOptions.padding / 2),
             ],
           ),
         ],

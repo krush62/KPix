@@ -59,12 +59,10 @@ KPixOverlay _overlay({final Function()? onEscape, final Function()? onEnter, fin
 Future<void> _releaseProject(final WidgetTester tester) async
 {
   await tester.pumpWidget(const SizedBox.shrink());
+  //clear() also cancels the real-time composite timer, which would fire after the next GetIt reset
   for (final Frame frame in GetIt.I.get<DocumentState>().timeline.frames.value)
   {
-    for (int i = 0; i < frame.layerList.length; i++)
-    {
-      frame.layerList.getLayer(index: i).dispose();
-    }
+    frame.layerList.clear(notify: false);
   }
   await tester.pump();
 }

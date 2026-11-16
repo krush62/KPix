@@ -270,7 +270,7 @@ void main()
   });
 
   group("the new project preview", () {
-    Size preview(final WidgetTester tester) => tester.getSize(find.descendant(of: find.byType(Stack), matching: find.byWidgetPredicate((final Widget w) => w is Container && w.decoration is BoxDecoration)).first);
+    Size preview(final WidgetTester tester) => tester.getSize(find.descendant(of: find.byType(NewProjectWidget), matching: find.byWidgetPredicate((final Widget w) => w is Container && w.decoration is BoxDecoration && (w.constraints?.isTight ?? false))));
     Widget build() => NewProjectWidget(open: () {}, accept: ({required final CoordinateSetI size}) {});
 
     _chainTest("follows the width", build, (final WidgetTester tester) async {
@@ -288,6 +288,8 @@ void main()
     }, width: 1300, height: 800, textScale: 0.5,);
 
     _chainTest("has the shape of a preset", build, (final WidgetTester tester) async {
+      await tester.tap(find.text("16:9"));
+      await _settle(tester);
       await tester.tap(find.text("320×180"));
       await _settle(tester);
       expect(preview(tester).width / preview(tester).height, closeTo(320 / 180, 0.01));

@@ -53,7 +53,7 @@ permissions:
   contents: write
 
 env:
-  FLUTTER_VERSION: "3.47.9"
+  FLUTTER_VERSION: "3.50.0"
   FLUTTER_CHANNEL: "stable"
 
 jobs:

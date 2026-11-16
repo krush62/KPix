@@ -36,10 +36,48 @@ class SelectOptions extends IToolOptions
   final ValueNotifier<bool> wandContinuous = ValueNotifier<bool>(SelectConstraints.wandContinuousDefault);
   final ValueNotifier<bool> wandWholeRamp = ValueNotifier<bool>(SelectConstraints.wandWholeRampDefault);
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
+  bool _unmodifiedKeepAspectRatio = SelectConstraints.keepAspectRatioDefault;
+  bool _unmodifiedWandContinuous = SelectConstraints.wandContinuousDefault;
+  bool _switchModifierWasHeld = false;
 
   SelectOptions()
   {
     Listenable.merge(<Listenable>[_hotkeyManager.shiftNotifier, _hotkeyManager.altNotifier, _hotkeyManager.controlNotifier, unModifiedMode]).addListener(_updateMode);
+    Listenable.merge(<Listenable>[_hotkeyManager.shiftNotifier, _hotkeyManager.controlNotifier]).addListener(_updateSwitches);
+  }
+
+  //ctrl + shift is intersect, so only ctrl alone flips the switches
+  bool get _switchModifierHeld => _hotkeyManager.controlIsPressed && !_hotkeyManager.shiftIsPressed;
+
+  void _updateSwitches()
+  {
+    final bool held = _switchModifierHeld;
+    if (held != _switchModifierWasHeld)
+    {
+      _switchModifierWasHeld = held;
+      keepAspectRatio.value = held ? !SelectConstraints.keepAspectRatioDefault : _unmodifiedKeepAspectRatio;
+      wandContinuous.value = held ? !SelectConstraints.wandContinuousDefault : _unmodifiedWandContinuous;
+    }
+  }
+
+  /// A value chosen while ctrl is held only lasts until ctrl is released.
+  void chooseKeepAspectRatio({required final bool keep})
+  {
+    if (!_switchModifierHeld)
+    {
+      _unmodifiedKeepAspectRatio = keep;
+    }
+    keepAspectRatio.value = keep;
+  }
+
+  /// A value chosen while ctrl is held only lasts until ctrl is released.
+  void chooseWandContinuous({required final bool continuous})
+  {
+    if (!_switchModifierHeld)
+    {
+      _unmodifiedWandContinuous = continuous;
+    }
+    wandContinuous.value = continuous;
   }
 
   void _updateMode()
@@ -135,8 +173,8 @@ class SelectOptions extends IToolOptions
                         alignment: Alignment.centerLeft,
                         child: Stack(
                           children: <Widget>[
-                            _getSwitch(visible: shape == SelectShape.rectangle || shape == SelectShape.ellipse, notifier: selectOptions.keepAspectRatio),
-                            _getSwitch(visible: shape == SelectShape.wand, notifier: selectOptions.wandContinuous),
+                            _getSwitch(visible: shape == SelectShape.rectangle || shape == SelectShape.ellipse, notifier: selectOptions.keepAspectRatio, onChanged: (final bool newVal) {selectOptions.chooseKeepAspectRatio(keep: newVal);}),
+                            _getSwitch(visible: shape == SelectShape.wand, notifier: selectOptions.wandContinuous, onChanged: (final bool newVal) {selectOptions.chooseWandContinuous(continuous: newVal);}),
                           ],
                         ),
                       ),
@@ -195,7 +233,7 @@ class SelectOptions extends IToolOptions
     );
   }
 
-  static Widget _getSwitch({required final bool visible, required final ValueNotifier<bool> notifier})
+  static Widget _getSwitch({required final bool visible, required final ValueNotifier<bool> notifier, required final ValueChanged<bool> onChanged})
   {
     return Visibility(
       visible: visible,
@@ -204,7 +242,7 @@ class SelectOptions extends IToolOptions
         builder: (final BuildContext context, final bool value, final Widget? child){
           return Switch(
             value: value,
-            onChanged: (final bool newVal) {notifier.value = newVal;},
+            onChanged: onChanged,
           );
         },
       ),

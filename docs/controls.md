@@ -59,6 +59,8 @@
 | Disable Smooth (Pencil Tool)        | ctrl (hold)         |                  |                                      |                              |                           |
 | Disable Adjacent (Fill Tool)        | ctrl (hold)         |                  |                                      |                              |                           |
 | Keep 1:1 Aspect Ratio (Shape Tool)  | ctrl (hold)         |                  |                                      |                              |                           |
+| Keep 1:1 Aspect Ratio (Selection)   | ctrl (hold)         |                  |                                      |                              |                           |
+| Disable Continuous (Wand Selection) | ctrl (hold)         |                  |                                      |                              |                           |
 | Grid Align (Stamp Tool)             | ctrl (hold)         |                  |                                      |                              |                           |
 | Line To (Pencil Tool) [^2]          | shift (hold)        |                  |                                      |                              |                           |
 | Change Tool Start Position[^2]      | alt (hold)          |                  |                                      |                              |                           |

@@ -49,8 +49,15 @@ class SelectionPainter extends IToolPainter
   Offset _lastStartPos = Offset.zero;
   bool _isStartOnCanvas = false;
   bool _shouldMove = false;
+  bool _modifiersDirty = false;
 
   SelectionPainter({required super.painterOptions});
+
+  @override
+  void modifiersChanged()
+  {
+    _modifiersDirty = true;
+  }
 
 
   @override
@@ -99,8 +106,9 @@ class SelectionPainter extends IToolPainter
               selectionEnd.y = drawParams.cursorPosNorm!.y;
               hasNewSelection = true;
             }
-            else if (drawParams.cursorPosNorm!.x != _previousCursorPosNorm.x || drawParams.cursorPosNorm!.y != _previousCursorPosNorm.y)
+            else if (drawParams.cursorPosNorm!.x != _previousCursorPosNorm.x || drawParams.cursorPosNorm!.y != _previousCursorPosNorm.y || _modifiersDirty)
             {
+              _modifiersDirty = false;
 
               if (hasNewSelection && ((_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed) || drawParams.stylusButtonDown))
               {
@@ -407,5 +415,6 @@ class SelectionPainter extends IToolPainter
     polygonDown = false;
     _isStartOnCanvas = false;
     _shouldMove = false;
+    _modifiersDirty = false;
   }
 }

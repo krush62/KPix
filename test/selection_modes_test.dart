@@ -547,6 +547,26 @@ void main()
       expect(painter.selectionEnd, CoordinateSetI(x: 4, y: 3));
     });
 
+    _selectionTest("keeps a ratio of one as soon as ctrl is pressed, without the cursor moving", (final ProjectSession projectSession, final DrawingLayerState layer) async
+    {
+      final SelectionPainter painter = _painter();
+      addTearDown(painter.dispose);
+      _options.shape.value = SelectShape.rectangle;
+      final CoordinateSetI start = CoordinateSetI(x: 0, y: 0);
+      final CoordinateSetI end = CoordinateSetI(x: 6, y: 2);
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: start, primaryDown: true, pressStart: start));
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: end, primaryDown: true, pressStart: start));
+      expect(painter.selectionEnd, end);
+
+      _hotkeys.controlNotifier.value = true;
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: end, primaryDown: true, pressStart: start));
+      expect(painter.selectionEnd, CoordinateSetI(x: 2, y: 2));
+
+      _hotkeys.controlNotifier.value = false;
+      painter.calculate(drawParams: toolParams(layer: layer, cursor: end, primaryDown: true, pressStart: start));
+      expect(painter.selectionEnd, end);
+    });
+
     _selectionTest("the wand remembers where it was used", (final ProjectSession projectSession, final DrawingLayerState layer) async
     {
       final SelectionPainter painter = _painter();

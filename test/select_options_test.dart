@@ -455,4 +455,54 @@ void main()
       options.wandContinuous.value = continuous;
     });
   });
+
+  group("ctrl flips the switches", () {
+    optionsTest("to the opposite of their defaults while held", (final WidgetTester tester, final SelectOptions options, final HotkeyManager hotkeys) async {
+      await hold(tester, hotkeys, ctrl: true);
+      expect(options.keepAspectRatio.value, !SelectConstraints.keepAspectRatioDefault);
+      expect(options.wandContinuous.value, !SelectConstraints.wandContinuousDefault);
+      expect(visibleSwitches(tester).first.value, !SelectConstraints.keepAspectRatioDefault);
+
+      await hold(tester, hotkeys);
+      expect(options.keepAspectRatio.value, SelectConstraints.keepAspectRatioDefault);
+      expect(options.wandContinuous.value, SelectConstraints.wandContinuousDefault);
+    });
+
+    optionsTest("and also with alt, which moves the start", (final WidgetTester tester, final SelectOptions options, final HotkeyManager hotkeys) async {
+      await hold(tester, hotkeys, alt: true, ctrl: true);
+      expect(options.keepAspectRatio.value, !SelectConstraints.keepAspectRatioDefault);
+    });
+
+    optionsTest("but not with shift, which intersects", (final WidgetTester tester, final SelectOptions options, final HotkeyManager hotkeys) async {
+      await hold(tester, hotkeys, shift: true, ctrl: true);
+      expect(options.mode.value, SelectMode.intersect);
+      expect(options.keepAspectRatio.value, SelectConstraints.keepAspectRatioDefault);
+      expect(options.wandContinuous.value, SelectConstraints.wandContinuousDefault);
+    });
+
+    optionsTest("back to the chosen values on release", (final WidgetTester tester, final SelectOptions options, final HotkeyManager hotkeys) async {
+      await tester.tap(find.byType(Switch).first);
+      await settle(tester);
+      expect(options.keepAspectRatio.value, !SelectConstraints.keepAspectRatioDefault);
+
+      await hold(tester, hotkeys, ctrl: true);
+      await hold(tester, hotkeys);
+      expect(options.keepAspectRatio.value, !SelectConstraints.keepAspectRatioDefault);
+
+      options.chooseKeepAspectRatio(keep: SelectConstraints.keepAspectRatioDefault);
+    });
+
+    optionsTest("and a value tapped while held lasts until release", (final WidgetTester tester, final SelectOptions options, final HotkeyManager hotkeys) async {
+      await tapShape(tester, SelectShape.wand);
+      await hold(tester, hotkeys, ctrl: true);
+      await tester.tap(find.byType(Switch).at(0));
+      await settle(tester);
+      expect(options.wandContinuous.value, SelectConstraints.wandContinuousDefault);
+
+      await hold(tester, hotkeys);
+      expect(options.wandContinuous.value, SelectConstraints.wandContinuousDefault);
+      await hold(tester, hotkeys, ctrl: true);
+      expect(options.wandContinuous.value, !SelectConstraints.wandContinuousDefault);
+    });
+  });
 }

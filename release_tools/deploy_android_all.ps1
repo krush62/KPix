@@ -7,7 +7,7 @@ $versionCode = [int]$versionCode
 $androidApkOutputPath = "AndroidAPK"
 $androidBundleOutputPath = "AndroidBundle"
 $gradleFilePath = "..\android\app\build.gradle"
-$namespace = Select-String -Path $gradleFilePath -Pattern 'namespace "([^"]+)"' | ForEach-Object { $_.Matches.Groups[1].Value }
+$namespace = Select-String -Path $gradleFilePath -Pattern 'namespace =? ?"([^"]+)"' | ForEach-Object { $_.Matches.Groups[1].Value }
 
 Write-Host "Extracted Version: $versionLine"
 Write-Host "Version Code: $versionCode"
@@ -20,11 +20,21 @@ $gradleContent = $gradleContent -replace "flutterVersionCode = '.*'", "flutterVe
 Set-Content -Path $gradleFilePath -Value $gradleContent
 
 
-Set-Location ..\android
+# flutter build picks a JDK new enough for release lint (21+), plain gradlew uses JAVA_HOME
+# apkanalyzer.bat (used by the appbundle check) breaks on spaces in the SDK path, so pass the 8.3 short path
+if (-Not $env:ANDROID_HOME) {
+	$defaultSdk = "$env:LOCALAPPDATA\Android\sdk"
+	if (Test-Path $defaultSdk) {
+		$env:ANDROID_HOME = (New-Object -ComObject Scripting.FileSystemObject).GetFolder($defaultSdk).ShortPath
+	}
+}
+Set-Location ..
 Write-Host "Building APK..."
-.\gradlew.bat assembleRelease
+flutter build apk --release
+if ($LASTEXITCODE -ne 0) { Set-Location $PSScriptRoot; Write-Host "APK build failed."; exit 1 }
 Write-Host "Building Bundle..."
-.\gradlew.bat bundleRelease
+flutter build appbundle --release
+if ($LASTEXITCODE -ne 0) { Set-Location $PSScriptRoot; Write-Host "Bundle build failed."; exit 1 }
 
 
 Set-Location $PSScriptRoot

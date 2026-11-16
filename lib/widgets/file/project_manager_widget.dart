@@ -29,6 +29,7 @@ import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/file_pickers.dart';
 import 'package:kpix/widgets/callback_typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
+import 'package:kpix/widgets/controls/kpix_text_field.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/project_action_messages.dart';
@@ -379,6 +380,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                           focusNode: hotkeyManager.getFocusNode(id: FocusNodeEntry.projectFilterTextFocus),
                           onChanged: (final String newText) {_filterText.value = newText;},
                           maxLength: _ProjectManagerOptions.maxFilterTextLength,
+                          buildCounter: hideTextFieldCounter,
                         ),
                       ),
                     ],

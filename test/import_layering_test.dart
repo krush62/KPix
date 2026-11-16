@@ -42,6 +42,7 @@ const List<List<String>> _layers = <List<String>>[
     //leaf controls with no kpix imports at all, so anything may reach for them
     "lib/widgets/controls/kpix_dropdown.dart",
     "lib/widgets/controls/kpix_text_field.dart",
+    "lib/widgets/controls/corner_bracket_input_border.dart",
     "lib/l10n/",
   ],
   <String>["lib/infra/"],                                   //1 infra

@@ -17,6 +17,7 @@
  */
 
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:kpix/widgets/controls/corner_bracket_input_border.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Notifier for theme change.
@@ -68,6 +69,15 @@ const BorderRadius _borderRadius = BorderRadius.all(Radius.circular(8));
 const int _buttonOverlayAlpha = 32;
 const int _controlOverlayAlpha = 100;
 const double _elevation = 16.0;
+// Text fields match a default KPixSlider: 24px tall with 8px above and below.
+const double _textFieldHeight = 24.0;
+const double _textFieldMargin = 8.0;
+const double _bracketLength = 7.0;
+// Material adds this much on each side of a filled field's content padding.
+const double _filledFieldInputGap = 4.0;
+// Text starts where the resting bracket arms end.
+const double _textFieldPaddingHorizontal = _bracketLength - _filledFieldInputGap;
+const double _bracketLengthFocused = 10.0;
 
 final ThemeData monochromeTheme = _buildTheme(colors: _lightColors);
 final ThemeData monochromeThemeDark = _buildTheme(colors: _darkColors);
@@ -162,6 +172,13 @@ ThemeData _buildTheme({required final ColorSet colors})
     shape: const WidgetStatePropertyAll<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: _borderRadius)),
   );
 
+  final TextTheme textTheme = _buildTextTheme(color: colors.light);
+  // TextField renders in bodyLarge; center its line box inside the bracket box.
+  final double textFieldLineHeight = textTheme.bodyLarge!.fontSize! * textTheme.bodyLarge!.height!;
+  final double textFieldPaddingVertical = _textFieldMargin + (_textFieldHeight - textFieldLineHeight) / 2.0;
+  const EdgeInsets bracketMargin = EdgeInsets.symmetric(vertical: _textFieldMargin);
+  final CornerBracketInputBorder restingBracket = CornerBracketInputBorder(borderSide: BorderSide(color: colors.light), cornerLength: _bracketLength, margin: bracketMargin);
+
   // The light theme shows tooltips inverted.
   final Color tooltipBackground = isDark ? colors.dark : colors.light;
   final Color tooltipText = isDark ? colors.light : colors.dark;
@@ -176,7 +193,7 @@ ThemeData _buildTheme({required final ColorSet colors})
       brightness: colors.brightness,
     ),
 
-    textTheme: _buildTextTheme(color: colors.light),
+    textTheme: textTheme,
 
     tooltipTheme: TooltipThemeData(
       padding: const EdgeInsetsGeometry.all(6),
@@ -220,12 +237,18 @@ ThemeData _buildTheme({required final ColorSet colors})
     ),
 
     inputDecorationTheme: InputDecorationTheme(
-      enabledBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: colors.light),
-      ),
-      focusedBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: colors.light),
-      ),
+      filled: true,
+      fillColor: WidgetStateColor.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.focused) ? colors.dark : Colors.transparent),
+      hoverColor: Colors.transparent,
+      // Dense drops the 48px minimum height; filled fields get another 4px per side on top of this.
+      isDense: true,
+      // Desktop defaults to compact density, which would take 8px off the height.
+      visualDensity: VisualDensity.standard,
+      contentPadding: EdgeInsets.symmetric(horizontal: _textFieldPaddingHorizontal, vertical: textFieldPaddingVertical),
+      border: restingBracket,
+      enabledBorder: restingBracket,
+      disabledBorder: restingBracket.copyWith(borderSide: BorderSide(color: colors.normal)),
+      focusedBorder: CornerBracketInputBorder(borderSide: BorderSide(color: colors.light, width: 2.0), cornerLength: _bracketLengthFocused, margin: bracketMargin),
     ),
 
     outlinedButtonTheme: OutlinedButtonThemeData(style: generalButtonStyle),

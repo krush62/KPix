@@ -28,6 +28,9 @@ void showTextInController({required final TextEditingController controller, requ
   }
 }
 
+/// [TextField.buildCounter] that shows no character counter and reserves no space for it.
+Widget? hideTextFieldCounter(final BuildContext context, {required final int currentLength, required final int? maxLength, required final bool isFocused}) => null;
+
 /// A [TextField] editing the string in [text].
 ///
 /// It keeps one controller for its whole life: a new one per change would lose
@@ -102,6 +105,7 @@ class _KPixTextFieldState extends State<KPixTextField>
       textAlign: widget.textAlign,
       style: widget.style,
       maxLength: widget.maxLength,
+      buildCounter: hideTextFieldCounter,
       onChanged: (final String value) {
         widget.text.value = value;
         widget.onChanged?.call(value);

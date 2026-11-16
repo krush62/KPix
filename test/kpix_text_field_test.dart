@@ -149,6 +149,14 @@ void main()
       await tester.enterText(find.byType(TextField), "abcdef");
       expect(text.value, "abc");
     });
+
+    testWidgets("shows no character counter and keeps its height with a maximum length", (final WidgetTester tester) async {
+      await _pump(tester, text: ValueNotifier<String>("ab"));
+      final double plainHeight = tester.getSize(find.byType(TextField)).height;
+      await _pump(tester, text: ValueNotifier<String>("ab"), maxLength: 16);
+      expect(find.text("2/16"), findsNothing);
+      expect(tester.getSize(find.byType(TextField)).height, plainHeight);
+    });
   });
 
   group("showTextInController", () {

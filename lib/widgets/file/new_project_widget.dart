@@ -268,7 +268,6 @@ class NewProjectWidgetState extends State<NewProjectWidget>
             builder: (final BuildContext context, final int val, final Widget? child) {
               return KPixSlider(
                 value: val.toDouble(),
-                trackHeight: 32,
                 min: CanvasSizeConstraints.sizeMin.toDouble(),
                 max: CanvasSizeConstraints.sizeMax.toDouble(),
                 onChanged: (final double newVal) {changeFunc(newVal: newVal.toInt());},

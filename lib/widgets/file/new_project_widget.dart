@@ -33,6 +33,72 @@ import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:material_ui/material_ui.dart';
 
 
+class _Dimension
+{
+  final int x;
+  final int y;
+  final String? label;
+  const _Dimension({required this.x, required this.y, this.label});
+}
+
+enum _AspectRatioPreset
+{
+  ar1to1(
+    label: "1:1",
+    dimensions: <_Dimension>[
+      _Dimension(x: 16, y: 16),
+      _Dimension(x: 32, y: 32),
+      _Dimension(x: 64, y: 64),
+      _Dimension(x: 100, y: 100),
+      _Dimension(x: 128, y: 128),
+      _Dimension(x: 256, y: 256),
+      _Dimension(x: 512, y: 512),
+    ],
+  ),
+  ar4to3(
+    label: "4:3",
+    dimensions: <_Dimension>[
+      _Dimension(x: 96, y: 72),
+      _Dimension(x: 128, y: 96),
+      _Dimension(x: 160, y: 120),
+      _Dimension(x: 192, y: 144),
+      _Dimension(x: 256, y: 192),
+      _Dimension(x: 320, y: 240),
+      _Dimension(x: 480, y: 360),
+    ],
+  ),
+  ar16to9(
+    label: "16:9",
+    dimensions: <_Dimension>[
+      _Dimension(x: 128, y: 72),
+      _Dimension(x: 160, y: 90),
+      _Dimension(x: 192, y: 108),
+      _Dimension(x: 256, y: 144),
+      _Dimension(x: 320, y: 180),
+      _Dimension(x: 384, y: 216),
+      _Dimension(x: 480, y: 270),
+    ],
+  ),
+  arHandheld(
+    icon: TablerIcons.device_gamepad,
+    dimensions: <_Dimension>[
+      _Dimension(x: 160, y: 144, label: "GB"),
+      _Dimension(x: 240, y: 160, label: "GBA"),
+      _Dimension(x: 256, y: 192, label: "NDS"),
+      _Dimension(x: 224, y: 144, label: "WSC"),
+      _Dimension(x: 480, y: 272, label: "PSP"),
+      _Dimension(x: 160, y: 152, label: "NGPC"),
+      _Dimension(x: 160, y: 102, label: "LYNX"),
+    ],
+  );
+
+  const _AspectRatioPreset({this.label, this.icon, required this.dimensions});
+  final String? label;
+  final IconData? icon;
+  final List<_Dimension> dimensions;
+}
+
+
 /// Screen for showing the options when creating a new file.
 class NewProjectWidget extends StatefulWidget
 {
@@ -52,6 +118,7 @@ class NewProjectWidgetState extends State<NewProjectWidget>
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<int> _width = ValueNotifier<int>(64);
   final ValueNotifier<int> _height = ValueNotifier<int>(64);
+  final ValueNotifier<_AspectRatioPreset> _ar = ValueNotifier<_AspectRatioPreset>(_AspectRatioPreset.ar1to1);
   static const double _maxPreviewHeight = 128;
   static const double _maxPreviewWidth = 224;
   final ValueNotifier<bool> _locked = ValueNotifier<bool>(false);
@@ -130,30 +197,50 @@ class NewProjectWidgetState extends State<NewProjectWidget>
     }
   }
 
-  Row _getSizeRow({required final List<CoordinateSetI> sizes, required final String title, required final double padding})
+  List<ButtonSegment<_AspectRatioPreset>> _getAspectRatioButtons()
   {
-    final List<Widget> items = <Widget>[];
-    items.add(Expanded(child: Text(title, style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center)));
-    for (final CoordinateSetI resolution in sizes)
-    {
-      items.add(SizedBox(width: padding));
-      items.add(Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: resolution.x, height: resolution.y);}, child: Text(formatDimension(width: resolution.x, height: resolution.y)))));
+    final List<ButtonSegment<_AspectRatioPreset>> arList = <ButtonSegment<_AspectRatioPreset>>[];
 
+    for (final _AspectRatioPreset ar in _AspectRatioPreset.values)
+    {
+      Widget? indicatorWidget;
+      final IconData? icon = ar.icon;
+      final String? label = ar.label;
+      final Color labelColor = ar == _ar.value ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight;
+      if (icon != null)
+      {
+        indicatorWidget = Icon(icon, color: labelColor, size: 24,);
+      }
+      else if (label != null)
+      {
+        indicatorWidget = Text(label, style: Theme.of(context).textTheme.titleMedium!.apply(color: labelColor),);
+      }
+      arList.add(ButtonSegment<_AspectRatioPreset>(
+        value: ar,
+        label: indicatorWidget),
+      );
     }
-    return  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, mainAxisSize: MainAxisSize.min, children: items);
+    return arList;
   }
 
-  Row _getLabelSizeRow({required final List<(CoordinateSetI, String)> data, required final IconData icon, required final double padding})
+  Row _getDimensionRow({required final List<_Dimension> dimensions, required final double padding})
   {
     final List<Widget> items = <Widget>[];
-    items.add(Expanded(child: Icon(icon, color: Theme.of(context).primaryColorLight,)));
-    for (final (CoordinateSetI, String) entry in data)
+    bool isFirst = true;
+    for (final _Dimension dimension in dimensions)
     {
-      items.add(SizedBox(width: padding));
-      items.add(Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: entry.$1.x, height: entry.$1.y);}, child: Text(entry.$2))));
-
+      if (isFirst)
+      {
+        isFirst = false;
+      }
+      else
+      {
+        items.add(SizedBox(width: padding));
+      }
+      final String text = dimension.label ?? formatDimension(width: dimension.x, height: dimension.y);
+      items.add(Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: dimension.x, height: dimension.y);}, child: Text(text))));
     }
-    return  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, mainAxisSize: MainAxisSize.min, children: items);
+    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, mainAxisSize: MainAxisSize.min, children: items);
   }
 
   Row _getInputRow({
@@ -237,66 +324,32 @@ class NewProjectWidgetState extends State<NewProjectWidget>
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
           Text(l10n.presets, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
-          _getSizeRow(
-              sizes: <CoordinateSetI>[
-                CoordinateSetI(x: 16, y: 16),
-                CoordinateSetI(x: 32, y: 32),
-                CoordinateSetI(x: 64, y: 64),
-                CoordinateSetI(x: 100, y: 100),
-                CoordinateSetI(x: 128, y: 128),
-                CoordinateSetI(x: 256, y: 256),
-                CoordinateSetI(x: 512, y: 512),
-              ],
-            title: "1:1",
-            padding: OverlayEntryAlertDialogOptions.padding,
+          ValueListenableBuilder<_AspectRatioPreset>(
+            valueListenable: _ar,
+            builder: (final BuildContext context, final _AspectRatioPreset ar, final Widget? child) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  SegmentedButton<_AspectRatioPreset>(
+                    segments: _getAspectRatioButtons(),
+                    showSelectedIcon: false,
+                    selected: <_AspectRatioPreset>{ar},
+                    onSelectionChanged: (final Set<_AspectRatioPreset> selection)
+                    {
+                      _ar.value = selection.first;
+                    },
+                  ),
+                  const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
+                  _getDimensionRow(dimensions: ar.dimensions, padding: OverlayEntryAlertDialogOptions.padding)
+                ],
+              );
+            },
+
           ),
-          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
-          _getSizeRow(
-              sizes: <CoordinateSetI>[
-                CoordinateSetI(x: 96, y: 72),
-                CoordinateSetI(x: 128, y: 96),
-                CoordinateSetI(x: 160, y: 120),
-                CoordinateSetI(x: 192, y: 144),
-                CoordinateSetI(x: 256, y: 192),
-                CoordinateSetI(x: 320, y: 240),
-                CoordinateSetI(x: 480, y: 360),
-              ],
-            title: "4:3",
-            padding: OverlayEntryAlertDialogOptions.padding,
-          ),
-          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
-          _getSizeRow(
-              sizes: <CoordinateSetI>[
-                CoordinateSetI(x: 128, y: 72),
-                CoordinateSetI(x: 160, y: 90),
-                CoordinateSetI(x: 192, y: 108),
-                CoordinateSetI(x: 256, y: 144),
-                CoordinateSetI(x: 320, y: 180),
-                CoordinateSetI(x: 384, y: 216),
-                CoordinateSetI(x: 480, y: 270),
-              ],
-            title: "16:9",
-            padding: OverlayEntryAlertDialogOptions.padding,
-          ),
-          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
-          _getLabelSizeRow(
-            data: <(CoordinateSetI, String)>[
-              (CoordinateSetI(x: 160, y: 144), "GB"),
-              (CoordinateSetI(x: 240, y: 160), "GBA"),
-              (CoordinateSetI(x: 256, y: 192), "NDS"),
-              (CoordinateSetI(x: 224, y: 144), "WSC"),
-              (CoordinateSetI(x: 480, y: 272), "PSP"),
-              (CoordinateSetI(x: 160, y: 152), "NGPC"),
-              (CoordinateSetI(x: 160, y: 102), "LYNX"),
-            ],
-          icon: TablerIcons.device_gamepad,
-          padding: OverlayEntryAlertDialogOptions.padding,
-          ),
+
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Divider(height: OverlayEntryAlertDialogOptions.padding / 4, thickness: OverlayEntryAlertDialogOptions.padding / 4, color: Theme.of(context).primaryColorLight,),
-          const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
-          Text(l10n.custom, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             mainAxisSize: MainAxisSize.min,
@@ -314,7 +367,7 @@ class NewProjectWidgetState extends State<NewProjectWidget>
                   ),
                 ),
               ),
-              const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
+              /*const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
               ValueListenableBuilder<bool>(
                 valueListenable: _locked,
                 builder: (final BuildContext context, final bool locked, final Widget? child)
@@ -351,33 +404,29 @@ class NewProjectWidgetState extends State<NewProjectWidget>
                     },
                   );
                 },
-              ),
+              ),*/
               Expanded(
                 child: Center(
-                  child: Stack(
-                    children: <Widget>[
-                      ListenableBuilder(
-                        listenable: Listenable.merge(<Listenable>[_width, _height]),
-                        builder: (final BuildContext context, final Widget? child) {
-                          final int width = _width.value;
-                          final int height = _height.value;
-                          final double scaledWidth = _maxPreviewWidth / width;
-                          final double scaledHeight = _maxPreviewHeight / height;
-                          final double scale = min(scaledWidth, scaledHeight);
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColorLight,
-                              border: Border.all(
-                                color: Theme.of(context).primaryColorDark,
-                                width: OverlayEntryAlertDialogOptions.borderWidth,
-                              ),
-                            ),
-                            width: width * scale,
-                            height: height * scale,
-                          );
-                        },
-                      ),
-                    ],
+                  child: ListenableBuilder(
+                    listenable: Listenable.merge(<Listenable>[_width, _height]),
+                    builder: (final BuildContext context, final Widget? child) {
+                      final int width = _width.value;
+                      final int height = _height.value;
+                      final double scaledWidth = _maxPreviewWidth / width;
+                      final double scaledHeight = _maxPreviewHeight / height;
+                      final double scale = min(scaledWidth, scaledHeight);
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColorLight,
+                          border: Border.all(
+                            color: Theme.of(context).primaryColorDark,
+                            width: OverlayEntryAlertDialogOptions.borderWidth,
+                          ),
+                        ),
+                        width: width * scale,
+                        height: height * scale,
+                      );
+                    },
                   ),
                 ),
               ),

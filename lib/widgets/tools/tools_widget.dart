@@ -24,6 +24,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/document_state.dart';
 import 'package:kpix/models/tool_state.dart';
 import 'package:kpix/models/tool_type.dart';
+import 'package:kpix/widgets/controls/segmentation_helper.dart';
 import 'package:material_ui/material_ui.dart';
 
 
@@ -117,22 +118,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
       segments.add(segment);
     }
 
-    final ButtonStyle? segmentedStyle = SegmentedButtonTheme.of(context).style;
-    final OutlinedBorder? themedShape = segmentedStyle?.shape?.resolve(<WidgetState>{});
-
-    final OutlinedBorder? shape = switch (themedShape) {
-      final RoundedRectangleBorder border => border.copyWith(
-        borderRadius: border.borderRadius
-            .resolve(Directionality.of(context))
-            .copyWith(
-          bottomLeft: isTop ? Radius.zero : null,
-          bottomRight: isTop ? Radius.zero : null,
-          topLeft: isTop ? null : Radius.zero,
-          topRight: isTop ? null : Radius.zero,
-        ),
-      ),
-      _ => themedShape,
-    };
+    final OutlinedBorder? shape = getSegmentedButtonShape(context: context, isTop: isTop);
 
     return SegmentedButton<ToolType>(
         style:  ButtonStyle(

@@ -25,6 +25,7 @@ import 'package:kpix/models/history/history_manager.dart';
 import 'package:kpix/models/history/history_state_type.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
+import 'package:kpix/widgets/controls/segmentation_helper.dart';
 import 'package:material_ui/material_ui.dart';
 
 bool isPerspectiveGridType({required final GridType gridType})
@@ -114,7 +115,28 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
       onChangedEnd: (final double value) {_commitChange();},
     );
   }
+/*
+  OutlinedBorder? _getSegmentedButtonShape({required final bool isTop})
+  {
+    final ButtonStyle? segmentedStyle = SegmentedButtonTheme.of(context).style;
+    final OutlinedBorder? themedShape = segmentedStyle?.shape?.resolve(<WidgetState>{});
 
+    final OutlinedBorder? shape = switch (themedShape) {
+      final RoundedRectangleBorder border => border.copyWith(
+        borderRadius: border.borderRadius
+            .resolve(Directionality.of(context))
+            .copyWith(
+          bottomLeft: isTop ? Radius.zero : null,
+          bottomRight: isTop ? Radius.zero : null,
+          topLeft: isTop ? null : Radius.zero,
+          topRight: isTop ? null : Radius.zero,
+        ),
+      ),
+      _ => themedShape,
+    };
+    return shape;
+  }
+*/
   @override
   Widget build(final BuildContext context)
   {
@@ -138,6 +160,10 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   SegmentedButton<bool>(
+                    style:  ButtonStyle(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: WidgetStatePropertyAll<OutlinedBorder?>(getSegmentedButtonShape(context: context, isTop: true)),
+                    ),
                     selected: <bool>{isPerspective},
                     showSelectedIcon: false,
                     onSelectionChanged: (final Set<bool> types)
@@ -166,6 +192,10 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                     ],
                   ),
                   SegmentedButton<GridType>(
+                    style:  ButtonStyle(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: WidgetStatePropertyAll<OutlinedBorder?>(getSegmentedButtonShape(context: context, isTop: false)),
+                    ),
                     segments: <ButtonSegment<GridType>>[
                       for (final GridType g in GridType.values)
                         if (isPerspectiveGridType(gridType: g) == isPerspective)

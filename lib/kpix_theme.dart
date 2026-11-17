@@ -72,12 +72,12 @@ const double _elevation = 16.0;
 // Text fields match a default KPixSlider: 24px tall with 8px above and below.
 const double _textFieldHeight = 24.0;
 const double _textFieldMargin = 8.0;
-const double _bracketLength = 7.0;
+const double _bracketLength = 8.0;
 // Material adds this much on each side of a filled field's content padding.
-const double _filledFieldInputGap = 4.0;
+const double _filledFieldInputGap = 2.0;
 // Text starts where the resting bracket arms end.
 const double _textFieldPaddingHorizontal = _bracketLength - _filledFieldInputGap;
-const double _bracketLengthFocused = 10.0;
+const double _bracketLengthFocused = 8.0;
 
 final ThemeData monochromeTheme = _buildTheme(colors: _lightColors);
 final ThemeData monochromeThemeDark = _buildTheme(colors: _darkColors);

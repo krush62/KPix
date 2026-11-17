@@ -33,7 +33,7 @@ class CornerBracketInputBorder extends InputBorder
   const CornerBracketInputBorder({
     super.borderSide = const BorderSide(),
     this.cornerLength = 8.0,
-    this.radius = 5.0,
+    this.radius = 4.0,
     this.margin = EdgeInsets.zero,
   });
 

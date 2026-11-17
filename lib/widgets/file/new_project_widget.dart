@@ -90,6 +90,18 @@ enum _AspectRatioPreset
       _Dimension(x: 160, y: 152, label: "NGPC"),
       _Dimension(x: 160, y: 102, label: "LYNX"),
     ],
+  ),
+  arConsole(
+    icon: TablerIcons.device_tv_old,
+    dimensions: <_Dimension>[
+      _Dimension(x: 128, y: 128, label: "PICO-8"),
+      _Dimension(x: 240, y: 136, label: "TIC-80"),
+      _Dimension(x: 256, y: 192, label: "ZX/SMS"),
+      _Dimension(x: 256, y: 224, label: "SNES/PCE"),
+      _Dimension(x: 256, y: 240, label: "NES"),
+      _Dimension(x: 320, y: 224, label: "MD/NeoGeo"),
+      _Dimension(x: 320, y: 200, label: "C64/ST/CPC"),
+    ],
   );
 
   const _AspectRatioPreset({this.label, this.icon, required this.dimensions});

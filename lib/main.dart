@@ -651,6 +651,11 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   /// over; without one, the first image is taken.
   void _filesDropped(final List<String> paths)
   {
+    //the drag source (e.g. the file browser) keeps the foreground otherwise
+    if (paths.isNotEmpty && GetIt.I.isRegistered<Window>())
+    {
+      GetIt.I.get<Window>().focus();
+    }
     final String? path = paths.where((final String candidate) => candidate.endsWith(fileExtensionKpix)).firstOrNull;
     final String? imagePath = paths.where((final String candidate) => imageExtensions.contains(p.extension(candidate).replaceFirst(".", "").toLowerCase())).firstOrNull;
     if (path != null)

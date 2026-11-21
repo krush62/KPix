@@ -18,6 +18,7 @@
 
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/infra/hotkey_manager.dart';
 import 'package:kpix/l10n/app_localizations.dart';
 import 'package:kpix/models/canvas_state.dart';
 import 'package:kpix/models/canvas_transformation.dart';
@@ -86,7 +87,16 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
   void _crop()
   {
     final CanvasActionResult result = _canvasState.cropToSelection();
+    if (result == CanvasActionResult.success)
+    {
+      _fitCanvasToView();
+    }
     showMessageForCanvasResult(result: result, l10n: AppLocalizations.of(context)!);
+  }
+
+  void _fitCanvasToView()
+  {
+    GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
   }
 
   void _setSize()
@@ -97,6 +107,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
   void _sizeChangeAccepted({required final CoordinateSetI size, required final CoordinateSetI offset})
   {
     _canvasState.changeCanvasSize(newSize: size, offset: offset);
+    _fitCanvasToView();
     _hideOverlays();
   }
 

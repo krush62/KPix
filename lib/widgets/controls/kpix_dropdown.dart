@@ -18,15 +18,21 @@
 
 import 'package:material_ui/material_ui.dart';
 
-/// Layout values matching [DropdownButton], so the two cannot drift apart.
 abstract final class _KPixDropdownOptions {
-  static const double itemHeight = kMinInteractiveDimension;
-  static const EdgeInsets itemPadding = EdgeInsets.symmetric(horizontal: 16.0);
-  static const double underlineBottom = 8.0;
-  static const double underlineHeight = 1.0;
-  static const Color underlineColor = Color(0xFFBDBDBD);
-  static const double elevation = 8.0;
-  static const double iconSize = 24.0;
+  // The box matches a default KPixSlider: 24px tall with 8px above and below.
+  static const double boxHeight = 24.0;
+  static const double margin = 8.0;
+  static const double borderRadius = 8.0;
+  static const double borderWidth = 1.0;
+  static const double borderWidthFocused = 2.0;
+  // Same text inset as the text fields.
+  static const double textPadding = 8.0;
+  static const double tabWidth = 24.0;
+  static const double iconSize = 20.0;
+  static const double itemHeight = 32.0;
+  static const double menuGap = 4.0;
+  static const double menuPaddingVertical = 2.0;
+  static const int hoverAlpha = 32;
 }
 
 /// A dropdown that opens inside the overlay it is shown in.
@@ -36,9 +42,7 @@ abstract final class _KPixDropdownOptions {
 /// inside a [KPixOverlay] drops its menu behind the dialog and a second tap
 /// trips an assertion in the framework. This one hangs the menu off the entry it
 /// lives in, so it is drawn above it.
-///
-/// The appearance follows [DropdownButton] so both can be used side by side.
-class KPixDropdown<E> extends StatelessWidget {
+class KPixDropdown<E> extends StatefulWidget {
   const KPixDropdown({
     super.key,
     required this.value,
@@ -55,98 +59,168 @@ class KPixDropdown<E> extends StatelessWidget {
   final TextStyle? Function(E value)? itemTextStyle;
 
   @override
+  State<KPixDropdown<E>> createState() => _KPixDropdownState<E>();
+}
+
+class _KPixDropdownState<E> extends State<KPixDropdown<E>> {
+  final MenuController _controller = MenuController();
+  bool _hovered = false;
+  bool _focused = false;
+  bool _open = false;
+
+  void _setOpen(final bool open) {
+    if (mounted && _open != open) {
+      setState(() {_open = open;});
+    }
+  }
+
+  @override
   Widget build(final BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final TextStyle textStyle = theme.textTheme.titleMedium!;
-    final Color iconColor = theme.brightness == Brightness.dark ? Colors.white70 : Colors.grey.shade700;
+    final TextStyle textStyle = theme.textTheme.bodyLarge!;
 
     return LayoutBuilder(
       builder: (final BuildContext context, final BoxConstraints constraints) {
         return MenuAnchor(
-          //the menu is as wide as the button, like the one of a DropdownButton
+          controller: _controller,
+          // The anchor includes the margin below the box.
+          alignmentOffset: const Offset(0.0, _KPixDropdownOptions.menuGap - _KPixDropdownOptions.margin),
+          onOpen: () => _setOpen(true),
+          onClose: () => _setOpen(false),
           style: MenuStyle(
             backgroundColor: WidgetStatePropertyAll<Color?>(theme.primaryColorDark),
             surfaceTintColor: const WidgetStatePropertyAll<Color?>(Colors.transparent),
-            elevation: const WidgetStatePropertyAll<double?>(_KPixDropdownOptions.elevation),
-            padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(EdgeInsets.zero),
+            shadowColor: const WidgetStatePropertyAll<Color?>(Colors.transparent),
+            elevation: const WidgetStatePropertyAll<double?>(0.0),
+            shape: const WidgetStatePropertyAll<OutlinedBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(_KPixDropdownOptions.borderRadius)))),
+            side: WidgetStatePropertyAll<BorderSide>(BorderSide(color: theme.primaryColorLight)),
+            padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(EdgeInsets.symmetric(vertical: _KPixDropdownOptions.menuPaddingVertical)),
+            //the menu is as wide as the button
             minimumSize: WidgetStatePropertyAll<Size>(Size(constraints.maxWidth, 0.0)),
             maximumSize: WidgetStatePropertyAll<Size>(Size(constraints.maxWidth, double.infinity)),
           ),
           menuChildren: <Widget>[
-            for (final MapEntry<E, String> entry in valueMap.entries)
-              MenuItemButton(
-                style: ButtonStyle(
-                  //the entries carry the width, so the menu ends up as wide as the button
-                  fixedSize: WidgetStatePropertyAll<Size>(Size(constraints.maxWidth, _KPixDropdownOptions.itemHeight)),
-                  maximumSize: WidgetStatePropertyAll<Size>(Size(constraints.maxWidth, _KPixDropdownOptions.itemHeight)),
-                  padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(_KPixDropdownOptions.itemPadding),
-                  backgroundColor: WidgetStatePropertyAll<Color?>(entry.key == value ? theme.primaryColor : null),
-                ),
-                onPressed: () {
-                  onChanged(entry.key);
-                },
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(entry.value, style: itemTextStyle?.call(entry.key) ?? textStyle),
-                ),
-              ),
+            for (final MapEntry<E, String> entry in widget.valueMap.entries)
+              _buildItem(theme: theme, entry: entry, width: constraints.maxWidth, textStyle: textStyle),
           ],
-          builder: (final BuildContext context, final MenuController controller, final Widget? child) {
-            //the ink needs a material of its own, so the dropdown can also be
-            //used where nothing else provides one
-            return Material(
-              type: MaterialType.transparency,
-              child: InkWell(
-                onTap: () {
-                  if (controller.isOpen) {
-                    controller.close();
-                  } else {
-                    controller.open();
-                  }
-                },
-                focusColor: theme.primaryColor,
-                child: Stack(
+          child: _buildBox(theme: theme, textStyle: textStyle),
+        );
+      },
+    );
+  }
+
+  Widget _buildItem({required final ThemeData theme, required final MapEntry<E, String> entry, required final double width, required final TextStyle textStyle}) {
+    final bool selected = entry.key == widget.value;
+    final TextStyle style = widget.itemTextStyle?.call(entry.key) ?? textStyle;
+    final Color overlay = (selected ? theme.primaryColorDark : theme.primaryColorLight).withAlpha(_KPixDropdownOptions.hoverAlpha);
+    final Size size = Size(width, _KPixDropdownOptions.itemHeight);
+    return MenuItemButton(
+      style: ButtonStyle(
+        //the entries carry the width, so the menu ends up as wide as the button
+        fixedSize: WidgetStatePropertyAll<Size>(size),
+        minimumSize: WidgetStatePropertyAll<Size>(size),
+        maximumSize: WidgetStatePropertyAll<Size>(size),
+        visualDensity: VisualDensity.standard,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(EdgeInsets.symmetric(horizontal: _KPixDropdownOptions.textPadding)),
+        shape: const WidgetStatePropertyAll<OutlinedBorder>(RoundedRectangleBorder()),
+        backgroundColor: WidgetStatePropertyAll<Color?>(selected ? theme.primaryColorLight : null),
+        overlayColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) =>
+            states.contains(WidgetState.hovered) || states.contains(WidgetState.focused) || states.contains(WidgetState.pressed) ? overlay : null),
+      ),
+      onPressed: () {
+        widget.onChanged(entry.key);
+      },
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          entry.value,
+          style: selected ? style.copyWith(color: theme.primaryColorDark) : style,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBox({required final ThemeData theme, required final TextStyle textStyle}) {
+    const BorderRadius radius = BorderRadius.all(Radius.circular(_KPixDropdownOptions.borderRadius));
+    final Color fill;
+    if (_open) {
+      fill = theme.primaryColorDark;
+    } else if (_hovered) {
+      fill = theme.primaryColorLight.withAlpha(_KPixDropdownOptions.hoverAlpha);
+    } else {
+      fill = Colors.transparent;
+    }
+
+    //the ink needs a material of its own, so the dropdown can also be
+    //used where nothing else provides one
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: () {
+          if (_controller.isOpen) {
+            _controller.close();
+          } else {
+            _controller.open();
+          }
+        },
+        onHover: (final bool hovered) {
+          setState(() {_hovered = hovered;});
+        },
+        onFocusChange: (final bool focused) {
+          setState(() {_focused = focused;});
+        },
+        overlayColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
+        splashFactory: NoSplash.splashFactory,
+        // The margin is part of the tap target, like with the text fields.
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: _KPixDropdownOptions.margin),
+          child: Container(
+            height: _KPixDropdownOptions.boxHeight,
+            foregroundDecoration: BoxDecoration(
+              borderRadius: radius,
+              border: Border.all(
+                color: theme.primaryColorLight,
+                width: _focused ? _KPixDropdownOptions.borderWidthFocused : _KPixDropdownOptions.borderWidth,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: radius,
+              child: ColoredBox(
+                color: fill,
+                child: Row(
                   children: <Widget>[
-                    SizedBox(
-                      height: _KPixDropdownOptions.itemHeight,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                valueMap[value] ?? "",
-                                style: itemTextStyle?.call(value) ?? textStyle,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                          Icon(Icons.arrow_drop_down, size: _KPixDropdownOptions.iconSize, color: iconColor),
-                        ],
-                      ),
-                    ),
-                    const Positioned(
-                      left: 0.0,
-                      right: 0.0,
-                      bottom: _KPixDropdownOptions.underlineBottom,
-                      child: SizedBox(
-                        height: _KPixDropdownOptions.underlineHeight,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            border: Border(bottom: BorderSide(color: _KPixDropdownOptions.underlineColor, width: 0.0)),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: _KPixDropdownOptions.textPadding),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            widget.valueMap[widget.value] ?? "",
+                            style: widget.itemTextStyle?.call(widget.value) ?? textStyle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                      ),
+                    ),
+                    ColoredBox(
+                      color: theme.primaryColorLight,
+                      child: SizedBox(
+                        width: _KPixDropdownOptions.tabWidth,
+                        height: _KPixDropdownOptions.boxHeight,
+                        child: Icon(Icons.keyboard_arrow_down, size: _KPixDropdownOptions.iconSize, color: theme.primaryColor),
                       ),
                     ),
                   ],
                 ),
               ),
-            );
-          },
-        );
-      },
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

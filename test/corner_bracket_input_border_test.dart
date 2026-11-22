@@ -113,7 +113,7 @@ void main()
   });
 
   group('CornerBracketInputBorder values', () {
-    const CornerBracketInputBorder a = CornerBracketInputBorder(borderSide: BorderSide(width: 2.0), cornerLength: 6.0, radius: 4.0);
+    const CornerBracketInputBorder a = CornerBracketInputBorder(borderSide: BorderSide(width: 2.0), cornerLength: 6.0);
     const CornerBracketInputBorder b = CornerBracketInputBorder(borderSide: BorderSide(width: 4.0), cornerLength: 10.0, radius: 6.0);
 
     test('lerps width, length and radius', () {
@@ -190,8 +190,9 @@ void main()
           final Rect text = tester.getRect(find.byType(EditableText));
           expect(text.center.dy - field.top, closeTo(field.height / 2, 0.5));
           final CornerBracketInputBorder resting = theme.inputDecorationTheme.enabledBorder! as CornerBracketInputBorder;
-          expect(text.left - field.left, resting.cornerLength);
-          expect(field.right - text.right, resting.cornerLength);
+          // Text starts 2px after the bracket arms.
+          expect(text.left - field.left, resting.cornerLength + 2.0);
+          expect(field.right - text.right, resting.cornerLength + 2.0);
         });
       }
     }

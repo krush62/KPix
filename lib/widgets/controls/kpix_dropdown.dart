@@ -26,7 +26,7 @@ abstract final class _KPixDropdownOptions {
   static const double borderWidth = 1.0;
   static const double borderWidthFocused = 2.0;
   // Same text inset as the text fields.
-  static const double textPadding = 8.0;
+  static const double textPadding = 10.0;
   static const double tabWidth = 24.0;
   static const double iconSize = 20.0;
   static const double itemHeight = 32.0;

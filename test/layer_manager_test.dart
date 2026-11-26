@@ -17,6 +17,8 @@
  */
 
 import 'dart:collection';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -159,6 +161,19 @@ Future<void> _until({required final bool Function() condition}) async
 void _expectNoUndoStep({required final HistoryState? before})
 {
   expect(_history.getCurrentState(), same(before), reason: "nothing happened, so there is nothing to undo");
+}
+
+/// Waits for a composite of [layers] other than [previous], the image playback shows.
+Future<ui.Image> _nextComposite({required final LayerCollection layers, required final ui.Image? previous}) async
+{
+  await _until(condition: () => layers.rasterImage != null && !identical(layers.rasterImage, previous));
+  return layers.rasterImage!;
+}
+
+Future<int> _alphaAt({required final ui.Image image, required final CoordinateSetI coord}) async
+{
+  final ByteData data = (await image.toByteData())!;
+  return data.getUint8((coord.y * image.width + coord.x) * 4 + 3);
 }
 
 void main()
@@ -370,6 +385,31 @@ void main()
 
       expect(bottom.doManualRaster, isTrue);
       await settle();
+    });
+
+    _test("takes it out of what playback shows, in every frame it is in", (final DrawingLayerState bottom) async
+    {
+      final DrawingLayerState upper = _add<DrawingLayerState>(kind: LayerKind.drawing);
+      _paint(layer: upper, coord: _pixel, color: _ramp[1]);
+      await settle();
+      final (Frame source, Frame target) = await _twoFrames();
+      _manager.linkLayerToOtherFrame(sourceLayer: upper, targetFrame: target, position: 0, addToHistoryStack: false);
+      _timeline.selectFrameByIndex(index: 0, addLayerSelectionToHistory: false);
+      await settle();
+      //the selected frame's composite waits out a short delay
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      for (final Frame frame in <Frame>[source, target])
+      {
+        expect(await _alphaAt(image: frame.layerList.rasterImage!, coord: _pixel), 255, reason: "setup: the pixel is in the composite");
+      }
+      final ui.Image? sourceBefore = source.layerList.rasterImage;
+      final ui.Image? targetBefore = target.layerList.rasterImage;
+
+      _manager.changeLayerVisibility(layerState: upper);
+      await settle();
+
+      expect(await _alphaAt(image: await _nextComposite(layers: source.layerList, previous: sourceBefore), coord: _pixel), 0, reason: "the selected frame");
+      expect(await _alphaAt(image: await _nextComposite(layers: target.layerList, previous: targetBefore), coord: _pixel), 0, reason: "the other frame");
     });
 
     _test("does nothing without a layer", (final DrawingLayerState bottom) async

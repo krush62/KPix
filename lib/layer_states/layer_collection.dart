@@ -738,34 +738,32 @@ class LayerCollection with ChangeNotifier {
         dependent.pollRaster();
       }
     }
+    _requestComposite();
+  }
 
-    bool anyLayerStillPending = false;
+  /// Rebuilds the composite once no layer has a raster outstanding; the last
+  /// of those ends in [layerRasterDone], which asks again.
+  void _requestComposite()
+  {
     for (final LayerState l in _layers)
     {
-      if (l is RasterableLayerState)
+      if (l is RasterableLayerState && (l.isRasterizing || l.doManualRaster))
       {
-        if (l.isRasterizing || l.doManualRaster)
-        {
-          anyLayerStillPending = true;
-          break;
-        }
+        return;
       }
     }
 
-    if (!anyLayerStillPending)
+    final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
+    _compositeTimer?.cancel();
+    //the selected frame's composite only serves playback, so a drag does not
+    //rebuild it after every batch; other frames' also serve frame blending
+    if (timeline.findFrameForCollection(collection: this) == timeline.selectedFrame && !timeline.isPlaying.value)
     {
-      final Timeline timeline = GetIt.I.get<DocumentState>().timeline;
-      _compositeTimer?.cancel();
-      //the selected frame's composite only serves playback, so a drag does not
-      //rebuild it after every batch; other frames' also serve frame blending
-      if (timeline.findFrameForCollection(collection: this) == timeline.selectedFrame && !timeline.isPlaying.value)
-      {
-        _compositeTimer = Timer(const Duration(milliseconds: _compositeDelayMs), _rebuildComposite);
-      }
-      else
-      {
-        _rebuildComposite();
-      }
+      _compositeTimer = Timer(const Duration(milliseconds: _compositeDelayMs), _rebuildComposite);
+    }
+    else
+    {
+      _rebuildComposite();
     }
   }
 
@@ -808,6 +806,8 @@ class LayerCollection with ChangeNotifier {
       }
       invalidateDependents(layer: layer);
     }
+    //hiding queues no raster when nothing depends on the layer
+    _requestComposite();
     notifyListeners();
   }
 

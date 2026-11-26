@@ -29,6 +29,7 @@ const Map<HistoryStateTypeIdentifier, HistoryStateType> allStateTypeMap =
   HistoryStateTypeIdentifier.layerDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerDelete, compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.layerMerge: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerMerge, compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.layerDuplicate: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerDuplicate, compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerUnlink: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerUnlink, compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.layerNewDrawing: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewDrawing, compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.layerNewReference: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewReference, compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.layerNewGrid: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewGrid, compressionBehavior: HistoryStateCompressionBehavior.leave),
@@ -100,6 +101,7 @@ enum HistoryStateTypeIdentifier
   layerDelete,
   layerMerge,
   layerDuplicate,
+  layerUnlink,
   layerNewDrawing,
   layerNewReference,
   layerNewGrid,
@@ -184,6 +186,7 @@ const Map<HistoryStateTypeIdentifier, HistoryStateTypeGroup> _stateTypeGroupMap 
   HistoryStateTypeIdentifier.layerDelete: HistoryStateTypeGroup.full, //layer delete
   HistoryStateTypeIdentifier.layerMerge: HistoryStateTypeGroup.full, //layer merge
   HistoryStateTypeIdentifier.layerDuplicate: HistoryStateTypeGroup.full, //layer new
+  HistoryStateTypeIdentifier.layerUnlink: HistoryStateTypeGroup.full, //layer replaced in one frame
   HistoryStateTypeIdentifier.layerNewDrawing: HistoryStateTypeGroup.full, //layer new
   HistoryStateTypeIdentifier.layerNewReference: HistoryStateTypeGroup.full, //layer new
   HistoryStateTypeIdentifier.layerNewGrid: HistoryStateTypeGroup.full, //layer new

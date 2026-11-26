@@ -34,6 +34,7 @@ String getMessageForHistoryState({
   HistoryStateTypeIdentifier.layerDelete => l10n.deleteLayer,
   HistoryStateTypeIdentifier.layerMerge => l10n.mergeLayer,
   HistoryStateTypeIdentifier.layerDuplicate => l10n.duplicateLayer,
+  HistoryStateTypeIdentifier.layerUnlink => l10n.unlinkLayer,
   HistoryStateTypeIdentifier.layerNewDrawing => l10n.addNewDrawingLayer,
   HistoryStateTypeIdentifier.layerNewReference => l10n.addNewReferenceLayer,
   HistoryStateTypeIdentifier.layerNewGrid => l10n.addNewGridLayer,

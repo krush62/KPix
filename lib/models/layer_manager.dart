@@ -454,6 +454,23 @@ class LayerManager
     return result;
   }
 
+  /// Replaces [unlinkLayer] in the selected frame with a copy of its own; the other frames keep the original.
+  (LayerActionResult, LayerState?) layerUnlink({required final LayerState unlinkLayer, final bool addToHistoryStack = true})
+  {
+    final (LayerActionResult, LayerState?) result = layerDuplicateSelected(duplicateLayer: unlinkLayer, addToHistoryStack: false);
+    final LayerState? copy = result.$2;
+    if (copy != null && result.$1 == LayerActionResult.success)
+    {
+      layerDeletedSelected(deleteLayer: unlinkLayer, addToHistoryStack: false);
+      selectLayer(newLayer: copy, addToHistoryStack: false);
+      if (addToHistoryStack)
+      {
+        GetIt.I.get<HistoryManager>().addState(identifier: HistoryStateTypeIdentifier.layerUnlink);
+      }
+    }
+    return result;
+  }
+
   Future<void> layerRasterPressed({required final LayerState rasterLayer, final bool addToHistoryStack = true}) async
   {
     final Frame? frame = GetIt.I.get<DocumentState>().timeline.selectedFrame;

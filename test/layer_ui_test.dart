@@ -323,6 +323,7 @@ void main()
         expect(_layers.length, 1);
         expect(_timeline.getCurrentLayer(), isNot(same(layer)));
         expect(_timeline.frames.value[0].layerList.getLayer(index: 0), same(layer), reason: "the other frame keeps it");
+        expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.layerUnlink);
       });
     });
   });

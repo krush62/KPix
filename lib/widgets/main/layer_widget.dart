@@ -117,14 +117,8 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _unlinkPressed()
   {
-    final (LayerActionResult, LayerState?) result = _layerManager.layerDuplicateSelected(duplicateLayer: widget.layerState, addToHistoryStack: false);
-    final LayerState? duplicatedLayer = result.$2;
-    if (duplicatedLayer != null && result.$1 == LayerActionResult.success)
-    {
-      _layerManager.layerDeletedSelected(deleteLayer: widget.layerState, addToHistoryStack: false);
-      _layerManager.selectLayer(newLayer: duplicatedLayer);
-      _documentState.timeline.layerChangeNotifier.reportChange();
-    }
+    final (LayerActionResult, LayerState?) result = _layerManager.layerUnlink(unlinkLayer: widget.layerState);
+    showMessageForResult(result: result.$1, l10n: AppLocalizations.of(context)!);
     _closeActionsMenus();
   }
 

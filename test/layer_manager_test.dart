@@ -669,6 +669,98 @@ void main()
     });
   });
 
+  group("unlinking a layer", ()
+  {
+    /// Links [bottom] into a second frame and moves there, with an undo step to go back to.
+    Future<(Frame, Frame)> linked({required final DrawingLayerState bottom}) async
+    {
+      final (Frame source, Frame target) = await _twoFrames();
+      _manager.linkLayerToOtherFrame(sourceLayer: bottom, targetFrame: target, position: 0, addToHistoryStack: false);
+      await settle();
+      _history.addState(identifier: HistoryStateTypeIdentifier.generic);
+      return (source, target);
+    }
+
+    bool framesShareLayer() => identical(
+      _timeline.frames.value[0].layerList.getLayer(index: 0),
+      _timeline.frames.value[1].layerList.getLayer(index: 0),
+    );
+
+    _test("gives this frame a copy of its own and selects it", (final DrawingLayerState bottom) async
+    {
+      _paint(layer: bottom, coord: _pixel, color: _ramp[1]);
+      await settle();
+      final (Frame source, Frame target) = await linked(bottom: bottom);
+
+      final (LayerActionResult, LayerState?) result = _manager.layerUnlink(unlinkLayer: bottom);
+      await settle();
+
+      expect(result.$1, LayerActionResult.success);
+      final DrawingLayerState copy = target.layerList.getLayer(index: 0) as DrawingLayerState;
+      expect(copy, same(result.$2));
+      expect(copy, isNot(same(bottom)));
+      expect(copy.getDataEntry(coord: _pixel), _ramp[1]);
+      expect(source.layerList.getLayer(index: 0), same(bottom), reason: "the other frame keeps it");
+      expect(_timeline.isLayerLinked(layer: bottom), isFalse);
+      expect(_timeline.getCurrentLayer(), same(copy));
+      expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.layerUnlink);
+    });
+
+    _test("can be undone and redone", (final DrawingLayerState bottom) async
+    {
+      await linked(bottom: bottom);
+
+      _manager.layerUnlink(unlinkLayer: bottom);
+      await settle();
+
+      await _undo();
+      expect(framesShareLayer(), isTrue);
+      expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.generic);
+
+      await _redo();
+      expect(framesShareLayer(), isFalse);
+      expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.layerUnlink);
+    });
+
+    _test("stays in place when the step after it is undone", (final DrawingLayerState bottom) async
+    {
+      await linked(bottom: bottom);
+      final LayerState copy = _manager.layerUnlink(unlinkLayer: bottom).$2!;
+      await settle();
+
+      _manager.changeLayerVisibility(layerState: copy);
+      await settle();
+      await _undo();
+
+      expect(framesShareLayer(), isFalse);
+      expect(_history.getCurrentIdentifier(), HistoryStateTypeIdentifier.layerUnlink);
+    });
+
+    _test("leaves the history alone when asked to", (final DrawingLayerState bottom) async
+    {
+      await linked(bottom: bottom);
+      final HistoryState? before = _history.getCurrentState();
+
+      expect(_manager.layerUnlink(unlinkLayer: bottom, addToHistoryStack: false).$1, LayerActionResult.success);
+      await settle();
+
+      expect(framesShareLayer(), isFalse);
+      _expectNoUndoStep(before: before);
+    });
+
+    _test("is refused when the frame is full", (final DrawingLayerState bottom) async
+    {
+      final (Frame _, Frame target) = await linked(bottom: bottom);
+      _fill(layers: target.layerList);
+      final HistoryState? before = _history.getCurrentState();
+
+      expect(_manager.layerUnlink(unlinkLayer: bottom).$1, LayerActionResult.layerLimitReached);
+
+      expect(_timeline.isLayerLinked(layer: bottom), isTrue);
+      _expectNoUndoStep(before: before);
+    });
+  });
+
   group("duplicating a layer", ()
   {
     _test("puts the copy on top of it and selects that", (final DrawingLayerState bottom) async

@@ -103,9 +103,13 @@ class KPixColorPickerWidget extends StatelessWidget
           SizedBox(
             height: padding,
           ),
-          DialogActionButton.close(
-            l10n: l10n,
-            onPressed: dismiss,
+          Row(
+            children: <Widget>[
+              DialogActionButton.close(
+                l10n: l10n,
+                onPressed: dismiss,
+              ),
+            ],
           ),
         ],
       ),

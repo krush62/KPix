@@ -477,7 +477,9 @@ void main()
 
       await tester.tap(find.byTooltip(testL10n.chooseColor).first);
       await settleUi(tester);
-      await tester.tap(find.descendant(of: find.byType(KPixColorPickerWidget), matching: find.byType(IconButton)).first);
+      final Finder closeButton = find.descendant(of: find.byType(KPixColorPickerWidget), matching: find.byType(IconButton)).first;
+      expect(tester.getSize(closeButton).height, lessThan(tester.getSize(find.byType(KPixColorPickerWidget)).height / 4), reason: "the close button does not stretch over the dialog");
+      await tester.tap(closeButton);
       await settleUi(tester);
 
       expect(find.byType(KPixColorPickerWidget), findsNothing);
